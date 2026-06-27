@@ -112,10 +112,11 @@ reasonable v1 success bar is:
 - A workflow using `Date.now()`, `Math.random()`, or arg-less `new Date()`
   receives a Claude compatibility warning.
 - JSON output contains stable fields for file, rule, severity, message, span,
-  and optional suggestions.
+  schema version, summary counts, and optional suggestions.
 - CI can fail on errors and optionally fail on warning thresholds.
 - The rule corpus includes representative ODW examples and deliberately
   invalid fixtures.
+- Hostile metadata cannot execute during lint.
 
 ## 9. Constraints
 
@@ -124,6 +125,7 @@ reasonable v1 success bar is:
 - The linter must not execute untrusted workflow source.
 - Runtime parity matters: diagnostics that disagree with ODW's loader must be
   intentional and documented.
+- The static-analysis boundary must be explicit before implementation starts.
 - Compatibility diagnostics must preserve the distinction between "ODW can run
   this" and "Claude Code can also accept this".
 - The first release should favour clear diagnostics over broad lint coverage.
@@ -149,7 +151,8 @@ reasonable v1 success bar is:
   `--strict-claude` or `--strict`?
 - Should configuration live in `odw-lint.config.*`, `odw.config.json`, or both?
 - Should ODW export a static analysis package that `odw-lint` consumes, or
-  should `odw-lint` own the static semantics and ODW consume it later?
+  should `odw-lint` own a vendored static implementation with mandatory drift
+  tests?
 - How much fix support belongs in v1, given that source-preserving edits in a
   workflow dialect need careful span handling?
 - Which optional integrations should be first after the core CLI: Biome
