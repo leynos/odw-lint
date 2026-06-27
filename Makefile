@@ -1,4 +1,4 @@
-.PHONY: help all clean build lint fmt check-fmt typecheck test markdownlint
+.PHONY: help all clean build lint biomejs oxlint fmt check-fmt typecheck test markdownlint
 
 .DEFAULT_GOAL := all
 
@@ -17,10 +17,15 @@ fmt: build ## Format sources
 	bun run fmt
 
 check-fmt: build ## Verify formatting
-	bunx biome check --formatter-enabled=true --linter-enabled=false src tests
+	bunx biome check --formatter-enabled=true --linter-enabled=false src tests package.json biome.jsonc bunfig.toml tsconfig.json .oxlintrc.json
 
-lint: build ## Run linters
-	bun run lint
+lint: biomejs oxlint ## Run linters
+
+biomejs: build ## Run Biome lint
+	bun run lint:biome
+
+oxlint: build ## Run Oxlint
+	bun run lint:oxlint
 
 typecheck: build ## Run type checking
 	bun run check:types
