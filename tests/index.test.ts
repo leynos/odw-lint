@@ -1,7 +1,8 @@
 /**
- * @file Behaviour tests for the template greeting helper.
+ * @file Behaviour tests for the template `greet` export in `src/index.ts`.
+ *
+ * The suite uses the shared Bun test setup from `tests/setup.ts`.
  */
-
 import { describe, expect, it } from "bun:test";
 
 import { greet } from "../src/index";

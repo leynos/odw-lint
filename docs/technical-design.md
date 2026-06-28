@@ -546,13 +546,13 @@ plugin ecosystem.
 ## 16. References
 
 - ODW loader:
-  `/data/leynos/Projects/open-dynamic-workflows/src/loader.ts`
+  `open-dynamic-workflows/src/loader.ts`
 - ODW dual compatibility:
-  `/data/leynos/Projects/open-dynamic-workflows/src/dual-compat.ts`
+  `open-dynamic-workflows/src/dual-compat.ts`
 - ODW primitives:
-  `/data/leynos/Projects/open-dynamic-workflows/src/primitives.ts`
+  `open-dynamic-workflows/src/primitives.ts`
 - ODW CLI:
-  `/data/leynos/Projects/open-dynamic-workflows/src/cli.ts`
+  `open-dynamic-workflows/src/cli.ts`
 - Biome linter plugins:
   <https://biomejs.dev/linter/plugins/>
 - Biome GritQL reference:
