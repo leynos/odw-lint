@@ -10,7 +10,7 @@
     "lint": "bun run lint:biome && bun run lint:oxlint",
     "lint:biome": "bunx biome ci src tests",
     "lint:oxlint": "bunx oxlint src tests",
-    "check:types": "tsc --noEmit",
+    "check:types": "bunx tsc --noEmit",
     "test": "bun test",
     "test:all": "bun run lint && bun run check:types && bun test"
   },
@@ -23,5 +23,8 @@
   },
   "trustedDependencies": [
     "df12-lints"
-  ]
+  ],
+  "dependencyJustifications": {
+    "df12-lints": "Pinned to the reviewed Git commit that provides the local Oxlint plugin until df12-lints publishes a versioned package with that plugin."
+  }
 }

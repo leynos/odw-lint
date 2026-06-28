@@ -739,9 +739,7 @@ class MessageDispatcher {
     }
     public void dispatch(Message msg) {
         MessageHandler handler = handlers.getOrDefault(msg.getType(), this::handleUnknown);
-        if (handler!= null) {
-            handler.handle(msg);
-        }
+        handler.handle(msg);
     }
     private void handleUnknown(Message msg) { /*… */ }
 }

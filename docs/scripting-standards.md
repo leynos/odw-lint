@@ -371,7 +371,7 @@ def test_patch_python_dependency(mocker):
     # Example: patch a helper function used by the script
     from scripts import helpers
 
-    mocker.patch_object(helpers, "compute_checksum", return_value="deadbeef")
+    mocker.patch.object(helpers, "compute_checksum", return_value="deadbeef")
     assert helpers.compute_checksum(b"abc") == "deadbeef"
 ```
 
