@@ -126,6 +126,8 @@ reasonable v1 success bar is:
 - Runtime parity matters: diagnostics that disagree with ODW's loader must be
   intentional and documented.
 - The static-analysis boundary must be explicit before implementation starts.
+- `odw-lint` owns its static-analysis implementation; it does not depend on ODW
+  maintainers changing ODW's public exports before v1 can proceed.
 - Compatibility diagnostics must preserve the distinction between "ODW can run
   this" and "Claude Code can also accept this".
 - The first release should favour clear diagnostics over broad lint coverage.
@@ -138,8 +140,8 @@ reasonable v1 success bar is:
   for v1.
 - Authors will accept a dedicated ODW checker alongside their normal
   JavaScript linter.
-- ODW maintainers are willing to share or duplicate small static semantics
-  from the runtime if that avoids executing workflow source.
+- ODW's workflow semantics are stable enough to mirror with a vendored static
+  implementation and parity tests.
 - The most urgent adoption path is CLI and CI, not an editor extension.
 - Some findings will remain heuristic warnings rather than hard errors.
 
@@ -150,9 +152,6 @@ reasonable v1 success bar is:
 - Which diagnostics are fatal by default, and which move behind
   `--strict-claude` or `--strict`?
 - Should configuration live in `odw-lint.config.*`, `odw.config.json`, or both?
-- Should ODW export a static analysis package that `odw-lint` consumes, or
-  should `odw-lint` own a vendored static implementation with mandatory drift
-  tests?
 - How much fix support belongs in v1, given that source-preserving edits in a
   workflow dialect need careful span handling?
 - Which optional integrations should be first after the core CLI: Biome

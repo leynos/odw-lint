@@ -81,16 +81,16 @@ or the runtime `validate(source)` primitive, because the runtime loader
 evaluates metadata and compiles workflow bodies. The implementation must use a
 static parser path that never evaluates workflow source.
 
-The first implementation must choose one of two static-contract strategies:
+The first implementation owns a vendored static implementation of the ODW
+workflow envelope scanner, pure metadata parser, dual-compat scanner, span
+mapper, and related static semantics. ODW may later consume `odw-lint`'s
+static API, or both projects may extract a shared static package after the
+contract is proven, but `odw-lint` v1 does not wait for ODW to expose one.
 
-|Strategy|Use when|Required guard|
-|---|---|---|
-|Shared static ODW API|ODW agrees to export a documented non-executing analysis module before `odw-lint` implementation starts.|Contract tests prove the exported API rejects hostile metadata without side effects.|
-|Vendored static implementation|`odw-lint` needs to progress before ODW publishes a static API.|Parity fixtures cover every mirrored ODW behaviour, and a forbidden-import test blocks executable runtime imports.|
-
-The design does not allow an informal "port or share small helpers" approach.
-That phrase hides the hardest dependency: whether the checker can stay both
-safe and in sync with ODW.
+The design does not allow an informal "port or share small helpers" approach,
+nor does it allow production code to import private ODW runtime helpers.
+Parity is maintained by fixtures and drift tests, not by delegating to an
+executable loader path.
 
 ## 6. Architecture
 
@@ -443,11 +443,9 @@ with `@swc/core` as the parser dependency. This keeps implementation close to
 ODW's TypeScript runtime and enables shared tests, shared data structures, and
 future `odw check` integration.
 
-The packaging decision is incomplete until
-[0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md)
-chooses between a shared ODW static API and a vendored static implementation.
-That ADR changes export boundaries, fixture ownership, and release cadence, so
-it must land before implementation starts.
+ADR [0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md)
+chooses an owned vendored static implementation for v1. ODW integration is a
+future consumer path, not a prerequisite for implementing the checker.
 
 A Rust core is deferred. It becomes attractive if the project needs a
 long-lived language server, a Node-free binary, or large-repository throughput

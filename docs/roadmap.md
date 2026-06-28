@@ -21,19 +21,18 @@ source and that diagnostics can point back to the original file.
 
 ### 1.1. Ratify the static-analysis and packaging boundary
 
-This step answers which code is allowed to define ODW static semantics and
-whether v1 is a standalone CLI only, an ODW subcommand, or a library designed
-for both. The answer informs command naming, package exports, fixture
-ownership, and integration tests. See [technical-design.md](technical-design.md)
-§§5 and 13, and
+This step records that `odw-lint` owns the vendored static semantics for v1
+and answers whether v1 is a standalone CLI only, an ODW subcommand, or a
+library designed for both. The answer informs command naming, package exports,
+fixture ownership, and integration tests. See
+[technical-design.md](technical-design.md) §§5 and 13, and
 [0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md).
 
-- [ ] 1.1.1. Ratify ADR 0001 by choosing a shared ODW static API or a vendored
-  static implementation.
+- [ ] 1.1.1. Scaffold the owned vendored static-analysis module boundary.
   - See [technical-design.md](technical-design.md) §5 and
     [0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md).
-  - Success: production code has a named static-analysis source of truth and a
-    forbidden executable-import policy.
+  - Success: production code has a named `odw-lint` static-analysis source of
+    truth, with no dependency on ODW publishing a static API.
 - [ ] 1.1.2. Write an ADR choosing the v1 packaging boundary.
   - Requires 1.1.1.
   - See [technical-design.md](technical-design.md) §13.

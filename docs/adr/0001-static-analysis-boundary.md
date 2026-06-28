@@ -1,6 +1,6 @@
 # 0001. Static-analysis boundary
 
-Status: Proposed
+Status: Accepted
 Date: 2026-06-28
 
 ## Context
@@ -19,21 +19,17 @@ static envelope scanner.
 
 ## Decision
 
-`odw-lint` must own an explicitly static analysis boundary before
-implementation starts. The first implementation may choose one of two
-architectural paths, but it must record the chosen path in this ADR before any
-runtime-parity code lands:
+`odw-lint` owns its static-analysis implementation. The first implementation
+will vendor the ODW workflow envelope scanner, pure metadata parser,
+dual-compat scanner, span mapper, and related static semantics into
+`odw-lint`, then keep them aligned with mandatory parity tests against trusted
+ODW fixtures.
 
-- **Shared static package/API.** ODW exposes a safe static-analysis module that
-  never evaluates workflow source. `odw-lint` imports only that module and its
-  types.
-- **Vendored static implementation.** `odw-lint` owns a copied static
-  implementation of the envelope scanner, pure metadata parser, dual-compat
-  scanner, and span mapper, with mandatory parity tests against trusted ODW
-  fixtures.
+This is an ownership decision. `odw-lint` does not depend on ODW maintainers
+publishing a safe static API, changing ODW's package exports, or accepting a
+runtime refactor before `odw-lint` can implement its core checker.
 
-The following imports are forbidden in production `odw-lint` code unless ODW
-first refactors them into a documented non-executing static package:
+The following imports are forbidden in production `odw-lint` code:
 
 - `loadWorkflowScript`
 - `createPrimitives`
@@ -55,15 +51,22 @@ or hostile metadata fixtures.
   effect.
 - Loader parity moves from an adoption hardening task to a release-blocking
   property of the first useful checker.
-- If the project chooses vendoring, every mirrored ODW behaviour needs a
-  fixture that explains the intended parity and its drift risk.
-- If the project chooses a shared ODW static package, ODW must treat that
-  package as a public compatibility surface.
+- Every mirrored ODW behaviour needs a fixture that explains the intended
+  parity and its drift risk.
+- Future ODW integration should consume `odw-lint`'s static API where possible,
+  not require `odw-lint` to switch to ODW's private runtime helpers.
+- A future shared static package remains possible, but it must be extracted
+  from the proven `odw-lint` static implementation or matched by contract
+  tests. It is not a v1 dependency.
 
-## Open points
+## Rejected alternative
 
-- Decide whether the shared static API belongs in ODW, a separate package, or
-  `odw-lint` with ODW consuming it later.
-- Decide whether ODW should eventually replace its executable metadata parsing
-  with the same static metadata contract, or deliberately keep runtime leniency
-  separate from lint strictness.
+A shared static ODW API would reduce code ownership inside `odw-lint`, but the
+project does not control ODW's export surface or release cadence. Making that
+API a prerequisite would block the checker on another project and leave the
+trust boundary unresolved during implementation.
+
+## Open point
+
+- Decide whether ODW should eventually consume `odw-lint`'s static metadata
+  contract, or deliberately keep runtime leniency separate from lint strictness.

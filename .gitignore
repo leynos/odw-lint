@@ -6,3 +6,9 @@ dist/
 .bun-cache/
 tmp/
 .tmp/
+
+# Vim swap files
+*.swp
+*.swo
+.*.swp
+.*.swo
