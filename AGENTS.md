@@ -264,9 +264,13 @@ are present.
   contracts. Pair snapshots with semantic assertions, normalize
   nondeterministic fields, and update snapshots only after confirming the
   failure represents an intentional contract change.
-- **Invariant testing**: Use property-style or table-driven tests when a change
+- **Invariant testing**: Use `fast-check` property tests when a change
   introduces behaviour over a range of inputs, states, orderings, or
-  transitions.
+  transitions. Use table-driven tests for small finite case sets where generated
+  data would add noise.
+- **Exhaustive proofs**: Use `lemmascript` for exhaustive proofs when a change
+  introduces contractual logic, state-machine rules, ordering invariants, or
+  transformations that should hold for all values in a bounded domain.
 - **Environment-dependent tests**: Prefer dependency injection over direct
   mutation of process-wide state such as environment variables, clocks, random
   number generators, current working directory, or global fetch. If mutation is
