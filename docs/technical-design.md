@@ -148,11 +148,13 @@ loading of trusted workflow files, but `odw-lint` must treat workflow source as
 untrusted input. It must not call any runtime API path that evaluates metadata
 or executes the workflow body.
 
-The first implementation should port or share the pure-literal parser from
-ODW's `dual-compat.ts`, then extend it with a static lenient parse mode only if
-ODW-valid but Claude-incompatible metadata needs a richer diagnostic. A failure
-to statically evaluate lenient metadata should be reported as "not statically
-portable" rather than executed for convenience.
+The first implementation should vendor the pure-literal parser from ODW's
+`dual-compat.ts`, then treat the vendored static-analysis implementation as
+`odw-lint`'s own source of truth. It may extend that parser with a static
+lenient parse mode only if ODW-valid but Claude-incompatible metadata needs a
+richer diagnostic. A failure to statically evaluate lenient metadata should be
+reported as "not statically portable" rather than executed for convenience.
+This v1 path has no dependency on ODW publishing a static API.
 
 ## 7. CLI contract
 

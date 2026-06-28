@@ -19,11 +19,12 @@ static envelope scanner.
 
 ## Decision
 
-`odw-lint` owns its static-analysis implementation. The first implementation
-will vendor the ODW workflow envelope scanner, pure metadata parser,
-dual-compat scanner, span mapper, and related static semantics into
-`odw-lint`, then keep them aligned with mandatory parity tests against trusted
-ODW fixtures.
+`odw-lint` owns its static-analysis implementation. The v1 command boundary is
+the standalone `odw-lint check` command. An ODW-integrated `odw check`
+subcommand is deferred and out of scope for v1. The first implementation will
+vendor the ODW workflow envelope scanner, pure metadata parser, dual-compat
+scanner, span mapper, and related static semantics into `odw-lint`, then keep
+them aligned with mandatory parity tests against trusted ODW fixtures.
 
 This is an ownership decision. `odw-lint` does not depend on ODW maintainers
 publishing a safe static API, changing ODW's package exports, or accepting a

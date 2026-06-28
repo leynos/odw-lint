@@ -21,11 +21,12 @@ source and that diagnostics can point back to the original file.
 
 ### 1.1. Ratify the static-analysis and packaging boundary
 
-This step records that `odw-lint` owns the vendored static semantics for v1
-and answers whether v1 is a standalone CLI only, an ODW subcommand, or a
-library designed for both. The answer informs command naming, package exports,
-fixture ownership, and integration tests. See
-[technical-design.md](technical-design.md) §§5 and 13, and
+This step records that `odw-lint` owns the vendored static semantics for v1 and
+ships the standalone `odw-lint check` command. The command is path/glob-first;
+ODW-style name resolution and any `odw check` subcommand are deferred to future
+ODW integration. This decision informs command naming, package exports, fixture
+ownership, and integration tests. See [technical-design.md](technical-design.md)
+§§5, 7 and 13, and
 [0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md).
 
 - [ ] 1.1.1. Scaffold the owned vendored static-analysis module boundary.
@@ -33,11 +34,11 @@ fixture ownership, and integration tests. See
     [0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md).
   - Success: production code has a named `odw-lint` static-analysis source of
     truth, with no dependency on ODW publishing a static API.
-- [ ] 1.1.2. Write an ADR choosing the v1 packaging boundary.
+- [ ] 1.1.2. Write an ADR recording the standalone v1 packaging boundary.
   - Requires 1.1.1.
-  - See [technical-design.md](technical-design.md) §13.
-  - Success: the ADR states whether `odw-lint check`, `odw check`, or both are
-    in scope for v1.
+  - See [technical-design.md](technical-design.md) §§7 and 13.
+  - Success: the ADR states that `odw-lint check` is the v1 command and
+    `odw check` is deferred.
 - [ ] 1.1.3. Define the public command contract in repository docs.
   - Requires 1.1.1.
   - See [technical-design.md](technical-design.md) §7.
