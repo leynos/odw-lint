@@ -319,7 +319,9 @@ conflict in `Decision Log`, and escalate.
   `15 minutes and 29 seconds`; after waiting 960 seconds, the single retry
   still returned a rate limit quoting `4 minutes and 10 seconds`. Impact:
   deterministic gates passed, so this closure commit records the deferred final
-  CodeRabbit review as an open issue for a later run.
+  CodeRabbit review as an open issue for a later run. This deferred review
+  applies only to the work item 5 closure commit and is not the same review as
+  the later fix-round review.
 
 - Observation: fix round 1 confirmed the branch was deleting an unrelated
   audit file from the integration branch. Evidence:
@@ -432,17 +434,22 @@ mapper, and reporter contributors.
 
 Validation passed for each committed work item with `make all`,
 `make markdownlint`, and `make nixie`. The final validation before closing the
-roadmap task also passed those gates. CodeRabbit completed for work items 1
-through 4, and the work item 5 review was attempted twice before being deferred
-because of rate limits. Its actionable findings were addressed except for the
-work item 1 request to make `recordSourceIndexes` and `sourceIndexes`
-module-private, which was verified against the approved plan and skipped
-because sibling modules require those helpers as internal, non-package exports.
+roadmap task also passed those gates. Review status by phase is:
 
-Open issue: work item 5's final CodeRabbit review is deferred because the
-service remained rate-limited after the required wait and single retry. A later
-run should execute `coderabbit review --agent` from this worktree or its
-integration branch once the rate limit clears.
+- Work items 1 through 4: CodeRabbit completed. Its actionable findings were
+  addressed except for the work item 1 request to make `recordSourceIndexes` and
+  `sourceIndexes` module-private, which was verified against the approved plan
+  and skipped because sibling modules require those helpers as internal,
+  non-package exports.
+- Work item 5 closure commit: CodeRabbit was attempted twice and then deferred
+  because the service remained rate-limited after the required quoted wait and
+  single retry. That deferred review was an open issue for the closure commit
+  only.
+- Fix round 1: CodeRabbit completed after the audit restore and architecture
+  test narrowing. It reported one trivial finding against the restored
+  `docs/issues/audit-1.4.1.md`, and that finding was intentionally skipped
+  because it asked for a future fixture-refresh workflow outside roadmap task
+  1.2.4.
 
 Fix round 1 restored the unrelated task 1.4.1 audit file and narrowed the
 source-helper architecture test so it protects the helper split without
@@ -453,7 +460,7 @@ documentation change was made for that future fixture-refresh item.
 
 ## Addenda
 
-- [ ] 1.2.4.1. Tighten internal source-helper export surface.
+- [x] 1.2.4.1. Tighten internal source-helper export surface.
   - Source: review:1.2.4 and audit:1.2.4.
   - Severity: low.
   - Scope: remove or explicitly justify the unused source-scan byte-length
@@ -462,7 +469,7 @@ documentation change was made for that future fixture-refresh item.
   - Success: the production source-scan module exposes only helpers used across
     module boundaries or documented as intentional, and architecture tests
     continue to protect the helper split without pinning unused declarations.
-- [ ] 1.2.4.2. Clarify deferred review status in the ExecPlan.
+- [x] 1.2.4.2. Clarify deferred review status in the ExecPlan.
   - Source: review:1.2.4.
   - Severity: low.
   - Scope: reconcile the outcomes, retrospective, revision note, and review
@@ -1142,3 +1149,8 @@ completed with one trivial finding against the restored
 `docs/issues/audit-1.4.1.md`; the finding was skipped because it asks to
 implement a future fixture-refresh workflow from that unrelated audit rather
 than resolve a roadmap task 1.2.4 blocker.
+
+Addendum clarification: the deferred CodeRabbit review belongs only to the work
+item 5 closure commit. The later fix-round review completed, and its sole
+finding was intentionally skipped as future fixture-refresh work outside task
+1.2.4.

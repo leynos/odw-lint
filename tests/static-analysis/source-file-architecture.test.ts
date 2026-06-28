@@ -153,13 +153,11 @@ describe("source-file helper architecture", () => {
     expectModuleDeclarations("src/static-analysis/source-scan.ts", [
       "SourceIndexes",
       "SourceScan",
-      "TEXT_ENCODER",
       "isCrLfTerminator",
       "isLineTerminator",
       "scanOriginalSource",
       "sourceLine",
       "sourcePosition",
-      "utf8ByteLength",
       "utf8ByteLengthForCodePoint",
     ]);
     expectModuleDeclarations("src/static-analysis/source-indexes.ts", [

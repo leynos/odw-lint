@@ -9,8 +9,6 @@
 import type { SourcePosition } from "../diagnostics/types";
 import type { SourceLine } from "./types";
 
-const TEXT_ENCODER = new TextEncoder();
-
 /**
  * Private lookup tables derived from the original source text.
  */
@@ -107,16 +105,6 @@ export const scanOriginalSource = (sourceText: string): SourceScan => {
     positions,
     textIndexes,
   });
-};
-
-/**
- * Computes the UTF-8 byte length of source text in Bun and browser runtimes.
- *
- * @param text - Text to encode as UTF-8.
- * @returns The encoded byte length.
- */
-export const utf8ByteLength = (text: string): number => {
-  return TEXT_ENCODER.encode(text).length;
 };
 
 /** Computes UTF-8 width for one already-decoded Unicode code point. */
