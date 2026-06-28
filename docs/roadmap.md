@@ -228,6 +228,11 @@ depending on manual post-commit audits.
   - Requires 1.2.3.
   - Add an export-surface snapshot or architecture test that compares the
     declared package entry against intentional public API changes.
+  - Planning constraint: explicitly refresh and verify `origin/main` with a
+    remote-tracking update before restoring or diffing canonical files. Any
+    semantic guard against stale roadmap/docs deletions must allow the
+    intentional `1.5.3` roadmap completion tick, or run before that closeout
+    edit and separately prove the tick is the only remaining roadmap change.
   - Success: `make all` or an equivalent review gate fails when a roadmap
     slice accidentally removes exported `odw-lint` symbols.
 - [ ] 1.5.4. Add tracked-file whitespace hygiene to the commit gate.
@@ -277,6 +282,15 @@ statically. It unlocks metadata rules and body parsing. See
 - [ ] 2.1.4. Add a forbidden-import architecture test for production code.
   - Requires 1.1.1.
   - See [technical-design.md](technical-design.md) §§5 and 11.3.
+  - Planning constraint: cover both bare executable ODW imports and package-entry
+    bypasses such as `odw/src/index`, `odw/dist/index`, explicit `.ts` or `.js`
+    forms, and sibling path-style equivalents ending in
+    `/open-dynamic-workflows/src/index` or
+    `/open-dynamic-workflows/dist/index`. Keep work items atomic and gateable:
+    introduce filesystem/path helpers only in the work item that first uses
+    them. This is a test-only guard; if real production offenders under `src/`
+    are found, stop and surface the offender instead of editing production code
+    inside this task.
   - Success: production modules cannot import executable ODW loader,
     primitive, runtime launcher, or worker paths.
 - [ ] 2.1.5. Add the hostile metadata security regression test.
