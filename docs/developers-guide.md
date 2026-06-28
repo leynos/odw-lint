@@ -4,6 +4,23 @@ This repository uses Bun for package scripts and TypeScript execution. Prefer
 the Makefile targets below when validating changes so local runs match the
 commit gate.
 
+## Static-Analysis Boundary
+
+`odw-lint` checks workflow source before any workflow runs, so the
+static-analysis boundary is also a security boundary. Production code must not
+call ODW runtime helpers that evaluate metadata, compile workflow bodies, start
+runs, or dispatch agents.
+
+The v1 command boundary is the standalone `odw-lint check` command. An
+ODW-integrated `odw check` command is deferred to future ODW integration. The
+standalone checker is path/glob-first and does not resolve bare ODW workflow
+names by default.
+
+The first implementation owns the static-analysis implementation inside this
+repository. v1 vendors the pure-literal parser behaviour from ODW's
+`dual-compat.ts` into `odw-lint` as its own source of truth, and production code
+must not depend on ODW publishing a static API.
+
 ## Commit Gate
 
 Run the full gate before committing code changes:
@@ -101,3 +118,15 @@ bunx markdownlint-cli2 '**/*.md'
 
 Keep paragraphs and bullet points wrapped at 80 columns, code blocks wrapped at
 120 columns, and use dashes for list bullets.
+
+## Documentation Upkeep
+
+Keep the design documents aligned when changing static-analysis scope:
+
+- update [ADR 0001](adr/0001-static-analysis-boundary.md) when the ownership
+  boundary changes;
+- update [technical-design.md](technical-design.md) when command, diagnostic,
+  parser, configuration, or verification contracts change;
+- update [roadmap.md](roadmap.md) when a planned task is completed or
+  re-scoped; and
+- avoid host-specific absolute paths in committed documentation.
