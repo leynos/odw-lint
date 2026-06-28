@@ -521,6 +521,40 @@ implementation scope. The reconciliation commit is `4002109`; validation
 passed with `make all`, `make markdownlint`, `make nixie`, and a zero-finding
 CodeRabbit review.
 
+## Addenda
+
+- [ ] 1.2.2.1. Clarify the original-source construction contract.
+  - Source: review:1.2.2 and audit:1.2.2, medium.
+  - Scope: make the `OriginalSourceFile` construction requirement visible in
+    the public API contract, including the nominal or structural construction
+    decision before parser, mapper, and reporter work pass source records
+    across module boundaries.
+  - Success: callers can tell from types, documentation, and focused tests
+    whether original-source records must come from `createOriginalSourceFile`
+    or may be structurally constructed.
+- [ ] 1.2.2.2. Single-source production source scanning.
+  - Source: audit:1.2.2, medium.
+  - Scope: refactor production source scanning so line metadata and private
+    offset lookup indexes come from one pass while the independent
+    property-test oracle stays separate.
+  - Success: CRLF and multibyte Unicode regression coverage proves the merged
+    production scanner preserves existing source-span behaviour.
+- [ ] 1.2.2.3. Document source-span helper usage.
+  - Source: audit:1.2.2, low.
+  - Scope: add compact source-span helper examples and a developer-guide note
+    covering UTF-8 offsets, display columns, half-open spans, and original
+    pre-normalized workflow source.
+  - Success: parser and reporter contributors can follow source-span usage
+    from exported helper examples and maintainer documentation instead of
+    inferring the contract from tests.
+- [ ] 1.2.2.4. Clean up source-file property-test harness repetition.
+  - Source: audit:1.2.2, low.
+  - Scope: centralize generated source setup for source-file property tests
+    without sharing production scanner logic or changing deterministic runner
+    settings.
+  - Success: property bodies focus on the invariant being asserted, and the
+    oracle remains independent from production implementation details.
+
 ## Context and orientation
 
 The repository is a private TypeScript and Bun package. `src/index.ts` is the

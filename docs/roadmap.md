@@ -74,6 +74,23 @@ shape. The result informs every parser, rule, and reporter task. See
   - See [technical-design.md](technical-design.md) §§6.1 and 11.5.
   - Success: offsets, lines, columns, and snippets round-trip for fixtures
     with LF, CRLF, Unicode, and trailing-newline variants.
+  - [ ] 1.2.2.1. Clarify the original-source construction contract.
+    - Addendum (from review:1.2.2 and audit:1.2.2; medium). Make the
+      `OriginalSourceFile` construction requirement visible in the public API
+      contract, including the nominal or structural construction decision.
+      Lightweight addendum pass.
+  - [ ] 1.2.2.2. Single-source production source scanning.
+    - Addendum (from audit:1.2.2; medium). Refactor production source scanning
+      so line metadata and private lookup indexes come from one pass while the
+      property-test oracle stays independent. Lightweight addendum pass.
+  - [ ] 1.2.2.3. Document source-span helper usage.
+    - Addendum (from audit:1.2.2; low). Add source-span helper examples and
+      maintainer guidance for UTF-8 offsets, display columns, and half-open
+      original-source spans. Lightweight addendum pass.
+  - [ ] 1.2.2.4. Clean up source-file property-test harness repetition.
+    - Addendum (from audit:1.2.2; low). Centralize generated source setup for
+      source-file property tests without sharing production scanner logic.
+      Lightweight addendum pass.
 - [x] 1.2.3. Split the diagnostic contract into focused modules.
   - Requires 1.2.1.
   - Move diagnostic types, rule-id parsing, report helpers, text formatting,
@@ -128,6 +145,27 @@ informs later implementation tasks that rely on `make build`, `make lint`,
     `node_modules` when either `package.json` or `bun.lock` changes.
   - Success: a lockfile-only dependency change cannot leave the Makefile gates
     using stale installed packages.
+
+### 1.5. Harden roadmap-workflow review gates
+
+This step answers whether repository conventions and roadmap-branch freshness
+can be enforced automatically before parser, rule, and reporter work expands.
+Its outcome informs later review gates that must catch workflow defects without
+depending on manual post-commit audits.
+
+- [ ] 1.5.1. Add an automated file-size guard for source and test code.
+  - Requires steps 1.1-1.3.
+  - Make the AGENTS.md source and test file-size convention executable in the
+    repository gate.
+  - Success: `make all` or an equivalent commit gate fails when source or test
+    TypeScript files exceed the configured project limit.
+- [ ] 1.5.2. Add a branch-freshness review guard for roadmap tasks.
+  - Requires steps 1.1-1.4.
+  - Detect task branches that would delete newer `origin/main` roadmap, docs,
+    or test work outside the declared task scope after fetching current
+    `origin/main`.
+  - Success: review or gate output flags stale task branches before they can
+    present unrelated main-branch work as deletions.
 
 ## 2. First vertical slice: ODW dialect validation
 
