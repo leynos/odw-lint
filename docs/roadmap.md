@@ -127,7 +127,7 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
   strings, regex literals, and template literals.
   - See [technical-design.md](technical-design.md) §§6.2 and 11.1.
   - Success: decoy syntax does not produce envelope diagnostics.
-- [ ] 1.3.4. Add hostile metadata fixtures that would leave an observable side
+- [x] 1.3.4. Add hostile metadata fixtures that would leave an observable side
   effect if evaluated.
   - See [technical-design.md](technical-design.md) §§11.1 and 11.3.
   - Success: the fixture produces diagnostics and no side-effect marker.

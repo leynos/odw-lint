@@ -13,6 +13,7 @@ import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows
 const FIXTURE_DIRECTORY = new URL("./fixtures/invalid-workflows/", import.meta.url);
 const MANIFEST_FIXTURE_ROOT = "tests/static-analysis/fixtures/invalid-workflows/";
 const SPAN_DECODER = new TextDecoder("utf-8", { fatal: true });
+const HOSTILE_MARKER_PROPERTY = "__odwLintHostileMetadataWasEvaluated";
 const EXPECTED_FILE_NAMES = [
   "missing-metadata/missing-meta-description.js",
   "missing-metadata/missing-meta-name.js",
@@ -22,6 +23,8 @@ const EXPECTED_FILE_NAMES = [
   "malformed-metadata/meta-not-object.js",
   "malformed-metadata/numeric-meta-description.js",
   "malformed-metadata/unterminated-meta-object.js",
+  "hostile-metadata/global-marker.js",
+  "hostile-metadata/throw-marker.js",
   "unsupported-import-export/extra-export-const.js",
   "unsupported-import-export/top-level-import.js",
   "syntax-error/body-unclosed-block.js",
@@ -38,12 +41,15 @@ const EXPECTED_RULES = [
   "odw/meta-object",
   "odw/meta-required",
   "odw/meta-statically-unprovable",
+  "odw/meta-statically-unprovable",
+  "odw/meta-statically-unprovable",
   "odw/no-import-export",
   "odw/no-import-export",
 ] as const;
 const FAMILY_ORDER = [
   "missing-metadata",
   "malformed-metadata",
+  "hostile-metadata",
   "unsupported-import-export",
   "syntax-error",
 ] as const;
@@ -79,6 +85,16 @@ const readFixtureSource = (fixturePath: string): string => {
     new URL(fixturePath.replace(MANIFEST_FIXTURE_ROOT, ""), FIXTURE_DIRECTORY),
     "utf8",
   );
+};
+
+/** Clears the hostile fixture marker without declaring a real global. */
+const clearHostileMarker = (): void => {
+  delete (globalThis as Record<string, unknown>)[HOSTILE_MARKER_PROPERTY];
+};
+
+/** Reads the hostile fixture marker without coupling tests to global types. */
+const hostileMarkerValue = (): unknown => {
+  return (globalThis as Record<string, unknown>)[HOSTILE_MARKER_PROPERTY];
 };
 
 /** Decodes a UTF-8 byte range from source text. */
@@ -172,6 +188,37 @@ describe("invalid workflow fixture snapshots", () => {
     expect(workflowSource.sourceText).toContain("agent");
   });
 
+  it("reads hostile fixture source without setting the global marker", () => {
+    clearHostileMarker();
+
+    const fixtures = INVALID_WORKFLOW_FIXTURE_SNAPSHOTS.filter(
+      (candidate) => candidate.family === "hostile-metadata",
+    );
+
+    expect(fixtures.map((fixture) => fixture.fileName).sort()).toEqual([
+      "global-marker.js",
+      "throw-marker.js",
+    ]);
+
+    for (const fixture of fixtures) {
+      const sourceText = readFixtureSource(fixture.fixturePath);
+
+      expect(sourceText).toContain(
+        fixture.fileName === "global-marker.js"
+          ? HOSTILE_MARKER_PROPERTY
+          : "ODW_LINT_HOSTILE_METADATA_EVALUATED",
+      );
+      expect(hostileMarkerValue()).toBeUndefined();
+      expect(sha256(sourceText)).toBe(fixture.sha256);
+
+      for (const diagnostic of fixture.expectedDiagnostics) {
+        expectSpanToMatchSource(sourceText, diagnostic.span, diagnostic.spanText);
+      }
+
+      expect(hostileMarkerValue()).toBeUndefined();
+    }
+  });
+
   it("matches ASCII spans through UTF-8 byte decoding", () => {
     const sourceText = "alpha\nbeta\n";
     const span = {
@@ -229,6 +276,7 @@ describe("invalid workflow fixture snapshots", () => {
     expect(new Set(families)).toEqual(
       new Set([
         "malformed-metadata",
+        "hostile-metadata",
         "missing-metadata",
         "syntax-error",
         "unsupported-import-export",

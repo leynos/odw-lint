@@ -140,11 +140,13 @@ the manifest records the new hashes and the expected `no-error` diagnostics.
 Invalid workflow fixtures live under
 `tests/static-analysis/fixtures/invalid-workflows/`. They are deliberately raw
 inputs for missing metadata, malformed metadata, unsupported import/export, and
-syntax-error coverage. Do not import, evaluate, execute, or format them as
-ordinary JavaScript. Keep `tests/static-analysis/fixtures/invalid-workflows.ts`
-in sync with every raw fixture by updating the family, path, SHA-256 hash,
-expected status, diagnostic rule, severity, message, UTF-8 source span, and
-reviewer-facing `spanText`.
+syntax-error coverage. The `hostile-metadata` family is also raw invalid input:
+its metadata expressions would set or throw visible marker values if evaluated.
+Do not import, evaluate, execute, or format invalid workflow fixtures as
+ordinary JavaScript. Keep
+`tests/static-analysis/fixtures/invalid-workflows.ts` in sync with every raw
+fixture by updating the family, path, SHA-256 hash, expected status, diagnostic
+rule, severity, message, UTF-8 source span, and reviewer-facing `spanText`.
 
 Synthetic masking fixtures live under
 `tests/static-analysis/fixtures/masking/`. They are owned by `odw-lint`, not
@@ -159,6 +161,8 @@ template literals.
 Loader-parity execution remains owned by roadmap task 2.3.1. The fixture corpus
 records trusted source snapshots and static expectations only; it must not
 import, evaluate or execute workflow bodies during ordinary tests.
+Roadmap task 2.1.5 owns the future no-side-effect lint execution regression for
+hostile metadata fixtures.
 
 ### Source-span helpers
 

@@ -127,6 +127,39 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "rule": "odw/meta-statically-unprovable",
+        "severity": "warning",
+        "spanTextLines": [
+          "(() => {",
+          "    globalThis.__odwLintHostileMetadataWasEvaluated = "hostile-global-marker";",
+          "    return "Hostile metadata fixture.";",
+          "  })()",
+        ],
+      },
+    ],
+    "expectedStatus": "warning",
+    "family": "hostile-metadata",
+    "fileName": "global-marker.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/meta-statically-unprovable",
+        "severity": "warning",
+        "spanTextLines": [
+          "(() => {",
+          "    throw new Error("ODW_LINT_HOSTILE_METADATA_EVALUATED");",
+          "  })()",
+        ],
+      },
+    ],
+    "expectedStatus": "warning",
+    "family": "hostile-metadata",
+    "fileName": "throw-marker.js",
+  },
+  {
+    "diagnostics": [
+      {
         "rule": "odw/no-import-export",
         "severity": "error",
         "spanTextLines": [
