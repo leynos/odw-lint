@@ -108,7 +108,7 @@ shape. The result informs every parser, rule, and reporter task. See
     - Addendum (from audit:1.2.3; low). Extract private diagnostic schema
       shape helpers and separate architecture-test query helpers from
       assertions. Lightweight addendum pass.
-  - [ ] 1.2.3.2. Synchronize package-entry documentation.
+  - [x] 1.2.3.2. Synchronize package-entry documentation.
     - Addendum (from audit:1.3.3 and audit:1.3.4; medium). Bring the
       developer guide and `src/index.ts` file documentation back into
       alignment with the current private package entry and exported

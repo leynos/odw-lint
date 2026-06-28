@@ -1,8 +1,10 @@
 /**
- * @file Public diagnostic contract for ODW static-analysis results.
+ * @file Private package entry for ODW static-analysis helpers.
  *
- * The module contains inert data shapes and pure constructors only. It does not
- * import or evaluate any ODW runtime code.
+ * The package is still private, but this entry is the single consumer-facing
+ * surface pinned by `package.json`. It re-exports inert diagnostic contracts
+ * and static-analysis source helpers only; it does not import or evaluate any
+ * ODW runtime code.
  */
 
 export { countDiagnostics, createDiagnosticReport } from "./diagnostics/report";

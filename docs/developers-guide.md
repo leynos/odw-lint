@@ -21,10 +21,16 @@ repository. v1 vendors the pure-literal parser behaviour from ODW's
 `dual-compat.ts` into `odw-lint` as its own source of truth, and production
 code must not depend on ODW publishing a static API.
 
-The owned production boundary starts at `src/static-analysis/`. Roadmap task
-1.1.1 scaffolds that boundary as a source-level internal API exposed through
-`src/index.ts`; it does not add package-level `exports`, `types`, `main` or
-`bin` fields while the package remains private.
+The owned production boundary starts at `src/static-analysis/`. The package
+remains private, but `package.json` now pins `main`, `types`, and the default
+package export to `./src/index.ts`; it also exports `./package.json`. There is
+still no published `bin` field while the command surface is being built.
+
+Treat `src/index.ts` as the current private package entry. It re-exports the
+diagnostic contract and the static-analysis source helpers that downstream
+parser, mapper, and reporter code may consume through `odw-lint`. It must stay
+free of executable ODW runtime imports and should expose package-level
+contracts only through explicit named re-exports.
 
 The scaffold is deliberately passive. It exports the boundary identifier,
 workflow source shape, component labels, and stage labels, but it does not

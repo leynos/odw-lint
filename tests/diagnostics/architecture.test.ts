@@ -1,8 +1,9 @@
 /**
  * @file Diagnostic module architecture tests.
  *
- * These tests inspect source shape so diagnostic responsibilities stay behind
- * focused internal modules while consumers keep using the package entry point.
+ * These tests inspect source shape so diagnostic and static-analysis
+ * responsibilities stay behind focused internal modules while consumers keep
+ * using the package entry point.
  */
 
 import { describe, expect, expectTypeOf, it } from "bun:test";
@@ -14,15 +15,22 @@ import type {
   DiagnosticSummary,
   InvalidRuleId,
   InvalidRuleIdReason,
+  OriginalSourceFile,
   RuleId,
   RuleIdParseResult,
+  SourceLine,
   SourcePosition,
+  SourceSnippet,
   SourceSpan,
+  StaticAnalysisComponent,
+  StaticAnalysisStage,
   ToolInfo,
+  WorkflowSource,
 } from "odw-lint";
 import {
   countDiagnostics,
   createDiagnosticReport,
+  createOriginalSourceFile,
   DIAGNOSTIC_REPORT_SCHEMA,
   DIAGNOSTIC_SCHEMA_VERSION,
   DIAGNOSTIC_SEVERITIES,
@@ -31,6 +39,14 @@ import {
   isRuleId,
   makeRuleId,
   parseRuleId,
+  positionAtOffset,
+  SourceOffsetError,
+  STATIC_ANALYSIS_BOUNDARY,
+  STATIC_ANALYSIS_COMPONENTS,
+  STATIC_ANALYSIS_STAGES,
+  sliceSourceSpan,
+  snippetForSpan,
+  spanFromOffsets,
   TOOL_NAME,
 } from "odw-lint";
 import ts from "typescript";
@@ -236,6 +252,27 @@ describe("diagnostic architecture", () => {
     expect(formatTextDiagnostics([diagnostic])).toContain("odw/meta-required");
   });
 
+  it("keeps public static-analysis helpers importable from the package entry", () => {
+    const sourceFile = createOriginalSourceFile({
+      filePath: "workflow.js",
+      sourceText: "meta\nbody",
+    });
+    const bodySpan = spanFromOffsets(sourceFile, 5, 9);
+
+    expect(STATIC_ANALYSIS_BOUNDARY).toBe("odw-lint/static-analysis");
+    expect(STATIC_ANALYSIS_COMPONENTS).toContain("source-reader");
+    expect(STATIC_ANALYSIS_STAGES).toContain("diagnostic");
+    expect(SourceOffsetError).toBeFunction();
+    expect(positionAtOffset(sourceFile, 5)).toEqual({ offset: 5, line: 2, column: 1 });
+    expect(sliceSourceSpan(sourceFile, bodySpan)).toBe("body");
+    expect(snippetForSpan(sourceFile, bodySpan)).toEqual({
+      text: "body",
+      start: { offset: 5, line: 2, column: 1 },
+      end: { offset: 9, line: 2, column: 5 },
+      lineText: "body",
+    });
+  });
+
   it("keeps public diagnostic types importable from the package entry", () => {
     expectTypeOf<DiagnosticSeverity>().toEqualTypeOf<(typeof DIAGNOSTIC_SEVERITIES)[number]>();
     expectTypeOf<InvalidRuleIdReason>().toMatchTypeOf<string>();
@@ -259,6 +296,36 @@ describe("diagnostic architecture", () => {
     expectTypeOf<DiagnosticReport>().toMatchTypeOf<{
       readonly diagnostics: readonly Diagnostic[];
     }>();
+  });
+
+  it("keeps public static-analysis types importable from the package entry", () => {
+    expectTypeOf<WorkflowSource>().toMatchTypeOf<{
+      readonly filePath: string;
+      readonly sourceText: string;
+    }>();
+    expectTypeOf<OriginalSourceFile>().toMatchTypeOf<{
+      readonly filePath: string;
+      readonly sourceText: string;
+      readonly byteLength: number;
+      readonly lines: readonly SourceLine[];
+    }>();
+    expectTypeOf<SourceLine>().toMatchTypeOf<{
+      readonly line: number;
+      readonly startOffset: number;
+      readonly contentEndOffset: number;
+      readonly terminatorEndOffset: number;
+      readonly text: string;
+    }>();
+    expectTypeOf<SourceSnippet>().toMatchTypeOf<{
+      readonly text: string;
+      readonly start: SourcePosition;
+      readonly end: SourcePosition;
+      readonly lineText: string;
+    }>();
+    expectTypeOf<StaticAnalysisComponent>().toEqualTypeOf<
+      (typeof STATIC_ANALYSIS_COMPONENTS)[number]
+    >();
+    expectTypeOf<StaticAnalysisStage>().toEqualTypeOf<(typeof STATIC_ANALYSIS_STAGES)[number]>();
   });
 
   it("pins the final package entry and parseable diagnostic sources", () => {
