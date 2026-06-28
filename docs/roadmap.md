@@ -97,7 +97,7 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
   - See [technical-design.md](technical-design.md) §11.1.
   - Success: every fixture records expected "no error" status before any rule
     broadening.
-  - [ ] 1.3.1.1. Derive ODW example fixture paths from file names.
+  - [x] 1.3.1.1. Derive ODW example fixture paths from file names.
     - Addendum (from review:1.3.1 and audit:1.3.1; medium). Derive
       `fixturePath` and `upstreamPath` from each manifest `fileName` and pin
       path invariants in tests. Lightweight addendum pass.

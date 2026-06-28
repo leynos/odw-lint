@@ -267,7 +267,7 @@ preserve snapshot fidelity.
 
 ## Addenda
 
-- [ ] 1.3.1.1. Derive ODW example fixture paths from file names.
+- [x] 1.3.1.1. Derive ODW example fixture paths from file names.
   - Addendum (from review:1.3.1 and audit:1.3.1; medium). Derive
     `fixturePath` and `upstreamPath` from each manifest `fileName` and pin
     path invariants in tests. Lightweight addendum pass.

@@ -9,6 +9,8 @@ import type { WorkflowSource } from "odw-lint";
 import { ODW_EXAMPLE_FIXTURE_SNAPSHOTS } from "./fixtures/odw-examples";
 
 const FIXTURE_DIRECTORY = new URL("./fixtures/odw-examples/", import.meta.url);
+const MANIFEST_FIXTURE_ROOT = "tests/static-analysis/fixtures/odw-examples";
+const UPSTREAM_EXAMPLE_ROOT = "open-dynamic-workflows/examples";
 const EXPECTED_FILE_NAMES = [
   "adversarial-verify.js",
   "agent-daily-digest.js",
@@ -53,6 +55,13 @@ describe("ODW example fixture snapshots", () => {
 
     expect(new Set(fileNames).size).toBe(fileNames.length);
     expect(new Set(metaNames).size).toBe(metaNames.length);
+  });
+
+  it("derives manifest paths from each fixture filename", () => {
+    for (const fixture of ODW_EXAMPLE_FIXTURE_SNAPSHOTS) {
+      expect(fixture.fixturePath).toBe(`${MANIFEST_FIXTURE_ROOT}/${fixture.fileName}`);
+      expect(fixture.upstreamPath).toBe(`${UPSTREAM_EXAMPLE_ROOT}/${fixture.fileName}`);
+    }
   });
 
   it("pins every copied fixture to its manifest SHA-256 digest", () => {
