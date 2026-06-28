@@ -141,6 +141,38 @@ Loader-parity execution remains owned by roadmap task 2.3.1. The fixture corpus
 records trusted source snapshots and static expectations only; it must not
 import, evaluate or execute workflow bodies during ordinary tests.
 
+### Source-span helpers
+
+Build source-span data from the original, pre-normalized workflow source with
+`createOriginalSourceFile`. Parser, mapper, and reporter code must pass that
+factory-created record through the pipeline instead of reconstructing
+`OriginalSourceFile` objects structurally, because the helper stores private
+offset indexes alongside the public line metadata.
+
+Offsets are zero-based UTF-8 byte offsets into the original source text. Lines
+and columns are one-based display positions, and columns count Unicode code
+points rather than UTF-16 code units. A CRLF terminator counts as one display
+line break, but it still occupies two UTF-8 byte offsets; the offset between
+the carriage return and line feed is not a valid display position.
+
+Use `spanFromOffsets(file, startOffset, endOffset)` for half-open spans where
+`startOffset` is inclusive and `endOffset` is exclusive. Use `sliceSourceSpan`
+or `snippetForSpan` only after the span has been validated against the same
+`OriginalSourceFile`; both helpers re-check caller-supplied spans so stale
+line, column, or offset data cannot produce misleading text.
+
+```ts
+import { createOriginalSourceFile, sliceSourceSpan, spanFromOffsets } from "odw-lint";
+
+const file = createOriginalSourceFile({
+  filePath: "workflows/example.js",
+  sourceText: "meta\r\nbody",
+});
+const bodySpan = spanFromOffsets(file, 6, 10);
+
+sliceSourceSpan(file, bodySpan); // "body"
+```
+
 ## Markdown
 
 Use `make markdownlint` when Markdown files change. The target runs:

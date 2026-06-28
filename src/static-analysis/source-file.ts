@@ -8,6 +8,7 @@
 
 import type { SourcePosition, SourceSpan } from "../diagnostics/types";
 import {
+  ORIGINAL_SOURCE_FILE_BRAND,
   type OriginalSourceFile,
   type SourceLine,
   SourceOffsetError,
@@ -29,26 +30,47 @@ type SourceIndexes = {
 };
 
 /**
+ * Complete production scan result for one original source text.
+ */
+type SourceScan = SourceIndexes & {
+  /** UTF-8 byte length of the whole original source. */
+  readonly byteLength: number;
+  /** Display-line metadata derived during the same scan as lookup indexes. */
+  readonly lines: readonly SourceLine[];
+};
+
+/**
  * Creates an immutable source-file record from original workflow source text.
  *
  * @param source - Original workflow source text and its diagnostic file path.
  * @returns Source-file metadata with UTF-8 byte length and display lines.
  */
 export const createOriginalSourceFile = (source: WorkflowSource): OriginalSourceFile => {
-  const sourceFile = Object.freeze({
+  const scan = scanOriginalSource(source.sourceText);
+  const sourceFile = {
     filePath: source.filePath,
     sourceText: source.sourceText,
-    byteLength: utf8ByteLength(source.sourceText),
-    lines: buildSourceLines(source.sourceText),
+    byteLength: scan.byteLength,
+    lines: scan.lines,
+  } as OriginalSourceFile;
+  Object.defineProperty(sourceFile, ORIGINAL_SOURCE_FILE_BRAND, {
+    value: true,
   });
+  Object.freeze(sourceFile);
 
-  SOURCE_INDEXES.set(sourceFile, buildSourceIndexes(source.sourceText));
+  SOURCE_INDEXES.set(sourceFile, scan);
 
   return sourceFile;
 };
 
 /**
  * Converts one valid UTF-8 byte offset to a display position.
+ *
+ * @example
+ * ```ts
+ * positionAtOffset(createOriginalSourceFile({ filePath: "workflow.js", sourceText: "éx" }), 2);
+ * // { offset: 2, line: 1, column: 2 }
+ * ```
  *
  * @param file - Original source-file record created by
  *   `createOriginalSourceFile`.
@@ -70,6 +92,15 @@ export const positionAtOffset = (file: OriginalSourceFile, offset: number): Sour
 
 /**
  * Builds a half-open original-source span from valid byte offsets.
+ *
+ * @example
+ * ```ts
+ * const file = createOriginalSourceFile({
+ *   filePath: "workflows/example.js",
+ *   sourceText: "meta\nbody",
+ * });
+ * const span = spanFromOffsets(file, 0, 4);
+ * ```
  *
  * @param file - Original source-file record created by
  *   `createOriginalSourceFile`.
@@ -101,6 +132,15 @@ export const spanFromOffsets = (
  * slicing so stale line, column, or offset data cannot produce misleading
  * snippets.
  *
+ * @example
+ * ```ts
+ * const file = createOriginalSourceFile({
+ *   filePath: "workflows/example.js",
+ *   sourceText: "meta\nbody",
+ * });
+ * sliceSourceSpan(file, spanFromOffsets(file, 5, 9)); // "body"
+ * ```
+ *
  * @param file - Original source-file record created by
  *   `createOriginalSourceFile`.
  * @param span - Half-open source span to validate and slice.
@@ -114,6 +154,15 @@ export const sliceSourceSpan = (file: OriginalSourceFile, span: SourceSpan): str
 
 /**
  * Returns a reviewer-useful snippet for a validated original-source span.
+ *
+ * @example
+ * ```ts
+ * const file = createOriginalSourceFile({
+ *   filePath: "workflows/example.js",
+ *   sourceText: "meta\nbody",
+ * });
+ * snippetForSpan(file, spanFromOffsets(file, 0, 4)).lineText; // "meta"
+ * ```
  *
  * @param file - Original source-file record created by
  *   `createOriginalSourceFile`.
@@ -140,69 +189,16 @@ const utf8ByteLength = (text: string): number => {
 };
 
 /**
- * Builds display-line metadata while treating CRLF as one line terminator.
+ * Builds display lines and private offset indexes in one production scan.
  */
-const buildSourceLines = (sourceText: string): readonly SourceLine[] => {
+const scanOriginalSource = (sourceText: string): SourceScan => {
   const lines: SourceLine[] = [];
-  let line = 1;
-  let lineStartOffset = 0;
-  let lineStartIndex = 0;
-  let byteOffset = 0;
-  let index = 0;
-
-  while (index < sourceText.length) {
-    const codePoint = sourceText.codePointAt(index);
-    if (codePoint === undefined) {
-      break;
-    }
-
-    const character = String.fromCodePoint(codePoint);
-    if (isLineTerminator(character)) {
-      const terminatorByteLength = isCrLfTerminator(sourceText, index) ? 2 : 1;
-      const terminatorIndexLength = terminatorByteLength;
-
-      lines.push(
-        sourceLine({
-          line,
-          startOffset: lineStartOffset,
-          contentEndOffset: byteOffset,
-          terminatorEndOffset: byteOffset + terminatorByteLength,
-          text: sourceText.slice(lineStartIndex, index),
-        }),
-      );
-      line += 1;
-      byteOffset += terminatorByteLength;
-      index += terminatorIndexLength;
-      lineStartOffset = byteOffset;
-      lineStartIndex = index;
-      continue;
-    }
-
-    byteOffset += utf8ByteLength(character);
-    index += character.length;
-  }
-
-  lines.push(
-    sourceLine({
-      line,
-      startOffset: lineStartOffset,
-      contentEndOffset: byteOffset,
-      terminatorEndOffset: byteOffset,
-      text: sourceText.slice(lineStartIndex),
-    }),
-  );
-
-  return Object.freeze(lines);
-};
-
-/**
- * Builds lookup tables from valid UTF-8 byte offsets to source metadata.
- */
-const buildSourceIndexes = (sourceText: string): SourceIndexes => {
   const positions = new Map<number, SourcePosition>();
   const textIndexes = new Map<number, number>();
   let line = 1;
   let column = 1;
+  let lineStartOffset = 0;
+  let lineStartIndex = 0;
   let byteOffset = 0;
   let index = 0;
 
@@ -218,10 +214,25 @@ const buildSourceIndexes = (sourceText: string): SourceIndexes => {
     const character = String.fromCodePoint(codePoint);
     if (isLineTerminator(character)) {
       const terminatorByteLength = isCrLfTerminator(sourceText, index) ? 2 : 1;
-      byteOffset += terminatorByteLength;
-      index += terminatorByteLength;
+      const terminatorIndexLength = terminatorByteLength;
+      const nextByteOffset = byteOffset + terminatorByteLength;
+      const nextIndex = index + terminatorIndexLength;
+
+      lines.push(
+        sourceLine({
+          line,
+          startOffset: lineStartOffset,
+          contentEndOffset: byteOffset,
+          terminatorEndOffset: nextByteOffset,
+          text: sourceText.slice(lineStartIndex, index),
+        }),
+      );
       line += 1;
       column = 1;
+      byteOffset = nextByteOffset;
+      index = nextIndex;
+      lineStartOffset = byteOffset;
+      lineStartIndex = index;
       positions.set(byteOffset, sourcePosition({ offset: byteOffset, line, column }));
       textIndexes.set(byteOffset, index);
       continue;
@@ -234,7 +245,22 @@ const buildSourceIndexes = (sourceText: string): SourceIndexes => {
     textIndexes.set(byteOffset, index);
   }
 
-  return Object.freeze({ positions, textIndexes });
+  lines.push(
+    sourceLine({
+      line,
+      startOffset: lineStartOffset,
+      contentEndOffset: byteOffset,
+      terminatorEndOffset: byteOffset,
+      text: sourceText.slice(lineStartIndex),
+    }),
+  );
+
+  return Object.freeze({
+    byteLength: byteOffset,
+    lines: Object.freeze(lines),
+    positions,
+    textIndexes,
+  });
 };
 
 /**

@@ -25,6 +25,15 @@ export interface WorkflowSource {
 }
 
 /**
+ * Private brand proving that a source record was built by the factory.
+ *
+ * The symbol is exported only for the implementation module. The package entry
+ * does not re-export it, so package consumers cannot structurally construct an
+ * `OriginalSourceFile` that helper functions will accept.
+ */
+export const ORIGINAL_SOURCE_FILE_BRAND: unique symbol = Symbol("OriginalSourceFile");
+
+/**
  * Metadata for one display line in an original workflow source file.
  */
 export type SourceLine = {
@@ -42,8 +51,14 @@ export type SourceLine = {
 
 /**
  * Immutable source record used by parser, mapper, and reporter helpers.
+ *
+ * Create these records with `createOriginalSourceFile`. They are nominally
+ * branded because parser, mapper, and reporter helpers depend on private
+ * offset indexes built during factory construction.
  */
 export type OriginalSourceFile = {
+  /** Factory-only brand for private source index ownership. */
+  readonly [ORIGINAL_SOURCE_FILE_BRAND]: true;
   /** Repository or invocation path used in diagnostics. */
   readonly filePath: string;
   /** Original source text before static-analysis normalization. */

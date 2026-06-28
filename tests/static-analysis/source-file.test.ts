@@ -24,12 +24,12 @@ describe("original source files", () => {
         sourceText: fixture.sourceText,
       });
 
-      expect(sourceFile).toEqual({
+      expect(sourceFile).toMatchObject({
         filePath: "workflows/example.js",
         sourceText: fixture.sourceText,
         byteLength: fixture.byteLength,
         lines: fixture.lines,
-      } satisfies OriginalSourceFile);
+      } satisfies Pick<OriginalSourceFile, "filePath" | "sourceText" | "byteLength" | "lines">);
     });
   }
 
@@ -42,6 +42,18 @@ describe("original source files", () => {
     expect(Object.isFrozen(sourceFile)).toBeTrue();
     expect(Object.isFrozen(sourceFile.lines)).toBeTrue();
     expect(sourceFile.lines.every((line) => Object.isFrozen(line))).toBeTrue();
+  });
+
+  it("requires factory construction at the type and helper boundary", () => {
+    // @ts-expect-error OriginalSourceFile records carry a private factory brand.
+    const structuralSourceFile: OriginalSourceFile = {
+      filePath: "workflows/example.js",
+      sourceText: "",
+      byteLength: 0,
+      lines: [],
+    };
+
+    expect(() => positionAtOffset(structuralSourceFile, 0)).toThrow(SourceOffsetError);
   });
 
   for (const positionCase of SOURCE_POSITION_CASES) {

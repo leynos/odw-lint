@@ -77,7 +77,7 @@ describe("static-analysis boundary exports", () => {
     });
     const firstLine = sourceFile.lines[0] satisfies SourceLine | undefined;
 
-    expect(sourceFile).toEqual({
+    expect(sourceFile).toMatchObject({
       filePath: "workflows/example.js",
       sourceText: "meta\nbody",
       byteLength: 9,
@@ -97,7 +97,7 @@ describe("static-analysis boundary exports", () => {
           text: "body",
         },
       ],
-    } satisfies OriginalSourceFile);
+    } satisfies Pick<OriginalSourceFile, "filePath" | "sourceText" | "byteLength" | "lines">);
     expect(firstLine?.text).toBe("meta");
     expect(positionAtOffset(sourceFile, 5)).toEqual({ offset: 5, line: 2, column: 1 });
     const span = spanFromOffsets(sourceFile, 0, 4);

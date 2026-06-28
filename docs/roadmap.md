@@ -74,20 +74,20 @@ shape. The result informs every parser, rule, and reporter task. See
   - See [technical-design.md](technical-design.md) §§6.1 and 11.5.
   - Success: offsets, lines, columns, and snippets round-trip for fixtures
     with LF, CRLF, Unicode, and trailing-newline variants.
-  - [ ] 1.2.2.1. Clarify the original-source construction contract.
+  - [x] 1.2.2.1. Clarify the original-source construction contract.
     - Addendum (from review:1.2.2 and audit:1.2.2; medium). Make the
       `OriginalSourceFile` construction requirement visible in the public API
       contract, including the nominal or structural construction decision.
       Lightweight addendum pass.
-  - [ ] 1.2.2.2. Single-source production source scanning.
+  - [x] 1.2.2.2. Single-source production source scanning.
     - Addendum (from audit:1.2.2; medium). Refactor production source scanning
       so line metadata and private lookup indexes come from one pass while the
       property-test oracle stays independent. Lightweight addendum pass.
-  - [ ] 1.2.2.3. Document source-span helper usage.
+  - [x] 1.2.2.3. Document source-span helper usage.
     - Addendum (from audit:1.2.2; low). Add source-span helper examples and
       maintainer guidance for UTF-8 offsets, display columns, and half-open
       original-source spans. Lightweight addendum pass.
-  - [ ] 1.2.2.4. Clean up source-file property-test harness repetition.
+  - [x] 1.2.2.4. Clean up source-file property-test harness repetition.
     - Addendum (from audit:1.2.2; low). Centralize generated source setup for
       source-file property tests without sharing production scanner logic.
       Lightweight addendum pass.
