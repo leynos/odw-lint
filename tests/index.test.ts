@@ -1,5 +1,5 @@
 /**
- * @file Behaviour tests for the template `greet` export in `src/index.ts`.
+ * @file Behaviour tests for the `greet` export in `src/index.ts`.
  *
  * The suite uses the shared Bun test setup from `tests/setup.ts`.
  */

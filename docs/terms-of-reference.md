@@ -19,7 +19,7 @@ editing a file in a repository has no dedicated lint or validation command.
 That gap makes syntax, dialect, portability, and orchestration mistakes show
 up late, often after an agent run has started.
 
-The terms of reference defines the problem space. The companion technical
+The terms of reference define the problem space. The companion technical
 design chooses the implementation shape.
 
 ## 2. Domain
@@ -154,8 +154,8 @@ reasonable v1 success bar is:
 
 ## 11. Open questions
 
-- Should `odw-lint` remain a standalone package, become an `odw check`
-  subcommand, or support both entry points?
+- What compatibility contract should a future ODW-integrated `odw check`
+  wrapper expose after the standalone `odw-lint check` v1?
 - Which diagnostics are fatal by default, and which move behind
   `--strict-claude` or `--strict`?
 - Should configuration live in `odw-lint.config.*`, `odw.config.json`, or both?
