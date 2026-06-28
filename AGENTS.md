@@ -47,6 +47,14 @@
   left unchanged for community consistency.)
 - A documentation style guide lives in
   `docs/documentation-style-guide.md`.
+- Record substantive design decisions in the relevant design document. Where a
+  decision materially affects architecture, dependencies, public behaviour, or
+  long-term maintenance, capture it in an Architectural Decision Record (ADR)
+  following the documentation style guide and reference it from the relevant
+  design documentation.
+- Update user-facing documentation for behaviour or interface changes that
+  users should know about. Document internally facing interfaces, conventions,
+  and practices in the relevant developer or architecture documentation.
 
 ## Tooling Defaults
 
@@ -124,6 +132,15 @@
   - **Post-Commit Review:** After a functional change or bug fix is committed
     (and meets all quality gates), the changed code and surrounding areas
     should be reviewed using the heuristics above.
+- **Abstraction / adapter / helper policy:** Before implementing an
+  abstraction, adapter, or extracted helper:
+  - Sweep the repository to confirm there is no existing equivalent helper,
+    adapter, or abstraction.
+  - Document the intended scope and reuse policy when the abstraction crosses
+    module boundaries, including ownership, permitted call sites, and
+    composition rules.
+  - Record the decision in the appropriate architecture, design, or developer
+    documentation when it changes the project's long-term structure.
 - **Separate Atomic Refactors:** If refactoring is deemed necessary:
   - Refactoring should be performed as a **separate, atomic commit** *after*
     the functional change commit.
@@ -211,6 +228,9 @@ are present.
   library where that dependency is justified.
 - **Nominal branding**: Prefer branded types for identifiers or tokens when it
   prevents accidental mixing of otherwise identical primitives.
+- **Domain values**: Model meaningful domain values with narrow types, branded
+  primitives, or small immutable objects rather than passing unrelated strings
+  and numbers through broad APIs.
 - **Time & randomness**: Centralize `now()` and `rng()` style adapters rather
   than calling `Date.now()` or `Math.random()` directly in business logic.
 
@@ -220,6 +240,12 @@ are present.
   callers branch on.
 - **Exceptions**: Reserve `Error` subclasses for exceptional paths and attach a
   `cause` where available.
+- **Boundary errors**: Convert unknown thrown values and third-party failures to
+  project-owned error shapes at API or command boundaries. Do not leak opaque
+  dependency errors through public APIs.
+- **Panic-style failures**: Avoid non-null assertions and unchecked casts in
+  production code. When tests need a hard assertion, include a failure message
+  that explains the expected invariant.
 
 ### Testing
 
@@ -230,11 +256,29 @@ are present.
   rather than duplicated cases.
 - **Snapshots**: Keep snapshot inputs deterministic by fixing seeds and sorting
   unstable data.
+- **Coverage shape**: Cover happy paths, unhappy paths, and relevant edge
+  cases. Add end-to-end tests when a change affects externally observable
+  workflows, integration contracts, persistence, command-line behaviour,
+  network boundaries, or other system-level behaviour.
+- **Snapshot scope**: Use snapshots only for meaningful, reviewer-useful output
+  contracts. Pair snapshots with semantic assertions, normalize
+  nondeterministic fields, and update snapshots only after confirming the
+  failure represents an intentional contract change.
+- **Invariant testing**: Use property-style or table-driven tests when a change
+  introduces behaviour over a range of inputs, states, orderings, or
+  transitions.
+- **Environment-dependent tests**: Prefer dependency injection over direct
+  mutation of process-wide state such as environment variables, clocks, random
+  number generators, current working directory, or global fetch. If mutation is
+  unavoidable, guard and restore it in shared test helpers.
 
 ### Dependency Management
 
 - **Version policy**: Use caret requirements (`^x.y.z`) for direct
   dependencies unless a narrower range is justified explicitly.
+- **Unstable ranges**: Avoid wildcard, broad inequality, or open-ended version
+  ranges. Pin or narrow a range only when there is a documented compatibility
+  reason.
 - **Lockfile**: Commit `bun.lock`. Rebuild it deliberately when major tool
   upgrades require it.
 - **Culling**: Prefer small, actively maintained packages and remove
@@ -248,6 +292,20 @@ are present.
 - **Type-checking**: Use `make typecheck` to surface TypeScript issues early.
 - **Import hygiene**: Keep imports sorted and remove unused or extraneous
   dependencies.
+- **Warnings and suppressions**: Fix lint and type warnings in the code rather
+  than silencing them. Suppressions are a last resort, must be tightly scoped,
+  and must include a clear reason.
+
+### Observability
+
+- **Structured diagnostics**: Prefer structured logging or explicit diagnostic
+  events over ad hoc `console.log` output in library code. Include stable
+  fields for identifiers, state, and error context so callers can filter and
+  correlate diagnostics without parsing prose.
+- **Global setup**: Libraries may expose instrumentation hooks, but should not
+  install global loggers, metrics exporters, or process-wide handlers as a side
+  effect of import. Applications should initialize those concerns explicitly at
+  startup.
 
 ## Additional tooling
 
