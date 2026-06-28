@@ -1282,3 +1282,16 @@ No new package dependency is permitted for this task.
 - 2026-06-28: Fix round 2 deep-froze nested diagnostic span coordinates,
   changed the compact manifest snapshot projection to line arrays, and recorded
   green deterministic gates plus a zero-finding CodeRabbit review.
+
+## Addenda
+
+- [ ] 1.3.2.1. Add shared fixture-manifest deep-freeze helper.
+  - Source: review:1.3.2.
+  - Severity: medium.
+  - Scope: centralize nested immutability for fixture manifests shared by
+    valid and invalid corpus data, so future span objects, diagnostics,
+    suggestions, and parser expectations cannot be mutated through shallow
+    `Object.freeze` coverage.
+  - Success: fixture manifest tests prove nested manifest values are frozen
+    through a shared test helper or small manifest utility without changing
+    production interfaces.

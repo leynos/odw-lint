@@ -969,3 +969,24 @@ No new package dependency is permitted for this task.
   diagnostic, and the compact snapshot entry for the second hostile fixture.
 - 2026-06-28: Work item 3 documented the hostile fixture family, marked
   roadmap task 1.3.4 complete, and set this ExecPlan to `COMPLETE`.
+
+## Addenda
+
+- [ ] 1.3.4.1. Split invalid workflow fixture manifests by family.
+  - Source: audit:1.3.2 and audit:1.3.4.
+  - Severity: medium.
+  - Scope: split the near-limit invalid workflow manifest by fixture family so
+    missing metadata, malformed metadata, unsupported import/export,
+    syntax-error, and hostile metadata data remain reviewable as further
+    corpus work lands.
+  - Success: each invalid fixture family has a focused manifest module, and
+    the aggregate manifest preserves the existing exported contract for tests.
+- [ ] 1.3.4.2. Extract fixture-corpus support helpers.
+  - Source: audit:1.3.3 and audit:1.3.4.
+  - Severity: low.
+  - Scope: centralize repeated fixture hashing and source-reading helpers
+    across corpus tests before loader parity and real lint execution tests
+    reuse the same mechanics.
+  - Success: ODW example, invalid workflow, masking, and hostile metadata
+    corpus tests share one test-only support helper for hash and raw-source
+    reads without changing raw fixture contents.

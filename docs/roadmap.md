@@ -91,6 +91,11 @@ shape. The result informs every parser, rule, and reporter task. See
     - Addendum (from audit:1.2.2; low). Centralize generated source setup for
       source-file property tests without sharing production scanner logic.
       Lightweight addendum pass.
+  - [ ] 1.2.2.5. Add JavaScript line-separator source-span coverage.
+    - Addendum (from audit:1.3.2, audit:1.3.3, and audit:1.3.4; medium).
+      Cover U+2028 and U+2029 as JavaScript line terminators in source-span
+      helpers before parser-backed diagnostics depend on them. Lightweight
+      addendum pass.
 - [x] 1.2.3. Split the diagnostic contract into focused modules.
   - Requires 1.2.1.
   - Move diagnostic types, rule-id parsing, report helpers, text formatting,
@@ -103,6 +108,19 @@ shape. The result informs every parser, rule, and reporter task. See
     - Addendum (from audit:1.2.3; low). Extract private diagnostic schema
       shape helpers and separate architecture-test query helpers from
       assertions. Lightweight addendum pass.
+  - [ ] 1.2.3.2. Synchronize package-entry documentation.
+    - Addendum (from audit:1.3.3 and audit:1.3.4; medium). Bring the
+      developer guide and `src/index.ts` file documentation back into
+      alignment with the current private package entry and exported
+      static-analysis surface. Lightweight addendum pass.
+- [ ] 1.2.4. Split source-file helper responsibilities before parser
+  span-mapping work.
+  - Requires 1.2.2.
+  - Separate scanning, validation, slicing, snippet, and construction concerns
+    in `src/static-analysis/source-file.ts` without changing source-span
+    behaviour.
+  - Success: the source-position spine keeps one original-source contract
+    while parser and span-mapper work have focused helper modules to extend.
 
 ### 1.3. Establish the workflow fixture corpus
 
@@ -123,14 +141,45 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
   - See [technical-design.md](technical-design.md) §§9.1 and 11.1.
   - Success: each invalid fixture has expected rule identifiers and source
     spans.
+  - [ ] 1.3.2.1. Add shared fixture-manifest deep-freeze helper.
+    - Addendum (from review:1.3.2; medium). Centralize nested immutability for
+      valid and invalid fixture manifests as span objects, diagnostics, and
+      suggestions grow. Lightweight addendum pass.
 - [x] 1.3.3. Add masking fixtures with decoy workflow syntax inside comments,
   strings, regex literals, and template literals.
   - See [technical-design.md](technical-design.md) §§6.2 and 11.1.
   - Success: decoy syntax does not produce envelope diagnostics.
+  - [ ] 1.3.3.1. Add semantic masking fixture content assertions.
+    - Addendum (from review:1.3.3; low). Assert planned marker snippets for
+      escaped quotes, regex delimiters, template text, and interpolation so
+      fixture failures explain intent beyond hash drift. Lightweight addendum
+      pass.
+  - [ ] 1.3.3.2. Add delimiter-stress masking fixture variants.
+    - Addendum (from review:1.3.3; low). Extend masking fixtures with escaped
+      quotes, escaped regex delimiters, template interpolation boundaries,
+      CRLF, and Unicode variants. Lightweight addendum pass.
 - [x] 1.3.4. Add hostile metadata fixtures that would leave an observable side
   effect if evaluated.
   - See [technical-design.md](technical-design.md) §§11.1 and 11.3.
   - Success: the fixture produces diagnostics and no side-effect marker.
+  - [ ] 1.3.4.1. Split invalid workflow fixture manifests by family.
+    - Addendum (from audit:1.3.2 and audit:1.3.4; medium). Split the
+      near-limit invalid workflow manifest by fixture family before further
+      corpus growth makes reviews and file-size limits brittle. Lightweight
+      addendum pass.
+  - [ ] 1.3.4.2. Extract fixture-corpus support helpers.
+    - Addendum (from audit:1.3.3 and audit:1.3.4; low). Centralize repeated
+      fixture hashing and source-reading helpers across corpus tests before
+      loader parity and real lint execution reuse them. Lightweight addendum
+      pass.
+- [ ] 1.3.5. Add fixture metadata generation and refresh tooling.
+  - Requires steps 1.1-1.3.
+  - Provide a focused script or Make target that refreshes fixture hashes,
+    UTF-8 spans, display positions, and reviewer-facing span text without
+    executing or formatting raw workflow fixtures.
+  - Success: maintainers can refresh valid, invalid, masking, and hostile
+    fixture metadata with one documented command and review deterministic
+    changes.
 
 ### 1.4. Harden repository build-gate freshness
 
@@ -166,6 +215,19 @@ depending on manual post-commit audits.
     `origin/main`.
   - Success: review or gate output flags stale task branches before they can
     present unrelated main-branch work as deletions.
+- [ ] 1.5.3. Add a public API removal guard for package exports.
+  - Requires 1.2.3.
+  - Add an export-surface snapshot or architecture test that compares the
+    declared package entry against intentional public API changes.
+  - Success: `make all` or an equivalent review gate fails when a roadmap
+    slice accidentally removes exported `odw-lint` symbols.
+- [ ] 1.5.4. Add tracked-file whitespace hygiene to the commit gate.
+  - Requires 1.5.2.
+  - Add a lightweight whitespace check for tracked files or diffs so committed
+    snapshots and fixtures cannot carry trailing whitespace after normal gates
+    pass.
+  - Success: the repository gate fails on trailing whitespace without
+    reformatting raw fixture files.
 
 ## 2. First vertical slice: ODW dialect validation
 
@@ -187,7 +249,9 @@ statically. It unlocks metadata rules and body parsing. See
   literals, and regex literals.
   - Requires steps 1.1-1.3 and 2.1.4.
   - See [technical-design.md](technical-design.md) §§5 and 6.2.
-  - Success: masking fixtures from 1.3.3 do not affect meta extraction.
+  - Success: masking fixtures from 1.3.3 produce zero envelope diagnostics, and
+    each manifest `metaName` matches the real metadata declaration extracted
+    from original source.
 - [ ] 2.1.2. Implement static `export const meta` extraction and unsupported
   import/export detection.
   - Requires 2.1.1 and 2.1.6.
@@ -217,6 +281,13 @@ statically. It unlocks metadata rules and body parsing. See
     broaden.
   - Success: released rule identifiers, default severities, configuration
     keys, and `docs/rules/` pages are checked against the catalogue.
+- [ ] 2.1.7. Add rule-catalogue parity checks for fixture diagnostics.
+  - Requires 2.1.6 and step 1.3.
+  - Check fixture manifest expectations against the typed rule catalogue so
+    rule identifiers, default severities, messages, and rule documentation do
+    not become parallel sources of truth.
+  - Success: fixture expectations fail when a diagnostic rule, default
+    severity, message contract, or docs slug diverges from the catalogue.
 
 ### 2.2. Normalize and parse workflow bodies with SWC
 
@@ -262,6 +333,13 @@ code. It informs whether phase 2 can ship. See
   - Success: `odw-lint` diagnostics match the trusted static expectations for
     `checkMeta` and `scanDualCompat` without importing executable runtime
     paths in production code.
+- [ ] 2.3.3. Consume invalid fixture manifests in dialect diagnostic tests.
+  - Requires steps 2.1-2.2.
+  - Drive parser, envelope, and metadata-rule assertions from the invalid
+    fixture manifest instead of duplicating expected diagnostics in later test
+    suites.
+  - Success: invalid fixture expectations remain the source of truth for
+    emitted dialect diagnostics and original-source spans.
 
 ### 2.4. Ship the minimal `check` command
 

@@ -311,6 +311,14 @@ only. At closure, `make all`, `make markdownlint`, and `make nixie` passed.
     architecture-test query helpers from assertions.
   - Success: schema and architecture tests retain the same public contracts
     while their private helpers make drift points explicit.
+- [ ] 1.2.3.2. Synchronize package-entry documentation.
+  - Source: audit:1.3.3 and audit:1.3.4.
+  - Severity: medium.
+  - Scope: align the developer guide and `src/index.ts` file documentation
+    with the current private package entry, `package.json` entry shape, and
+    exported static-analysis surface.
+  - Success: maintainer documentation, source file documentation, and the
+    architecture test describe the same package-entry contract.
 
 ## Addenda progress
 

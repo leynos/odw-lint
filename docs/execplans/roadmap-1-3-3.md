@@ -817,3 +817,23 @@ Fix-round-2 revision. It records the rebase onto `origin/main`, preservation
 of roadmap task 1.3.2's invalid-workflow corpus, audit document, and
 documentation, the combined developer-guide fixture guidance, and the passing
 full gate plus CodeRabbit review for the freshness repair.
+
+## Addenda
+
+- [ ] 1.3.3.1. Add semantic masking fixture content assertions.
+  - Source: review:1.3.3.
+  - Severity: low.
+  - Scope: add focused assertions for planned marker snippets such as escaped
+    quotes, escaped regex slashes, template text, and interpolation strings so
+    masking fixture failures explain the lexical edge being protected rather
+    than only reporting a hash mismatch.
+  - Success: each masking context has at least one semantic content assertion
+    tied to the reason the fixture exists while hash pinning remains intact.
+- [ ] 1.3.3.2. Add delimiter-stress masking fixture variants.
+  - Source: review:1.3.3.
+  - Severity: low.
+  - Scope: extend the masking fixture family with escaped quotes, escaped
+    regex delimiters, template interpolation boundaries, CRLF, and Unicode
+    variants that future source masking and span-mapping work can execute.
+  - Success: new masking variants are documented in the manifest, hash-pinned,
+    and recorded with empty envelope-diagnostic expectations.
