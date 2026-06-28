@@ -40,10 +40,15 @@ describe("diagnostic JSON Schema", () => {
   });
 
   it("encodes source-position minimums for start and end positions", () => {
-    for (const positionSchema of [
-      sourceSpanSchema.properties.start,
-      sourceSpanSchema.properties.end,
-    ]) {
+    const startPositionSchema = sourceSpanSchema.properties.start;
+    const endPositionSchema = sourceSpanSchema.properties.end;
+
+    expect(startPositionSchema.required).toEqual(endPositionSchema.required);
+    expect(Object.keys(startPositionSchema.properties)).toEqual(
+      Object.keys(endPositionSchema.properties),
+    );
+
+    for (const positionSchema of [startPositionSchema, endPositionSchema]) {
       expect(positionSchema.properties.offset.minimum).toBe(0);
       expect(positionSchema.properties.line.minimum).toBe(1);
       expect(positionSchema.properties.column.minimum).toBe(1);

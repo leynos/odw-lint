@@ -304,13 +304,19 @@ only. At closure, `make all`, `make markdownlint`, and `make nixie` passed.
 
 ## Addenda
 
-- [ ] 1.2.3.1. Add diagnostic schema and architecture-test cleanup.
+- [x] 1.2.3.1. Add diagnostic schema and architecture-test cleanup.
   - Source: audit:1.2.3.
   - Severity: low.
   - Scope: extract private diagnostic schema shape helpers and separate
     architecture-test query helpers from assertions.
   - Success: schema and architecture tests retain the same public contracts
     while their private helpers make drift points explicit.
+
+## Addenda progress
+
+- [x] (2026-06-28T16:10Z) Implemented addendum 1.2.3.1 by extracting private
+  diagnostic schema shape helpers, adding source-position drift assertions, and
+  splitting architecture-test export-declaration queries from assertions.
 
 ## Context and orientation
 

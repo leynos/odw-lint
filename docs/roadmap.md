@@ -82,7 +82,7 @@ shape. The result informs every parser, rule, and reporter task. See
   - Success: the public API remains importable through `odw-lint`, and each
     diagnostic responsibility has one named module before parser, CLI, and
     rule-engine responsibilities land.
-  - [ ] 1.2.3.1. Add diagnostic schema and architecture-test cleanup.
+  - [x] 1.2.3.1. Add diagnostic schema and architecture-test cleanup.
     - Addendum (from audit:1.2.3; low). Extract private diagnostic schema
       shape helpers and separate architecture-test query helpers from
       assertions. Lightweight addendum pass.

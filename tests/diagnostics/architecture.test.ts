@@ -42,6 +42,13 @@ type PackageJson = {
   };
 };
 
+type ExportDeclarationFact = {
+  readonly hasExportClause: boolean;
+  readonly hasModuleSpecifier: boolean;
+  readonly hasNamedExports: boolean;
+  readonly moduleSpecifier: string | undefined;
+};
+
 /** Parses a repository-relative TypeScript file. */
 const parseSource = (relativePath: string): ts.SourceFile => {
   const source = readFileSync(relativePath, "utf8");
@@ -84,6 +91,19 @@ const isNamedTopLevelDeclaration = (
   );
 };
 
+/** Extracts the module specifier text from string-literal export targets. */
+const moduleSpecifierText = (moduleSpecifier: ts.Expression | undefined): string | undefined => {
+  if (moduleSpecifier === undefined) {
+    return undefined;
+  }
+
+  if (!ts.isStringLiteral(moduleSpecifier)) {
+    return undefined;
+  }
+
+  return moduleSpecifier.text;
+};
+
 /** Lists top-level declaration names in a source file. */
 const topLevelDeclarationNames = (sourceFile: ts.SourceFile): readonly string[] => {
   const names: string[] = [];
@@ -111,8 +131,8 @@ const topLevelDeclarationNames = (sourceFile: ts.SourceFile): readonly string[] 
 };
 
 /** Lists the declaration-level module specifiers exported by a source file. */
-const exportedModuleSpecifiers = (sourceFile: ts.SourceFile): readonly string[] => {
-  const specifiers: string[] = [];
+const exportDeclarationFacts = (sourceFile: ts.SourceFile): readonly ExportDeclarationFact[] => {
+  const facts: ExportDeclarationFact[] = [];
 
   ts.forEachChild(sourceFile, (node) => {
     if (!ts.isExportDeclaration(node)) {
@@ -122,22 +142,22 @@ const exportedModuleSpecifiers = (sourceFile: ts.SourceFile): readonly string[] 
     const exportClause = node.exportClause;
     const moduleSpecifier = node.moduleSpecifier;
 
-    expect(exportClause).toBeDefined();
-    expect(moduleSpecifier).toBeDefined();
-
-    if (exportClause !== undefined) {
-      expect(ts.isNamedExports(exportClause)).toBeTrue();
-    }
-    if (moduleSpecifier !== undefined) {
-      expect(ts.isStringLiteral(moduleSpecifier)).toBeTrue();
-    }
-
-    if (moduleSpecifier !== undefined && ts.isStringLiteral(moduleSpecifier)) {
-      specifiers.push(moduleSpecifier.text);
-    }
+    facts.push({
+      hasExportClause: exportClause !== undefined,
+      hasModuleSpecifier: moduleSpecifier !== undefined,
+      hasNamedExports: exportClause !== undefined && ts.isNamedExports(exportClause),
+      moduleSpecifier: moduleSpecifierText(moduleSpecifier),
+    });
   });
 
-  return specifiers;
+  return facts;
+};
+
+/** Lists the declaration-level module specifiers exported by a source file. */
+const exportedModuleSpecifiers = (sourceFile: ts.SourceFile): readonly string[] => {
+  return exportDeclarationFacts(sourceFile).flatMap((exportDeclaration) =>
+    exportDeclaration.moduleSpecifier === undefined ? [] : [exportDeclaration.moduleSpecifier],
+  );
 };
 
 /** Lists current internal diagnostic source modules. */
@@ -158,9 +178,20 @@ const packageJson = (): PackageJson => {
   return JSON.parse(readFileSync("package.json", "utf8")) as PackageJson;
 };
 
+/** Asserts that package-entry re-exports stay explicit and named. */
+const expectNamedModuleExports = (sourceFile: ts.SourceFile): void => {
+  for (const exportDeclaration of exportDeclarationFacts(sourceFile)) {
+    expect(exportDeclaration.hasExportClause).toBeTrue();
+    expect(exportDeclaration.hasModuleSpecifier).toBeTrue();
+    expect(exportDeclaration.hasNamedExports).toBeTrue();
+    expect(exportDeclaration.moduleSpecifier).toBeDefined();
+  }
+};
+
 /** Asserts that the public package entry exposes only expected internals. */
 const expectPackageEntryShape = (expectedModuleSpecifiers: readonly string[]): void => {
   const packageExports = packageJson().exports;
+  const packageEntrySource = parseSource("src/index.ts");
 
   expect(Object.keys(packageExports).sort()).toEqual([".", "./package.json"]);
   expect(packageExports["."]).toEqual({
@@ -170,7 +201,8 @@ const expectPackageEntryShape = (expectedModuleSpecifiers: readonly string[]): v
     default: "./src/index.ts",
   });
 
-  expect([...exportedModuleSpecifiers(parseSource("src/index.ts"))].sort()).toEqual(
+  expectNamedModuleExports(packageEntrySource);
+  expect([...exportedModuleSpecifiers(packageEntrySource)].sort()).toEqual(
     [...expectedModuleSpecifiers].sort(),
   );
 };

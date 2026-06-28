@@ -8,6 +8,40 @@
 import { DIAGNOSTIC_SEVERITIES } from "./severity";
 import { DIAGNOSTIC_SCHEMA_VERSION, TOOL_NAME } from "./types";
 
+const stringSchema = { type: "string" } as const;
+const nonNegativeIntegerSchema = { type: "integer", minimum: 0 } as const;
+const oneBasedIntegerSchema = { type: "integer", minimum: 1 } as const;
+
+const sourcePositionSchema = {
+  type: "object",
+  required: ["offset", "line", "column"],
+  additionalProperties: false,
+  properties: {
+    offset: nonNegativeIntegerSchema,
+    line: oneBasedIntegerSchema,
+    column: oneBasedIntegerSchema,
+  },
+} as const;
+
+const sourceSpanSchema = {
+  type: "object",
+  required: ["start", "end"],
+  additionalProperties: false,
+  properties: {
+    start: sourcePositionSchema,
+    end: sourcePositionSchema,
+  },
+} as const;
+
+const diagnosticSuggestionSchema = {
+  type: "object",
+  required: ["message"],
+  additionalProperties: false,
+  properties: {
+    message: stringSchema,
+  },
+} as const;
+
 /**
  * JSON Schema for the diagnostic report envelope.
  */
@@ -31,11 +65,11 @@ export const DIAGNOSTIC_REPORT_SCHEMA = {
       required: ["files", "errors", "warnings", "infos", "hints"],
       additionalProperties: false,
       properties: {
-        files: { type: "integer", minimum: 0 },
-        errors: { type: "integer", minimum: 0 },
-        warnings: { type: "integer", minimum: 0 },
-        infos: { type: "integer", minimum: 0 },
-        hints: { type: "integer", minimum: 0 },
+        files: nonNegativeIntegerSchema,
+        errors: nonNegativeIntegerSchema,
+        warnings: nonNegativeIntegerSchema,
+        infos: nonNegativeIntegerSchema,
+        hints: nonNegativeIntegerSchema,
       },
     },
     diagnostics: {
@@ -46,49 +80,16 @@ export const DIAGNOSTIC_REPORT_SCHEMA = {
         required: ["file", "rule", "severity", "message", "span"],
         additionalProperties: false,
         properties: {
-          file: { type: "string" },
-          rule: { type: "string" },
+          file: stringSchema,
+          rule: stringSchema,
           severity: { enum: DIAGNOSTIC_SEVERITIES },
-          message: { type: "string" },
-          span: {
-            type: "object",
-            required: ["start", "end"],
-            additionalProperties: false,
-            properties: {
-              start: {
-                type: "object",
-                required: ["offset", "line", "column"],
-                additionalProperties: false,
-                properties: {
-                  offset: { type: "integer", minimum: 0 },
-                  line: { type: "integer", minimum: 1 },
-                  column: { type: "integer", minimum: 1 },
-                },
-              },
-              end: {
-                type: "object",
-                required: ["offset", "line", "column"],
-                additionalProperties: false,
-                properties: {
-                  offset: { type: "integer", minimum: 0 },
-                  line: { type: "integer", minimum: 1 },
-                  column: { type: "integer", minimum: 1 },
-                },
-              },
-            },
-          },
-          docs: { type: "string" },
+          message: stringSchema,
+          span: sourceSpanSchema,
+          docs: stringSchema,
           suggestions: {
             type: "array",
             minItems: 0,
-            items: {
-              type: "object",
-              required: ["message"],
-              additionalProperties: false,
-              properties: {
-                message: { type: "string" },
-              },
-            },
+            items: diagnosticSuggestionSchema,
           },
         },
       },
