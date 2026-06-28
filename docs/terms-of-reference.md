@@ -47,6 +47,8 @@ The neighbouring tool classes are:
 |Claude Code workflow compatibility checks|Keep workflows portable to Claude Code's Workflow tool|They need to be surfaced before users run ODW.|
 |Agent supervision tools|Inspect runs after dispatch|They do not prevent avoidable dispatch-time failures.|
 
+_Table 1: Tool-class comparison._
+
 The product gap is trust, not parser availability. Workflow authors need a
 workflow-aware check that reports actionable diagnostics with source spans and
 exit codes that CI can enforce.
@@ -60,6 +62,8 @@ exit codes that CI can enforce.
 |Agent operator|Runs workflows against paid or local coding agents|Avoid spending runs on workflows that could have failed statically.|
 |CI maintainer|Wires repository quality gates|Get deterministic text and JSON output with stable exit codes.|
 |Tooling contributor|Adds editor, formatter, or ecosystem integrations|Build on a documented diagnostic and rule model.|
+
+_Table 2: Users and stakeholders._
 
 General JavaScript application developers are not a target user. They should
 continue to use Biome, Oxlint, ESLint, or project-native tooling for ordinary
