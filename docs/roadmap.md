@@ -57,10 +57,31 @@ shape. The result informs every parser, rule, and reporter task. See
   - See [technical-design.md](technical-design.md) §8.
   - Success: JSON output includes `schemaVersion`, `tool`, `summary`, and
     `diagnostics`, and text output is generated from the same diagnostics.
+  - [ ] 1.2.1.1. Harden diagnostic reporter contracts.
+    - Addendum (from review:1.2.1 and audit:1.2.1; medium). Normalize
+      text-only control whitespace and snapshot report diagnostics to protect
+      one-line text output and report-envelope consistency. Lightweight
+      addendum pass.
+  - [ ] 1.2.1.2. Add severity mirror exhaustiveness checks.
+    - Addendum (from review:1.2.1; medium). Make future severity additions
+      fail type checking unless summary counts, schema enums, and tests are
+      updated together. Lightweight addendum pass.
+  - [ ] 1.2.1.3. Validate report file counts at the boundary.
+    - Addendum (from review:1.2.1; medium). Convert raw file counts into a
+      non-negative integer report value before JSON emission. Lightweight
+      addendum pass.
 - [ ] 1.2.2. Implement line-index and source-span helpers for original files.
   - See [technical-design.md](technical-design.md) §§6.1 and 11.5.
   - Success: offsets, lines, columns, and snippets round-trip for fixtures
     with LF, CRLF, Unicode, and trailing-newline variants.
+- [ ] 1.2.3. Split the diagnostic contract into focused modules.
+  - Requires 1.2.1.
+  - Move diagnostic types, rule-id parsing, report helpers, text formatting,
+    and schema construction behind focused internal modules while preserving
+    the explicit package entry point.
+  - Success: the public API remains importable through `odw-lint`, and each
+    diagnostic responsibility has one named module before parser, CLI, and
+    rule-engine responsibilities land.
 
 ### 1.3. Establish the workflow fixture corpus
 
@@ -130,6 +151,13 @@ statically. It unlocks metadata rules and body parsing. See
   - Requires 1.3.4 and 2.1.3.
   - See [technical-design.md](technical-design.md) §11.3.
   - Success: linting hostile metadata leaves no side-effect marker.
+- [ ] 2.1.6. Introduce the typed rule catalogue and rule-doc parity checks.
+  - Requires 1.2.1.
+  - Store rule identifiers, categories, default severities, docs slugs, and
+    release status in one production catalogue before envelope diagnostics
+    broaden.
+  - Success: released rule identifiers, default severities, configuration
+    keys, and `docs/rules/` pages are checked against the catalogue.
 
 ### 2.2. Normalize and parse workflow bodies with SWC
 

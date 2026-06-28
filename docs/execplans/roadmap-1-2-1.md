@@ -336,6 +336,28 @@ run produced findings that conflicted with the approved ExecPlan keyword and
 producer-name constraints, and those deviations were recorded in the Decision
 Log.
 
+## Addenda
+
+- [ ] 1.2.1.1. Harden diagnostic reporter contracts.
+  - Source: review:1.2.1 and audit:1.2.1, medium.
+  - Scope: normalize text-only control whitespace while leaving JSON
+    diagnostics unchanged, and snapshot report diagnostics so caller-owned
+    arrays cannot make report summaries inconsistent.
+  - Success: text diagnostics preserve one rendered line per diagnostic, and
+    report envelopes stay internally consistent after caller-side mutation.
+- [ ] 1.2.1.2. Add severity mirror exhaustiveness checks.
+  - Source: review:1.2.1, medium.
+  - Scope: add compile-time drift checks tying the severity model to
+    `countDiagnostics`, JSON Schema severity enums, and tests.
+  - Success: adding a severity fails type checking until all severity mirrors
+    are updated together.
+- [ ] 1.2.1.3. Validate report file counts at the boundary.
+  - Source: review:1.2.1, medium.
+  - Scope: convert raw file counts into a validated non-negative integer
+    report value before JSON emission.
+  - Success: invalid report file counts fail at the reporting boundary instead
+    of entering JSON report summaries.
+
 ## Context and orientation
 
 The repository is a Bun and TypeScript project. Current production code is only
