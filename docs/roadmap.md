@@ -70,7 +70,7 @@ shape. The result informs every parser, rule, and reporter task. See
     - Addendum (from review:1.2.1; medium). Convert raw file counts into a
       non-negative integer report value before JSON emission. Lightweight
       addendum pass.
-- [ ] 1.2.2. Implement line-index and source-span helpers for original files.
+- [x] 1.2.2. Implement line-index and source-span helpers for original files.
   - See [technical-design.md](technical-design.md) §§6.1 and 11.5.
   - Success: offsets, lines, columns, and snippets round-trip for fixtures
     with LF, CRLF, Unicode, and trailing-newline variants.

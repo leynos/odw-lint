@@ -288,6 +288,7 @@ describe("diagnostic architecture", () => {
       "src/diagnostics/severity.ts",
       "src/diagnostics/text.ts",
       "src/diagnostics/types.ts",
+      "src/static-analysis/source-file.ts",
     ]) {
       expect(parseSource(sourcePath).fileName).toBe(sourcePath);
     }

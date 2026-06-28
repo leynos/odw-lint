@@ -31,10 +31,19 @@ export {
   type ToolInfo,
 } from "./diagnostics/types";
 export {
+  createOriginalSourceFile,
+  type OriginalSourceFile,
+  positionAtOffset,
+  type SourceLine,
+  SourceOffsetError,
+  type SourceSnippet,
   STATIC_ANALYSIS_BOUNDARY,
   STATIC_ANALYSIS_COMPONENTS,
   STATIC_ANALYSIS_STAGES,
   type StaticAnalysisComponent,
   type StaticAnalysisStage,
+  sliceSourceSpan,
+  snippetForSpan,
+  spanFromOffsets,
   type WorkflowSource,
 } from "./static-analysis";
