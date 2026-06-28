@@ -302,6 +302,16 @@ Final outcome: the diagnostic contract now lives in focused modules under
 `text.ts`, and `schema.ts`. Public consumers still import through `odw-lint`
 only. At closure, `make all`, `make markdownlint`, and `make nixie` passed.
 
+## Addenda
+
+- [ ] 1.2.3.1. Add diagnostic schema and architecture-test cleanup.
+  - Source: audit:1.2.3.
+  - Severity: low.
+  - Scope: extract private diagnostic schema shape helpers and separate
+    architecture-test query helpers from assertions.
+  - Success: schema and architecture tests retain the same public contracts
+    while their private helpers make drift points explicit.
+
 ## Context and orientation
 
 The current branch is `roadmap-1-2-3`. The roadmap entry is `docs/roadmap.md`

@@ -82,6 +82,10 @@ shape. The result informs every parser, rule, and reporter task. See
   - Success: the public API remains importable through `odw-lint`, and each
     diagnostic responsibility has one named module before parser, CLI, and
     rule-engine responsibilities land.
+  - [ ] 1.2.3.1. Add diagnostic schema and architecture-test cleanup.
+    - Addendum (from audit:1.2.3; low). Extract private diagnostic schema
+      shape helpers and separate architecture-test query helpers from
+      assertions. Lightweight addendum pass.
 
 ### 1.3. Establish the workflow fixture corpus
 
@@ -125,12 +129,12 @@ statically. It unlocks metadata rules and body parsing. See
 
 - [ ] 2.1.1. Implement a source masker for comments, strings, template
   literals, and regex literals.
-  - Requires steps 1.1-1.3.
+  - Requires steps 1.1-1.3 and 2.1.4.
   - See [technical-design.md](technical-design.md) §§5 and 6.2.
   - Success: masking fixtures from 1.3.3 do not affect meta extraction.
 - [ ] 2.1.2. Implement static `export const meta` extraction and unsupported
   import/export detection.
-  - Requires 2.1.1.
+  - Requires 2.1.1 and 2.1.6.
   - See [technical-design.md](technical-design.md) §§6.2 and 9.1.
   - Success: valid ODW examples pass envelope scanning and invalid import or
     export fixtures fail with exact spans.
