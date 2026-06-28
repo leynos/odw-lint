@@ -6,15 +6,25 @@
   "license": "ISC",
   "scripts": {
     "build": "tsc",
-    "fmt": "bunx biome format --write src tests package.json biome.jsonc bunfig.toml tsconfig.json",
-    "lint": "bunx biome ci src tests",
-    "check:types": "tsc --noEmit",
+    "fmt": "bunx biome format --write src tests package.json biome.jsonc bunfig.toml tsconfig.json .oxlintrc.json",
+    "lint": "bun run lint:biome && bun run lint:oxlint",
+    "lint:biome": "bunx biome ci src tests",
+    "lint:oxlint": "bunx oxlint src tests",
+    "check:types": "bunx tsc --noEmit",
     "test": "bun test",
     "test:all": "bun run lint && bun run check:types && bun test"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.1",
     "bun-types": "^1.1.3",
+    "df12-lints": "git+https://github.com/leynos/df12-lints.git#08ca59bb3ecd5deb296ec3ee5d95f47b214120c5",
+    "oxlint": "^1.66.0",
     "typescript": "^5.6.3"
+  },
+  "trustedDependencies": [
+    "df12-lints"
+  ],
+  "dependencyJustifications": {
+    "df12-lints": "Pinned to the reviewed Git commit that provides the local Oxlint plugin until df12-lints publishes a versioned package with that plugin."
   }
 }

@@ -1,3 +1,7 @@
+/**
+ * @file Behaviour tests for the template greeting helper.
+ */
+
 import { describe, expect, it } from "bun:test";
 
 import { greet } from "../src/index";
