@@ -9,6 +9,9 @@
 import type { SourcePosition } from "../diagnostics/types";
 import type { SourceLine } from "./types";
 
+/** JavaScript line terminators recognised by the original-source scanner. */
+const LINE_TERMINATORS = new Set(["\n", "\r", "\u2028", "\u2029"]);
+
 /**
  * Private lookup tables derived from the original source text.
  */
@@ -57,8 +60,8 @@ export const scanOriginalSource = (sourceText: string): SourceScan => {
 
     const character = String.fromCodePoint(codePoint);
     if (isLineTerminator(character)) {
-      const terminatorByteLength = isCrLfTerminator(sourceText, index) ? 2 : 1;
-      const terminatorIndexLength = terminatorByteLength;
+      const terminatorByteLength = lineTerminatorByteLength(sourceText, index, codePoint);
+      const terminatorIndexLength = lineTerminatorIndexLength(sourceText, index, character);
       const nextByteOffset = byteOffset + terminatorByteLength;
       const nextIndex = index + terminatorIndexLength;
 
@@ -129,7 +132,7 @@ const utf8ByteLengthForCodePoint = (codePoint: number): number => {
  * @returns True when the character is a current source line terminator.
  */
 export const isLineTerminator = (character: string): boolean => {
-  return character === "\n" || character === "\r";
+  return LINE_TERMINATORS.has(character);
 };
 
 /**
@@ -141,6 +144,20 @@ export const isLineTerminator = (character: string): boolean => {
  */
 export const isCrLfTerminator = (sourceText: string, index: number): boolean => {
   return sourceText[index] === "\r" && sourceText[index + 1] === "\n";
+};
+
+/** Returns the UTF-8 byte width of a supported line terminator. */
+const lineTerminatorByteLength = (sourceText: string, index: number, codePoint: number): number => {
+  return isCrLfTerminator(sourceText, index) ? 2 : utf8ByteLengthForCodePoint(codePoint);
+};
+
+/** Returns the UTF-16 index width of a supported line terminator. */
+const lineTerminatorIndexLength = (
+  sourceText: string,
+  index: number,
+  character: string,
+): number => {
+  return isCrLfTerminator(sourceText, index) ? 2 : character.length;
 };
 
 /**

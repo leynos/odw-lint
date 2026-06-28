@@ -184,9 +184,12 @@ offset indexes alongside the public line metadata.
 
 Offsets are zero-based UTF-8 byte offsets into the original source text. Lines
 and columns are one-based display positions, and columns count Unicode code
-points rather than UTF-16 code units. A CRLF terminator counts as one display
-line break, but it still occupies two UTF-8 byte offsets; the offset between
-the carriage return and line feed is not a valid display position.
+points rather than UTF-16 code units. Source-span helpers treat LF, CR, CRLF,
+U+2028 line separator, and U+2029 paragraph separator as JavaScript line
+terminators. A CRLF terminator counts as one display line break, but it still
+occupies two UTF-8 byte offsets; the offset between the carriage return and line
+feed is not a valid display position. The Unicode separators each occupy three
+UTF-8 byte offsets, and interior bytes are not valid display positions.
 
 Use `spanFromOffsets(file, startOffset, endOffset)` for half-open spans where
 `startOffset` is inclusive and `endOffset` is exclusive. Use `sliceSourceSpan`

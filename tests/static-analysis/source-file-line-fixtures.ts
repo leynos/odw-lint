@@ -109,6 +109,34 @@ export const SOURCE_FILE_FIXTURES: readonly SourceFileFixture[] = [
     ],
   },
   {
+    name: "JavaScript line and paragraph separators",
+    sourceText: "ab\u2028cd\u2029e",
+    byteLength: 11,
+    lines: [
+      {
+        line: 1,
+        startOffset: 0,
+        contentEndOffset: 2,
+        terminatorEndOffset: 5,
+        text: "ab",
+      },
+      {
+        line: 2,
+        startOffset: 5,
+        contentEndOffset: 7,
+        terminatorEndOffset: 10,
+        text: "cd",
+      },
+      {
+        line: 3,
+        startOffset: 10,
+        contentEndOffset: 11,
+        terminatorEndOffset: 11,
+        text: "e",
+      },
+    ],
+  },
+  {
     name: "single CRLF creates two empty lines",
     sourceText: "\r\n",
     byteLength: 2,

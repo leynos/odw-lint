@@ -91,7 +91,7 @@ shape. The result informs every parser, rule, and reporter task. See
     - Addendum (from audit:1.2.2; low). Centralize generated source setup for
       source-file property tests without sharing production scanner logic.
       Lightweight addendum pass.
-  - [ ] 1.2.2.5. Add JavaScript line-separator source-span coverage.
+  - [x] 1.2.2.5. Add JavaScript line-separator source-span coverage.
     - Addendum (from audit:1.3.2, audit:1.3.3, and audit:1.3.4; medium).
       Cover U+2028 and U+2029 as JavaScript line terminators in source-span
       helpers before parser-backed diagnostics depend on them. Lightweight

@@ -151,10 +151,13 @@ describe("source-file helper architecture", () => {
     expect(existsSync("src/static-analysis/source-file.ts")).toBeTrue();
 
     expectModuleDeclarations("src/static-analysis/source-scan.ts", [
+      "LINE_TERMINATORS",
       "SourceIndexes",
       "SourceScan",
       "isCrLfTerminator",
       "isLineTerminator",
+      "lineTerminatorByteLength",
+      "lineTerminatorIndexLength",
       "scanOriginalSource",
       "sourceLine",
       "sourcePosition",

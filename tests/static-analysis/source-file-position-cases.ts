@@ -87,6 +87,30 @@ export const SOURCE_POSITION_CASES: readonly SourcePositionCase[] = [
     position: { offset: 3, line: 2, column: 1 },
   },
   {
+    name: "JavaScript line separator terminator start",
+    sourceText: "ab\u2028c",
+    offset: 2,
+    position: { offset: 2, line: 1, column: 3 },
+  },
+  {
+    name: "after JavaScript line separator",
+    sourceText: "ab\u2028c",
+    offset: 5,
+    position: { offset: 5, line: 2, column: 1 },
+  },
+  {
+    name: "JavaScript paragraph separator terminator start",
+    sourceText: "ab\u2029c",
+    offset: 2,
+    position: { offset: 2, line: 1, column: 3 },
+  },
+  {
+    name: "after JavaScript paragraph separator",
+    sourceText: "ab\u2029c",
+    offset: 5,
+    position: { offset: 5, line: 2, column: 1 },
+  },
+  {
     name: "BMP Unicode code point end",
     sourceText: "é",
     offset: 2,
@@ -137,5 +161,15 @@ export const INVALID_OFFSET_CASES: readonly InvalidOffsetCase[] = [
     name: "inside CRLF terminator",
     sourceText: "a\r\nb",
     offset: 2,
+  },
+  {
+    name: "inside JavaScript line separator terminator",
+    sourceText: "a\u2028b",
+    offset: 2,
+  },
+  {
+    name: "inside JavaScript paragraph separator terminator",
+    sourceText: "a\u2029b",
+    offset: 3,
   },
 ];

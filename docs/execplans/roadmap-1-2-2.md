@@ -554,7 +554,7 @@ CodeRabbit review.
     settings.
   - Success: property bodies focus on the invariant being asserted, and the
     oracle remains independent from production implementation details.
-- [ ] 1.2.2.5. Add JavaScript line-separator source-span coverage.
+- [x] 1.2.2.5. Add JavaScript line-separator source-span coverage.
   - Source: audit:1.3.2, audit:1.3.3, and audit:1.3.4, medium.
   - Scope: add source-position helper coverage for U+2028 line separator and
     U+2029 paragraph separator as JavaScript line terminators before

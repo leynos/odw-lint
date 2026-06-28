@@ -30,6 +30,8 @@ type PositionScanState = {
 /** Deterministic fast-check runner settings for source-span properties. */
 export const SOURCE_SPAN_PROPERTY_RUNNER = { seed: 0x1222026, numRuns: 200 } as const;
 const TEXT_ENCODER = new TextEncoder();
+/** JavaScript line terminators recognised by the independent oracle. */
+const LINE_TERMINATORS = new Set(["\n", "\r", "\u2028", "\u2029"]);
 /** Generated source fragments used to compose bounded property-test sources. */
 export const SOURCE_SEGMENTS = [
   "",
@@ -40,6 +42,8 @@ export const SOURCE_SEGMENTS = [
   "\n",
   "\r\n",
   "\r",
+  "\u2028",
+  "\u2029",
   "x\n",
   "y\r\n",
 ] as const;
@@ -140,12 +144,14 @@ const advanceExpectedLineTerminator = (
   sourceText: string,
   state: PositionScanState,
 ): PositionScanState => {
-  const terminatorLength = isCrLfTerminator(sourceText, state.index) ? 2 : 1;
+  const character = sourceText[state.index] ?? "";
+  const byteLength = isCrLfTerminator(sourceText, state.index) ? 2 : utf8ByteLength(character);
+  const indexLength = isCrLfTerminator(sourceText, state.index) ? 2 : character.length;
   const nextState = {
     line: state.line + 1,
     column: 1,
-    byteOffset: state.byteOffset + terminatorLength,
-    index: state.index + terminatorLength,
+    byteOffset: state.byteOffset + byteLength,
+    index: state.index + indexLength,
   };
 
   return withPosition(state, nextState);
@@ -260,7 +266,7 @@ const utf8ByteLength = (text: string): number => {
  * Checks whether a character starts a line terminator.
  */
 const isLineTerminator = (character: string): boolean => {
-  return character === "\n" || character === "\r";
+  return LINE_TERMINATORS.has(character);
 };
 
 /**

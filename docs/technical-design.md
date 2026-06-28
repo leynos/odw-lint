@@ -312,6 +312,9 @@ The diagnostic contract has these invariants:
 - `offset` is a zero-based UTF-8 byte offset into the original file.
 - `line` and `column` are one-based display positions. `column` is counted in
   Unicode code points, not UTF-16 code units.
+- Source-span line metadata follows JavaScript line terminators: LF, CR, CRLF,
+  U+2028 line separator, and U+2029 paragraph separator. Interior UTF-8 bytes
+  of multibyte terminators are not valid display positions.
 - Suggestions are optional. Safe fixes may be applied by `--fix` once the rule
   has fix support; unsafe fixes require `--unsafe-fixes`.
 - Text output is derived from the same diagnostic objects as JSON output.

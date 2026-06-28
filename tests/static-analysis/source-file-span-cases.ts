@@ -81,6 +81,18 @@ export const SOURCE_SPAN_CASES: readonly SourceSpanCase[] = [
     lineText: "ab",
   },
   {
+    name: "JavaScript line and paragraph separator multiline",
+    sourceText: "ab\u2028cd\u2029ef",
+    startOffset: 1,
+    endOffset: 11,
+    span: {
+      start: { offset: 1, line: 1, column: 2 },
+      end: { offset: 11, line: 3, column: 2 },
+    },
+    text: "b\u2028cd\u2029e",
+    lineText: "ab",
+  },
+  {
     name: "Unicode code point",
     sourceText: "é😀x",
     startOffset: 2,
@@ -142,6 +154,22 @@ export const INVALID_SOURCE_SPAN_CASES: readonly InvalidSpanCase[] = [
     span: {
       start: { offset: 2, line: 1, column: 3 },
       end: { offset: 3, line: 2, column: 1 },
+    },
+  },
+  {
+    name: "inside JavaScript line separator terminator",
+    sourceText: "a\u2028b",
+    span: {
+      start: { offset: 2, line: 1, column: 3 },
+      end: { offset: 4, line: 2, column: 1 },
+    },
+  },
+  {
+    name: "inside JavaScript paragraph separator terminator",
+    sourceText: "a\u2029b",
+    span: {
+      start: { offset: 1, line: 1, column: 2 },
+      end: { offset: 3, line: 1, column: 3 },
     },
   },
   {
