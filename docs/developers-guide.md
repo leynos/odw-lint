@@ -21,6 +21,22 @@ repository. v1 vendors the pure-literal parser behaviour from ODW's
 `dual-compat.ts` into `odw-lint` as its own source of truth, and production code
 must not depend on ODW publishing a static API.
 
+The owned production boundary starts at `src/static-analysis/`. Roadmap task
+1.1.1 scaffolds that boundary as a source-level internal API exposed through
+`src/index.ts`; it does not add package-level `exports`, `types`, `main` or
+`bin` fields while the package remains private.
+
+The scaffold is deliberately passive. It exports the boundary identifier,
+workflow source shape, component labels, and stage labels, but it does not
+parse workflow bodies or emit diagnostics. Direct SWC calls belong only in the
+future parser adapter from roadmap task 2.2.1. Task 1.1.1 also deliberately
+does not add `@swc/core`, `parseWithSwc`, a public parser failure contract, or
+the forbidden-import architecture test.
+
+When extending this area, keep the roadmap sequencing intact: task 2.1.4 owns
+the forbidden-import architecture test for production code, and task 2.2.1
+owns the SWC parser adapter.
+
 ## Commit Gate
 
 Run the full gate before committing code changes:

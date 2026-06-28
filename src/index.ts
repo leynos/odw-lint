@@ -6,6 +6,16 @@
  */
 
 export { DIAGNOSTIC_REPORT_SCHEMA } from "./diagnostic-schema";
+export type {
+  StaticAnalysisComponent,
+  StaticAnalysisStage,
+  WorkflowSource,
+} from "./static-analysis";
+export {
+  STATIC_ANALYSIS_BOUNDARY,
+  STATIC_ANALYSIS_COMPONENTS,
+  STATIC_ANALYSIS_STAGES,
+} from "./static-analysis";
 
 /**
  * Version of the diagnostic JSON envelope emitted by this package.
