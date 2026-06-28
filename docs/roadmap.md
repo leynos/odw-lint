@@ -390,6 +390,23 @@ See [technical-design.md](technical-design.md) §§7.1 and 13.
   - Success: the prototype produces equivalent diagnostics to
     `odw-lint check`.
 
+### 4.4. Add maintainer documentation navigation
+
+This step answers whether maintainers can navigate documentation, decision
+records, execution plans, and issue audits as the roadmap accumulates
+remediation work. It informs later adoption and handoff documentation. See
+[documentation-style-guide.md](documentation-style-guide.md) "Standard document
+types" and [developers-guide.md](developers-guide.md) "Documentation Upkeep".
+
+- [ ] 4.4.1. Add documentation contents and repository-layout scaffolding.
+  - Requires 1.1.1 and 1.2.1.
+  - Create `docs/contents.md` and `docs/repository-layout.md` that index
+    current docs, ADRs, issue audits, execution plans, source, tests, and
+    tooling responsibilities.
+  - Success: maintainers can find every current documentation family and
+    repository path from one canonical navigation trail without inferring
+    layout from file names.
+
 ## 5. Deferred extensions
 
 Idea: if the core v1 promise is already trustworthy and boring to operate,
