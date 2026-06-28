@@ -97,6 +97,10 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
   - See [technical-design.md](technical-design.md) §11.1.
   - Success: every fixture records expected "no error" status before any rule
     broadening.
+  - [ ] 1.3.1.1. Derive ODW example fixture paths from file names.
+    - Addendum (from review:1.3.1 and audit:1.3.1; medium). Derive
+      `fixturePath` and `upstreamPath` from each manifest `fileName` and pin
+      path invariants in tests. Lightweight addendum pass.
 - [ ] 1.3.2. Add invalid fixture families for missing metadata, malformed
   metadata, unsupported imports or exports, and syntax errors.
   - See [technical-design.md](technical-design.md) §§9.1 and 11.1.
@@ -110,6 +114,20 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
   effect if evaluated.
   - See [technical-design.md](technical-design.md) §§11.1 and 11.3.
   - Success: the fixture produces diagnostics and no side-effect marker.
+
+### 1.4. Harden repository build-gate freshness
+
+This step answers whether repository gates reproduce the dependency state
+recorded in committed package files before parser and rule work expands. It
+informs later implementation tasks that rely on `make build`, `make lint`,
+`make typecheck`, `make test`, and `make all` using the locked toolchain.
+
+- [ ] 1.4.1. Make dependency installation sensitive to lockfile-only changes.
+  - Requires 1.1.1.
+  - Update the build dependency marker so `make build` refreshes
+    `node_modules` when either `package.json` or `bun.lock` changes.
+  - Success: a lockfile-only dependency change cannot leave the Makefile gates
+    using stale installed packages.
 
 ## 2. First vertical slice: ODW dialect validation
 
@@ -350,6 +368,14 @@ as ODW evolves. It informs release confidence and ownership boundaries. See
   - See [technical-design.md](technical-design.md) §11.2.
   - Success: drift failures identify the fixture, ODW behaviour class, and
     owning `odw-lint` rule.
+- [ ] 4.1.3. Surface upstream workflow quality findings during fixture
+  refreshes.
+  - Requires 4.1.1.
+  - Record known upstream example quality findings, including findings skipped
+    to preserve snapshot fidelity, as part of the fixture-refresh workflow.
+  - Success: refresh reviews show which upstream workflow risks remain
+    intentionally mirrored and which should be fixed upstream before hashes
+    are updated.
 
 ### 4.2. Document CI and authoring workflows
 

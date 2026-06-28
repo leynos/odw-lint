@@ -265,6 +265,13 @@ before tool-specific overrides apply. CodeRabbit findings against copied
 upstream workflow behaviour were recorded and skipped in this repository to
 preserve snapshot fidelity.
 
+## Addenda
+
+- [ ] 1.3.1.1. Derive ODW example fixture paths from file names.
+  - Addendum (from review:1.3.1 and audit:1.3.1; medium). Derive
+    `fixturePath` and `upstreamPath` from each manifest `fileName` and pin
+    path invariants in tests. Lightweight addendum pass.
+
 ## Context and orientation
 
 This repository is an ESM-first TypeScript package run with Bun. The current
