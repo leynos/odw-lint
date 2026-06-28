@@ -93,7 +93,7 @@ This step answers whether the linter has enough representative source to detect
 regressions. The fixture corpus informs loader parity, rule behaviour, and
 future ODW integration. See [technical-design.md](technical-design.md) §11.1.
 
-- [ ] 1.3.1. Import ODW example workflows as read-only fixture snapshots.
+- [x] 1.3.1. Import ODW example workflows as read-only fixture snapshots.
   - See [technical-design.md](technical-design.md) §11.1.
   - Success: every fixture records expected "no error" status before any rule
     broadening.

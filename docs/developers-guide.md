@@ -124,6 +124,23 @@ files. Snapshot tests should use Bun's built-in snapshot testing support.
 Property tests should use `fast-check`, and exhaustive bounded proofs should
 use `lemmascript` where a proof is the right level of rigour.
 
+### Workflow Fixture Corpus
+
+ODW example workflow snapshots live under
+`tests/static-analysis/fixtures/odw-examples/`. Refresh them from the
+source-backed sibling checkout identified by `ODW_REFERENCE_CHECKOUT`; do not
+record host-specific absolute paths in committed documentation or manifests.
+
+The copied `.js` snapshots are intentionally excluded from Biome and Oxlint so
+their source stays byte-for-byte identical to upstream ODW examples. Do not
+format or rewrite those files in this repository. Update
+`tests/static-analysis/fixtures/odw-examples.ts` when refreshing the corpus so
+the manifest records the new hashes and the expected `no-error` diagnostics.
+
+Loader-parity execution remains owned by roadmap task 2.3.1. The fixture corpus
+records trusted source snapshots and static expectations only; it must not
+import, evaluate or execute workflow bodies during ordinary tests.
+
 ## Markdown
 
 Use `make markdownlint` when Markdown files change. The target runs:

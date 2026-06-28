@@ -7,7 +7,8 @@
       "package.json",
       "tsconfig.json",
       "src/**/*",
-      "tests/**/*"
+      "tests/**/*",
+      "!tests/static-analysis/fixtures/odw-examples/**/*.js"
     ],
     "ignoreUnknown": true
   },
@@ -45,6 +46,15 @@
   "overrides": [
     {
       "includes": ["**/*.d.ts"],
+      "formatter": {
+        "enabled": false
+      },
+      "linter": {
+        "enabled": false
+      }
+    },
+    {
+      "includes": ["tests/static-analysis/fixtures/odw-examples/**/*.js"],
       "formatter": {
         "enabled": false
       },
