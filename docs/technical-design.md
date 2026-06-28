@@ -283,7 +283,7 @@ JSON output is a versioned object, not a bare diagnostics array:
 {
   "schemaVersion": 1,
   "tool": { "name": "odw-lint", "version": "0.1.0" },
-  "summary": { "files": 1, "errors": 1, "warnings": 0, "infos": 0 },
+  "summary": { "files": 1, "errors": 1, "warnings": 0, "infos": 0, "hints": 0 },
   "diagnostics": [
     {
       "file": "examples/fan-out-reduce.js",

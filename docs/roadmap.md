@@ -52,7 +52,7 @@ This step answers whether all rules can report through one stable diagnostic
 shape. The result informs every parser, rule, and reporter task. See
 [technical-design.md](technical-design.md) §§8 and 11.5.
 
-- [ ] 1.2.1. Implement the diagnostic type, severity model, rule identifier
+- [x] 1.2.1. Implement the diagnostic type, severity model, rule identifier
   type, JSON schema envelope, and summary counts.
   - See [technical-design.md](technical-design.md) §8.
   - Success: JSON output includes `schemaVersion`, `tool`, `summary`, and

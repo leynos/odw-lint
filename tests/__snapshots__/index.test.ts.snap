@@ -1,0 +1,187 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`diagnostic JSON Schema matches the reviewed schema snapshot 1`] = `
+{
+  "additionalProperties": false,
+  "properties": {
+    "diagnostics": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "docs": {
+            "type": "string",
+          },
+          "file": {
+            "type": "string",
+          },
+          "message": {
+            "type": "string",
+          },
+          "rule": {
+            "type": "string",
+          },
+          "severity": {
+            "enum": [
+              "error",
+              "warning",
+              "info",
+              "hint",
+            ],
+          },
+          "span": {
+            "additionalProperties": false,
+            "properties": {
+              "end": {
+                "additionalProperties": false,
+                "properties": {
+                  "column": {
+                    "minimum": 1,
+                    "type": "integer",
+                  },
+                  "line": {
+                    "minimum": 1,
+                    "type": "integer",
+                  },
+                  "offset": {
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                },
+                "required": [
+                  "offset",
+                  "line",
+                  "column",
+                ],
+                "type": "object",
+              },
+              "start": {
+                "additionalProperties": false,
+                "properties": {
+                  "column": {
+                    "minimum": 1,
+                    "type": "integer",
+                  },
+                  "line": {
+                    "minimum": 1,
+                    "type": "integer",
+                  },
+                  "offset": {
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                },
+                "required": [
+                  "offset",
+                  "line",
+                  "column",
+                ],
+                "type": "object",
+              },
+            },
+            "required": [
+              "start",
+              "end",
+            ],
+            "type": "object",
+          },
+          "suggestions": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "message": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "message",
+              ],
+              "type": "object",
+            },
+            "minItems": 0,
+            "type": "array",
+          },
+        },
+        "required": [
+          "file",
+          "rule",
+          "severity",
+          "message",
+          "span",
+        ],
+        "type": "object",
+      },
+      "minItems": 0,
+      "type": "array",
+    },
+    "schemaVersion": {
+      "enum": [
+        1,
+      ],
+    },
+    "summary": {
+      "additionalProperties": false,
+      "properties": {
+        "errors": {
+          "minimum": 0,
+          "type": "integer",
+        },
+        "files": {
+          "minimum": 0,
+          "type": "integer",
+        },
+        "hints": {
+          "minimum": 0,
+          "type": "integer",
+        },
+        "infos": {
+          "minimum": 0,
+          "type": "integer",
+        },
+        "warnings": {
+          "minimum": 0,
+          "type": "integer",
+        },
+      },
+      "required": [
+        "files",
+        "errors",
+        "warnings",
+        "infos",
+        "hints",
+      ],
+      "type": "object",
+    },
+    "tool": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "enum": [
+            "odw-lint",
+          ],
+        },
+        "version": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "name",
+        "version",
+      ],
+      "type": "object",
+    },
+  },
+  "required": [
+    "schemaVersion",
+    "tool",
+    "summary",
+    "diagnostics",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`text diagnostics uses the same diagnostics for JSON reports and text output 1`] = `
+"examples/error.js:1:1 error odw/meta-required error diagnostic
+examples/warning.js:1:1 warning odw/meta-required warning diagnostic
+examples/hint.js:1:1 hint odw/meta-required hint diagnostic"
+`;

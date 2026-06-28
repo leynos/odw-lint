@@ -17,6 +17,7 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "types": ["bun-types"],
+    "rootDir": ".",
     "outDir": "dist",
     "declaration": true,
     "declarationMap": true,
