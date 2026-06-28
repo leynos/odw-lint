@@ -53,10 +53,10 @@ make all
 - `make typecheck`
 - `make test`
 
-`make build` installs dependencies through the `node_modules` Make target.
-That marker depends on both `package.json` and `bun.lock`, so a lockfile-only
-dependency update is expected to rerun `bun install` before formatting, linting,
-type checking, or tests use the installed toolchain.
+`make build` installs dependencies through the `node_modules` Make target. That
+marker depends on both `package.json` and `bun.lock`, so a lockfile-only
+dependency update is expected to rerun `bun install` before formatting,
+linting, type checking, or tests use the installed toolchain.
 
 Run `make markdownlint` as well when Markdown files change.
 
@@ -148,26 +148,25 @@ inputs for missing metadata, malformed metadata, unsupported import/export, and
 syntax-error coverage. The `hostile-metadata` family is also raw invalid input:
 its metadata expressions would set or throw visible marker values if evaluated.
 Do not import, evaluate, execute, or format invalid workflow fixtures as
-ordinary JavaScript. Keep
-`tests/static-analysis/fixtures/invalid-workflows.ts` in sync with every raw
-fixture by updating the family, path, SHA-256 hash, expected status, diagnostic
-rule, severity, message, UTF-8 source span, and reviewer-facing `spanText`.
+ordinary JavaScript. Keep `tests/static-analysis/fixtures/invalid-workflows.ts`
+in sync with every raw fixture by updating the family, path, SHA-256 hash,
+expected status, diagnostic rule, severity, message, UTF-8 source span, and
+reviewer-facing `spanText`.
 
 Synthetic masking fixtures live under
 `tests/static-analysis/fixtures/masking/`. They are owned by `odw-lint`, not
 copied from upstream ODW, so repository tooling may format them like ordinary
-test source. Keep their manifest in
-`tests/static-analysis/fixtures/masking.ts` sorted by filename and pin each
-fixture's SHA-256 hash after formatting. These fixtures record empty
-`no-envelope-diagnostics` expectations for future envelope-scanner work where
-decoy workflow syntax appears inside comments, strings, regex literals, and
-template literals.
+test source. Keep their manifest in `tests/static-analysis/fixtures/masking.ts`
+sorted by filename and pin each fixture's SHA-256 hash after formatting. These
+fixtures record empty `no-envelope-diagnostics` expectations for future
+envelope-scanner work where decoy workflow syntax appears inside comments,
+strings, regex literals, and template literals.
 
 Loader-parity execution remains owned by roadmap task 2.3.1. The fixture corpus
 records trusted source snapshots and static expectations only; it must not
-import, evaluate or execute workflow bodies during ordinary tests.
-Roadmap task 2.1.5 owns the future no-side-effect lint execution regression for
-hostile metadata fixtures.
+import, evaluate or execute workflow bodies during ordinary tests. Roadmap task
+2.1.5 owns the future no-side-effect lint execution regression for hostile
+metadata fixtures.
 
 ### Source-span helpers
 
@@ -188,6 +187,25 @@ Use `spanFromOffsets(file, startOffset, endOffset)` for half-open spans where
 or `snippetForSpan` only after the span has been validated against the same
 `OriginalSourceFile`; both helpers re-check caller-supplied spans so stale
 line, column, or offset data cannot produce misleading text.
+
+Internal source-helper ownership is split by responsibility:
+
+- `src/static-analysis/source-file.ts` creates `OriginalSourceFile` records and
+  re-exports the public source-span helpers as the compatibility facade.
+- `src/static-analysis/source-scan.ts` performs the single production scan over
+  original source text, building line metadata, display positions, UTF-8 byte
+  offsets, and UTF-16 text indexes.
+- `src/static-analysis/source-indexes.ts` owns private index storage and
+  guarded lookup for factory-created source records.
+- `src/static-analysis/source-position.ts` owns offset lookup, span
+  construction, and caller-supplied span validation.
+- `src/static-analysis/source-snippet.ts` owns validated source slicing and
+  reviewer-facing snippets.
+
+Keep new parser, mapper, and reporter code on the public facade unless it needs
+an explicitly internal helper. Do not re-export private index or validation
+helpers from `src/static-analysis/index.ts` or `src/index.ts` without a design
+update.
 
 ```ts
 import { createOriginalSourceFile, sliceSourceSpan, spanFromOffsets } from "odw-lint";

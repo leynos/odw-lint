@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import type { OriginalSourceFile } from "odw-lint";
+import type { OriginalSourceFile, SourceSpan } from "odw-lint";
 import {
   createOriginalSourceFile,
   positionAtOffset,
@@ -109,4 +109,18 @@ describe("original source files", () => {
       expect(() => snippetForSpan(sourceFile, invalidCase.span)).toThrow(SourceOffsetError);
     });
   }
+
+  it("rejects malformed caller spans before slicing", () => {
+    const sourceFile = createOriginalSourceFile({
+      filePath: "workflows/example.js",
+      sourceText: "meta\nbody",
+    });
+    const malformedSpan = {
+      start: { offset: 0, line: 1, column: 1 },
+      end: null,
+    } as unknown as SourceSpan;
+
+    expect(() => sliceSourceSpan(sourceFile, malformedSpan)).toThrow(SourceOffsetError);
+    expect(() => snippetForSpan(sourceFile, malformedSpan)).toThrow(SourceOffsetError);
+  });
 });

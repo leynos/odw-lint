@@ -113,7 +113,7 @@ shape. The result informs every parser, rule, and reporter task. See
       developer guide and `src/index.ts` file documentation back into
       alignment with the current private package entry and exported
       static-analysis surface. Lightweight addendum pass.
-- [ ] 1.2.4. Split source-file helper responsibilities before parser
+- [x] 1.2.4. Split source-file helper responsibilities before parser
   span-mapping work.
   - Requires 1.2.2.
   - Separate scanning, validation, slicing, snippet, and construction concerns
