@@ -4,7 +4,7 @@
 
 all: build check-fmt lint typecheck test
 
-node_modules: package.json
+node_modules: package.json bun.lock
 	bun install
 	@touch node_modules
 

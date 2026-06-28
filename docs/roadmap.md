@@ -139,7 +139,7 @@ recorded in committed package files before parser and rule work expands. It
 informs later implementation tasks that rely on `make build`, `make lint`,
 `make typecheck`, `make test`, and `make all` using the locked toolchain.
 
-- [ ] 1.4.1. Make dependency installation sensitive to lockfile-only changes.
+- [x] 1.4.1. Make dependency installation sensitive to lockfile-only changes.
   - Requires 1.1.1.
   - Update the build dependency marker so `make build` refreshes
     `node_modules` when either `package.json` or `bun.lock` changes.

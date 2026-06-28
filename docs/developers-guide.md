@@ -53,6 +53,11 @@ make all
 - `make typecheck`
 - `make test`
 
+`make build` installs dependencies through the `node_modules` Make target.
+That marker depends on both `package.json` and `bun.lock`, so a lockfile-only
+dependency update is expected to rerun `bun install` before formatting, linting,
+type checking, or tests use the installed toolchain.
+
 Run `make markdownlint` as well when Markdown files change.
 
 ## Bun Scripts
