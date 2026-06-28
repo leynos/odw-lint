@@ -1,0 +1,56 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`diagnostic reports creates a versioned report envelope over the same diagnostics 1`] = `
+{
+  "diagnostics": [
+    {
+      "file": "examples/error.js",
+      "message": "error diagnostic",
+      "rule": "odw/meta-required",
+      "severity": "error",
+      "span": {
+        "end": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
+    },
+    {
+      "file": "examples/hint.js",
+      "message": "hint diagnostic",
+      "rule": "odw/meta-required",
+      "severity": "hint",
+      "span": {
+        "end": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
+    },
+  ],
+  "schemaVersion": 1,
+  "summary": {
+    "errors": 1,
+    "files": 1,
+    "hints": 1,
+    "infos": 0,
+    "warnings": 0,
+  },
+  "tool": {
+    "name": "odw-lint",
+    "version": "0.1.0",
+  },
+}
+`;

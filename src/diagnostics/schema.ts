@@ -5,7 +5,8 @@
  * share a stable contract without adding a runtime validator dependency.
  */
 
-import { DIAGNOSTIC_SEVERITIES } from "./diagnostic-severity";
+import { DIAGNOSTIC_SEVERITIES } from "./severity";
+import { DIAGNOSTIC_SCHEMA_VERSION, TOOL_NAME } from "./types";
 
 /**
  * JSON Schema for the diagnostic report envelope.
@@ -15,13 +16,13 @@ export const DIAGNOSTIC_REPORT_SCHEMA = {
   required: ["schemaVersion", "tool", "summary", "diagnostics"],
   additionalProperties: false,
   properties: {
-    schemaVersion: { enum: [1] },
+    schemaVersion: { enum: [DIAGNOSTIC_SCHEMA_VERSION] },
     tool: {
       type: "object",
       required: ["name", "version"],
       additionalProperties: false,
       properties: {
-        name: { enum: ["odw-lint"] },
+        name: { enum: [TOOL_NAME] },
         version: { type: "string" },
       },
     },

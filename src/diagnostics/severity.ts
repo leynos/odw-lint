@@ -7,7 +7,7 @@
 /**
  * Supported diagnostic severity values after caller-applied overrides.
  */
-export const DIAGNOSTIC_SEVERITIES = ["error", "warning", "info", "hint"] as const;
+export const DIAGNOSTIC_SEVERITIES = Object.freeze(["error", "warning", "info", "hint"] as const);
 
 /**
  * Supported diagnostic severity values after caller-applied overrides.

@@ -179,9 +179,3 @@ exports[`diagnostic JSON Schema matches the reviewed schema snapshot 1`] = `
   "type": "object",
 }
 `;
-
-exports[`text diagnostics uses the same diagnostics for JSON reports and text output 1`] = `
-"examples/error.js:1:1 error odw/meta-required error diagnostic
-examples/warning.js:1:1 warning odw/meta-required warning diagnostic
-examples/hint.js:1:1 hint odw/meta-required hint diagnostic"
-`;

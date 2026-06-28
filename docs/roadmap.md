@@ -7,8 +7,8 @@ phases state ideas, steps pursue workstreams that validate or falsify those
 ideas, and tasks are review-sized execution units.
 
 The roadmap makes no date or duration commitments. It assumes implementation
-will proceed in the existing Bun and TypeScript repository, with static-boundary
-decisions captured in [adr](adr/) before code relies on them.
+will proceed in the existing Bun and TypeScript repository, with
+static-boundary decisions captured in [adr](adr/) before code relies on them.
 
 ## 1. Foundational phase: static workflow contract
 
@@ -16,8 +16,8 @@ Idea: if `odw-lint` settles its static workflow model, diagnostic contract, and
 fixture corpus before adding broad rules, later slices can focus on useful
 workflow feedback rather than reworking parser and reporter boundaries.
 
-This phase proves that an ODW workflow can be analysed without executing
-source and that diagnostics can point back to the original file.
+This phase proves that an ODW workflow can be analysed without executing source
+and that diagnostics can point back to the original file.
 
 ### 1.1. Ratify the static-analysis and packaging boundary
 
@@ -25,8 +25,8 @@ This step records that `odw-lint` owns an SWC-based static parser for v1 and
 ships the standalone `odw-lint check` command. The command is path/glob-first;
 ODW-style name resolution and any `odw check` subcommand are deferred to future
 ODW integration. This decision informs command naming, package exports, fixture
-ownership, and integration tests. See [technical-design.md](technical-design.md)
-§§5, 7 and 13, and
+ownership, and integration tests. See
+[technical-design.md](technical-design.md) §§5, 7 and 13, and
 [0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md).
 
 - [x] 1.1.1. Scaffold the owned SWC-based static-analysis module boundary.
@@ -74,7 +74,7 @@ shape. The result informs every parser, rule, and reporter task. See
   - See [technical-design.md](technical-design.md) §§6.1 and 11.5.
   - Success: offsets, lines, columns, and snippets round-trip for fixtures
     with LF, CRLF, Unicode, and trailing-newline variants.
-- [ ] 1.2.3. Split the diagnostic contract into focused modules.
+- [x] 1.2.3. Split the diagnostic contract into focused modules.
   - Requires 1.2.1.
   - Move diagnostic types, rule-id parsing, report helpers, text formatting,
     and schema construction behind focused internal modules while preserving
@@ -85,10 +85,9 @@ shape. The result informs every parser, rule, and reporter task. See
 
 ### 1.3. Establish the workflow fixture corpus
 
-This step answers whether the linter has enough representative source to
-detect regressions. The fixture corpus informs loader parity, rule behaviour,
-and future ODW integration. See [technical-design.md](technical-design.md)
-§11.1.
+This step answers whether the linter has enough representative source to detect
+regressions. The fixture corpus informs loader parity, rule behaviour, and
+future ODW integration. See [technical-design.md](technical-design.md) §11.1.
 
 - [ ] 1.3.1. Import ODW example workflows as read-only fixture snapshots.
   - See [technical-design.md](technical-design.md) §11.1.
@@ -206,8 +205,8 @@ code. It informs whether phase 2 can ship. See
 
 ### 2.4. Ship the minimal `check` command
 
-This step answers whether the checker can run as a normal repository gate.
-It unlocks CI adoption and user feedback. See
+This step answers whether the checker can run as a normal repository gate. It
+unlocks CI adoption and user feedback. See
 [technical-design.md](technical-design.md) §§7 and 15.
 
 - [ ] 2.4.1. Implement `odw-lint check` for explicit file paths.
@@ -327,9 +326,8 @@ Idea: if the standalone checker fits ODW's examples, CI, and future command
 surface, it can become the shared static-analysis layer for multi-provider
 workflow authoring instead of a side tool.
 
-This phase turns the linter into a documented adoption path and prepares an
-ODW integration point without forcing the integration before the core is
-stable.
+This phase turns the linter into a documented adoption path and prepares an ODW
+integration point without forcing the integration before the core is stable.
 
 ### 4.1. Automate fixture drift management
 
@@ -376,8 +374,9 @@ without knowing its internals. It informs the v1 release checklist. See
 ### 4.3. Prepare the ODW command integration
 
 This step answers whether ODW can call the checker as a library rather than
-shelling out. It informs whether `odw check` belongs in ODW v1 integration.
-See [technical-design.md](technical-design.md) §§7.1 and 13.
+shelling out. It informs whether `odw check` belongs in ODW v1 integration. See
+[technical-design.md](technical-design.md)
+§§7.1 and 13.
 
 - [ ] 4.3.1. Export a programmatic `checkWorkflows` API from `odw-lint`.
   - Requires phase 3.
@@ -409,8 +408,8 @@ types" and [developers-guide.md](developers-guide.md) "Documentation Upkeep".
 
 ## 5. Deferred extensions
 
-Idea: if the core v1 promise is already trustworthy and boring to operate,
-the project can evaluate broader extensions on their product value instead of
+Idea: if the core v1 promise is already trustworthy and boring to operate, the
+project can evaluate broader extensions on their product value instead of
 letting them destabilize the main release.
 
 The following work is intentionally outside the core v1 path.
@@ -418,8 +417,7 @@ The following work is intentionally outside the core v1 path.
 ### 5.1. Evaluate Biome and GritQL integration
 
 This step answers whether Biome can host a subset of ODW lint rules for teams
-already using Biome. See [technical-design.md](technical-design.md) §§3 and
-14.
+already using Biome. See [technical-design.md](technical-design.md) §§3 and 14.
 
 - [ ] 5.1.1. Prototype Biome GritQL snippets for simple AST-pattern
   diagnostics.
@@ -443,8 +441,7 @@ plugin API is suitable for the project. See
 ### 5.3. Evaluate editor and Rust-core paths
 
 This step answers whether adoption now requires editor diagnostics or a
-Node-free analyser. See [technical-design.md](technical-design.md) §§13 and
-14.
+Node-free analyser. See [technical-design.md](technical-design.md) §§13 and 14.
 
 - [ ] 5.3.1. Write an ADR for language-server support.
   - Requires phase 4.
