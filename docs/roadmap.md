@@ -171,12 +171,12 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
   effect if evaluated.
   - See [technical-design.md](technical-design.md) §§11.1 and 11.3.
   - Success: the fixture produces diagnostics and no side-effect marker.
-  - [ ] 1.3.4.1. Split invalid workflow fixture manifests by family.
+  - [x] 1.3.4.1. Split invalid workflow fixture manifests by family.
     - Addendum (from audit:1.3.2 and audit:1.3.4; medium). Split the
       near-limit invalid workflow manifest by fixture family before further
       corpus growth makes reviews and file-size limits brittle. Lightweight
       addendum pass.
-  - [ ] 1.3.4.2. Extract fixture-corpus support helpers.
+  - [x] 1.3.4.2. Extract fixture-corpus support helpers.
     - Addendum (from audit:1.3.3 and audit:1.3.4; low). Centralize repeated
       fixture hashing and source-reading helpers across corpus tests before
       loader parity and real lint execution reuse them. Lightweight addendum

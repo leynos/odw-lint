@@ -1,0 +1,66 @@
+/**
+ * @file Missing metadata invalid workflow fixture manifest entries.
+ */
+
+import {
+  diagnostic,
+  type InvalidWorkflowFixtureSnapshot,
+  invalidWorkflowFixture,
+} from "../manifest-types";
+
+export const MISSING_METADATA_FIXTURES = [
+  invalidWorkflowFixture({
+    family: "missing-metadata",
+    fileName: "missing-meta-description.js",
+    sha256: "5b2d3ab7c9f7ccb6d91accc13eee1303d1dea390fde3f72598f15ec607343333",
+    expectedStatus: "error",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/meta-description",
+        severity: "error",
+        message: "Workflow metadata must include a non-empty description string.",
+        span: {
+          start: { offset: 20, line: 1, column: 21 },
+          end: { offset: 89, line: 4, column: 2 },
+        },
+        spanText: '{\n  name: "missing-meta-description",\n  phases: [{ title: "Run" }],\n}',
+      }),
+    ],
+  }),
+  invalidWorkflowFixture({
+    family: "missing-metadata",
+    fileName: "missing-meta-name.js",
+    sha256: "0ce388e912b835bf07cd4ef9fddd48a58b2c0a0cd6fbfd87edd9646d7528469b",
+    expectedStatus: "error",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/meta-name",
+        severity: "error",
+        message: "Workflow metadata must include a non-empty name string.",
+        span: {
+          start: { offset: 20, line: 1, column: 21 },
+          end: { offset: 93, line: 4, column: 2 },
+        },
+        spanText: '{\n  description: "Missing name fixture.",\n  phases: [{ title: "Run" }],\n}',
+      }),
+    ],
+  }),
+  invalidWorkflowFixture({
+    family: "missing-metadata",
+    fileName: "missing-meta.js",
+    sha256: "c008d2f17ab20b56aff47bbfb7612c1dc050956b00430eb08439c05ba4a3e95b",
+    expectedStatus: "error",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/meta-required",
+        severity: "error",
+        message: "Workflow source must export literal metadata.",
+        span: {
+          start: { offset: 0, line: 1, column: 1 },
+          end: { offset: 0, line: 1, column: 1 },
+        },
+        spanText: "",
+      }),
+    ],
+  }),
+] satisfies readonly InvalidWorkflowFixtureSnapshot[];

@@ -4,14 +4,24 @@
 
 import { describe, expect, it } from "bun:test";
 import { Buffer } from "node:buffer";
-import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { TextDecoder } from "node:util";
 import type { SourceSpan, WorkflowSource } from "odw-lint";
+import {
+  copiedFixtureFileNames,
+  fixtureSourceUrl,
+  readFixtureSource,
+  sha256,
+} from "./fixtures/corpus-support";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
 
 const FIXTURE_DIRECTORY = new URL("./fixtures/invalid-workflows/", import.meta.url);
 const MANIFEST_FIXTURE_ROOT = "tests/static-analysis/fixtures/invalid-workflows/";
+const FIXTURE_CORPUS = {
+  fixtureDirectory: FIXTURE_DIRECTORY,
+  manifestRoot: MANIFEST_FIXTURE_ROOT,
+  recursive: true,
+} as const;
 const SPAN_DECODER = new TextDecoder("utf-8", { fatal: true });
 const HOSTILE_MARKER_PROPERTY = "__odwLintHostileMetadataWasEvaluated";
 const EXPECTED_FILE_NAMES = [
@@ -65,26 +75,6 @@ const orderInvalidFixtureNames = (fileNames: readonly string[]): string[] => {
 
     return familySort === 0 ? leftFileName.localeCompare(rightFileName) : familySort;
   });
-};
-
-/** Calculates the SHA-256 digest used to pin copied fixture content. */
-const sha256 = (sourceText: string): string => {
-  return createHash("sha256").update(sourceText, "utf8").digest("hex");
-};
-
-/** Returns committed JavaScript fixture names below the invalid fixture root. */
-const copiedFixtureFileNames = (): readonly string[] => {
-  return readdirSync(FIXTURE_DIRECTORY, { recursive: true })
-    .filter((entry): entry is string => typeof entry === "string" && entry.endsWith(".js"))
-    .sort();
-};
-
-/** Reads a copied invalid fixture through its repository-relative manifest path. */
-const readFixtureSource = (fixturePath: string): string => {
-  return readFileSync(
-    new URL(fixturePath.replace(MANIFEST_FIXTURE_ROOT, ""), FIXTURE_DIRECTORY),
-    "utf8",
-  );
 };
 
 /** Clears the hostile fixture marker without declaring a real global. */
@@ -142,7 +132,9 @@ describe("invalid workflow fixture snapshots", () => {
 
     expect(manifestFileNames).toEqual([...EXPECTED_FILE_NAMES]);
     expect(manifestFileNames).toEqual(orderInvalidFixtureNames(manifestFileNames));
-    expect(orderInvalidFixtureNames(copiedFixtureFileNames())).toEqual([...EXPECTED_FILE_NAMES]);
+    expect(orderInvalidFixtureNames(copiedFixtureFileNames(FIXTURE_CORPUS))).toEqual([
+      ...EXPECTED_FILE_NAMES,
+    ]);
   });
 
   it("freezes manifest metadata and diagnostic expectation arrays at runtime", () => {
@@ -201,7 +193,7 @@ describe("invalid workflow fixture snapshots", () => {
     ]);
 
     for (const fixture of fixtures) {
-      const sourceText = readFixtureSource(fixture.fixturePath);
+      const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath);
 
       expect(sourceText).toContain(
         fixture.fileName === "global-marker.js"
@@ -247,16 +239,12 @@ describe("invalid workflow fixture snapshots", () => {
       fixture.fixturePath.replace(MANIFEST_FIXTURE_ROOT, ""),
     ).sort();
 
-    expect(copiedFixtureFileNames()).toEqual(manifestFileNames);
+    expect(copiedFixtureFileNames(FIXTURE_CORPUS)).toEqual(manifestFileNames);
 
     for (const fixture of INVALID_WORKFLOW_FIXTURE_SNAPSHOTS) {
-      const sourceText = readFixtureSource(fixture.fixturePath);
+      const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath);
 
-      expect(
-        existsSync(
-          new URL(fixture.fixturePath.replace(MANIFEST_FIXTURE_ROOT, ""), FIXTURE_DIRECTORY),
-        ),
-      ).toBeTrue();
+      expect(existsSync(fixtureSourceUrl(FIXTURE_CORPUS, fixture.fixturePath))).toBeTrue();
       expect(sha256(sourceText)).toBe(fixture.sha256);
       expect(Buffer.from(sourceText, "utf8").every((byte) => byte <= 0x7f)).toBeTrue();
 

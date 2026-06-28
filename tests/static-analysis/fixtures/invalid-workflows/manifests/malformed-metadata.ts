@@ -1,0 +1,103 @@
+/**
+ * @file Malformed metadata invalid workflow fixture manifest entries.
+ */
+
+import {
+  diagnostic,
+  type InvalidWorkflowFixtureSnapshot,
+  invalidWorkflowFixture,
+} from "../manifest-types";
+
+export const MALFORMED_METADATA_FIXTURES = [
+  invalidWorkflowFixture({
+    family: "malformed-metadata",
+    fileName: "computed-meta-expression.js",
+    sha256: "a077ff352989bf8eca65b1f66a05c0a4fdcde4e139fd26eccf5c5b03f45a27b1",
+    expectedStatus: "warning",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/meta-statically-unprovable",
+        severity: "warning",
+        message: "Workflow metadata must remain statically provable without evaluation.",
+        span: {
+          start: { offset: 73, line: 3, column: 16 },
+          end: { offset: 101, line: 3, column: 44 },
+        },
+        spanText: '"Computed " + "description."',
+      }),
+    ],
+  }),
+  invalidWorkflowFixture({
+    family: "malformed-metadata",
+    fileName: "empty-meta-name.js",
+    sha256: "4744707683b7e020481b4b62a87a8b2d1878284867c83e0c67546f424773599d",
+    expectedStatus: "error",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/meta-name",
+        severity: "error",
+        message: "Workflow metadata must include a non-empty name string.",
+        span: {
+          start: { offset: 30, line: 2, column: 9 },
+          end: { offset: 32, line: 2, column: 11 },
+        },
+        spanText: '""',
+      }),
+    ],
+  }),
+  invalidWorkflowFixture({
+    family: "malformed-metadata",
+    fileName: "meta-not-object.js",
+    sha256: "69fa50cd694336f1eb0eaa6f780eeebabb844ca3d128e2958fb1b240803600fa",
+    expectedStatus: "error",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/meta-object",
+        severity: "error",
+        message: "Workflow metadata must be an object literal.",
+        span: {
+          start: { offset: 20, line: 1, column: 21 },
+          end: { offset: 35, line: 1, column: 36 },
+        },
+        spanText: '"not an object"',
+      }),
+    ],
+  }),
+  invalidWorkflowFixture({
+    family: "malformed-metadata",
+    fileName: "numeric-meta-description.js",
+    sha256: "2920db7ba1100f7644eb24ae1f9af01fedb3e2d5495a4edf822dd4979765c625",
+    expectedStatus: "error",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/meta-description",
+        severity: "error",
+        message: "Workflow metadata description must be a string.",
+        span: {
+          start: { offset: 73, line: 3, column: 16 },
+          end: { offset: 76, line: 3, column: 19 },
+        },
+        spanText: "123",
+      }),
+    ],
+  }),
+  invalidWorkflowFixture({
+    family: "malformed-metadata",
+    fileName: "unterminated-meta-object.js",
+    sha256: "a556fa833e54569262f35f123ff94dc0b62ffd7a12fae135c7e2910a0cb49c5c",
+    expectedStatus: "error",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/meta-object",
+        severity: "error",
+        message: "Workflow metadata object literal must be complete.",
+        span: {
+          start: { offset: 20, line: 1, column: 21 },
+          end: { offset: 137, line: 5, column: 1 },
+        },
+        spanText:
+          '{\n  name: "unterminated-meta-object",\n  description: "Unterminated metadata fixture.",\n  phases: [{ title: "Run" }],\n',
+      }),
+    ],
+  }),
+] satisfies readonly InvalidWorkflowFixtureSnapshot[];

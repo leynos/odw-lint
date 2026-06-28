@@ -972,7 +972,7 @@ No new package dependency is permitted for this task.
 
 ## Addenda
 
-- [ ] 1.3.4.1. Split invalid workflow fixture manifests by family.
+- [x] 1.3.4.1. Split invalid workflow fixture manifests by family.
   - Source: audit:1.3.2 and audit:1.3.4.
   - Severity: medium.
   - Scope: split the near-limit invalid workflow manifest by fixture family so
@@ -981,7 +981,7 @@ No new package dependency is permitted for this task.
     corpus work lands.
   - Success: each invalid fixture family has a focused manifest module, and
     the aggregate manifest preserves the existing exported contract for tests.
-- [ ] 1.3.4.2. Extract fixture-corpus support helpers.
+- [x] 1.3.4.2. Extract fixture-corpus support helpers.
   - Source: audit:1.3.3 and audit:1.3.4.
   - Severity: low.
   - Scope: centralize repeated fixture hashing and source-reading helpers

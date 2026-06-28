@@ -3,9 +3,14 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import type { WorkflowSource } from "odw-lint";
+import {
+  copiedFixtureFileNames,
+  fixtureSourceUrl,
+  readFixtureSource,
+  sha256,
+} from "./fixtures/corpus-support";
 import {
   MASKING_FIXTURE_ROOT,
   MASKING_FIXTURE_SNAPSHOTS,
@@ -47,23 +52,7 @@ const EXPECTED_CONTENT_MARKERS = {
   "template-literal-decoy.js": ['import "fake-workflow-runtime";', "${'export const meta"],
   "unicode-decoy.js": ["unicode-decoy-雪", "café ☃"],
 } as const satisfies Record<(typeof EXPECTED_FILE_NAMES)[number], readonly string[]>;
-
-/** Calculates the SHA-256 digest used to pin synthetic fixture content. */
-const sha256 = (sourceText: string): string => {
-  return createHash("sha256").update(sourceText, "utf8").digest("hex");
-};
-
-/** Returns synthetic JavaScript fixture names from the fixture directory. */
-const copiedFixtureFileNames = (): readonly string[] => {
-  return readdirSync(FIXTURE_DIRECTORY)
-    .filter((fileName) => fileName.endsWith(".js"))
-    .sort();
-};
-
-/** Reads a synthetic fixture through its manifest entry. */
-const readFixtureSource = (fileName: string): string => {
-  return readFileSync(new URL(fileName, FIXTURE_DIRECTORY), "utf8");
-};
+const FIXTURE_CORPUS = { fixtureDirectory: FIXTURE_DIRECTORY } as const;
 
 /** Returns expected semantic content markers for one manifest fixture. */
 const contentMarkersFor = (fileName: string): readonly string[] => {
@@ -82,7 +71,7 @@ describe("synthetic masking fixture snapshots", () => {
 
     expect(manifestFileNames).toEqual([...EXPECTED_FILE_NAMES]);
     expect(manifestFileNames).toEqual([...manifestFileNames].sort());
-    expect(copiedFixtureFileNames()).toEqual([...EXPECTED_FILE_NAMES]);
+    expect(copiedFixtureFileNames(FIXTURE_CORPUS)).toEqual([...EXPECTED_FILE_NAMES]);
   });
 
   it("keeps filenames and metadata names unique", () => {
@@ -112,16 +101,14 @@ describe("synthetic masking fixture snapshots", () => {
 
   it("pins every masking fixture to its manifest SHA-256 digest", () => {
     for (const fixture of MASKING_FIXTURE_SNAPSHOTS) {
-      const fixtureUrl = new URL(fixture.fileName, FIXTURE_DIRECTORY);
-
-      expect(existsSync(fixtureUrl)).toBeTrue();
-      expect(sha256(readFixtureSource(fixture.fileName))).toBe(fixture.sha256);
+      expect(existsSync(fixtureSourceUrl(FIXTURE_CORPUS, fixture.fileName))).toBeTrue();
+      expect(sha256(readFixtureSource(FIXTURE_CORPUS, fixture.fileName))).toBe(fixture.sha256);
     }
   });
 
   it("keeps semantic masking markers visible in fixture content", () => {
     for (const fixture of MASKING_FIXTURE_SNAPSHOTS) {
-      const sourceText = readFixtureSource(fixture.fileName);
+      const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fileName);
 
       for (const marker of contentMarkersFor(fixture.fileName)) {
         expect(sourceText).toContain(marker);
@@ -130,7 +117,7 @@ describe("synthetic masking fixture snapshots", () => {
   });
 
   it("preserves actual CRLF bytes in the CRLF masking fixture", () => {
-    const sourceText = readFixtureSource("crlf-decoy.js");
+    const sourceText = readFixtureSource(FIXTURE_CORPUS, "crlf-decoy.js");
 
     expect(sourceText).toContain(';\r\nimport "fake-workflow-runtime";');
     expect(sourceText).not.toContain("\\r\\n");
@@ -138,7 +125,7 @@ describe("synthetic masking fixture snapshots", () => {
 
   it("represents every masking file as passive workflow source text", () => {
     for (const fixture of MASKING_FIXTURE_SNAPSHOTS) {
-      const sourceText = readFixtureSource(fixture.fileName);
+      const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fileName);
       const workflowSource = {
         filePath: fixture.fixturePath,
         sourceText,

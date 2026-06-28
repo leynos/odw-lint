@@ -3,9 +3,14 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import type { WorkflowSource } from "odw-lint";
+import {
+  copiedFixtureFileNames,
+  fixtureSourceUrl,
+  readFixtureSource,
+  sha256,
+} from "./fixtures/corpus-support";
 import { ODW_EXAMPLE_FIXTURE_SNAPSHOTS } from "./fixtures/odw-examples";
 
 const FIXTURE_DIRECTORY = new URL("./fixtures/odw-examples/", import.meta.url);
@@ -22,23 +27,7 @@ const EXPECTED_FILE_NAMES = [
   "routing.js",
   "tournament.js",
 ] as const;
-
-/** Calculates the SHA-256 digest used to pin copied fixture content. */
-const sha256 = (sourceText: string): string => {
-  return createHash("sha256").update(sourceText, "utf8").digest("hex");
-};
-
-/** Returns copied JavaScript fixture names from the committed fixture directory. */
-const copiedFixtureFileNames = (): readonly string[] => {
-  return readdirSync(FIXTURE_DIRECTORY)
-    .filter((fileName) => fileName.endsWith(".js"))
-    .sort();
-};
-
-/** Reads a copied fixture through its manifest entry. */
-const readFixtureSource = (fileName: string): string => {
-  return readFileSync(new URL(fileName, FIXTURE_DIRECTORY), "utf8");
-};
+const FIXTURE_CORPUS = { fixtureDirectory: FIXTURE_DIRECTORY } as const;
 
 describe("ODW example fixture snapshots", () => {
   it("lists the exact nine-file ODW example corpus in sorted order", () => {
@@ -46,7 +35,7 @@ describe("ODW example fixture snapshots", () => {
 
     expect(manifestFileNames).toEqual([...EXPECTED_FILE_NAMES]);
     expect(manifestFileNames).toEqual([...manifestFileNames].sort());
-    expect(copiedFixtureFileNames()).toEqual([...EXPECTED_FILE_NAMES]);
+    expect(copiedFixtureFileNames(FIXTURE_CORPUS)).toEqual([...EXPECTED_FILE_NAMES]);
   });
 
   it("keeps filenames and metadata names unique", () => {
@@ -66,16 +55,14 @@ describe("ODW example fixture snapshots", () => {
 
   it("pins every copied fixture to its manifest SHA-256 digest", () => {
     for (const fixture of ODW_EXAMPLE_FIXTURE_SNAPSHOTS) {
-      const fixtureUrl = new URL(fixture.fileName, FIXTURE_DIRECTORY);
-
-      expect(existsSync(fixtureUrl)).toBeTrue();
-      expect(sha256(readFixtureSource(fixture.fileName))).toBe(fixture.sha256);
+      expect(existsSync(fixtureSourceUrl(FIXTURE_CORPUS, fixture.fileName))).toBeTrue();
+      expect(sha256(readFixtureSource(FIXTURE_CORPUS, fixture.fileName))).toBe(fixture.sha256);
     }
   });
 
   it("represents every copied file as passive workflow source text", () => {
     for (const fixture of ODW_EXAMPLE_FIXTURE_SNAPSHOTS) {
-      const sourceText = readFixtureSource(fixture.fileName);
+      const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fileName);
       const workflowSource = {
         filePath: fixture.fixturePath,
         sourceText,

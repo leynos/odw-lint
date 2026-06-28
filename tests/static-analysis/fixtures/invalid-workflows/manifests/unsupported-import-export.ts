@@ -1,0 +1,48 @@
+/**
+ * @file Unsupported import/export invalid workflow fixture manifest entries.
+ */
+
+import {
+  diagnostic,
+  type InvalidWorkflowFixtureSnapshot,
+  invalidWorkflowFixture,
+} from "../manifest-types";
+
+export const UNSUPPORTED_IMPORT_EXPORT_FIXTURES = [
+  invalidWorkflowFixture({
+    family: "unsupported-import-export",
+    fileName: "extra-export-const.js",
+    sha256: "0a04febd19906db4d1156374ff6a772531e8ee7987474ead9daec76f3d5eab54",
+    expectedStatus: "error",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/no-import-export",
+        severity: "error",
+        message: "Workflow body must not add top-level imports or exports.",
+        span: {
+          start: { offset: 126, line: 7, column: 1 },
+          end: { offset: 162, line: 7, column: 37 },
+        },
+        spanText: 'export const helper = "unsupported";',
+      }),
+    ],
+  }),
+  invalidWorkflowFixture({
+    family: "unsupported-import-export",
+    fileName: "top-level-import.js",
+    sha256: "166feaeb6d91006e31e6c3fb93786b9d2ab2948504fb88d33cc6bac74b2b4a03",
+    expectedStatus: "error",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/no-import-export",
+        severity: "error",
+        message: "Workflow body must not add top-level imports or exports.",
+        span: {
+          start: { offset: 0, line: 1, column: 1 },
+          end: { offset: 37, line: 1, column: 38 },
+        },
+        spanText: 'import { helper } from "./helper.js";',
+      }),
+    ],
+  }),
+] satisfies readonly InvalidWorkflowFixtureSnapshot[];
