@@ -4,6 +4,7 @@ dist/
 .bun/
 .bun-install/
 .bun-cache/
+.grepai/
 tmp/
 .tmp/
 
