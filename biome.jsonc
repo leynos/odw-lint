@@ -8,7 +8,8 @@
       "tsconfig.json",
       "src/**/*",
       "tests/**/*",
-      "!tests/static-analysis/fixtures/odw-examples/**/*.js"
+      "!tests/static-analysis/fixtures/odw-examples/**/*.js",
+      "!tests/static-analysis/fixtures/invalid-workflows/**/*.js"
     ],
     "ignoreUnknown": true
   },
@@ -55,6 +56,15 @@
     },
     {
       "includes": ["tests/static-analysis/fixtures/odw-examples/**/*.js"],
+      "formatter": {
+        "enabled": false
+      },
+      "linter": {
+        "enabled": false
+      }
+    },
+    {
+      "includes": ["tests/static-analysis/fixtures/invalid-workflows/**/*.js"],
       "formatter": {
         "enabled": false
       },

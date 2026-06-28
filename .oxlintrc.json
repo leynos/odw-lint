@@ -1,7 +1,10 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "jsPlugins": ["df12-lints/oxlint-plugin"],
-  "ignorePatterns": ["tests/static-analysis/fixtures/odw-examples/**/*.js"],
+  "ignorePatterns": [
+    "tests/static-analysis/fixtures/odw-examples/**/*.js",
+    "tests/static-analysis/fixtures/invalid-workflows/**/*.js"
+  ],
   "categories": {
     "correctness": "off",
     "nursery": "off",

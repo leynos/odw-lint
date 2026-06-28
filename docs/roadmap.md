@@ -118,7 +118,7 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
     - Addendum (from review:1.3.1 and audit:1.3.1; medium). Derive
       `fixturePath` and `upstreamPath` from each manifest `fileName` and pin
       path invariants in tests. Lightweight addendum pass.
-- [ ] 1.3.2. Add invalid fixture families for missing metadata, malformed
+- [x] 1.3.2. Add invalid fixture families for missing metadata, malformed
   metadata, unsupported imports or exports, and syntax errors.
   - See [technical-design.md](technical-design.md) §§9.1 and 11.1.
   - Success: each invalid fixture has expected rule identifiers and source

@@ -1,0 +1,187 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`invalid workflow fixture snapshots matches the compact invalid manifest snapshot 1`] = `
+[
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/meta-description",
+        "severity": "error",
+        "spanTextLines": [
+          "{",
+          "  name: "missing-meta-description",",
+          "  phases: [{ title: "Run" }],",
+          "}",
+        ],
+      },
+    ],
+    "expectedStatus": "error",
+    "family": "missing-metadata",
+    "fileName": "missing-meta-description.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/meta-name",
+        "severity": "error",
+        "spanTextLines": [
+          "{",
+          "  description: "Missing name fixture.",",
+          "  phases: [{ title: "Run" }],",
+          "}",
+        ],
+      },
+    ],
+    "expectedStatus": "error",
+    "family": "missing-metadata",
+    "fileName": "missing-meta-name.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/meta-required",
+        "severity": "error",
+        "spanTextLines": [
+          "",
+        ],
+      },
+    ],
+    "expectedStatus": "error",
+    "family": "missing-metadata",
+    "fileName": "missing-meta.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/meta-statically-unprovable",
+        "severity": "warning",
+        "spanTextLines": [
+          ""Computed " + "description."",
+        ],
+      },
+    ],
+    "expectedStatus": "warning",
+    "family": "malformed-metadata",
+    "fileName": "computed-meta-expression.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/meta-name",
+        "severity": "error",
+        "spanTextLines": [
+          """",
+        ],
+      },
+    ],
+    "expectedStatus": "error",
+    "family": "malformed-metadata",
+    "fileName": "empty-meta-name.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/meta-object",
+        "severity": "error",
+        "spanTextLines": [
+          ""not an object"",
+        ],
+      },
+    ],
+    "expectedStatus": "error",
+    "family": "malformed-metadata",
+    "fileName": "meta-not-object.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/meta-description",
+        "severity": "error",
+        "spanTextLines": [
+          "123",
+        ],
+      },
+    ],
+    "expectedStatus": "error",
+    "family": "malformed-metadata",
+    "fileName": "numeric-meta-description.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/meta-object",
+        "severity": "error",
+        "spanTextLines": [
+          "{",
+          "  name: "unterminated-meta-object",",
+          "  description: "Unterminated metadata fixture.",",
+          "  phases: [{ title: "Run" }],",
+          "",
+        ],
+      },
+    ],
+    "expectedStatus": "error",
+    "family": "malformed-metadata",
+    "fileName": "unterminated-meta-object.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/no-import-export",
+        "severity": "error",
+        "spanTextLines": [
+          "export const helper = "unsupported";",
+        ],
+      },
+    ],
+    "expectedStatus": "error",
+    "family": "unsupported-import-export",
+    "fileName": "extra-export-const.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/no-import-export",
+        "severity": "error",
+        "spanTextLines": [
+          "import { helper } from "./helper.js";",
+        ],
+      },
+    ],
+    "expectedStatus": "error",
+    "family": "unsupported-import-export",
+    "fileName": "top-level-import.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/body-syntax",
+        "severity": "error",
+        "spanTextLines": [
+          "{",
+          "  await agent("Draft status.");",
+          "",
+        ],
+      },
+    ],
+    "expectedStatus": "error",
+    "family": "syntax-error",
+    "fileName": "body-unclosed-block.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "rule": "odw/body-syntax",
+        "severity": "error",
+        "spanTextLines": [
+          "agent("draft"",
+          "",
+        ],
+      },
+    ],
+    "expectedStatus": "error",
+    "family": "syntax-error",
+    "fileName": "body-unclosed-call.js",
+  },
+]
+`;

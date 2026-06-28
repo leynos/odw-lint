@@ -18,8 +18,8 @@ names by default.
 
 The first implementation owns the static-analysis implementation inside this
 repository. v1 vendors the pure-literal parser behaviour from ODW's
-`dual-compat.ts` into `odw-lint` as its own source of truth, and production code
-must not depend on ODW publishing a static API.
+`dual-compat.ts` into `odw-lint` as its own source of truth, and production
+code must not depend on ODW publishing a static API.
 
 The owned production boundary starts at `src/static-analysis/`. Roadmap task
 1.1.1 scaffolds that boundary as a source-level internal API exposed through
@@ -34,8 +34,8 @@ does not add `@swc/core`, `parseWithSwc`, a public parser failure contract, or
 the forbidden-import architecture test.
 
 When extending this area, keep the roadmap sequencing intact: task 2.1.4 owns
-the forbidden-import architecture test for production code, and task 2.2.1
-owns the SWC parser adapter.
+the forbidden-import architecture test for production code, and task 2.2.1 owns
+the SWC parser adapter.
 
 ## Commit Gate
 
@@ -103,16 +103,16 @@ necessary.
 
 ## Type Checking
 
-Use `make typecheck` to run the TypeScript compiler without emitting files.
-The target delegates to `bun run check:types`, which uses:
+Use `make typecheck` to run the TypeScript compiler without emitting files. The
+target delegates to `bun run check:types`, which uses:
 
 ```sh
 bunx tsc --noEmit
 ```
 
-Keep `tsconfig.json` strict. Avoid weakening compiler settings to make a
-change pass; prefer narrowing types, modelling domain values explicitly, or
-validating unknown input at the boundary.
+Keep `tsconfig.json` strict. Avoid weakening compiler settings to make a change
+pass; prefer narrowing types, modelling domain values explicitly, or validating
+unknown input at the boundary.
 
 ## Tests
 
@@ -121,8 +121,8 @@ changes, and cover happy paths, unhappy paths, and relevant edge cases.
 
 Behavioural tests should use `@aboviq/bun-test-cucumber` with Gherkin feature
 files. Snapshot tests should use Bun's built-in snapshot testing support.
-Property tests should use `fast-check`, and exhaustive bounded proofs should
-use `lemmascript` where a proof is the right level of rigour.
+Property tests should use `fast-check`, and exhaustive bounded proofs should use
+`lemmascript` where a proof is the right level of rigour.
 
 ### Workflow Fixture Corpus
 
@@ -136,6 +136,15 @@ their source stays byte-for-byte identical to upstream ODW examples. Do not
 format or rewrite those files in this repository. Update
 `tests/static-analysis/fixtures/odw-examples.ts` when refreshing the corpus so
 the manifest records the new hashes and the expected `no-error` diagnostics.
+
+Invalid workflow fixtures live under
+`tests/static-analysis/fixtures/invalid-workflows/`. They are deliberately raw
+inputs for missing metadata, malformed metadata, unsupported import/export, and
+syntax-error coverage. Do not import, evaluate, execute, or format them as
+ordinary JavaScript. Keep `tests/static-analysis/fixtures/invalid-workflows.ts`
+in sync with every raw fixture by updating the family, path, SHA-256 hash,
+expected status, diagnostic rule, severity, message, UTF-8 source span, and
+reviewer-facing `spanText`.
 
 Loader-parity execution remains owned by roadmap task 2.3.1. The fixture corpus
 records trusted source snapshots and static expectations only; it must not
