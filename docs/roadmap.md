@@ -150,7 +150,7 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
   - See [technical-design.md](technical-design.md) §§9.1 and 11.1.
   - Success: each invalid fixture has expected rule identifiers and source
     spans.
-  - [ ] 1.3.2.1. Add shared fixture-manifest deep-freeze helper.
+  - [x] 1.3.2.1. Add shared fixture-manifest deep-freeze helper.
     - Addendum (from review:1.3.2; medium). Centralize nested immutability for
       valid and invalid fixture manifests as span objects, diagnostics, and
       suggestions grow. Lightweight addendum pass.

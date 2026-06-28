@@ -6,6 +6,8 @@
  * fixture corpus from the trusted ODW checkout.
  */
 
+import { deepFreezeFixtureManifest } from "./manifest-freeze";
+
 /**
  * Expected lint status for imported ODW example workflow snapshots.
  */
@@ -53,7 +55,7 @@ export interface OdwExampleFixtureSnapshot {
 
 const ODW_EXAMPLES_FIXTURE_ROOT = "tests/static-analysis/fixtures/odw-examples";
 const UPSTREAM_ODW_EXAMPLES_ROOT = "open-dynamic-workflows/examples";
-const EXPECTED_NO_DIAGNOSTICS = Object.freeze([]) satisfies readonly [];
+const EXPECTED_NO_DIAGNOSTICS = deepFreezeFixtureManifest([]) satisfies readonly [];
 
 type OdwExampleFixtureInput = Omit<
   OdwExampleFixtureSnapshot,
@@ -62,7 +64,7 @@ type OdwExampleFixtureInput = Omit<
 
 /** Builds one runtime-frozen ODW example fixture manifest entry. */
 const odwExampleFixture = (fixture: OdwExampleFixtureInput): OdwExampleFixtureSnapshot => {
-  return Object.freeze({
+  return deepFreezeFixtureManifest({
     ...fixture,
     fixturePath: `${ODW_EXAMPLES_FIXTURE_ROOT}/${fixture.fileName}`,
     upstreamPath: `${UPSTREAM_ODW_EXAMPLES_ROOT}/${fixture.fileName}`,
@@ -74,7 +76,7 @@ const odwExampleFixture = (fixture: OdwExampleFixtureInput): OdwExampleFixtureSn
 /**
  * Read-only manifest for the imported ODW example workflow snapshots.
  */
-export const ODW_EXAMPLE_FIXTURE_SNAPSHOTS = Object.freeze([
+export const ODW_EXAMPLE_FIXTURE_SNAPSHOTS = deepFreezeFixtureManifest([
   odwExampleFixture({
     fileName: "adversarial-verify.js",
     metaName: "adversarial-verify",

@@ -409,11 +409,11 @@ unchanged, and replacing raw multiline `spanText` snapshot entries with
 line-array summaries. The manifest's stored `spanText` values and source-span
 validation contract remain unchanged.
 
-Fix round 2 validation passed with the focused invalid-fixture test,
-`make all`, `make markdownlint`, `make nixie`, and CodeRabbit review. The
-working-tree whitespace check was clean after the snapshot projection changed;
-the remaining `origin/main...HEAD` whitespace failure was the pre-commit branch
-state and is expected to clear once this fix round is committed.
+Fix round 2 validation passed with the focused invalid-fixture test, `make all`,
+`make markdownlint`, `make nixie`, and CodeRabbit review. The working-tree
+whitespace check was clean after the snapshot projection changed; the remaining
+`origin/main...HEAD` whitespace failure was the pre-commit branch state and is
+expected to clear once this fix round is committed.
 
 ## Context and orientation
 
@@ -1285,7 +1285,7 @@ No new package dependency is permitted for this task.
 
 ## Addenda
 
-- [ ] 1.3.2.1. Add shared fixture-manifest deep-freeze helper.
+- [x] 1.3.2.1. Add shared fixture-manifest deep-freeze helper.
   - Source: review:1.3.2.
   - Severity: medium.
   - Scope: centralize nested immutability for fixture manifests shared by

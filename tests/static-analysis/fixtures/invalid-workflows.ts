@@ -8,6 +8,7 @@
 
 import type { DiagnosticSeverity, RuleId, SourceSpan } from "odw-lint";
 import { makeRuleId } from "odw-lint";
+import { deepFreezeFixtureManifest } from "./manifest-freeze";
 
 /**
  * Supported deliberately invalid workflow fixture families.
@@ -102,10 +103,10 @@ type InvalidWorkflowFixtureInput = Omit<
 const invalidWorkflowFixture = (
   fixture: InvalidWorkflowFixtureInput,
 ): InvalidWorkflowFixtureSnapshot => {
-  return Object.freeze({
+  return deepFreezeFixtureManifest({
     ...fixture,
     fixturePath: `${INVALID_WORKFLOW_FIXTURE_ROOT}/${fixture.family}/${fixture.fileName}`,
-    expectedDiagnostics: Object.freeze([...fixture.expectedDiagnostics]),
+    expectedDiagnostics: [...fixture.expectedDiagnostics],
   });
 };
 
@@ -113,12 +114,12 @@ const invalidWorkflowFixture = (
 const diagnostic = (
   diagnosticFixture: Omit<InvalidWorkflowFixtureDiagnostic, "rule"> & { readonly rule: string },
 ): InvalidWorkflowFixtureDiagnostic => {
-  const span = Object.freeze({
-    start: Object.freeze({ ...diagnosticFixture.span.start }),
-    end: Object.freeze({ ...diagnosticFixture.span.end }),
+  const span = deepFreezeFixtureManifest({
+    start: { ...diagnosticFixture.span.start },
+    end: { ...diagnosticFixture.span.end },
   });
 
-  return Object.freeze({
+  return deepFreezeFixtureManifest({
     ...diagnosticFixture,
     rule: makeRuleId(diagnosticFixture.rule),
     span,
@@ -128,7 +129,7 @@ const diagnostic = (
 /**
  * Read-only manifest for deliberately invalid ODW workflow snapshots.
  */
-export const INVALID_WORKFLOW_FIXTURE_SNAPSHOTS = Object.freeze([
+export const INVALID_WORKFLOW_FIXTURE_SNAPSHOTS = deepFreezeFixtureManifest([
   invalidWorkflowFixture({
     family: "missing-metadata",
     fileName: "missing-meta-description.js",

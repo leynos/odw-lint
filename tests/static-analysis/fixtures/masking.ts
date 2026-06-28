@@ -5,6 +5,8 @@
  * source regions that the future envelope scanner must ignore.
  */
 
+import { deepFreezeFixtureManifest } from "./manifest-freeze";
+
 /**
  * Non-code source context containing decoy workflow syntax.
  */
@@ -56,7 +58,7 @@ export interface MaskingFixtureSnapshot {
 }
 
 export const MASKING_FIXTURE_ROOT = "tests/static-analysis/fixtures/masking";
-export const EXPECTED_NO_ENVELOPE_DIAGNOSTICS = Object.freeze([]) satisfies readonly [];
+export const EXPECTED_NO_ENVELOPE_DIAGNOSTICS = deepFreezeFixtureManifest([]) satisfies readonly [];
 
 type MaskingFixtureInput = Omit<
   MaskingFixtureSnapshot,
@@ -65,7 +67,7 @@ type MaskingFixtureInput = Omit<
 
 /** Builds one runtime-frozen synthetic masking fixture manifest entry. */
 const maskingFixture = (fixture: MaskingFixtureInput): MaskingFixtureSnapshot => {
-  return Object.freeze({
+  return deepFreezeFixtureManifest({
     ...fixture,
     fixturePath: `${MASKING_FIXTURE_ROOT}/${fixture.fileName}`,
     expectedStatus: "no-envelope-diagnostics",
@@ -76,7 +78,7 @@ const maskingFixture = (fixture: MaskingFixtureInput): MaskingFixtureSnapshot =>
 /**
  * Synthetic workflow source snapshots for future envelope masking tests.
  */
-export const MASKING_FIXTURE_SNAPSHOTS = Object.freeze([
+export const MASKING_FIXTURE_SNAPSHOTS = deepFreezeFixtureManifest([
   maskingFixture({
     fileName: "comment-decoy.js",
     context: "comment",
