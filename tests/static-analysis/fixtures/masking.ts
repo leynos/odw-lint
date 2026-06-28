@@ -86,6 +86,24 @@ export const MASKING_FIXTURE_SNAPSHOTS = deepFreezeFixtureManifest([
     sha256: "feaa72be7ff8e679e2470ad17b7f4939ce57b41d5036979f91e8f1b9193763bc",
   }),
   maskingFixture({
+    fileName: "crlf-decoy.js",
+    context: "string",
+    metaName: "masking-crlf-decoy",
+    sha256: "f078a155ded8fcc6418b4dd35b16509477adda3c5483d8e95d439819b9329a0b",
+  }),
+  maskingFixture({
+    fileName: "escaped-regex-delimiter-decoy.js",
+    context: "regex",
+    metaName: "masking-escaped-regex-delimiter-decoy",
+    sha256: "9b953d62e0139e30ea7406b72e5e0c678f7e8351b80699810ca37ff8f2cdb90a",
+  }),
+  maskingFixture({
+    fileName: "escaped-string-delimiter-decoy.js",
+    context: "string",
+    metaName: "masking-escaped-string-delimiter-decoy",
+    sha256: "2bab011fbb157d466e48dc59e637eb22356614fafe995f26db1c842e5e25ed8b",
+  }),
+  maskingFixture({
     fileName: "regex-decoy.js",
     context: "regex",
     metaName: "masking-regex-decoy",
@@ -98,9 +116,21 @@ export const MASKING_FIXTURE_SNAPSHOTS = deepFreezeFixtureManifest([
     sha256: "9954bd113cffad1176c91edf9d70e6338257fd2b6742e2b54644d31f01616c2e",
   }),
   maskingFixture({
+    fileName: "template-interpolation-boundary-decoy.js",
+    context: "template",
+    metaName: "masking-template-interpolation-boundary-decoy",
+    sha256: "db3bb521320e43c35674ea35db9b5cf5adea5bcda73cbd9fd707e295ec8c05f8",
+  }),
+  maskingFixture({
     fileName: "template-literal-decoy.js",
     context: "template",
     metaName: "masking-template-decoy",
     sha256: "96d544cd089b2297bb91e3dc2b7d37790d81c0ae13244c12c455aab1ef11422c",
+  }),
+  maskingFixture({
+    fileName: "unicode-decoy.js",
+    context: "string",
+    metaName: "masking-unicode-decoy",
+    sha256: "69f4b97de92bd1cfc1a0a978b494ba60e9bced08a34d68390cb8b027299f72e0",
   }),
 ]) satisfies readonly MaskingFixtureSnapshot[];

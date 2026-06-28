@@ -8,6 +8,7 @@
       "tsconfig.json",
       "src/**/*",
       "tests/**/*",
+      "!tests/static-analysis/fixtures/masking/crlf-decoy.js",
       "!tests/static-analysis/fixtures/odw-examples/**/*.js",
       "!tests/static-analysis/fixtures/invalid-workflows/**/*.js"
     ],
@@ -47,6 +48,17 @@
   "overrides": [
     {
       "includes": ["**/*.d.ts"],
+      "formatter": {
+        "enabled": false
+      },
+      "linter": {
+        "enabled": false
+      }
+    },
+    {
+      // This fixture intentionally preserves a raw CRLF byte pair inside
+      // JavaScript source text; formatting would normalize the case away.
+      "includes": ["tests/static-analysis/fixtures/masking/crlf-decoy.js"],
       "formatter": {
         "enabled": false
       },

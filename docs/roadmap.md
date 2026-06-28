@@ -158,12 +158,12 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
   strings, regex literals, and template literals.
   - See [technical-design.md](technical-design.md) §§6.2 and 11.1.
   - Success: decoy syntax does not produce envelope diagnostics.
-  - [ ] 1.3.3.1. Add semantic masking fixture content assertions.
+  - [x] 1.3.3.1. Add semantic masking fixture content assertions.
     - Addendum (from review:1.3.3; low). Assert planned marker snippets for
       escaped quotes, regex delimiters, template text, and interpolation so
       fixture failures explain intent beyond hash drift. Lightweight addendum
       pass.
-  - [ ] 1.3.3.2. Add delimiter-stress masking fixture variants.
+  - [x] 1.3.3.2. Add delimiter-stress masking fixture variants.
     - Addendum (from review:1.3.3; low). Extend masking fixtures with escaped
       quotes, escaped regex delimiters, template interpolation boundaries,
       CRLF, and Unicode variants. Lightweight addendum pass.

@@ -820,7 +820,7 @@ full gate plus CodeRabbit review for the freshness repair.
 
 ## Addenda
 
-- [ ] 1.3.3.1. Add semantic masking fixture content assertions.
+- [x] 1.3.3.1. Add semantic masking fixture content assertions.
   - Source: review:1.3.3.
   - Severity: low.
   - Scope: add focused assertions for planned marker snippets such as escaped
@@ -829,7 +829,7 @@ full gate plus CodeRabbit review for the freshness repair.
     than only reporting a hash mismatch.
   - Success: each masking context has at least one semantic content assertion
     tied to the reason the fixture exists while hash pinning remains intact.
-- [ ] 1.3.3.2. Add delimiter-stress masking fixture variants.
+- [x] 1.3.3.2. Add delimiter-stress masking fixture variants.
   - Source: review:1.3.3.
   - Severity: low.
   - Scope: extend the masking fixture family with escaped quotes, escaped
