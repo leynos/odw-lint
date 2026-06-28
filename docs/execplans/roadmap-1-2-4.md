@@ -451,6 +451,27 @@ this fix round are recorded in the revision note. CodeRabbit completed with one
 trivial out-of-scope finding against the restored audit file; no code or
 documentation change was made for that future fixture-refresh item.
 
+## Addenda
+
+- [ ] 1.2.4.1. Tighten internal source-helper export surface.
+  - Source: review:1.2.4 and audit:1.2.4.
+  - Severity: low.
+  - Scope: remove or explicitly justify the unused source-scan byte-length
+    helper, and update source-helper architecture coverage so internal helper
+    modules do not keep dead exports merely to satisfy structural tests.
+  - Success: the production source-scan module exposes only helpers used across
+    module boundaries or documented as intentional, and architecture tests
+    continue to protect the helper split without pinning unused declarations.
+- [ ] 1.2.4.2. Clarify deferred review status in the ExecPlan.
+  - Source: review:1.2.4.
+  - Severity: low.
+  - Scope: reconcile the outcomes, retrospective, revision note, and review
+    evidence so the deferred work-item 5 review and the completed fix-round
+    review cannot be read as contradictory statuses.
+  - Success: a future roadmap agent can tell which review was deferred, which
+    fix-round review completed, and which findings were intentionally skipped
+    without cross-reading unrelated notes.
+
 ## Context and orientation
 
 The repository is a private TypeScript and Bun package. `src/index.ts` is the

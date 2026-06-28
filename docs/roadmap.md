@@ -121,6 +121,15 @@ shape. The result informs every parser, rule, and reporter task. See
     behaviour.
   - Success: the source-position spine keeps one original-source contract
     while parser and span-mapper work have focused helper modules to extend.
+  - [ ] 1.2.4.1. Tighten internal source-helper export surface.
+    - Addendum (from review:1.2.4 and audit:1.2.4; low). Remove or justify
+      the unused source-scan byte-length helper and update architecture
+      coverage so private helper modules do not keep dead exports. Lightweight
+      addendum pass.
+  - [ ] 1.2.4.2. Clarify deferred review status in the ExecPlan.
+    - Addendum (from review:1.2.4; low). Reconcile the task 1.2.4 ExecPlan
+      outcomes and revision notes so review status is unambiguous. Lightweight
+      addendum pass.
 
 ### 1.3. Establish the workflow fixture corpus
 
