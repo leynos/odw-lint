@@ -83,11 +83,13 @@ or the runtime `validate(source)` primitive, because the runtime loader
 evaluates metadata and compiles workflow bodies. The implementation must use a
 static parser path that never evaluates workflow source.
 
-The first implementation owns a vendored static implementation of the ODW
-workflow envelope scanner, pure metadata parser, dual-compat scanner, span
-mapper, and related static semantics. ODW may later consume `odw-lint`'s
-static API, or both projects may extract a shared static package after the
-contract is proven, but `odw-lint` v1 does not wait for ODW to expose one.
+The first implementation owns an SWC-based static parser and ODW-aware source
+model. It implements workflow envelope scanning, pure metadata parsing,
+dual-compat scanning, span mapping, and related static semantics inside
+`odw-lint` rather than vendoring ODW helper source. ODW may later consume
+`odw-lint`'s static API, or both projects may extract a shared static package
+after the contract is proven, but `odw-lint` v1 does not wait for ODW to expose
+one.
 
 The design does not allow an informal "port or share small helpers" approach,
 nor does it allow production code to import private ODW runtime helpers.
@@ -148,13 +150,14 @@ loading of trusted workflow files, but `odw-lint` must treat workflow source as
 untrusted input. It must not call any runtime API path that evaluates metadata
 or executes the workflow body.
 
-The first implementation should vendor the pure-literal parser from ODW's
-`dual-compat.ts`, then treat the vendored static-analysis implementation as
-`odw-lint`'s own source of truth. It may extend that parser with a static
-lenient parse mode only if ODW-valid but Claude-incompatible metadata needs a
-richer diagnostic. A failure to statically evaluate lenient metadata should be
-reported as "not statically portable" rather than executed for convenience.
-This v1 path has no dependency on ODW publishing a static API.
+The first implementation should build the pure-literal metadata parser as part
+of `odw-lint`'s SWC-based static-analysis implementation, using ODW's
+`dual-compat.ts` behaviour as parity evidence rather than source to vendor. It
+may extend that parser with a static lenient parse mode only if ODW-valid but
+Claude-incompatible metadata needs a richer diagnostic. A failure to statically
+evaluate lenient metadata should be reported as "not statically portable"
+rather than executed for convenience. This v1 path has no dependency on ODW
+publishing a static API.
 
 ## 7. CLI contract
 
@@ -504,7 +507,7 @@ ODW's TypeScript runtime and enables shared tests, shared data structures, and
 future `odw check` integration.
 
 ADR [0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md)
-chooses an owned vendored static implementation for v1. ODW integration is a
+chooses an owned SWC-based parser implementation for v1. ODW integration is a
 future consumer path, not a prerequisite for implementing the checker.
 
 A Rust core is deferred. It becomes attractive if the project needs a

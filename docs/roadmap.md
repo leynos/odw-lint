@@ -21,7 +21,7 @@ source and that diagnostics can point back to the original file.
 
 ### 1.1. Ratify the static-analysis and packaging boundary
 
-This step records that `odw-lint` owns the vendored static semantics for v1 and
+This step records that `odw-lint` owns an SWC-based static parser for v1 and
 ships the standalone `odw-lint check` command. The command is path/glob-first;
 ODW-style name resolution and any `odw check` subcommand are deferred to future
 ODW integration. This decision informs command naming, package exports, fixture
@@ -29,11 +29,12 @@ ownership, and integration tests. See [technical-design.md](technical-design.md)
 §§5, 7 and 13, and
 [0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md).
 
-- [ ] 1.1.1. Scaffold the owned vendored static-analysis module boundary.
+- [ ] 1.1.1. Scaffold the owned SWC-based static-analysis module boundary.
   - See [technical-design.md](technical-design.md) §5 and
     [0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md).
   - Success: production code has a named `odw-lint` static-analysis source of
-    truth, with no dependency on ODW publishing a static API.
+    truth, with no dependency on ODW publishing a static API or vendoring ODW
+    helper source.
 - [ ] 1.1.2. Write an ADR recording the standalone v1 packaging boundary.
   - Requires 1.1.1.
   - See [technical-design.md](technical-design.md) §§7 and 13.

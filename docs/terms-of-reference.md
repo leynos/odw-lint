@@ -131,8 +131,9 @@ reasonable v1 success bar is:
 - Runtime parity matters: diagnostics that disagree with ODW's loader must be
   intentional and documented.
 - The static-analysis boundary must be explicit before implementation starts.
-- `odw-lint` owns its static-analysis implementation; it does not depend on ODW
-  maintainers changing ODW's public exports before v1 can proceed.
+- `odw-lint` owns its SWC-based static parser; it does not depend on ODW
+  maintainers changing ODW's public exports or on vendoring ODW helper source
+  before v1 can proceed.
 - Compatibility diagnostics must preserve the distinction between "ODW can run
   this" and "Claude Code can also accept this".
 - The first release should favour clear diagnostics over broad lint coverage.
@@ -146,8 +147,8 @@ reasonable v1 success bar is:
   for v1.
 - Authors will accept a dedicated ODW checker alongside their normal
   JavaScript linter.
-- ODW's workflow semantics are stable enough to mirror with a vendored static
-  implementation and parity tests.
+- ODW's workflow semantics are stable enough to mirror with an `odw-lint`-owned
+  static parser and parity tests.
 - The most urgent adoption path is CLI and CI, not an editor extension.
 - Some findings will remain heuristic warnings rather than hard errors.
 

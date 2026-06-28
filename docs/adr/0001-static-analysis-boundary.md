@@ -22,13 +22,15 @@ static envelope scanner.
 `odw-lint` owns its static-analysis implementation. The v1 command boundary is
 the standalone `odw-lint check` command. An ODW-integrated `odw check`
 subcommand is deferred and out of scope for v1. The first implementation will
-vendor the ODW workflow envelope scanner, pure metadata parser, dual-compat
-scanner, span mapper, and related static semantics into `odw-lint`, then keep
-them aligned with mandatory parity tests against trusted ODW fixtures.
+build an `odw-lint` parser around SWC, plus ODW-aware envelope scanning,
+metadata classification, dual-compat scanning, span mapping, and related
+static semantics. It will keep those semantics aligned with mandatory parity
+tests against trusted ODW fixtures.
 
 This is an ownership decision. `odw-lint` does not depend on ODW maintainers
 publishing a safe static API, changing ODW's package exports, or accepting a
-runtime refactor before `odw-lint` can implement its core checker.
+runtime refactor before `odw-lint` can implement its core checker. It also does
+not vendor ODW's private runtime or static helper source into production code.
 
 The following imports are forbidden in production `odw-lint` code:
 
@@ -57,15 +59,19 @@ or hostile metadata fixtures.
 - Future ODW integration should consume `odw-lint`'s static API where possible,
   not require `odw-lint` to switch to ODW's private runtime helpers.
 - A future shared static package remains possible, but it must be extracted
-  from the proven `odw-lint` static implementation or matched by contract
-  tests. It is not a v1 dependency.
+  from the proven `odw-lint` parser implementation or matched by contract tests.
+  It is not a v1 dependency.
 
 ## Rejected alternative
 
-A shared static ODW API would reduce code ownership inside `odw-lint`, but the
-project does not control ODW's export surface or release cadence. Making that
-API a prerequisite would block the checker on another project and leave the
-trust boundary unresolved during implementation.
+- A shared static ODW API would reduce code ownership inside `odw-lint`, but
+  the project does not control ODW's export surface or release cadence. Making
+  that API a prerequisite would block the checker on another project and leave
+  the trust boundary unresolved during implementation.
+- Vendoring ODW helper source would shorten the first implementation, but it
+  would couple `odw-lint` to private implementation details. The checker should
+  instead own its SWC-based parser and prove behavioural parity through
+  fixtures.
 
 ## Open point
 
