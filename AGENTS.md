@@ -254,13 +254,15 @@ are present.
   literals.
 - **Parameterized tests**: Drive variations with helpers or compact loops
   rather than duplicated cases.
-- **Snapshots**: Keep snapshot inputs deterministic by fixing seeds and sorting
-  unstable data.
 - **Coverage shape**: Cover happy paths, unhappy paths, and relevant edge
   cases. Add end-to-end tests when a change affects externally observable
   workflows, integration contracts, persistence, command-line behaviour,
   network boundaries, or other system-level behaviour.
-- **Snapshot scope**: Use snapshots only for meaningful, reviewer-useful output
+- **Behavioural tests**: Use `@aboviq/bun-test-cucumber` with Gherkin feature
+  files for behavioural tests. Keep feature files focused on externally
+  observable behaviour and back them with deterministic step definitions.
+- **Snapshot scope**: Use Bun's built-in snapshot testing support for snapshot
+  tests. Keep snapshots limited to meaningful, reviewer-useful output
   contracts. Pair snapshots with semantic assertions, normalize
   nondeterministic fields, and update snapshots only after confirming the
   failure represents an intentional contract change.
