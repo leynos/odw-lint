@@ -1,4 +1,4 @@
-.PHONY: help all clean build lint biomejs oxlint fmt check-fmt typecheck test markdownlint
+.PHONY: help all clean build lint biomejs oxlint fmt check-fmt typecheck test markdownlint nixie
 
 .DEFAULT_GOAL := all
 
@@ -35,6 +35,9 @@ test: build ## Run tests
 
 markdownlint: ## Lint Markdown files
 	bunx markdownlint-cli2 '**/*.md'
+
+nixie: ## Validate Mermaid diagrams in Markdown files
+	nixie --no-sandbox
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | \
