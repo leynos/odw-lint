@@ -57,16 +57,16 @@ shape. The result informs every parser, rule, and reporter task. See
   - See [technical-design.md](technical-design.md) §8.
   - Success: JSON output includes `schemaVersion`, `tool`, `summary`, and
     `diagnostics`, and text output is generated from the same diagnostics.
-  - [ ] 1.2.1.1. Harden diagnostic reporter contracts.
+  - [x] 1.2.1.1. Harden diagnostic reporter contracts.
     - Addendum (from review:1.2.1 and audit:1.2.1; medium). Normalize
       text-only control whitespace and snapshot report diagnostics to protect
       one-line text output and report-envelope consistency. Lightweight
       addendum pass.
-  - [ ] 1.2.1.2. Add severity mirror exhaustiveness checks.
+  - [x] 1.2.1.2. Add severity mirror exhaustiveness checks.
     - Addendum (from review:1.2.1; medium). Make future severity additions
       fail type checking unless summary counts, schema enums, and tests are
       updated together. Lightweight addendum pass.
-  - [ ] 1.2.1.3. Validate report file counts at the boundary.
+  - [x] 1.2.1.3. Validate report file counts at the boundary.
     - Addendum (from review:1.2.1; medium). Convert raw file counts into a
       non-negative integer report value before JSON emission. Lightweight
       addendum pass.

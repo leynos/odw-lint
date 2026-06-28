@@ -6,6 +6,8 @@
  */
 
 export { DIAGNOSTIC_REPORT_SCHEMA } from "./diagnostic-schema";
+export type { DiagnosticSeverity } from "./diagnostic-severity";
+export { DIAGNOSTIC_SEVERITIES } from "./diagnostic-severity";
 export type {
   StaticAnalysisComponent,
   StaticAnalysisStage,
@@ -27,10 +29,7 @@ export const DIAGNOSTIC_SCHEMA_VERSION = 1;
  */
 export const TOOL_NAME = "odw-lint";
 
-/**
- * Supported diagnostic severity values after caller-applied overrides.
- */
-export type DiagnosticSeverity = "error" | "warning" | "info" | "hint";
+import type { DiagnosticSeverity } from "./diagnostic-severity";
 
 /**
  * A source position in the original workflow file.
@@ -280,6 +279,15 @@ export const makeRuleId = (value: string): RuleId => {
   throw new InvalidRuleIdError(result.error);
 };
 
+/** Validates the file count before it is copied into report summaries. */
+const validateReportFileCount = (files: number): number => {
+  if (Number.isInteger(files) && files >= 0) {
+    return files;
+  }
+
+  throw new RangeError(`Report file count must be a non-negative integer; received ${files}.`);
+};
+
 /**
  * Counts diagnostics by effective severity.
  *
@@ -290,35 +298,55 @@ export const countDiagnostics = (input: {
   readonly files: number;
   readonly diagnostics: readonly Diagnostic[];
 }): DiagnosticSummary => {
-  let errors = 0;
-  let warnings = 0;
-  let infos = 0;
-  let hints = 0;
+  const files = validateReportFileCount(input.files);
+  const counts = {
+    error: 0,
+    warning: 0,
+    info: 0,
+    hint: 0,
+  } satisfies Record<DiagnosticSeverity, number>;
 
   for (const diagnostic of input.diagnostics) {
-    switch (diagnostic.severity) {
-      case "error":
-        errors += 1;
-        break;
-      case "warning":
-        warnings += 1;
-        break;
-      case "info":
-        infos += 1;
-        break;
-      case "hint":
-        hints += 1;
-        break;
-    }
+    counts[diagnostic.severity] += 1;
   }
 
   return {
-    files: input.files,
-    errors,
-    warnings,
-    infos,
-    hints,
+    files,
+    errors: counts.error,
+    warnings: counts.warning,
+    infos: counts.info,
+    hints: counts.hint,
   };
+};
+
+/** Checks for control whitespace that can break one-line text diagnostics. */
+const isControlWhitespace = (character: string): boolean => {
+  const codePoint = character.codePointAt(0);
+
+  return codePoint !== undefined && codePoint >= 9 && codePoint <= 13;
+};
+
+/** Normalizes text-only control whitespace so diagnostics remain line-oriented. */
+const normalizeTextField = (value: string): string => {
+  let output = "";
+  let previousWasControlWhitespace = false;
+
+  for (const character of value) {
+    const shouldReplace = isControlWhitespace(character);
+
+    if (!shouldReplace) {
+      output += character;
+      previousWasControlWhitespace = false;
+      continue;
+    }
+
+    if (!previousWasControlWhitespace) {
+      output += " ";
+    }
+    previousWasControlWhitespace = true;
+  }
+
+  return output;
 };
 
 /**
@@ -332,14 +360,16 @@ export const createDiagnosticReport = (input: {
   readonly files: number;
   readonly diagnostics: readonly Diagnostic[];
 }): DiagnosticReport => {
+  const diagnostics = [...input.diagnostics];
+
   return {
     schemaVersion: DIAGNOSTIC_SCHEMA_VERSION,
     tool: {
       name: TOOL_NAME,
       version: input.version,
     },
-    summary: countDiagnostics(input),
-    diagnostics: input.diagnostics,
+    summary: countDiagnostics({ files: input.files, diagnostics }),
+    diagnostics,
   };
 };
 
@@ -351,7 +381,7 @@ export const createDiagnosticReport = (input: {
  */
 export const formatTextDiagnostics = (diagnostics: readonly Diagnostic[]): string => {
   const lines = diagnostics.map((diagnostic) => {
-    return `${diagnostic.file}:${diagnostic.span.start.line}:${diagnostic.span.start.column} ${diagnostic.severity} ${diagnostic.rule} ${diagnostic.message}`;
+    return `${normalizeTextField(diagnostic.file)}:${diagnostic.span.start.line}:${diagnostic.span.start.column} ${diagnostic.severity} ${diagnostic.rule} ${normalizeTextField(diagnostic.message)}`;
   });
 
   return lines.join("\n");

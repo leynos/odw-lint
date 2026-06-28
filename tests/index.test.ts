@@ -21,6 +21,7 @@ import {
   createDiagnosticReport,
   DIAGNOSTIC_REPORT_SCHEMA,
   DIAGNOSTIC_SCHEMA_VERSION,
+  DIAGNOSTIC_SEVERITIES,
   formatTextDiagnostics,
   InvalidRuleIdError,
   isRuleId,
@@ -63,6 +64,13 @@ const invalidRuleIds = [
   { value: "odw/meta-required-", reason: "invalid-name" },
   { value: "odw/../meta-required", reason: "invalid-name" },
 ] as const;
+
+const severitySummaryKeys = {
+  error: "errors",
+  warning: "warnings",
+  info: "infos",
+  hint: "hints",
+} as const satisfies Record<DiagnosticSeverity, keyof DiagnosticSummary>;
 
 /** Builds a diagnostic fixture with the requested severity. */
 const diagnosticForSeverity = (severity: DiagnosticSeverity): Diagnostic => {
@@ -167,11 +175,12 @@ describe("diagnostics", () => {
 
   it("exposes stable diagnostic constants", () => {
     expect(DIAGNOSTIC_SCHEMA_VERSION).toBe(1);
+    expect(DIAGNOSTIC_SEVERITIES).toEqual(["error", "warning", "info", "hint"]);
     expect(TOOL_NAME).toBe("odw-lint");
   });
 
   it("exposes the expected public types", () => {
-    expectTypeOf<DiagnosticSeverity>().toEqualTypeOf<"error" | "warning" | "info" | "hint">();
+    expectTypeOf<DiagnosticSeverity>().toEqualTypeOf<(typeof DIAGNOSTIC_SEVERITIES)[number]>();
     expectTypeOf<RuleId>().toMatchTypeOf<string>();
     expectTypeOf<RuleIdParseResult>().toMatchTypeOf<
       | { readonly ok: true; readonly value: RuleId }
@@ -216,14 +225,21 @@ describe("diagnostic reports", () => {
     });
   });
 
+  it("rejects invalid report file counts at the summary boundary", () => {
+    for (const files of [-1, 0.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(() => countDiagnostics({ files, diagnostics: [] })).toThrow(RangeError);
+      expect(() => createDiagnosticReport({ version: "0.1.0", files, diagnostics: [] })).toThrow(
+        "Report file count must be a non-negative integer",
+      );
+    }
+  });
+
   it("counts every severity independently", () => {
-    const diagnostics = [
-      diagnosticForSeverity("error"),
-      diagnosticForSeverity("warning"),
-      diagnosticForSeverity("info"),
-      diagnosticForSeverity("hint"),
-      diagnosticForSeverity("hint"),
-    ];
+    const diagnostics = DIAGNOSTIC_SEVERITIES.flatMap((severity) => {
+      return severity === "hint"
+        ? [diagnosticForSeverity(severity), diagnosticForSeverity(severity)]
+        : [diagnosticForSeverity(severity)];
+    });
 
     expect(countDiagnostics({ files: 3, diagnostics })).toEqual({
       files: 3,
@@ -232,6 +248,17 @@ describe("diagnostic reports", () => {
       infos: 1,
       hints: 2,
     });
+  });
+
+  it("mirrors every severity into a summary counter", () => {
+    for (const severity of DIAGNOSTIC_SEVERITIES) {
+      const summary = countDiagnostics({
+        files: 1,
+        diagnostics: [diagnosticForSeverity(severity)],
+      });
+
+      expect(summary[severitySummaryKeys[severity]]).toBe(1);
+    }
   });
 
   it("keeps counts stable when diagnostic order changes", () => {
@@ -273,18 +300,27 @@ describe("diagnostic reports", () => {
       diagnostics,
     });
   });
+
+  it("snapshots diagnostics before caller-owned arrays can change", () => {
+    const diagnostics = [diagnosticForSeverity("error")];
+    const report = createDiagnosticReport({ version: "0.1.0", files: 1, diagnostics });
+
+    diagnostics.push(diagnosticForSeverity("hint"));
+
+    expect(report.diagnostics).toEqual([diagnosticForSeverity("error")]);
+    expect(report.summary).toEqual({
+      files: 1,
+      errors: 1,
+      warnings: 0,
+      infos: 0,
+      hints: 0,
+    });
+  });
 });
 
 describe("diagnostic JSON Schema", () => {
   it("uses the same severity values as the TypeScript model", () => {
-    const severityValues = [
-      "error",
-      "warning",
-      "info",
-      "hint",
-    ] as const satisfies readonly DiagnosticSeverity[];
-
-    expect(diagnosticItemSchema.properties.severity.enum).toEqual(severityValues);
+    expect(diagnosticItemSchema.properties.severity.enum).toBe(DIAGNOSTIC_SEVERITIES);
   });
 
   it("requires the documented top-level envelope keys", () => {
@@ -357,6 +393,22 @@ describe("text diagnostics", () => {
     );
   });
 
+  it("normalizes control whitespace in text output only", () => {
+    const diagnostic: Diagnostic = {
+      ...diagnosticForSeverity("warning"),
+      file: "examples/control\nname.js",
+      message: "first line\tsecond line\r\nthird line",
+    };
+
+    expect(formatTextDiagnostics([diagnostic])).toBe(
+      "examples/control name.js:1:1 warning odw/meta-required first line second line third line",
+    );
+    expect(diagnostic).toMatchObject({
+      file: "examples/control\nname.js",
+      message: "first line\tsecond line\r\nthird line",
+    });
+  });
+
   it("preserves diagnostic order", () => {
     const diagnostics = [diagnosticForSeverity("warning"), diagnosticForSeverity("info")];
 
@@ -377,7 +429,7 @@ describe("text diagnostics", () => {
     const report = createDiagnosticReport({ version: "0.1.0", files: 3, diagnostics });
     const text = formatTextDiagnostics(diagnostics);
 
-    expect(report.diagnostics).toBe(diagnostics);
+    expect(report.diagnostics).toEqual(diagnostics);
     expect(text).toMatchSnapshot();
   });
 });

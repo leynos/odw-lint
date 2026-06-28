@@ -5,6 +5,8 @@
  * share a stable contract without adding a runtime validator dependency.
  */
 
+import { DIAGNOSTIC_SEVERITIES } from "./diagnostic-severity";
+
 /**
  * JSON Schema for the diagnostic report envelope.
  */
@@ -45,7 +47,7 @@ export const DIAGNOSTIC_REPORT_SCHEMA = {
         properties: {
           file: { type: "string" },
           rule: { type: "string" },
-          severity: { enum: ["error", "warning", "info", "hint"] },
+          severity: { enum: DIAGNOSTIC_SEVERITIES },
           message: { type: "string" },
           span: {
             type: "object",
