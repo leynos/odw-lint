@@ -41,7 +41,8 @@ fixture ownership, and integration tests. See
 - [ ] 1.1.3. Define the public command contract in repository docs.
   - Requires 1.1.1.
   - See [technical-design.md](technical-design.md) §7.
-  - Success: command arguments, flags, and exit codes match the design.
+  - Success: command arguments, flags, and exit codes match the
+    `ruff check`-style design.
 
 ### 1.2. Build the diagnostic and source-position spine
 
@@ -195,6 +196,13 @@ It unlocks CI adoption and user feedback. See
   - See [technical-design.md](technical-design.md) §8.
   - Success: JSON output is stable under snapshot tests and includes the
     versioned envelope.
+- [ ] 2.4.4. Add Ruff-compatible invocation semantics for output, config,
+  stdin, ignore handling, and exit-code policy.
+  - Requires 2.4.1, 2.4.2, and 2.4.3.
+  - See [technical-design.md](technical-design.md) §§7.0-7.4.
+  - Success: fixtures cover `--output-format`, `--output-file`,
+    `--stdin-filename`, `--config`, `--isolated`, `--respect-gitignore`,
+    `--force-exclude`, `--exit-zero`, and `--exit-non-zero-on-fix`.
 
 ## 3. Second vertical slice: portability and orchestration feedback
 
@@ -276,6 +284,12 @@ It informs CI usage and later plugin integration. See
   - See [technical-design.md](technical-design.md) §11.4.
   - Success: the highest-risk flag combinations are covered without an
     exhaustive test explosion.
+- [ ] 3.3.4. Add fix-mode coverage once the first safe fix lands.
+  - Requires 3.3.1 and one fixable rule.
+  - See [technical-design.md](technical-design.md) §§7.0-7.4.
+  - Success: tests cover `--fix`, `--fix-only`, `--diff`, `--unsafe-fixes`,
+    `--show-fixes`, and `--exit-non-zero-on-fix` with Ruff-compatible exit
+    behaviour.
 
 ## 4. Third vertical slice: adoption and ODW integration
 

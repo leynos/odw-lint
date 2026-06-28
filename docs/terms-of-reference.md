@@ -85,6 +85,8 @@ location.
 - Warn about workflow patterns that are legal but risky, such as unbounded
   fan-out or non-deterministic resumability hazards.
 - Expose an output contract usable by humans, CI, and future editor tooling.
+- Match the `ruff check` command's user experience wherever the semantics
+  transfer cleanly to workflow linting.
 - Align diagnostics with ODW examples and runtime behaviour.
 
 ## 7. Non-goals
@@ -113,6 +115,9 @@ reasonable v1 success bar is:
   receives a Claude compatibility warning.
 - JSON output contains stable fields for file, rule, severity, message, span,
   schema version, summary counts, and optional suggestions.
+- CLI exit codes, fix flags, output-format flags, config overrides, stdin
+  handling, and ignore handling follow `ruff check` semantics unless an
+  ODW-specific reason requires a documented deviation.
 - CI can fail on errors and optionally fail on warning thresholds.
 - The rule corpus includes representative ODW examples and deliberately
   invalid fixtures.
@@ -131,6 +136,7 @@ reasonable v1 success bar is:
 - Compatibility diagnostics must preserve the distinction between "ODW can run
   this" and "Claude Code can also accept this".
 - The first release should favour clear diagnostics over broad lint coverage.
+- Ruff's `check` command is the UX precedent for the `odw-lint check` command.
 - The repository already has Bun, TypeScript, Biome, markdownlint, and Makefile
   gates.
 

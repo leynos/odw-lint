@@ -53,6 +53,8 @@ patterns without executing workflow code.
 |Oxlint JS plugin docs, <https://oxc.rs/docs/guide/usage/linter/js-plugins>|Oxlint supports ESLint-compatible JS plugins, AST traversal, fixes, source APIs, scope analysis, control flow, and IDE diagnostics, but not custom file formats or parsers.|Oxlint plugin support is promising after the ODW dialect has been normalized, but it should not be the v1 core.|
 |Oxlint writing plugins, <https://oxc.rs/docs/guide/usage/linter/writing-js-plugins.html>|JS plugins are alpha; `createOnce` is an Oxlint-specific optimisation path that remains ESLint-compatible via `@oxlint/plugins`.|A future plugin should be optional and version-tolerant.|
 |`@swc/core` npm package, <https://www.npmjs.com/package/@swc/core>|SWC is a Rust TypeScript/JavaScript compiler exposed as a JavaScript and Rust library; `@swc/core` was 1.15.43, published five days before this document was written.|A TypeScript CLI using `@swc/core` gives ODW-native integration with a current parser library and leaves a Rust path open later.|
+|Ruff linter docs, <https://docs.astral.sh/ruff/linter/>|`ruff check` uses `0` for no remaining violations, `1` for violations, and `2` for abnormal termination; safe fixes are applied by `--fix`, unsafe fixes require `--unsafe-fixes`, and `--exit-zero` / `--exit-non-zero-on-fix` alter exit behaviour.|`odw-lint check` should copy Ruff's check-command semantics instead of inventing a bespoke lint UX.|
+|Ruff configuration docs, <https://docs.astral.sh/ruff/configuration/>|`ruff check` exposes `--fix`, `--fix-only`, `--diff`, `--output-format`, `--output-file`, `--stdin-filename`, config overrides, isolation, gitignore handling, and exclude controls.|`odw-lint` should use Ruff-compatible flag names and behaviours where the concepts map to workflow linting.|
 
 ## 4. Design intent
 
@@ -154,6 +156,27 @@ portable" rather than executed for convenience.
 
 ## 7. CLI contract
 
+### 7.0. UX precedent
+
+`ruff check` is the UX gold standard for `odw-lint check`. The command should
+copy Ruff's semantics where the concepts transfer cleanly:
+
+- a `check` subcommand,
+- path arguments after options,
+- terse default output with richer machine formats,
+- safe fixes gated by `--fix`,
+- unsafe fixes gated by `--unsafe-fixes`,
+- `--diff` as a non-writing preview of fixes,
+- `--fix-only` as "apply fixes and do not fail on remaining diagnostics",
+- `--exit-zero` and `--exit-non-zero-on-fix` for CI policy control,
+- `--config` for both config paths and inline overrides,
+- `--isolated` to ignore configuration files,
+- `--respect-gitignore` as the default file-discovery posture,
+- `--stdin-filename` for stdin diagnostics.
+
+Where ODW workflow linting lacks an equivalent concept, the command should omit
+the option rather than create a near-miss.
+
 ### 7.1. Commands
 
 The initial standalone command is:
@@ -193,32 +216,59 @@ File-discovery rules:
 - Shell-expanded files and explicit paths are used as provided.
 - Tool-expanded globs are resolved relative to the current working directory,
   unless `--config` defines a root.
+- `.gitignore` and other standard ignore files are respected by default; use
+  `--no-respect-gitignore` to disable that behaviour.
+- `--exclude` replaces configured exclusions for the invocation, while
+  `--extend-exclude` adds invocation-specific exclusions.
+- `--force-exclude` applies exclusions even to paths passed explicitly on the
+  command line.
 - Symlinks to regular files are followed; directory symlinks are not recursed
   unless a future option enables that explicitly.
 - Unreadable files produce diagnostics and exit code 1 when other files can be
   checked; unreadable configuration or invalid CLI usage exits code 2.
-- `--stdin-file-path` is required when reading stdin so diagnostics have a
+- `--stdin-filename` is required when reading stdin so diagnostics have a
   stable path and configuration can apply include/exclude rules.
 
 ### 7.3. Flags
 
 |Flag|Meaning|
 |---|---|
-|`--format text\|json`|Select text output for humans or JSON for tooling.|
+|`--fix`|Apply safe fixes for fixable diagnostics.|
+|`--unsafe-fixes`|Enable fixes that may change workflow intent. With `--fix`, apply them; without `--fix`, show their availability.|
+|`--no-unsafe-fixes`|Suppress unsafe-fix hints.|
+|`--show-fixes`|Show an enumeration of fixed diagnostics.|
+|`--diff`|Avoid writing files; output a diff for would-be fixes. Implies `--fix-only`.|
+|`--fix-only`|Apply fixes but do not report or fail on remaining diagnostics. Implies `--fix`.|
+|`--output-format <format>`|Select diagnostic output. Default `full`; planned values follow Ruff where useful: `concise`, `full`, `json`, `json-lines`, `github`, `gitlab`, `junit`, and `sarif`.|
+|`--output-file <path>`|Write diagnostic output to a file instead of stdout.|
 |`--strict-claude`|Promote Claude portability findings that are normally warnings to errors.|
 |`--max-warnings <n>`|Exit non-zero when warning count exceeds `n`.|
-|`--config <path>`|Load rule severity and include/exclude settings.|
-|`--stdin-file-path <path>`|Analyse stdin as if it came from `path`.|
-|`--no-ignore`|Ignore configured exclude patterns.|
+|`--config <path-or-override>`|Load a configuration file, or apply an inline `key = value` override that takes precedence over files.|
+|`--isolated`|Ignore all configuration files.|
+|`--exclude <pattern>`|Use the provided exclusion pattern list for this invocation.|
+|`--extend-exclude <pattern>`|Add exclusion patterns on top of configured exclusions.|
+|`--respect-gitignore`|Respect standard ignore files. This is the default.|
+|`--no-respect-gitignore`|Ignore standard ignore files during discovery.|
+|`--force-exclude`|Apply exclusions even to explicit command-line paths.|
+|`--stdin-filename <path>`|Analyse stdin as if it came from `path`.|
+|`--exit-zero`|Exit 0 even when diagnostics remain. Abnormal termination still exits 2.|
+|`--exit-non-zero-on-fix`|Exit 1 if any diagnostics were fixed, even if no diagnostics remain.|
+|`--no-cache`|Disable cache reads if `odw-lint` grows a cache.|
+|`--cache-dir <dir>`|Select the cache directory if caching is enabled.|
+|`--color auto\|always\|never`|Control colour in text output.|
+|`--verbose`, `--quiet`, `--silent`|Mirror Ruff-style log levels.|
 
 ### 7.4. Exit codes
 
 |Code|Meaning|
 |---|---|
-|0|No errors and warning threshold not exceeded.|
-|1|At least one error, or warning threshold exceeded.|
-|2|Usage error or unreadable configuration.|
-|3|Internal analyser failure.|
+|0|No diagnostics remain, or all diagnostics were fixed automatically.|
+|1|Diagnostics remain, warning threshold was exceeded, or fixes were applied with `--exit-non-zero-on-fix`.|
+|2|Invalid configuration, invalid CLI options, unreadable required inputs, or internal analyser failure.|
+
+`--exit-zero` forces exit code 0 for diagnostics, but never for abnormal
+termination. `--fix-only` follows Ruff's posture: apply fixes and do not report
+or exit non-zero for remaining diagnostics.
 
 ## 8. Diagnostic contract
 
@@ -257,7 +307,8 @@ The diagnostic contract has these invariants:
 - `offset` is a zero-based UTF-8 byte offset into the original file.
 - `line` and `column` are one-based display positions. `column` is counted in
   Unicode code points, not UTF-16 code units.
-- Suggestions are optional and never applied in v1.
+- Suggestions are optional. Safe fixes may be applied by `--fix` once the rule
+  has fix support; unsafe fixes require `--unsafe-fixes`.
 - Text output is derived from the same diagnostic objects as JSON output.
 
 ## 9. Rule taxonomy
@@ -339,6 +390,9 @@ Configuration rules:
 - Unknown rule identifiers are errors.
 - Unknown configuration keys are warnings in pre-1.0 releases and errors after
   the configuration schema is stable.
+- `--config "key = value"` inline overrides take precedence over every
+  configuration file.
+- `--isolated` disables configuration-file discovery.
 - ODW integration may additionally read `odw.config.json` to discover workflow
   roots, but lint behaviour should stay in the linter config unless ODW
   explicitly adopts the schema.
@@ -403,6 +457,10 @@ The public CLI has meaningful combinations:
 - Default mode versus `--strict-claude`.
 - Default warning policy versus `--max-warnings`.
 - Configured severities versus CLI overrides.
+- `--fix`, `--fix-only`, `--diff`, `--unsafe-fixes`, `--exit-zero`, and
+  `--exit-non-zero-on-fix`.
+- `--respect-gitignore`, `--force-exclude`, explicit files, and discovered
+  files.
 
 The test matrix should cover pairwise combinations of these modes, plus one
 full end-to-end CI scenario that checks multiple files and fails on warnings.
@@ -500,3 +558,7 @@ plugin ecosystem.
   <https://oxc.rs/docs/guide/usage/linter/writing-js-plugins.html>
 - SWC package:
   <https://www.npmjs.com/package/@swc/core>
+- Ruff linter:
+  <https://docs.astral.sh/ruff/linter/>
+- Ruff configuration:
+  <https://docs.astral.sh/ruff/configuration/>
