@@ -146,6 +146,16 @@ in sync with every raw fixture by updating the family, path, SHA-256 hash,
 expected status, diagnostic rule, severity, message, UTF-8 source span, and
 reviewer-facing `spanText`.
 
+Synthetic masking fixtures live under
+`tests/static-analysis/fixtures/masking/`. They are owned by `odw-lint`, not
+copied from upstream ODW, so repository tooling may format them like ordinary
+test source. Keep their manifest in
+`tests/static-analysis/fixtures/masking.ts` sorted by filename and pin each
+fixture's SHA-256 hash after formatting. These fixtures record empty
+`no-envelope-diagnostics` expectations for future envelope-scanner work where
+decoy workflow syntax appears inside comments, strings, regex literals, and
+template literals.
+
 Loader-parity execution remains owned by roadmap task 2.3.1. The fixture corpus
 records trusted source snapshots and static expectations only; it must not
 import, evaluate or execute workflow bodies during ordinary tests.

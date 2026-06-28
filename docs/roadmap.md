@@ -123,7 +123,7 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
   - See [technical-design.md](technical-design.md) §§9.1 and 11.1.
   - Success: each invalid fixture has expected rule identifiers and source
     spans.
-- [ ] 1.3.3. Add masking fixtures with decoy workflow syntax inside comments,
+- [x] 1.3.3. Add masking fixtures with decoy workflow syntax inside comments,
   strings, regex literals, and template literals.
   - See [technical-design.md](technical-design.md) §§6.2 and 11.1.
   - Success: decoy syntax does not produce envelope diagnostics.
