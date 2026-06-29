@@ -351,6 +351,16 @@ source without losing span fidelity. It informs all later AST rules. See
   - Success: each body diagnostic includes a stable original-source snippet
     across LF, CRLF, Unicode, comments, regex literals, template text, and
     template interpolation.
+- [ ] 2.2.4. Implement workflow AST facts for lexical bindings and source
+  masks.
+  - Requires 2.1.1 and 2.2.2.
+  - See [technical-design.md](technical-design.md) §§6.2 and 9.3.
+  - Provide binding facts for global-helper shadowing and original-source
+    comment or literal masks for suppression parsing.
+  - Success: rule tests can distinguish JavaScript globals from shadowed
+    `parallel`, `Array`, `Number`, `Object`, and `Math` identifiers, and
+    directive-like text in strings, templates, regexes, and block comments is
+    ignored.
 
 ### 2.3. Prove ODW loader parity before shipping dialect checks
 
@@ -448,7 +458,7 @@ without blocking dynamic workflows. It informs future rule severity defaults.
 See [technical-design.md](technical-design.md) §9.3.
 
 - [ ] 3.2.1. Implement bounded-loop detection around agent dispatch.
-  - Requires phase 2.
+  - Requires steps 2.1-2.4.
   - See [technical-design.md](technical-design.md) §9.3.
   - Decide whether raw orchestration-risk fixtures under
     `tests/static-analysis/fixtures/orchestration-risk/` are lint-owned
@@ -461,13 +471,13 @@ See [technical-design.md](technical-design.md) §9.3.
     unbounded dispatch loop fixture warns, and shadowed `Array`, `Object`,
     `Number`, and `Math` helpers cannot silence `odw/bounded-loop`.
 - [ ] 3.2.2. Implement bounded-fan-out detection for `parallel` calls.
-  - Requires phase 2.
+  - Requires steps 2.1-2.4.
   - See [technical-design.md](technical-design.md) §9.3.
   - Success: literal and args-bounded fan-out passes while unknown fan-out
     warns.
 - [ ] 3.2.3. Implement completion-order control-flow warnings for
   `Promise.race`.
-  - Requires phase 2.
+  - Requires steps 2.1-2.4.
   - See [technical-design.md](technical-design.md) §9.3.
   - Success: warnings include an explanation of resumability risk.
 - [ ] 3.2.4. Add the heuristic rule-quality gate to each released
@@ -521,7 +531,7 @@ as ODW evolves. It informs release confidence and ownership boundaries. See
 [technical-design.md](technical-design.md) §§11.1 and 11.2.
 
 - [ ] 4.1.1. Add a fixture-update workflow for new ODW examples.
-  - Requires phase 3.
+  - Requires steps 3.1-3.3.
   - See [technical-design.md](technical-design.md) §11.1.
   - Success: adding an ODW example requires updating expected diagnostics in
     one reviewable change.
@@ -548,7 +558,7 @@ without knowing its internals. It informs the v1 release checklist. See
 
 - [ ] 4.2.1. Write user documentation for `odw-lint check`, JSON output, and
   strict Claude mode.
-  - Requires phase 3.
+  - Requires steps 3.1-3.3.
   - See [technical-design.md](technical-design.md) §§7-9.
   - Success: the guide includes copy-pasteable local and CI commands.
 - [ ] 4.2.2. Add a repository CI example that fails on errors and optionally
@@ -560,7 +570,7 @@ without knowing its internals. It informs the v1 release checklist. See
 - [ ] 4.2.3. Document release gates for `make all`, `make markdownlint`,
   fixture snapshots, parity tests, forbidden imports, hostile metadata, and
   span snapshots.
-  - Requires phase 3.
+  - Requires steps 3.1-3.3.
   - See [technical-design.md](technical-design.md) §15.
   - Success: the release checklist matches the acceptance boundary.
 
@@ -572,7 +582,7 @@ shelling out. It informs whether `odw check` belongs in ODW v1 integration. See
 §§7.1 and 13.
 
 - [ ] 4.3.1. Export a programmatic `checkWorkflows` API from `odw-lint`.
-  - Requires phase 3.
+  - Requires steps 3.1-3.3.
   - See [technical-design.md](technical-design.md) §§5 and 13.
   - Success: the CLI uses the same API as external callers.
 - [ ] 4.3.2. Prototype an ODW-side `odw check` command against the exported
@@ -614,7 +624,7 @@ already using Biome. See [technical-design.md](technical-design.md) §§3 and 14
 
 - [ ] 5.1.1. Prototype Biome GritQL snippets for simple AST-pattern
   diagnostics.
-  - Requires phase 4.
+  - Requires steps 4.1-4.4.
   - See [technical-design.md](technical-design.md) §14.
   - Success: the prototype documents which rules cannot be expressed because
     they need ODW envelope semantics.
@@ -626,7 +636,7 @@ plugin API is suitable for the project. See
 [technical-design.md](technical-design.md) §§3 and 14.
 
 - [ ] 5.2.1. Prototype an Oxlint JS plugin for one orchestration-risk rule.
-  - Requires phase 4.
+  - Requires steps 4.1-4.4.
   - See [technical-design.md](technical-design.md) §14.
   - Success: the prototype records API gaps around custom parsing, rule
     configuration, and source-span parity.
@@ -637,13 +647,13 @@ This step answers whether adoption now requires editor diagnostics or a
 Node-free analyser. See [technical-design.md](technical-design.md) §§13 and 14.
 
 - [ ] 5.3.1. Write an ADR for language-server support.
-  - Requires phase 4.
+  - Requires steps 4.1-4.4.
   - See [technical-design.md](technical-design.md) §14.
   - Success: the ADR chooses between reusing the TypeScript core and building
     an editor-specific service.
 - [ ] 5.3.2. Write an ADR for a Rust analyser core only if performance,
   distribution, or language-server constraints justify it.
-  - Requires phase 4.
+  - Requires steps 4.1-4.4.
   - See [technical-design.md](technical-design.md) §§13 and 14.
   - Success: the ADR includes measurements or distribution constraints rather
     than a preference for Rust as an implementation language.
