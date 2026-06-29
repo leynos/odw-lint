@@ -1120,7 +1120,7 @@ rule page.
     parity test when any page slug is absent from `RULE_CATALOGUE`.
   - Success: removing or renaming a catalogued rule cannot leave stale rule
     documentation behind without a focused rule-doc parity failure.
-- [ ] 2.1.6.2. Surface the rule reference in user navigation.
+- [x] 2.1.6.2. Surface the rule reference in user navigation.
   - Source: audit:2.1.6; severity low.
   - Scope: link `docs/rules/index.md` from the first available user-facing
     navigation surface, using the developer guide as the interim surface while

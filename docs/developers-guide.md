@@ -2,7 +2,8 @@
 
 This repository uses Bun for package scripts and TypeScript execution. Prefer
 the Makefile targets below when validating changes so local runs match the
-commit gate.
+commit gate. The current diagnostic catalogue is documented in the
+[rule reference](rules/index.md).
 
 ## Static-Analysis Boundary
 
