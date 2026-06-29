@@ -253,6 +253,14 @@ conflict in `Decision Log`, and escalate.
   browser login, and an explicit-key attempt returned `UNAUTHORIZED` for an
   invalid or expired API key. No rate-limit wait time was quoted and no review
   findings were produced.
+- [x] (2026-06-29T00:00Z) Addendum 1.5.3.1: extracted shared package-entry
+  test support for package manifest validation, package entry resolution, and
+  package facade export extraction.
+- [x] (2026-06-29T00:00Z) Addendum 1.5.3.1 deterministic gates passed:
+  `make all`, `make markdownlint`, and `make nixie`.
+- [x] (2026-06-29T00:00Z) Addendum 1.5.3.1 CodeRabbit review completed
+  after follow-up fixes for absolute and parent-directory package-entry
+  targets; the final review returned zero findings.
 
 ## Surprises & discoveries
 
@@ -393,6 +401,12 @@ export name fails the focused test. Maintainer documentation now tells
 contributors where the reviewed export list lives, and roadmap task 1.5.3 is
 marked complete. CodeRabbit review remains deferred because this environment
 does not currently have valid CodeRabbit authentication.
+
+Addendum 1.5.3.1 is complete. The public API surface test and architecture
+package-entry assertions now consume shared package-entry test support without
+changing the reviewed public export list or package architecture policy. The
+shared support also rejects package entry targets that escape the repository
+root before reading the declared entry.
 
 ## Context and orientation
 
@@ -1006,7 +1020,7 @@ Research evidence gathered during the planning pass:
 
 ## Addenda
 
-- [ ] 1.5.3.1. Extract shared package-entry support.
+- [x] 1.5.3.1. Extract shared package-entry support.
   - Source: audit:2.1.6; severity medium.
   - Scope: centralize package manifest validation, package entry resolution,
     package facade export extraction, and shared failure messages for public
@@ -1045,3 +1059,7 @@ Research evidence gathered during the planning pass:
 - 2026-06-29T00:10Z: Marked the ExecPlan complete after work item 3 gates and
   recorded the deferred CodeRabbit review caused by missing or expired
   CodeRabbit authentication.
+- 2026-06-29T00:00Z: Completed addendum 1.5.3.1 by extracting shared
+  package-entry support for the public API surface and architecture tests, then
+  fixed CodeRabbit findings around escaped package-entry targets and
+  current-working-directory-dependent file reads.

@@ -6,12 +6,15 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import ts from "typescript";
+import {
+  declaredPackageEntry,
+  EXPECTED_PACKAGE_ENTRY,
+  namedPackageExports,
+  parseDeclaredPackageEntrySource,
+  parseInlinePackageEntrySource,
+  readJsonFile,
+} from "./package-entry-support";
 import { EXPECTED_PUBLIC_PACKAGE_EXPORTS } from "./public-api-fixtures";
-
-const EXPECTED_PACKAGE_ENTRY = "./src/index.ts";
 
 const SUPPORTED_EXPORT_CASES = [
   {
@@ -124,194 +127,22 @@ const MANIFEST_FAILURE_CASES = [
     manifest: manifestWithRootCondition("default", "./src/other.ts"),
     expectedMessage: "declared package entry targets must resolve to one file",
   },
+  {
+    description: "rejects package entry targets outside the repository root",
+    manifest: manifestWithRootCondition("default", "../src/index.ts"),
+    expectedMessage: "package entry targets must stay inside the repository root",
+  },
+  {
+    description: "rejects absolute package entry targets",
+    manifest: manifestWithRootCondition("default", "/src/index.ts"),
+    expectedMessage: "package entry targets must stay inside the repository root",
+  },
 ] as const;
-
-/** Reads one repository-relative UTF-8 file. */
-const readRepositoryFile = (relativePath: string): string => {
-  return readFileSync(relativePath, "utf8");
-};
-
-/** Reads JSON as unknown so runtime checks own the package boundary. */
-const readJsonFile = (relativePath: string): unknown => {
-  return JSON.parse(readRepositoryFile(relativePath)) as unknown;
-};
-
-/** Checks whether a value is a non-array object. */
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-};
-
-/** Asserts that the package manifest root is object-shaped. */
-const packageManifestRecord = (manifest: unknown): Record<string, unknown> => {
-  if (!isRecord(manifest)) {
-    throw new Error("package.json must be an object");
-  }
-
-  return manifest;
-};
-
-/** Reads one required string field from the package manifest. */
-const packageStringField = (manifest: unknown, fieldName: "main" | "types"): string => {
-  const value = packageManifestRecord(manifest)[fieldName];
-
-  if (typeof value !== "string") {
-    throw new Error(`package.json ${fieldName} must be a string`);
-  }
-
-  return value;
-};
-
-/** Reads the root conditional export map from the package manifest. */
-const packageRootExports = (manifest: unknown): Record<string, unknown> => {
-  const { exports: exportsValue } = packageManifestRecord(manifest);
-
-  if (!isRecord(exportsValue) || !isRecord(exportsValue["."])) {
-    throw new Error('package.json exports["."] must be a flat object');
-  }
-
-  return exportsValue["."];
-};
-
-/** Lists every root export condition target declared by the manifest. */
-const rootExportConditionTargets = (manifest: unknown): readonly string[] => {
-  const rootExports = packageRootExports(manifest);
-
-  return Object.entries(rootExports).map(([condition, target]) => {
-    if (typeof target !== "string") {
-      throw new Error(`package.json exports["."].${condition} must be a string target`);
-    }
-
-    return target;
-  });
-};
-
-/** Normalizes package entry targets to one repository-relative spelling. */
-const normalizePackageTarget = (target: string): string => {
-  const withoutDotPrefix = target.startsWith("./") ? target.slice(2) : target;
-
-  return `./${path.posix.normalize(withoutDotPrefix)}`;
-};
-
-/** Derives every declared root package entry target from package.json. */
-const packageEntryTargets = (manifest: unknown): readonly string[] => {
-  return [
-    packageStringField(manifest, "main"),
-    packageStringField(manifest, "types"),
-    ...rootExportConditionTargets(manifest),
-  ];
-};
-
-/** Resolves and validates the single declared root package entry file. */
-const declaredPackageEntry = (manifest: unknown): string => {
-  const targets = packageEntryTargets(manifest).map(normalizePackageTarget);
-  const uniqueTargets = [...new Set(targets)].sort();
-
-  if (uniqueTargets.length !== 1) {
-    throw new Error(
-      `declared package entry targets must resolve to one file: ${uniqueTargets.join(", ")}`,
-    );
-  }
-
-  return uniqueTargets[0] ?? "";
-};
-
-/** Parses inline TypeScript source for package-facade shape checks. */
-const parseInlineSource = (sourceText: string): ts.SourceFile => {
-  return ts.createSourceFile(
-    "inline-package-entry.ts",
-    sourceText,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  );
-};
-
-/** Parses one repository-relative TypeScript source file. */
-const parseRepositorySource = (relativePath: string): ts.SourceFile => {
-  return ts.createSourceFile(
-    relativePath,
-    readRepositoryFile(relativePath),
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  );
-};
-
-/** Extracts a string-literal module specifier from an export declaration. */
-const exportModuleSpecifierText = (exportDeclaration: ts.ExportDeclaration): string => {
-  const moduleSpecifier = exportDeclaration.moduleSpecifier;
-
-  if (moduleSpecifier === undefined) {
-    throw new Error("named re-exports must include a module specifier");
-  }
-
-  if (!ts.isStringLiteral(moduleSpecifier)) {
-    throw new Error("named re-export module specifiers must be string literals");
-  }
-
-  return moduleSpecifier.text;
-};
-
-/** Checks whether a top-level statement has an export or default modifier. */
-const hasFacadeExportModifier = (statement: ts.Statement): boolean => {
-  if (!ts.canHaveModifiers(statement)) {
-    return false;
-  }
-
-  const modifiers = ts.getModifiers(statement) ?? [];
-
-  return modifiers.some(
-    (modifier) =>
-      modifier.kind === ts.SyntaxKind.ExportKeyword ||
-      modifier.kind === ts.SyntaxKind.DefaultKeyword,
-  );
-};
-
-/** Extracts names from a supported explicit named re-export declaration. */
-const exportNamesFromDeclaration = (exportDeclaration: ts.ExportDeclaration): readonly string[] => {
-  exportModuleSpecifierText(exportDeclaration);
-
-  const exportClause = exportDeclaration.exportClause;
-
-  if (exportClause === undefined) {
-    throw new Error("unsupported wildcard export");
-  }
-
-  if (!ts.isNamedExports(exportClause)) {
-    throw new Error("unsupported namespace export");
-  }
-
-  return exportClause.elements.map((exportSpecifier) => exportSpecifier.name.text);
-};
-
-/** Extracts named public exports from a package entry facade source file. */
-const namedPackageExports = (sourceFile: ts.SourceFile): readonly string[] => {
-  const exportNames: string[] = [];
-
-  for (const statement of sourceFile.statements) {
-    if (ts.isExportDeclaration(statement)) {
-      exportNames.push(...exportNamesFromDeclaration(statement));
-      continue;
-    }
-
-    if (ts.isExportAssignment(statement)) {
-      throw new Error("unsupported export assignment");
-    }
-
-    if (hasFacadeExportModifier(statement)) {
-      throw new Error("direct exported declarations are not allowed");
-    }
-
-    throw new Error(`unsupported top-level statement ${ts.SyntaxKind[statement.kind]}`);
-  }
-
-  return exportNames.sort();
-};
 
 describe("public package export-surface extractor", () => {
   for (const exportCase of SUPPORTED_EXPORT_CASES) {
     it(exportCase.description, () => {
-      expect(namedPackageExports(parseInlineSource(exportCase.sourceText))).toEqual(
+      expect(namedPackageExports(parseInlinePackageEntrySource(exportCase.sourceText))).toEqual(
         exportCase.expectedExports,
       );
     });
@@ -319,9 +150,9 @@ describe("public package export-surface extractor", () => {
 
   for (const exportCase of UNSUPPORTED_EXPORT_CASES) {
     it(exportCase.description, () => {
-      expect(() => namedPackageExports(parseInlineSource(exportCase.sourceText))).toThrow(
-        exportCase.expectedMessage,
-      );
+      expect(() =>
+        namedPackageExports(parseInlinePackageEntrySource(exportCase.sourceText)),
+      ).toThrow(exportCase.expectedMessage);
     });
   }
 });
@@ -340,10 +171,10 @@ describe("public package export-surface manifest guard", () => {
 
 describe("public package export-surface guard", () => {
   it("matches the reviewed named export list", () => {
-    const packageEntry = declaredPackageEntry(readJsonFile("package.json"));
-    expect(packageEntry).toBe(EXPECTED_PACKAGE_ENTRY);
+    const packageManifest = readJsonFile("package.json");
+    expect(declaredPackageEntry(packageManifest)).toBe(EXPECTED_PACKAGE_ENTRY);
 
-    expect(namedPackageExports(parseRepositorySource(packageEntry))).toEqual([
+    expect(namedPackageExports(parseDeclaredPackageEntrySource(packageManifest))).toEqual([
       ...EXPECTED_PUBLIC_PACKAGE_EXPORTS,
     ]);
   });

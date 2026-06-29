@@ -235,7 +235,7 @@ depending on manual post-commit audits.
     edit and separately prove the tick is the only remaining roadmap change.
   - Success: `make all` or an equivalent review gate fails when a roadmap
     slice accidentally removes exported `odw-lint` symbols.
-  - [ ] 1.5.3.1. Extract shared package-entry support.
+  - [x] 1.5.3.1. Extract shared package-entry support.
     - Addendum (from audit:2.1.6; medium). Centralize package manifest parsing
       and package facade export extraction for public API and architecture
       tests. Lightweight addendum pass.

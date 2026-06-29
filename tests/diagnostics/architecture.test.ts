@@ -49,27 +49,26 @@ import {
   spanFromOffsets,
   TOOL_NAME,
 } from "odw-lint";
-import type { SourceFile } from "typescript";
 import {
   EXPECTED_DIAGNOSTIC_MODULE_FILES,
   EXPECTED_PACKAGE_ENTRY_MODULE_SPECIFIERS,
   EXPECTED_PARSEABLE_SOURCE_FILES,
 } from "./architecture-fixtures";
 import {
-  exportDeclarationFacts,
-  exportedModuleSpecifiers,
   importArchitectureFactsFromSource,
   isForbiddenOdwImport,
   parseSource,
   topLevelDeclarationNames,
 } from "./import-architecture";
-
-type PackageJson = {
-  readonly exports: {
-    readonly ".": Record<string, string>;
-    readonly "./package.json": string;
-  };
-};
+import {
+  declaredPackageEntry,
+  EXPECTED_PACKAGE_ENTRY,
+  packageEntryModuleSpecifiers,
+  packageManifestExportKeys,
+  packageRootExportTargetsByCondition,
+  parseDeclaredPackageEntrySource,
+  readJsonFile,
+} from "./package-entry-support";
 
 type SourceText = { readonly filePath: string; readonly sourceText: string };
 
@@ -133,36 +132,20 @@ const importViolationsForSources = (sources: readonly SourceText[]): readonly Im
     );
 };
 
-/** Reads the package manifest with the export shape used by this test. */
-const packageJson = (): PackageJson => {
-  return JSON.parse(readFileSync("package.json", "utf8")) as PackageJson;
-};
-
-/** Asserts that package-entry re-exports stay explicit and named. */
-const expectNamedModuleExports = (sourceFile: SourceFile): void => {
-  for (const exportDeclaration of exportDeclarationFacts(sourceFile)) {
-    expect(exportDeclaration.hasExportClause).toBeTrue();
-    expect(exportDeclaration.hasModuleSpecifier).toBeTrue();
-    expect(exportDeclaration.hasNamedExports).toBeTrue();
-    expect(exportDeclaration.moduleSpecifier).toBeDefined();
-  }
-};
-
 /** Asserts that the public package entry exposes only expected internals. */
 const expectPackageEntryShape = (expectedModuleSpecifiers: readonly string[]): void => {
-  const packageExports = packageJson().exports;
-  const packageEntrySource = parseSource("src/index.ts");
+  const packageManifest = readJsonFile("package.json");
+  const packageEntrySource = parseDeclaredPackageEntrySource(packageManifest);
 
-  expect(Object.keys(packageExports).sort()).toEqual([".", "./package.json"]);
-  expect(packageExports["."]).toEqual({
-    types: "./src/index.ts",
-    bun: "./src/index.ts",
-    import: "./src/index.ts",
-    default: "./src/index.ts",
+  expect(packageManifestExportKeys(packageManifest)).toEqual([".", "./package.json"]);
+  expect(packageRootExportTargetsByCondition(packageManifest)).toEqual({
+    types: EXPECTED_PACKAGE_ENTRY,
+    bun: EXPECTED_PACKAGE_ENTRY,
+    import: EXPECTED_PACKAGE_ENTRY,
+    default: EXPECTED_PACKAGE_ENTRY,
   });
-
-  expectNamedModuleExports(packageEntrySource);
-  expect([...exportedModuleSpecifiers(packageEntrySource)].sort()).toEqual(
+  expect(declaredPackageEntry(packageManifest)).toBe(EXPECTED_PACKAGE_ENTRY);
+  expect([...packageEntryModuleSpecifiers(packageEntrySource)].sort()).toEqual(
     [...expectedModuleSpecifiers].sort(),
   );
 };
