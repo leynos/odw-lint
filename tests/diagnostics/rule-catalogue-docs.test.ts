@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { RULE_CATALOGUE, type RuleDefinition } from "odw-lint";
 
@@ -167,6 +167,14 @@ const ruleIndexTargets = (): readonly string[] => {
     .sort();
 };
 
+/** Lists rule documentation page slugs, excluding the index page. */
+const documentedRulePageSlugs = (): readonly string[] => {
+  return readdirSync(path.join("docs", "rules"), { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".md") && entry.name !== "index.md")
+    .map((entry) => entry.name.replace(/\.md$/u, ""))
+    .sort();
+};
+
 describe("rule catalogue documentation", () => {
   it("maps every catalogue docs slug to a rule page", () => {
     for (const rule of RULE_CATALOGUE) {
@@ -194,5 +202,9 @@ describe("rule catalogue documentation", () => {
 
   it("links the index to every catalogue page", () => {
     expect(ruleIndexTargets()).toEqual(RULE_CATALOGUE.map((rule) => `${rule.docsSlug}.md`).sort());
+  });
+
+  it("rejects orphan rule pages not backed by the catalogue", () => {
+    expect(documentedRulePageSlugs()).toEqual(RULE_CATALOGUE.map((rule) => rule.docsSlug).sort());
   });
 });

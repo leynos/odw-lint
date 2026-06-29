@@ -1114,7 +1114,7 @@ rule page.
 
 ## Addenda
 
-- [ ] 2.1.6.1. Fail rule-doc parity on orphan rule pages.
+- [x] 2.1.6.1. Fail rule-doc parity on orphan rule pages.
   - Source: review:2.1.6; severity low.
   - Scope: enumerate `docs/rules/*.md`, excluding `index.md`, and fail the
     parity test when any page slug is absent from `RULE_CATALOGUE`.
