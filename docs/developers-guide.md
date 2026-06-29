@@ -5,6 +5,13 @@ the Makefile targets below when validating changes so local runs match the
 commit gate. The current diagnostic catalogue is documented in the
 [rule reference](rules/index.md).
 
+Start with the [documentation contents](contents.md) when choosing which
+maintainer document to open. Use the [repository layout](repository-layout.md)
+for path ownership and fixture boundaries, the
+[technical design](technical-design.md) for the static-analysis architecture,
+and [ADR 0001](adr/0001-static-analysis-boundary.md) for the accepted
+non-execution boundary.
+
 ## Static-Analysis Boundary
 
 `odw-lint` checks workflow source before any workflow runs, so the
@@ -220,9 +227,9 @@ and columns are one-based display positions, and columns count Unicode code
 points rather than UTF-16 code units. Source-span helpers treat LF, CR, CRLF,
 U+2028 line separator, and U+2029 paragraph separator as JavaScript line
 terminators. A CRLF terminator counts as one display line break, but it still
-occupies two UTF-8 byte offsets; the offset between the carriage return and line
-feed is not a valid display position. The Unicode separators each occupy three
-UTF-8 byte offsets, and interior bytes are not valid display positions.
+occupies two UTF-8 byte offsets; the offset between the carriage return and
+line feed is not a valid display position. The Unicode separators each occupy
+three UTF-8 byte offsets, and interior bytes are not valid display positions.
 
 Use `spanFromOffsets(file, startOffset, endOffset)` for half-open spans where
 `startOffset` is inclusive and `endOffset` is exclusive. Use `sliceSourceSpan`

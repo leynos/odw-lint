@@ -286,7 +286,8 @@ statically. It unlocks metadata rules and body parsing. See
 - [x] 2.1.4. Add a forbidden-import architecture test for production code.
   - Requires 1.1.1.
   - See [technical-design.md](technical-design.md) §§5 and 11.3.
-  - Planning constraint: cover both bare executable ODW imports and package-entry
+  - Planning constraint: cover both bare executable ODW imports and
+    package-entry
     bypasses such as `odw/src/index`, `odw/dist/index`, explicit `.ts` or `.js`
     forms, and sibling path-style equivalents ending in
     `/open-dynamic-workflows/src/index` or
@@ -600,7 +601,7 @@ remediation work. It informs later adoption and handoff documentation. See
 [documentation-style-guide.md](documentation-style-guide.md) "Standard document
 types" and [developers-guide.md](developers-guide.md) "Documentation Upkeep".
 
-- [ ] 4.4.1. Add documentation contents and repository-layout scaffolding.
+- [x] 4.4.1. Add documentation contents and repository-layout scaffolding.
   - Requires 1.1.1 and 1.2.1.
   - Create `docs/contents.md` and `docs/repository-layout.md` that index
     current docs, ADRs, issue audits, execution plans, source, tests, and

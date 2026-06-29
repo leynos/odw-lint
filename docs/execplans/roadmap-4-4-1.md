@@ -4,7 +4,7 @@ This ExecPlan (execution plan) is a living document. The sections `Constraints`,
 `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
 and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 Planning round: 2. Do not begin implementation until this plan is approved by
 the roadmap workflow.
@@ -147,9 +147,22 @@ repository gates `make all`, `make markdownlint`, and `make nixie` pass.
   temporary-log wording. A second CodeRabbit pass found version-pinning and
   shell-fence issues in validation snippets; direct `markdownlint-cli2` fixes
   are now pinned to v0.20.0, and `pipefail` snippets use Bash fences.
-- [ ] Create and validate `docs/contents.md`.
-- [ ] Link the new navigation from `docs/developers-guide.md`, close
-  `docs/roadmap.md` task 4.4.1, and complete final validation.
+- [x] (2026-06-29T18:29Z) Created `docs/contents.md` with a self-link, direct
+  link to `docs/repository-layout.md`, entries for every standalone
+  documentation file and a documented rule-reference-family exception for
+  individual rule pages. The implementing agent's deterministic gate pass ran
+  `make all`, `make markdownlint`, and `make nixie` successfully before the run
+  halted on a Codex adapter exit.
+- [x] (2026-06-29T21:19Z) Linked the new navigation from
+  `docs/developers-guide.md`, closed `docs/roadmap.md` task 4.4.1, and prepared
+  the branch for operator-run final validation after the workflow halt.
+- [x] (2026-06-29T21:19Z) Operator-run final validation passed:
+  `mdtablefix --in-place --wrap` and `bunx markdownlint-cli2@0.20.0 --fix`
+  against the changed Markdown files, followed by `make all`,
+  `make markdownlint`, and `make nixie`.
+- [x] (2026-06-29T21:23Z) Operator-run CodeRabbit review completed after
+  punctuation fixes in `docs/contents.md`; the clean pass reported
+  `findings: 0`.
 
 ## Surprises & Discoveries
 
@@ -243,6 +256,23 @@ trivial ExecPlan portability issue and one validation-snippet issue, which were
 fixed by removing committed machine-specific absolute paths, pinning direct
 `markdownlint-cli2` fix commands to v0.20.0 and using Bash fences for snippets
 that set `pipefail`.
+
+Work item 2 created `docs/contents.md` as the canonical documentation index. It
+links every standalone documentation file and intentionally routes individual
+rule pages through `docs/rules/index.md` rather than duplicating the rule
+catalogue. The implementing agent verified that every expected contents link
+exists, that no individual rule page is duplicated in the contents index, and
+that `make all`, `make markdownlint`, and `make nixie` passed before the
+workflow halted on a Codex adapter exit.
+
+The operator recovered the halted branch by linking the new navigation from
+`docs/developers-guide.md`, marking roadmap task 4.4.1 complete, and running
+the final path-scoped Markdown formatter plus `make all`, `make markdownlint`,
+and `make nixie`. CodeRabbit reported two minor serial-comma findings in
+`docs/contents.md`; both were verified against the current file, fixed locally,
+revalidated with the same gates and followed by a clean CodeRabbit pass with
+zero findings. The final branch remains Markdown-only and adds no runtime,
+package, dependency, source or test changes.
 
 ## Context and orientation
 
