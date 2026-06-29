@@ -297,7 +297,7 @@ statically. It unlocks metadata rules and body parsing. See
     inside this task.
   - Success: production modules cannot import executable ODW loader,
     primitive, runtime launcher, or worker paths.
-  - [ ] 2.1.4.1. Split import architecture helpers.
+  - [x] 2.1.4.1. Split import architecture helpers.
     - Addendum (from audit:2.1.6; medium). Split source parsing, import-edge
       extraction, ODW import policy, and export facts into focused test
       helpers. Lightweight addendum pass.
@@ -312,11 +312,11 @@ statically. It unlocks metadata rules and body parsing. See
     broaden.
   - Success: released rule identifiers, default severities, configuration
     keys, and `docs/rules/` pages are checked against the catalogue.
-  - [ ] 2.1.6.1. Fail rule-doc parity on orphan rule pages.
+  - [x] 2.1.6.1. Fail rule-doc parity on orphan rule pages.
     - Addendum (from review:2.1.6; low). Enumerate `docs/rules/*.md` except
       `index.md` and fail when any page slug is absent from `RULE_CATALOGUE`.
       Lightweight addendum pass.
-  - [ ] 2.1.6.2. Surface the rule reference in user navigation.
+  - [x] 2.1.6.2. Surface the rule reference in user navigation.
     - Addendum (from audit:2.1.6; low). Link `docs/rules/index.md` from the
       first user-facing or interim developer-guide navigation surface.
       Lightweight addendum pass.
