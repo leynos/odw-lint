@@ -297,7 +297,7 @@ statically. It unlocks metadata rules and body parsing. See
   - Requires 1.3.4 and 2.1.3.
   - See [technical-design.md](technical-design.md) §11.3.
   - Success: linting hostile metadata leaves no side-effect marker.
-- [ ] 2.1.6. Introduce the typed rule catalogue and rule-doc parity checks.
+- [x] 2.1.6. Introduce the typed rule catalogue and rule-doc parity checks.
   - Requires 1.2.1.
   - Store rule identifiers, categories, default severities, docs slugs, and
     release status in one production catalogue before envelope diagnostics

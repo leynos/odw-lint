@@ -9,49 +9,9 @@ import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
+import { EXPECTED_PUBLIC_PACKAGE_EXPORTS } from "./public-api-fixtures";
 
 const EXPECTED_PACKAGE_ENTRY = "./src/index.ts";
-
-const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
-  "DIAGNOSTIC_REPORT_SCHEMA",
-  "DIAGNOSTIC_SCHEMA_VERSION",
-  "DIAGNOSTIC_SEVERITIES",
-  "Diagnostic",
-  "DiagnosticReport",
-  "DiagnosticSeverity",
-  "DiagnosticSuggestion",
-  "DiagnosticSummary",
-  "InvalidRuleId",
-  "InvalidRuleIdError",
-  "InvalidRuleIdReason",
-  "OriginalSourceFile",
-  "RuleId",
-  "RuleIdParseResult",
-  "STATIC_ANALYSIS_BOUNDARY",
-  "STATIC_ANALYSIS_COMPONENTS",
-  "STATIC_ANALYSIS_STAGES",
-  "SourceLine",
-  "SourceOffsetError",
-  "SourcePosition",
-  "SourceSnippet",
-  "SourceSpan",
-  "StaticAnalysisComponent",
-  "StaticAnalysisStage",
-  "TOOL_NAME",
-  "ToolInfo",
-  "WorkflowSource",
-  "countDiagnostics",
-  "createDiagnosticReport",
-  "createOriginalSourceFile",
-  "formatTextDiagnostics",
-  "isRuleId",
-  "makeRuleId",
-  "parseRuleId",
-  "positionAtOffset",
-  "sliceSourceSpan",
-  "snippetForSpan",
-  "spanFromOffsets",
-] as const;
 
 const SUPPORTED_EXPORT_CASES = [
   {

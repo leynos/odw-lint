@@ -9,6 +9,18 @@
 
 export { countDiagnostics, createDiagnosticReport } from "./diagnostics/report";
 export {
+  PLANNED_RULE_IDS,
+  RELEASED_RULE_IDS,
+  RULE_CATALOGUE,
+  RULE_CATEGORIES,
+  RULE_IDS,
+  RULE_RELEASE_STATUSES,
+  type RuleCategory,
+  type RuleDefinition,
+  type RuleReleaseStatus,
+  ruleDocsPath,
+} from "./diagnostics/rule-catalogue";
+export {
   type InvalidRuleId,
   InvalidRuleIdError,
   type InvalidRuleIdReason,

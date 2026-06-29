@@ -6,27 +6,9 @@
  */
 
 import type { Diagnostic, DiagnosticSeverity, DiagnosticSummary } from "odw-lint";
-import { makeRuleId } from "odw-lint";
+import { makeRuleId, RULE_IDS } from "odw-lint";
 
-export const documentedRuleIds = [
-  "odw/meta-required",
-  "odw/meta-object",
-  "odw/meta-statically-unprovable",
-  "odw/meta-name",
-  "odw/meta-description",
-  "odw/no-import-export",
-  "odw/body-syntax",
-  "odw/claude-pure-meta",
-  "odw/no-date-now",
-  "odw/no-math-random",
-  "odw/no-argless-new-date",
-  "odw/no-odw-only-validate",
-  "odw/bounded-loop",
-  "odw/bounded-fanout",
-  "odw/no-promise-race",
-  "odw/schema-for-structured-agent",
-  "odw/worktree-isolation-note",
-] as const;
+export const documentedRuleIds = RULE_IDS;
 
 export const invalidRuleIds = [
   { value: "", reason: "empty" },

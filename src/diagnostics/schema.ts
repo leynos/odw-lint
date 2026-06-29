@@ -5,6 +5,7 @@
  * share a stable contract without adding a runtime validator dependency.
  */
 
+import { RULE_IDS } from "./rule-catalogue";
 import { DIAGNOSTIC_SEVERITIES } from "./severity";
 import { DIAGNOSTIC_SCHEMA_VERSION, TOOL_NAME } from "./types";
 
@@ -81,7 +82,7 @@ export const DIAGNOSTIC_REPORT_SCHEMA = {
         additionalProperties: false,
         properties: {
           file: stringSchema,
-          rule: stringSchema,
+          rule: { enum: RULE_IDS },
           severity: { enum: DIAGNOSTIC_SEVERITIES },
           message: stringSchema,
           span: sourceSpanSchema,

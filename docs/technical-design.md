@@ -41,20 +41,20 @@ patterns without executing workflow code.
 
 ## 3. Evidence and prior art
 
-|Source|Finding|Design consequence|
-|---|---|---|
-|ODW loader, `/src/loader.ts`|ODW extracts `export const meta`, strips only the `export` keyword, wraps the body in an async function, rejects other top-level imports or exports, and scans for Claude compatibility hazards.|`odw-lint` needs its own ODW-aware source model rather than a raw JavaScript parse of the original file.|
-|ODW dual compatibility, `/src/dual-compat.ts`|Claude compatibility requires a pure-literal `meta`; ODW's runtime loader is more lenient.|The linter needs separate ODW validity and Claude portability diagnostics.|
-|ODW primitive validation, `/src/primitives.ts`|`validate(source)` compile-checks generated workflow source and returns `{ ok, meta?, errors, warnings }`.|Host-side lint should overlap with this result but should not require being called from a workflow.|
-|ODW public entry point, `/src/index.ts`|ODW exports workflow metadata types, but not the loader implementation or safe static helper implementations.|`odw-lint` needs an explicit static-analysis boundary before it can promise runtime parity.|
-|ODW workflow resolver, `/src/workflows/resolve.ts`|ODW distinguishes path-like inputs from flat workflow names and resolves names from managed workflow roots without opening workflow files.|`odw-lint` must decide whether file discovery follows ODW name/root semantics or stays path/glob-only.|
-|Biome linter plugins, <https://biomejs.dev/linter/plugins/>|Biome plugins use GritQL snippets to match supported files, report diagnostics, and suggest safe or unsafe rewrites.|Biome is useful as a later integration surface for simple structural rules, not as the primary ODW dialect engine.|
-|Biome GritQL reference, <https://biomejs.dev/reference/gritql/>|GritQL performs structural search for JavaScript/TypeScript, CSS, and JSON, but Biome notes missing and in-progress features.|GritQL can express pattern rules after source is ordinary JS/TS, but cannot own ODW's static workflow contract.|
-|Oxlint JS plugin docs, <https://oxc.rs/docs/guide/usage/linter/js-plugins>|Oxlint supports ESLint-compatible JS plugins, AST traversal, fixes, source APIs, scope analysis, control flow, and IDE diagnostics, but not custom file formats or parsers.|Oxlint plugin support is promising after the ODW dialect has been normalized, but it should not be the v1 core.|
-|Oxlint writing plugins, <https://oxc.rs/docs/guide/usage/linter/writing-js-plugins.html>|JS plugins are alpha; `createOnce` is an Oxlint-specific optimisation path that remains ESLint-compatible via `@oxlint/plugins`.|A future plugin should be optional and version-tolerant.|
-|`@swc/core` npm package, <https://www.npmjs.com/package/@swc/core>|SWC is a Rust TypeScript/JavaScript compiler exposed as a JavaScript and Rust library; `@swc/core` was 1.15.43, published five days before this document was written.|A TypeScript CLI using `@swc/core` gives ODW-native integration with a current parser library and leaves a Rust path open later.|
-|Ruff linter docs, <https://docs.astral.sh/ruff/linter/>|`ruff check` uses `0` for no remaining violations, `1` for violations, and `2` for abnormal termination; safe fixes are applied by `--fix`, unsafe fixes require `--unsafe-fixes`, and `--exit-zero` / `--exit-non-zero-on-fix` alter exit behaviour.|`odw-lint check` should copy Ruff's check-command semantics instead of inventing a bespoke lint UX.|
-|Ruff configuration docs, <https://docs.astral.sh/ruff/configuration/>|`ruff check` exposes `--fix`, `--fix-only`, `--diff`, `--output-format`, `--output-file`, `--stdin-filename`, config overrides, isolation, gitignore handling, and exclude controls.|`odw-lint` should use Ruff-compatible flag names and behaviours where the concepts map to workflow linting.|
+| Source                                                                                   | Finding                                                                                                                                                                                                                                               | Design consequence                                                                                                               |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| ODW loader, `/src/loader.ts`                                                             | ODW extracts `export const meta`, strips only the `export` keyword, wraps the body in an async function, rejects other top-level imports or exports, and scans for Claude compatibility hazards.                                                      | `odw-lint` needs its own ODW-aware source model rather than a raw JavaScript parse of the original file.                         |
+| ODW dual compatibility, `/src/dual-compat.ts`                                            | Claude compatibility requires a pure-literal `meta`; ODW's runtime loader is more lenient.                                                                                                                                                            | The linter needs separate ODW validity and Claude portability diagnostics.                                                       |
+| ODW primitive validation, `/src/primitives.ts`                                           | `validate(source)` compile-checks generated workflow source and returns `{ ok, meta?, errors, warnings }`.                                                                                                                                            | Host-side lint should overlap with this result but should not require being called from a workflow.                              |
+| ODW public entry point, `/src/index.ts`                                                  | ODW exports workflow metadata types, but not the loader implementation or safe static helper implementations.                                                                                                                                         | `odw-lint` needs an explicit static-analysis boundary before it can promise runtime parity.                                      |
+| ODW workflow resolver, `/src/workflows/resolve.ts`                                       | ODW distinguishes path-like inputs from flat workflow names and resolves names from managed workflow roots without opening workflow files.                                                                                                            | `odw-lint` must decide whether file discovery follows ODW name/root semantics or stays path/glob-only.                           |
+| Biome linter plugins, <https://biomejs.dev/linter/plugins/>                              | Biome plugins use GritQL snippets to match supported files, report diagnostics, and suggest safe or unsafe rewrites.                                                                                                                                  | Biome is useful as a later integration surface for simple structural rules, not as the primary ODW dialect engine.               |
+| Biome GritQL reference, <https://biomejs.dev/reference/gritql/>                          | GritQL performs structural search for JavaScript/TypeScript, CSS, and JSON, but Biome notes missing and in-progress features.                                                                                                                         | GritQL can express pattern rules after source is ordinary JS/TS, but cannot own ODW's static workflow contract.                  |
+| Oxlint JS plugin docs, <https://oxc.rs/docs/guide/usage/linter/js-plugins>               | Oxlint supports ESLint-compatible JS plugins, AST traversal, fixes, source APIs, scope analysis, control flow, and IDE diagnostics, but not custom file formats or parsers.                                                                           | Oxlint plugin support is promising after the ODW dialect has been normalized, but it should not be the v1 core.                  |
+| Oxlint writing plugins, <https://oxc.rs/docs/guide/usage/linter/writing-js-plugins.html> | JS plugins are alpha; `createOnce` is an Oxlint-specific optimisation path that remains ESLint-compatible via `@oxlint/plugins`.                                                                                                                      | A future plugin should be optional and version-tolerant.                                                                         |
+| `@swc/core` npm package, <https://www.npmjs.com/package/@swc/core>                       | SWC is a Rust TypeScript/JavaScript compiler exposed as a JavaScript and Rust library; `@swc/core` was 1.15.43, published five days before this document was written.                                                                                 | A TypeScript CLI using `@swc/core` gives ODW-native integration with a current parser library and leaves a Rust path open later. |
+| Ruff linter docs, <https://docs.astral.sh/ruff/linter/>                                  | `ruff check` uses `0` for no remaining violations, `1` for violations, and `2` for abnormal termination; safe fixes are applied by `--fix`, unsafe fixes require `--unsafe-fixes`, and `--exit-zero` / `--exit-non-zero-on-fix` alter exit behaviour. | `odw-lint check` should copy Ruff's check-command semantics instead of inventing a bespoke lint UX.                              |
+| Ruff configuration docs, <https://docs.astral.sh/ruff/configuration/>                    | `ruff check` exposes `--fix`, `--fix-only`, `--diff`, `--output-format`, `--output-file`, `--stdin-filename`, config overrides, isolation, gitignore handling, and exclude controls.                                                                  | `odw-lint` should use Ruff-compatible flag names and behaviours where the concepts map to workflow linting.                      |
 
 ## 4. Design intent
 
@@ -100,28 +100,28 @@ executable loader path.
 
 ### 6.1. Components
 
-|Component|Responsibility|
-|---|---|
-|CLI front end|Parse arguments, discover files, load config, and select reporter.|
-|Source reader|Read files or stdin, normalize paths, and build line indexes.|
-|ODW envelope scanner|Locate `export const meta`, reject unsupported imports and exports, and identify the body span.|
-|Static meta parser|Parse metadata as a pure or lenient object without executing expressions.|
-|Body normalizer|Produce SWC-parseable source by stripping the `export` token and wrapping or replacing top-level `return` when needed for parsing.|
-|Span mapper|Map normalized AST spans back to original source offsets, lines, and columns.|
-|SWC parser adapter|Parse normalized JavaScript or TypeScript source and return AST plus syntax errors.|
-|Rule engine|Run deterministic rules over the envelope, metadata, AST, and derived facts.|
-|Reporter|Emit text, JSON, and future SARIF-compatible diagnostic streams.|
-|Fixture corpus|Store valid and invalid workflow examples for differential tests.|
+| Component            | Responsibility                                                                                                                     |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| CLI front end        | Parse arguments, discover files, load config, and select reporter.                                                                 |
+| Source reader        | Read files or stdin, normalize paths, and build line indexes.                                                                      |
+| ODW envelope scanner | Locate `export const meta`, reject unsupported imports and exports, and identify the body span.                                    |
+| Static meta parser   | Parse metadata as a pure or lenient object without executing expressions.                                                          |
+| Body normalizer      | Produce SWC-parseable source by stripping the `export` token and wrapping or replacing top-level `return` when needed for parsing. |
+| Span mapper          | Map normalized AST spans back to original source offsets, lines, and columns.                                                      |
+| SWC parser adapter   | Parse normalized JavaScript or TypeScript source and return AST plus syntax errors.                                                |
+| Rule engine          | Run deterministic rules over the envelope, metadata, AST, and derived facts.                                                       |
+| Reporter             | Emit text, JSON, and future SARIF-compatible diagnostic streams.                                                                   |
+| Fixture corpus       | Store valid and invalid workflow examples for differential tests.                                                                  |
 
 ### 6.2. Static source model
 
 The analysis model has three layers:
 
-|Layer|Data|Produced by|
-|---|---|---|
-|`WorkflowEnvelope`|File path, original source, line index, meta declaration span, body span, unsupported top-level declarations|Envelope scanner|
-|`WorkflowMetaFacts`|`name`, `description`, `phases`, pure-literal status, ODW-lenient status, parse reason|Static meta parser|
-|`WorkflowAstFacts`|SWC AST, primitive calls, loops, fan-out expressions, randomness/time hazards, schema literals|Parser adapter and fact collectors|
+| Layer               | Data                                                                                                         | Produced by                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------- |
+| `WorkflowEnvelope`  | File path, original source, line index, meta declaration span, body span, unsupported top-level declarations | Envelope scanner                   |
+| `WorkflowMetaFacts` | `name`, `description`, `phases`, pure-literal status, ODW-lenient status, parse reason                       | Static meta parser                 |
+| `WorkflowAstFacts`  | SWC AST, primitive calls, loops, fan-out expressions, randomness/time hazards, schema literals               | Parser adapter and fact collectors |
 
 The envelope scanner should use the same string, comment, template, and regex
 masking strategy as ODW's loader. That avoids false positives when `export const
@@ -131,11 +131,11 @@ meta =` or braces appear inside strings or comments.
 
 Metadata diagnostics must separate three cases:
 
-|Category|Meaning|Default result|
-|---|---|---|
-|ODW runtime-invalid|The static envelope proves ODW cannot load the workflow, such as missing `meta.name` or malformed object syntax.|Error|
-|Statically unprovable|ODW's executable runtime might accept the metadata, but `odw-lint` cannot prove that safely without evaluating source.|Warning in default mode, configurable to error|
-|Claude-incompatible|ODW can accept the workflow, but Claude Code's static workflow reader would reject it.|Warning, promoted by `--strict-claude`|
+| Category              | Meaning                                                                                                                | Default result                                 |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| ODW runtime-invalid   | The static envelope proves ODW cannot load the workflow, such as missing `meta.name` or malformed object syntax.       | Error                                          |
+| Statically unprovable | ODW's executable runtime might accept the metadata, but `odw-lint` cannot prove that safely without evaluating source. | Warning in default mode, configurable to error |
+| Claude-incompatible   | ODW can accept the workflow, but Claude Code's static workflow reader would reject it.                                 | Warning, promoted by `--strict-claude`         |
 
 `odw/meta-object` is reserved for metadata that the static parser proves is
 not an object in the supported static contract. Computed metadata that might
@@ -236,40 +236,40 @@ File-discovery rules:
 
 ### 7.3. Flags
 
-|Flag|Meaning|
-|---|---|
-|`--fix`|Apply safe fixes for fixable diagnostics.|
-|`--unsafe-fixes`|Enable fixes that may change workflow intent. With `--fix`, apply them; without `--fix`, show their availability.|
-|`--no-unsafe-fixes`|Suppress unsafe-fix hints.|
-|`--show-fixes`|Show an enumeration of fixed diagnostics.|
-|`--diff`|Avoid writing files; output a diff for would-be fixes. Implies `--fix-only`.|
-|`--fix-only`|Apply fixes but do not report or fail on remaining diagnostics. Implies `--fix`.|
-|`--output-format <format>`|Select diagnostic output. Default `full`; planned values follow Ruff where useful: `concise`, `full`, `json`, `json-lines`, `github`, `gitlab`, `junit`, and `sarif`.|
-|`--output-file <path>`|Write diagnostic output to a file instead of stdout.|
-|`--strict-claude`|Promote Claude portability findings that are normally warnings to errors.|
-|`--max-warnings <n>`|Exit non-zero when warning count exceeds `n`.|
-|`--config <path-or-override>`|Load a configuration file, or apply an inline `key = value` override that takes precedence over files.|
-|`--isolated`|Ignore all configuration files.|
-|`--exclude <pattern>`|Use the provided exclusion pattern list for this invocation.|
-|`--extend-exclude <pattern>`|Add exclusion patterns on top of configured exclusions.|
-|`--respect-gitignore`|Respect standard ignore files. This is the default.|
-|`--no-respect-gitignore`|Ignore standard ignore files during discovery.|
-|`--force-exclude`|Apply exclusions even to explicit command-line paths.|
-|`--stdin-filename <path>`|Analyse stdin as if it came from `path`.|
-|`--exit-zero`|Exit 0 even when diagnostics remain. Abnormal termination still exits 2.|
-|`--exit-non-zero-on-fix`|Exit 1 if any diagnostics were fixed, even if no diagnostics remain.|
-|`--no-cache`|Disable cache reads if `odw-lint` grows a cache.|
-|`--cache-dir <dir>`|Select the cache directory if caching is enabled.|
-|`--color auto\|always\|never`|Control colour in text output.|
-|`--verbose`, `--quiet`, `--silent`|Mirror Ruff-style log levels.|
+| Flag                               | Meaning                                                                                                                                                               |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--fix`                            | Apply safe fixes for fixable diagnostics.                                                                                                                             |
+| `--unsafe-fixes`                   | Enable fixes that may change workflow intent. With `--fix`, apply them; without `--fix`, show their availability.                                                     |
+| `--no-unsafe-fixes`                | Suppress unsafe-fix hints.                                                                                                                                            |
+| `--show-fixes`                     | Show an enumeration of fixed diagnostics.                                                                                                                             |
+| `--diff`                           | Avoid writing files; output a diff for would-be fixes. Implies `--fix-only`.                                                                                          |
+| `--fix-only`                       | Apply fixes but do not report or fail on remaining diagnostics. Implies `--fix`.                                                                                      |
+| `--output-format <format>`         | Select diagnostic output. Default `full`; planned values follow Ruff where useful: `concise`, `full`, `json`, `json-lines`, `github`, `gitlab`, `junit`, and `sarif`. |
+| `--output-file <path>`             | Write diagnostic output to a file instead of stdout.                                                                                                                  |
+| `--strict-claude`                  | Promote Claude portability findings that are normally warnings to errors.                                                                                             |
+| `--max-warnings <n>`               | Exit non-zero when warning count exceeds `n`.                                                                                                                         |
+| `--config <path-or-override>`      | Load a configuration file, or apply an inline `key = value` override that takes precedence over files.                                                                |
+| `--isolated`                       | Ignore all configuration files.                                                                                                                                       |
+| `--exclude <pattern>`              | Use the provided exclusion pattern list for this invocation.                                                                                                          |
+| `--extend-exclude <pattern>`       | Add exclusion patterns on top of configured exclusions.                                                                                                               |
+| `--respect-gitignore`              | Respect standard ignore files. This is the default.                                                                                                                   |
+| `--no-respect-gitignore`           | Ignore standard ignore files during discovery.                                                                                                                        |
+| `--force-exclude`                  | Apply exclusions even to explicit command-line paths.                                                                                                                 |
+| `--stdin-filename <path>`          | Analyse stdin as if it came from `path`.                                                                                                                              |
+| `--exit-zero`                      | Exit 0 even when diagnostics remain. Abnormal termination still exits 2.                                                                                              |
+| `--exit-non-zero-on-fix`           | Exit 1 if any diagnostics were fixed, even if no diagnostics remain.                                                                                                  |
+| `--no-cache`                       | Disable cache reads if `odw-lint` grows a cache.                                                                                                                      |
+| `--cache-dir <dir>`                | Select the cache directory if caching is enabled.                                                                                                                     |
+| `--color auto\|always\|never`      | Control colour in text output.                                                                                                                                        |
+| `--verbose`, `--quiet`, `--silent` | Mirror Ruff-style log levels.                                                                                                                                         |
 
 ### 7.4. Exit codes
 
-|Code|Meaning|
-|---|---|
-|0|No diagnostics remain, or all diagnostics were fixed automatically.|
-|1|Diagnostics remain, warning threshold was exceeded, or fixes were applied with `--exit-non-zero-on-fix`.|
-|2|Invalid configuration, invalid CLI options, unreadable required inputs, or internal analyser failure.|
+| Code | Meaning                                                                                                  |
+| ---- | -------------------------------------------------------------------------------------------------------- |
+| 0    | No diagnostics remain, or all diagnostics were fixed automatically.                                      |
+| 1    | Diagnostics remain, warning threshold was exceeded, or fixes were applied with `--exit-non-zero-on-fix`. |
+| 2    | Invalid configuration, invalid CLI options, unreadable required inputs, or internal analyser failure.    |
 
 `--exit-zero` forces exit code 0 for diagnostics, but never for abnormal
 termination. `--fix-only` follows Ruff's posture: apply fixes and do not report
@@ -306,7 +306,8 @@ The diagnostic contract has these invariants:
 - `schemaVersion` changes only when JSON consumers need compatibility logic.
 - `tool.version` comes from the package version.
 - `summary` counts diagnostics after severity overrides.
-- `rule` is stable once released.
+- `rule` is constrained to the catalogue-derived `RULE_IDS` enum and is stable
+  once released.
 - `severity` is one of `error`, `warning`, `info`, or `hint`.
 - `span` always refers to original source, not normalized source.
 - `offset` is a zero-based UTF-8 byte offset into the original file.
@@ -319,33 +320,48 @@ The diagnostic contract has these invariants:
   has fix support; unsafe fixes require `--unsafe-fixes`.
 - Text output is derived from the same diagnostic objects as JSON output.
 
+Adding a new catalogued rule ID expands the schema enum and requires catalogue,
+schema, rule documentation, and parity-test updates. That addition does not by
+itself change `schemaVersion` when the diagnostic object shape and existing
+rule meanings remain compatible. Renaming or removing a released rule, changing
+an existing rule's meaning, or changing the diagnostic object shape requires
+schema-version review and compatibility handling.
+
 ## 9. Rule taxonomy
+
+`src/diagnostics/rule-catalogue.ts` is the implementation source of truth for
+rule identifiers, categories, default severities, configuration keys,
+documentation slugs, and release status. This section records the taxonomy
+rationale and reviewed rule intent; tests keep the catalogue aligned with the
+public package entry, diagnostic schema enum, and rule documentation pages.
+Rule documentation lives under `docs/rules/`, with one page per catalogue
+`docsSlug` and an index that links every rule.
 
 ### 9.1. Dialect errors
 
 These findings prevent the workflow from being loaded as an ODW workflow.
 
-|Rule|Default|Condition|
-|---|---|---|
-|`odw/meta-required`|Error|No real `export const meta =` declaration exists.|
-|`odw/meta-object`|Error|The static parser proves the metadata declaration is not an object in the supported static contract.|
-|`odw/meta-statically-unprovable`|Warning|The metadata might execute under ODW, but proving that would require source evaluation.|
-|`odw/meta-name`|Error|`meta.name` is missing or not a non-empty string.|
-|`odw/meta-description`|Error|`meta.description` is missing or not a string.|
-|`odw/no-import-export`|Error|The body contains unsupported top-level `import` or extra `export`.|
-|`odw/body-syntax`|Error|The normalized body cannot be parsed.|
+| Rule                             | Default | Condition                                                                                            |
+| -------------------------------- | ------- | ---------------------------------------------------------------------------------------------------- |
+| `odw/meta-required`              | Error   | No real `export const meta =` declaration exists.                                                    |
+| `odw/meta-object`                | Error   | The static parser proves the metadata declaration is not an object in the supported static contract. |
+| `odw/meta-statically-unprovable` | Warning | The metadata might execute under ODW, but proving that would require source evaluation.              |
+| `odw/meta-name`                  | Error   | `meta.name` is missing or not a non-empty string.                                                    |
+| `odw/meta-description`           | Error   | `meta.description` is missing or not a string.                                                       |
+| `odw/no-import-export`           | Error   | The body contains unsupported top-level `import` or extra `export`.                                  |
+| `odw/body-syntax`                | Error   | The normalized body cannot be parsed.                                                                |
 
 ### 9.2. Claude compatibility
 
 These findings distinguish ODW runtime validity from Claude Code portability.
 
-|Rule|Default|Condition|
-|---|---|---|
-|`odw/claude-pure-meta`|Warning|`meta` is not a pure literal.|
-|`odw/no-date-now`|Warning|The workflow calls `Date.now()`.|
-|`odw/no-math-random`|Warning|The workflow calls `Math.random()`.|
-|`odw/no-argless-new-date`|Warning|The workflow calls `new Date()` without arguments.|
-|`odw/no-odw-only-validate`|Info|The workflow calls ODW-only `validate(source)`.|
+| Rule                       | Default | Condition                                          |
+| -------------------------- | ------- | -------------------------------------------------- |
+| `odw/claude-pure-meta`     | Warning | `meta` is not a pure literal.                      |
+| `odw/no-date-now`          | Warning | The workflow calls `Date.now()`.                   |
+| `odw/no-math-random`       | Warning | The workflow calls `Math.random()`.                |
+| `odw/no-argless-new-date`  | Warning | The workflow calls `new Date()` without arguments. |
+| `odw/no-odw-only-validate` | Info    | The workflow calls ODW-only `validate(source)`.    |
 
 `--strict-claude` promotes all Claude compatibility warnings to errors. The
 `validate(source)` rule should remain informational unless a future mode
@@ -356,13 +372,13 @@ explicitly targets pure Claude Code execution.
 These rules warn when legal workflows have patterns likely to cause expensive,
 non-reproducible, or hard-to-supervise runs.
 
-|Rule|Default|Condition|
-|---|---|---|
-|`odw/bounded-loop`|Warning|A `while` or `for` loop around agent dispatch has no visible numeric or args-derived bound.|
-|`odw/bounded-fanout`|Warning|`parallel(Array.from({ length: ... }))` uses a non-obviously bounded length.|
-|`odw/no-promise-race`|Warning|The workflow uses completion-order control flow such as `Promise.race`.|
-|`odw/schema-for-structured-agent`|Info|An `agent()` call appears to request structured data in prompt text without `schema`.|
-|`odw/worktree-isolation-note`|Info|`isolation: "worktree"` appears and the prompt implies persistent git state.|
+| Rule                              | Default | Condition                                                                                   |
+| --------------------------------- | ------- | ------------------------------------------------------------------------------------------- |
+| `odw/bounded-loop`                | Warning | A `while` or `for` loop around agent dispatch has no visible numeric or args-derived bound. |
+| `odw/bounded-fanout`              | Warning | `parallel(Array.from({ length: ... }))` uses a non-obviously bounded length.                |
+| `odw/no-promise-race`             | Warning | The workflow uses completion-order control flow such as `Promise.race`.                     |
+| `odw/schema-for-structured-agent` | Info    | An `agent()` call appears to request structured data in prompt text without `schema`.       |
+| `odw/worktree-isolation-note`     | Info    | `isolation: "worktree"` appears and the prompt implies persistent git state.                |
 
 The first release should keep these as warnings or info because their analysis
 is heuristic. They become useful by explaining risk, not by blocking all
@@ -492,15 +508,15 @@ workflow bodies, or call ODW runtime functions that evaluate metadata.
 
 ### 12.2. Failure modes
 
-|Failure mode|Mitigation|
-|---|---|
-|Parser crash on malformed input|Catch parser exceptions and emit `odw/body-syntax` or internal code 3 as appropriate.|
-|Diagnostic span points to normalized source|Centralize span mapping and test each rule with snapshot spans.|
-|Rule disagrees with ODW runtime|Maintain phase-2 loader-parity fixtures and document intentional stricter checks.|
-|Production code imports executable ODW runtime paths|Run a forbidden-import architecture test in the default test suite.|
-|Hostile metadata executes during lint|Use only static parsers and keep the hostile metadata fixture release-blocking.|
-|Alpha ecosystem plugin changes break users|Keep Biome and Oxlint integrations optional and outside the core checker.|
-|Heuristic rule blocks valid dynamic workflow|Default heuristic rules to warning or info and allow per-rule configuration.|
+| Failure mode                                         | Mitigation                                                                            |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Parser crash on malformed input                      | Catch parser exceptions and emit `odw/body-syntax` or internal code 3 as appropriate. |
+| Diagnostic span points to normalized source          | Centralize span mapping and test each rule with snapshot spans.                       |
+| Rule disagrees with ODW runtime                      | Maintain phase-2 loader-parity fixtures and document intentional stricter checks.     |
+| Production code imports executable ODW runtime paths | Run a forbidden-import architecture test in the default test suite.                   |
+| Hostile metadata executes during lint                | Use only static parsers and keep the hostile metadata fixture release-blocking.       |
+| Alpha ecosystem plugin changes break users           | Keep Biome and Oxlint integrations optional and outside the core checker.             |
+| Heuristic rule blocks valid dynamic workflow         | Default heuristic rules to warning or info and allow per-rule configuration.          |
 
 ## 13. Packaging decision
 
@@ -519,13 +535,13 @@ that the TypeScript implementation cannot meet.
 
 ## 14. Deferred integrations
 
-|Integration|Deferred reason|
-|---|---|
-|Biome GritQL snippets|Useful for simple pattern checks, but cannot own ODW envelope semantics.|
-|Oxlint JS plugin|Promising for AST rules and IDE diagnostics, but the plugin API is alpha and does not support custom parsers.|
-|ESLint plugin|Broad reach, but it adds another diagnostic host before the ODW core is stable.|
-|Language server|Depends on stable diagnostics, config, and span mapping.|
-|Rust analyser core|Depends on proven performance or distribution need.|
+| Integration           | Deferred reason                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Biome GritQL snippets | Useful for simple pattern checks, but cannot own ODW envelope semantics.                                      |
+| Oxlint JS plugin      | Promising for AST rules and IDE diagnostics, but the plugin API is alpha and does not support custom parsers. |
+| ESLint plugin         | Broad reach, but it adds another diagnostic host before the ODW core is stable.                               |
+| Language server       | Depends on stable diagnostics, config, and span mapping.                                                      |
+| Rust analyser core    | Depends on proven performance or distribution need.                                                           |
 
 ## 15. Acceptance boundary
 
@@ -537,6 +553,7 @@ Release requires:
 
 - `make all`.
 - `make markdownlint`.
+- typed rule-catalogue parity for public exports, JSON Schema, and rule docs.
 - fixture snapshots for ODW examples and invalid dialect cases.
 - phase-2 loader-parity tests.
 - forbidden-import architecture tests.

@@ -51,6 +51,11 @@ import {
 } from "odw-lint";
 import type { SourceFile } from "typescript";
 import {
+  EXPECTED_DIAGNOSTIC_MODULE_FILES,
+  EXPECTED_PACKAGE_ENTRY_MODULE_SPECIFIERS,
+  EXPECTED_PARSEABLE_SOURCE_FILES,
+} from "./architecture-fixtures";
+import {
   exportDeclarationFacts,
   exportedModuleSpecifiers,
   importArchitectureFactsFromSource,
@@ -377,18 +382,10 @@ describe("diagnostic architecture", () => {
   });
 
   it("pins the final package entry and parseable diagnostic sources", () => {
-    expectPackageEntryShape(
-      "./diagnostics/report ./diagnostics/rule-id ./diagnostics/schema ./diagnostics/severity ./diagnostics/text ./diagnostics/types ./static-analysis".split(
-        " ",
-      ),
-    );
-    expect(diagnosticModuleFiles()).toEqual(
-      "report.ts rule-id.ts schema.ts severity.ts text.ts types.ts".split(" "),
-    );
+    expectPackageEntryShape(EXPECTED_PACKAGE_ENTRY_MODULE_SPECIFIERS);
+    expect(diagnosticModuleFiles()).toEqual(EXPECTED_DIAGNOSTIC_MODULE_FILES);
 
-    for (const sourcePath of "src/index.ts src/diagnostics/report.ts src/diagnostics/rule-id.ts src/diagnostics/schema.ts src/diagnostics/severity.ts src/diagnostics/text.ts src/diagnostics/types.ts src/static-analysis/source-file.ts".split(
-      " ",
-    )) {
+    for (const sourcePath of EXPECTED_PARSEABLE_SOURCE_FILES) {
       expect(parseSource(sourcePath).fileName).toBe(sourcePath);
     }
     expect(topLevelDeclarationNames(parseSource("src/index.ts"))).toEqual([]);

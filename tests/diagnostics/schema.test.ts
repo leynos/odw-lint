@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { DIAGNOSTIC_REPORT_SCHEMA, DIAGNOSTIC_SEVERITIES } from "odw-lint";
+import { DIAGNOSTIC_REPORT_SCHEMA, DIAGNOSTIC_SEVERITIES, RULE_IDS } from "odw-lint";
 
 const diagnosticItemSchema = DIAGNOSTIC_REPORT_SCHEMA.properties.diagnostics.items;
 const sourceSpanSchema = diagnosticItemSchema.properties.span;
@@ -11,6 +11,10 @@ const sourceSpanSchema = diagnosticItemSchema.properties.span;
 describe("diagnostic JSON Schema", () => {
   it("uses the same severity values as the TypeScript model", () => {
     expect(diagnosticItemSchema.properties.severity.enum).toBe(DIAGNOSTIC_SEVERITIES);
+  });
+
+  it("uses the same rule identifiers as the catalogue", () => {
+    expect(diagnosticItemSchema.properties.rule.enum).toBe(RULE_IDS);
   });
 
   it("requires the documented top-level envelope keys", () => {
