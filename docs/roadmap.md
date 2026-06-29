@@ -450,8 +450,16 @@ See [technical-design.md](technical-design.md) §9.3.
 - [ ] 3.2.1. Implement bounded-loop detection around agent dispatch.
   - Requires phase 2.
   - See [technical-design.md](technical-design.md) §9.3.
+  - Decide whether raw orchestration-risk fixtures under
+    `tests/static-analysis/fixtures/orchestration-risk/` are lint-owned
+    fixtures or excluded raw inputs, then update `biome.jsonc` and
+    `.oxlintrc.json` with validation for those changed config files.
+  - Treat `Array.from(...)`, `new Array(...)`, `Object`, `Number`, and `Math`
+    helper expressions as bounded only when binding analysis proves they are
+    the JavaScript globals; otherwise classify the expression as dynamic.
   - Success: the bounded ODW `loop-until-dry` example passes while an
-    unbounded dispatch loop fixture warns.
+    unbounded dispatch loop fixture warns, and shadowed `Array`, `Object`,
+    `Number`, and `Math` helpers cannot silence `odw/bounded-loop`.
 - [ ] 3.2.2. Implement bounded-fan-out detection for `parallel` calls.
   - Requires phase 2.
   - See [technical-design.md](technical-design.md) §9.3.
