@@ -235,6 +235,10 @@ depending on manual post-commit audits.
     edit and separately prove the tick is the only remaining roadmap change.
   - Success: `make all` or an equivalent review gate fails when a roadmap
     slice accidentally removes exported `odw-lint` symbols.
+  - [ ] 1.5.3.1. Extract shared package-entry support.
+    - Addendum (from audit:2.1.6; medium). Centralize package manifest parsing
+      and package facade export extraction for public API and architecture
+      tests. Lightweight addendum pass.
 - [ ] 1.5.4. Add tracked-file whitespace hygiene to the commit gate.
   - Requires 1.5.2.
   - Add a lightweight whitespace check for tracked files or diffs so committed
@@ -293,6 +297,10 @@ statically. It unlocks metadata rules and body parsing. See
     inside this task.
   - Success: production modules cannot import executable ODW loader,
     primitive, runtime launcher, or worker paths.
+  - [ ] 2.1.4.1. Split import architecture helpers.
+    - Addendum (from audit:2.1.6; medium). Split source parsing, import-edge
+      extraction, ODW import policy, and export facts into focused test
+      helpers. Lightweight addendum pass.
 - [ ] 2.1.5. Add the hostile metadata security regression test.
   - Requires 1.3.4 and 2.1.3.
   - See [technical-design.md](technical-design.md) §11.3.
@@ -304,6 +312,14 @@ statically. It unlocks metadata rules and body parsing. See
     broaden.
   - Success: released rule identifiers, default severities, configuration
     keys, and `docs/rules/` pages are checked against the catalogue.
+  - [ ] 2.1.6.1. Fail rule-doc parity on orphan rule pages.
+    - Addendum (from review:2.1.6; low). Enumerate `docs/rules/*.md` except
+      `index.md` and fail when any page slug is absent from `RULE_CATALOGUE`.
+      Lightweight addendum pass.
+  - [ ] 2.1.6.2. Surface the rule reference in user navigation.
+    - Addendum (from audit:2.1.6; low). Link `docs/rules/index.md` from the
+      first user-facing or interim developer-guide navigation surface.
+      Lightweight addendum pass.
 - [ ] 2.1.7. Add rule-catalogue parity checks for fixture diagnostics.
   - Requires 2.1.6 and step 1.3.
   - Check fixture manifest expectations against the typed rule catalogue so

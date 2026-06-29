@@ -1126,6 +1126,17 @@ was used only for orientation. All branch-local facts in this plan were
 verified directly in the worktree or in the explicitly requested sibling ODW
 checkout.
 
+## Addenda
+
+- [ ] 2.1.4.1. Split import architecture helpers.
+  - Source: audit:2.1.6; severity medium.
+  - Scope: split `tests/diagnostics/import-architecture.ts` by responsibility
+    so source parsing, import-edge extraction, ODW import policy, and export
+    facts each have a focused test-support home.
+  - Success: architecture tests keep the same observable behaviour while the
+    helper modules stay below the project file-size limit and future
+    architecture checks can extend one responsibility at a time.
+
 ## Revision note
 
 Initial draft for roadmap task 2.1.4 recorded the verified TypeScript compiler

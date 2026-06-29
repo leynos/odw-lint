@@ -1112,6 +1112,22 @@ Do not make the rule docs test parse arbitrary Markdown tables. It only needs
 to parse the first metadata table immediately after the H1 heading in each
 rule page.
 
+## Addenda
+
+- [ ] 2.1.6.1. Fail rule-doc parity on orphan rule pages.
+  - Source: review:2.1.6; severity low.
+  - Scope: enumerate `docs/rules/*.md`, excluding `index.md`, and fail the
+    parity test when any page slug is absent from `RULE_CATALOGUE`.
+  - Success: removing or renaming a catalogued rule cannot leave stale rule
+    documentation behind without a focused rule-doc parity failure.
+- [ ] 2.1.6.2. Surface the rule reference in user navigation.
+  - Source: audit:2.1.6; severity low.
+  - Scope: link `docs/rules/index.md` from the first available user-facing
+    navigation surface, using the developer guide as the interim surface while
+    `docs/contents.md` or a user's guide remain deferred.
+  - Success: readers can discover the rule reference from project
+    documentation without already knowing the `docs/rules/` path.
+
 ## Revision note
 
 Round 1 created `docs/execplans/roadmap-2-1-6.md` for the roadmap-2-1-6

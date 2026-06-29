@@ -1004,6 +1004,17 @@ Research evidence gathered during the planning pass:
   metadata with `new Function`. This task must not import or rely on those ODW
   runtime helpers.
 
+## Addenda
+
+- [ ] 1.5.3.1. Extract shared package-entry support.
+  - Source: audit:2.1.6; severity medium.
+  - Scope: centralize package manifest validation, package entry resolution,
+    package facade export extraction, and shared failure messages for public
+    API and architecture tests.
+  - Success: the public API surface test and architecture package-entry
+    assertions consume one test-support parser without changing the reviewed
+    public export list or architecture policy.
+
 ## Revision note
 
 - 2026-06-29T00:00Z: Initial draft for roadmap task 1.5.3. This draft selects
