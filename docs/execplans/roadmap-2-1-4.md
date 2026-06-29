@@ -1128,7 +1128,7 @@ checkout.
 
 ## Addenda
 
-- [ ] 2.1.4.1. Split import architecture helpers.
+- [x] 2.1.4.1. Split import architecture helpers.
   - Source: audit:2.1.6; severity medium.
   - Scope: split `tests/diagnostics/import-architecture.ts` by responsibility
     so source parsing, import-edge extraction, ODW import policy, and export
