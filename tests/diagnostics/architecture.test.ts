@@ -49,7 +49,15 @@ import {
   spanFromOffsets,
   TOOL_NAME,
 } from "odw-lint";
-import ts from "typescript";
+import type { SourceFile } from "typescript";
+import {
+  exportDeclarationFacts,
+  exportedModuleSpecifiers,
+  importArchitectureFactsFromSource,
+  isForbiddenOdwImport,
+  parseSource,
+  topLevelDeclarationNames,
+} from "./import-architecture";
 
 type PackageJson = {
   readonly exports: {
@@ -58,123 +66,9 @@ type PackageJson = {
   };
 };
 
-type ExportDeclarationFact = {
-  readonly hasExportClause: boolean;
-  readonly hasModuleSpecifier: boolean;
-  readonly hasNamedExports: boolean;
-  readonly moduleSpecifier: string | undefined;
-};
+type SourceText = { readonly filePath: string; readonly sourceText: string };
 
-/** Parses a repository-relative TypeScript file. */
-const parseSource = (relativePath: string): ts.SourceFile => {
-  const source = readFileSync(relativePath, "utf8");
-
-  return ts.createSourceFile(relativePath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-};
-
-/** Extracts an identifier name from declaration nodes that have one. */
-const namedDeclarationName = (declaration: ts.Declaration): string | undefined => {
-  if (!("name" in declaration)) {
-    return undefined;
-  }
-
-  const name = (declaration as { readonly name?: ts.Node }).name;
-
-  if (name === undefined) {
-    return undefined;
-  }
-
-  if (!ts.isIdentifier(name)) {
-    return undefined;
-  }
-
-  return name.text;
-};
-
-/** Checks whether a top-level AST node owns one declaration name. */
-const isNamedTopLevelDeclaration = (
-  node: ts.Node,
-): node is
-  | ts.FunctionDeclaration
-  | ts.ClassDeclaration
-  | ts.InterfaceDeclaration
-  | ts.TypeAliasDeclaration => {
-  return (
-    ts.isFunctionDeclaration(node) ||
-    ts.isClassDeclaration(node) ||
-    ts.isInterfaceDeclaration(node) ||
-    ts.isTypeAliasDeclaration(node)
-  );
-};
-
-/** Extracts the module specifier text from string-literal export targets. */
-const moduleSpecifierText = (moduleSpecifier: ts.Expression | undefined): string | undefined => {
-  if (moduleSpecifier === undefined) {
-    return undefined;
-  }
-
-  if (!ts.isStringLiteral(moduleSpecifier)) {
-    return undefined;
-  }
-
-  return moduleSpecifier.text;
-};
-
-/** Lists top-level declaration names in a source file. */
-const topLevelDeclarationNames = (sourceFile: ts.SourceFile): readonly string[] => {
-  const names: string[] = [];
-
-  ts.forEachChild(sourceFile, (node) => {
-    if (ts.isVariableStatement(node)) {
-      for (const declaration of node.declarationList.declarations) {
-        const name = namedDeclarationName(declaration);
-        if (name !== undefined) {
-          names.push(name);
-        }
-      }
-      return;
-    }
-
-    if (isNamedTopLevelDeclaration(node)) {
-      const name = namedDeclarationName(node);
-      if (name !== undefined) {
-        names.push(name);
-      }
-    }
-  });
-
-  return names.sort();
-};
-
-/** Lists the declaration-level module specifiers exported by a source file. */
-const exportDeclarationFacts = (sourceFile: ts.SourceFile): readonly ExportDeclarationFact[] => {
-  const facts: ExportDeclarationFact[] = [];
-
-  ts.forEachChild(sourceFile, (node) => {
-    if (!ts.isExportDeclaration(node)) {
-      return;
-    }
-
-    const exportClause = node.exportClause;
-    const moduleSpecifier = node.moduleSpecifier;
-
-    facts.push({
-      hasExportClause: exportClause !== undefined,
-      hasModuleSpecifier: moduleSpecifier !== undefined,
-      hasNamedExports: exportClause !== undefined && ts.isNamedExports(exportClause),
-      moduleSpecifier: moduleSpecifierText(moduleSpecifier),
-    });
-  });
-
-  return facts;
-};
-
-/** Lists the declaration-level module specifiers exported by a source file. */
-const exportedModuleSpecifiers = (sourceFile: ts.SourceFile): readonly string[] => {
-  return exportDeclarationFacts(sourceFile).flatMap((exportDeclaration) =>
-    exportDeclaration.moduleSpecifier === undefined ? [] : [exportDeclaration.moduleSpecifier],
-  );
-};
+type ImportViolation = Record<string, string>;
 
 /** Lists current internal diagnostic source modules. */
 const diagnosticModuleFiles = (): readonly string[] => {
@@ -189,13 +83,58 @@ const diagnosticModuleFiles = (): readonly string[] => {
     .sort();
 };
 
+/** Lists sorted production TypeScript source paths. */
+const productionTypeScriptFiles = (directory: string): readonly string[] => {
+  if (!existsSync(directory)) {
+    return [];
+  }
+
+  return readdirSync(directory, { withFileTypes: true })
+    .flatMap((entry) => {
+      const filePath = `${directory}/${entry.name}`;
+      if (entry.isDirectory()) {
+        return productionTypeScriptFiles(filePath);
+      }
+      if (!entry.isFile()) {
+        return [];
+      }
+      return filePath.endsWith(".ts") ? [filePath] : [];
+    })
+    .sort();
+};
+
+/** Builds sorted production import architecture violations. */
+const importViolationsForSources = (sources: readonly SourceText[]): readonly ImportViolation[] => {
+  return sources
+    .flatMap(({ filePath, sourceText }) => {
+      const facts = importArchitectureFactsFromSource(filePath, sourceText);
+      return [
+        ...facts.importLikeEdges
+          .filter((edge) => isForbiddenOdwImport(edge.moduleSpecifier))
+          .map((edge) => ({ kind: "forbidden-import" as const, ...edge })),
+        ...facts.computedDynamicImports.map((edge) => ({
+          kind: "computed-dynamic-import" as const,
+          ...edge,
+        })),
+        ...facts.computedCommonJsRequires.map((edge) => ({
+          kind: "computed-commonjs-require" as const,
+          ...edge,
+        })),
+      ];
+    })
+    .sort(
+      (left, right) =>
+        left.filePath.localeCompare(right.filePath) || left.kind.localeCompare(right.kind),
+    );
+};
+
 /** Reads the package manifest with the export shape used by this test. */
 const packageJson = (): PackageJson => {
   return JSON.parse(readFileSync("package.json", "utf8")) as PackageJson;
 };
 
 /** Asserts that package-entry re-exports stay explicit and named. */
-const expectNamedModuleExports = (sourceFile: ts.SourceFile): void => {
+const expectNamedModuleExports = (sourceFile: SourceFile): void => {
   for (const exportDeclaration of exportDeclarationFacts(sourceFile)) {
     expect(exportDeclaration.hasExportClause).toBeTrue();
     expect(exportDeclaration.hasModuleSpecifier).toBeTrue();
@@ -328,35 +267,128 @@ describe("diagnostic architecture", () => {
     expectTypeOf<StaticAnalysisStage>().toEqualTypeOf<(typeof STATIC_ANALYSIS_STAGES)[number]>();
   });
 
-  it("pins the final package entry and parseable diagnostic sources", () => {
-    expectPackageEntryShape([
-      "./diagnostics/report",
-      "./diagnostics/rule-id",
-      "./diagnostics/schema",
-      "./diagnostics/severity",
-      "./diagnostics/text",
-      "./diagnostics/types",
-      "./static-analysis",
-    ]);
-    expect(diagnosticModuleFiles()).toEqual([
-      "report.ts",
-      "rule-id.ts",
-      "schema.ts",
-      "severity.ts",
-      "text.ts",
-      "types.ts",
-    ]);
+  it("extracts string import-like edges from TypeScript syntax", () => {
+    const facts = importArchitectureFactsFromSource(
+      "virtual.ts",
+      `
+        import value from "static-import";
+        import type { TypeOnly } from "type-import";
+        export { value } from "re-export";
+        export type { TypeOnly } from "type-export";
+        import alias = require("import-equals");
+        type Loader = import("odw/src/loader").WorkflowMeta;
+        type Entry = typeof import("odw/src/index");
+        await import("dynamic-import");
+        require("commonjs-require");
+      `,
+    );
 
-    for (const sourcePath of [
-      "src/index.ts",
-      "src/diagnostics/report.ts",
-      "src/diagnostics/rule-id.ts",
-      "src/diagnostics/schema.ts",
-      "src/diagnostics/severity.ts",
-      "src/diagnostics/text.ts",
-      "src/diagnostics/types.ts",
-      "src/static-analysis/source-file.ts",
-    ]) {
+    expect(facts.importLikeEdges.map((edge) => edge.moduleSpecifier)).toEqual([
+      "commonjs-require",
+      "dynamic-import",
+      "import-equals",
+      "odw/src/index",
+      "odw/src/loader",
+      "re-export",
+      "static-import",
+      "type-export",
+      "type-import",
+    ]);
+  });
+
+  it("ignores non-import type nodes when extracting import-like edges", () => {
+    const facts = importArchitectureFactsFromSource(
+      "virtual.ts",
+      `
+        type Local = Readonly<string>;
+        type Literal = "odw/src/loader";
+        interface WorkflowMeta { readonly name: string; }
+      `,
+    );
+
+    expect(facts.importLikeEdges).toEqual([]);
+  });
+
+  it("reports computed dynamic imports and CommonJS requires without string edges", () => {
+    const facts = importArchitectureFactsFromSource(
+      "virtual.ts",
+      `
+        const specifier = "odw/src/runtime/worker";
+        await import(specifier);
+        await import(foo());
+        await import();
+        require(specifier);
+        require(foo());
+        require();
+      `,
+    );
+
+    expect(facts.importLikeEdges).toEqual([]);
+    expect(facts.computedDynamicImports.map((edge) => edge.expressionText)).toEqual([
+      "<missing>",
+      "foo()",
+      "specifier",
+    ]);
+    expect(facts.computedCommonJsRequires.map((edge) => edge.expressionText)).toEqual([
+      "<missing>",
+      "foo()",
+      "specifier",
+    ]);
+  });
+
+  it("classifies forbidden ODW imports without blocking lookalikes", () => {
+    const cases = [
+      ..."odw odw/src/index odw/dist/index.js odw/src/loader.ts odw/dist/loader odw/src/primitives odw/dist/primitives.js odw/src/runtime odw/dist/runtime odw/src/runtime/launcher.ts odw/dist/runtime/launcher.js odw/src/runtime/worker odw/dist/runtime/worker.js ../open-dynamic-workflows/src/index ../open-dynamic-workflows/dist/index.js C:\\work\\open-dynamic-workflows\\src\\runtime\\worker.ts"
+        .split(" ")
+        .map((moduleSpecifier) => [moduleSpecifier, true] as const),
+      ..."odw-lint @scope/odw @scope/odw-tools ./odw-local ../open-dynamic-workflows-not/src/loader ../open-dynamic-workflows/docs/runtime"
+        .split(" ")
+        .map((moduleSpecifier) => [moduleSpecifier, false] as const),
+    ];
+
+    for (const [moduleSpecifier, expected] of cases) {
+      expect(isForbiddenOdwImport(moduleSpecifier), moduleSpecifier).toBe(expected);
+    }
+  });
+
+  it("reports production import architecture violations from source facts", () => {
+    expect(
+      importViolationsForSources([
+        { filePath: "src/a.ts", sourceText: 'import "odw/src/runtime/worker";' },
+        { filePath: "src/b.ts", sourceText: 'type T = import("odw/src/loader").WorkflowMeta;' },
+        { filePath: "src/c.ts", sourceText: 'const specifier = "odw"; await import(specifier);' },
+        { filePath: "src/d.ts", sourceText: 'const specifier = "odw"; require(specifier);' },
+      ]),
+    ).toEqual([
+      { kind: "forbidden-import", filePath: "src/a.ts", moduleSpecifier: "odw/src/runtime/worker" },
+      { kind: "forbidden-import", filePath: "src/b.ts", moduleSpecifier: "odw/src/loader" },
+      { kind: "computed-dynamic-import", filePath: "src/c.ts", expressionText: "specifier" },
+      { kind: "computed-commonjs-require", filePath: "src/d.ts", expressionText: "specifier" },
+    ]);
+  });
+
+  it("keeps production code free of executable ODW imports", () => {
+    const sources = productionTypeScriptFiles("src").map((filePath) => ({
+      filePath,
+      sourceText: readFileSync(filePath, "utf8"),
+    }));
+
+    expect(importViolationsForSources(sources)).toEqual([]);
+  });
+
+  it("pins the final package entry and parseable diagnostic sources", () => {
+    expectPackageEntryShape(
+      "./diagnostics/report ./diagnostics/rule-id ./diagnostics/schema ./diagnostics/severity ./diagnostics/text ./diagnostics/types ./static-analysis".split(
+        " ",
+      ),
+    );
+    expect(diagnosticModuleFiles()).toEqual(
+      "report.ts rule-id.ts schema.ts severity.ts text.ts types.ts".split(" "),
+    );
+
+    for (const sourcePath of "src/index.ts src/diagnostics/report.ts src/diagnostics/rule-id.ts src/diagnostics/schema.ts src/diagnostics/severity.ts src/diagnostics/text.ts src/diagnostics/types.ts src/static-analysis/source-file.ts".split(
+      " ",
+    )) {
       expect(parseSource(sourcePath).fileName).toBe(sourcePath);
     }
     expect(topLevelDeclarationNames(parseSource("src/index.ts"))).toEqual([]);

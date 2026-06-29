@@ -279,7 +279,7 @@ statically. It unlocks metadata rules and body parsing. See
   - Success: computed metadata receives `odw/meta-statically-unprovable`
     rather than being executed or collapsed into an ordinary ODW-invalid
     diagnostic.
-- [ ] 2.1.4. Add a forbidden-import architecture test for production code.
+- [x] 2.1.4. Add a forbidden-import architecture test for production code.
   - Requires 1.1.1.
   - See [technical-design.md](technical-design.md) §§5 and 11.3.
   - Planning constraint: cover both bare executable ODW imports and package-entry
