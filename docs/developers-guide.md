@@ -130,6 +130,12 @@ unknown input at the boundary.
 Use `make test` to run the Bun test suite. Add or update tests when behaviour
 changes, and cover happy paths, unhappy paths, and relevant edge cases.
 
+The Bun suite includes a package export-surface guard in
+`tests/diagnostics/public-api-surface.test.ts`. Intentional public API changes
+to the package entry must update that file's reviewed
+`EXPECTED_PUBLIC_PACKAGE_EXPORTS` list in the same change, so accidental
+removals from `src/index.ts` fail the default repository gate.
+
 Behavioural tests should use `@aboviq/bun-test-cucumber` with Gherkin feature
 files. Snapshot tests should use Bun's built-in snapshot testing support.
 Property tests should use `fast-check`, and exhaustive bounded proofs should use

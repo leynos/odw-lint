@@ -224,7 +224,7 @@ depending on manual post-commit audits.
     `origin/main`.
   - Success: review or gate output flags stale task branches before they can
     present unrelated main-branch work as deletions.
-- [ ] 1.5.3. Add a public API removal guard for package exports.
+- [x] 1.5.3. Add a public API removal guard for package exports.
   - Requires 1.2.3.
   - Add an export-surface snapshot or architecture test that compares the
     declared package entry against intentional public API changes.
