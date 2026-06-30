@@ -9,7 +9,12 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createTempRefreshWorkspace } from "./fixture-metadata-refresh-workspace";
 import { type FixtureRefreshReport, refreshFixtureMetadata } from "./fixtures/refresh-metadata";
-import { managedTargetFailure } from "./fixtures/refresh-targets";
+import {
+  managedTargetFailure,
+  missingOdwReferenceCheckoutFailure,
+  missingUpstreamExampleFailure,
+  normalizeDirectoryUrl,
+} from "./fixtures/refresh-targets";
 
 const repositoryRootPath = resolve(import.meta.dir, "../..");
 const expectedCounts: FixtureRefreshReport["counts"] = {
@@ -163,6 +168,72 @@ describe("fixture metadata refresh boundary failures", () => {
       });
       temp.remove();
     }
+  });
+
+  it("centralizes path normalization and non-argument failure construction", () => {
+    const upstreamSource = pathToFileURL("/tmp/reference/examples/routing.js");
+    const checkoutCases = [
+      {
+        message: "ODW_REFERENCE_CHECKOUT does not exist: /tmp/reference",
+        path: "/tmp/reference",
+      },
+      {
+        message: "ODW_REFERENCE_CHECKOUT is not a directory: /tmp/reference",
+        path: "/tmp/reference",
+      },
+      {
+        message: "ODW_REFERENCE_CHECKOUT is not a directory: /tmp/reference/",
+        path: "/tmp/reference/",
+      },
+    ] as const;
+
+    expect(normalizeDirectoryUrl(new URL("file:///tmp/reference?from=test#fragment")).href).toBe(
+      "file:///tmp/reference/",
+    );
+    expect(
+      checkoutCases.map(({ message, path }) => missingOdwReferenceCheckoutFailure(message, path)),
+    ).toEqual([
+      {
+        code: "missing-odw-reference-checkout",
+        message: "ODW_REFERENCE_CHECKOUT does not exist: /tmp/reference",
+        path: "/tmp/reference",
+        rule: null,
+        anchor: null,
+        occurrenceCount: null,
+        remediation:
+          "Set ODW_REFERENCE_CHECKOUT to a source-backed open-dynamic-workflows checkout.",
+      },
+      {
+        code: "missing-odw-reference-checkout",
+        message: "ODW_REFERENCE_CHECKOUT is not a directory: /tmp/reference",
+        path: "/tmp/reference",
+        rule: null,
+        anchor: null,
+        occurrenceCount: null,
+        remediation:
+          "Set ODW_REFERENCE_CHECKOUT to a source-backed open-dynamic-workflows checkout.",
+      },
+      {
+        code: "missing-odw-reference-checkout",
+        message: "ODW_REFERENCE_CHECKOUT is not a directory: /tmp/reference/",
+        path: "/tmp/reference/",
+        rule: null,
+        anchor: null,
+        occurrenceCount: null,
+        remediation:
+          "Set ODW_REFERENCE_CHECKOUT to a source-backed open-dynamic-workflows checkout.",
+      },
+    ]);
+    expect(missingUpstreamExampleFailure("routing.js", upstreamSource)).toEqual({
+      code: "missing-upstream-example",
+      message: "Missing allow-listed upstream ODW example routing.js under ODW_REFERENCE_CHECKOUT.",
+      path: "/tmp/reference/examples/routing.js",
+      rule: null,
+      anchor: null,
+      occurrenceCount: null,
+      remediation:
+        "Restore the upstream example or update the allow-list in a separate roadmap task.",
+    });
   });
 });
 

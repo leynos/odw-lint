@@ -176,6 +176,8 @@ conflict in `Decision Log`, and escalate.
   build-gate tests.
 - [x] (2026-06-30T10:58Z) Work item 4: Document the refresh workflow and close
   roadmap task 1.3.5.
+- [x] (2026-06-30T15:36Z) Addendum 1.3.5.1: Centralize fixture refresh path
+  and failure helpers.
 
 ## Surprises & discoveries
 
@@ -238,6 +240,15 @@ conflict in `Decision Log`, and escalate.
   guard. Impact: the implementation now returns structured failures for bad
   URL inputs, shares SHA/span derivation through `refresh-derivation.ts`, and
   tests file-valued checkout failures.
+
+- Observation: addendum 1.3.5.1 found the URL normalizer duplicated between
+  the public refresh entry point and the writer, and found repeated
+  non-argument failure object literals in checkout and upstream-example
+  handling. Evidence: `docs/issues/audit-1.5.1`,
+  `tests/static-analysis/fixtures/refresh-metadata.ts` and
+  `tests/static-analysis/fixtures/refresh-writers.ts`. Impact:
+  `refresh-targets.ts` now owns the shared path normalizer and failure
+  constructors while `refresh-metadata.ts` keeps the existing public re-export.
 
 ## Decision log
 
@@ -323,6 +334,20 @@ maintainer workflow, the `ODW_REFERENCE_CHECKOUT` override, raw-fixture safety
 rules, anchor selection, and post-refresh validation. Roadmap task 1.3.5 is now
 closed, while the later loader-parity and no-side-effect lint execution tasks
 remain open.
+
+Addendum 1.3.5.1 centralized fixture refresh path and failure helpers without
+changing the command contract. The public `normalizeDirectoryUrl` entry remains
+available through `refresh-metadata.ts`, while `refresh-targets.ts` now owns
+the shared implementation and the non-argument checkout and missing-upstream
+failure constructors used by the writer.
+
+## Addenda
+
+- [x] 1.3.5.1. Centralize fixture refresh path and failure helpers.
+  - Addendum (from audit:1.5.1; medium). Single-source duplicated refresh URL
+    normalization and repeated non-argument refresh failure construction so
+    fixture refresh reports, checkout resolution, and missing-upstream errors
+    cannot diverge. Lightweight addendum pass.
 
 ## Context and orientation
 
@@ -1142,3 +1167,7 @@ Do not add or use:
   contents index entry and roadmap close-out for task 1.3.5. The work remains
   scoped to fixture refresh tooling and does not close later loader-parity or
   no-side-effect execution tasks.
+- 2026-06-30: Addendum 1.3.5.1 moved directory URL normalization into
+  `refresh-targets.ts`, routed checkout and missing-upstream refresh failures
+  through shared constructors, and added focused table coverage for the shared
+  helper contracts.

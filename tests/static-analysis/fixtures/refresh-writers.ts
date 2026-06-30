@@ -22,6 +22,9 @@ import {
   filePathForUrl,
   invalidArgumentsFailure,
   managedTargetFailure,
+  missingOdwReferenceCheckoutFailure,
+  missingUpstreamExampleFailure,
+  normalizeDirectoryUrl,
   safeStats,
 } from "./refresh-targets";
 
@@ -118,15 +121,10 @@ const odwReferenceCheckoutFailureForUrl = (
 
   const checkoutStats = safeStats(odwReferenceCheckoutPath);
   if (checkoutStats !== null && !checkoutStats.isDirectory()) {
-    return {
-      code: "missing-odw-reference-checkout",
-      message: `ODW_REFERENCE_CHECKOUT is not a directory: ${odwReferenceCheckoutPath}`,
-      path: odwReferenceCheckoutPath,
-      rule: null,
-      anchor: null,
-      occurrenceCount: null,
-      remediation: "Set ODW_REFERENCE_CHECKOUT to a source-backed open-dynamic-workflows checkout.",
-    };
+    return missingOdwReferenceCheckoutFailure(
+      `ODW_REFERENCE_CHECKOUT is not a directory: ${odwReferenceCheckoutPath}`,
+      odwReferenceCheckoutPath,
+    );
   }
 
   return null;
@@ -143,42 +141,23 @@ const firstBlockingFailure = (odwReferenceCheckout: URL): FixtureRefreshFailure 
 
   const checkoutStats = safeStats(odwReferenceCheckoutPath);
   if (checkoutStats === null) {
-    return {
-      code: "missing-odw-reference-checkout",
-      message: `ODW_REFERENCE_CHECKOUT does not exist: ${odwReferenceCheckoutPath}`,
-      path: odwReferenceCheckoutPath,
-      rule: null,
-      anchor: null,
-      occurrenceCount: null,
-      remediation: "Set ODW_REFERENCE_CHECKOUT to a source-backed open-dynamic-workflows checkout.",
-    };
+    return missingOdwReferenceCheckoutFailure(
+      `ODW_REFERENCE_CHECKOUT does not exist: ${odwReferenceCheckoutPath}`,
+      odwReferenceCheckoutPath,
+    );
   }
 
   if (!checkoutStats.isDirectory()) {
-    return {
-      code: "missing-odw-reference-checkout",
-      message: `ODW_REFERENCE_CHECKOUT is not a directory: ${odwReferenceCheckoutPath}`,
-      path: odwReferenceCheckoutPath,
-      rule: null,
-      anchor: null,
-      occurrenceCount: null,
-      remediation: "Set ODW_REFERENCE_CHECKOUT to a source-backed open-dynamic-workflows checkout.",
-    };
+    return missingOdwReferenceCheckoutFailure(
+      `ODW_REFERENCE_CHECKOUT is not a directory: ${odwReferenceCheckoutPath}`,
+      odwReferenceCheckoutPath,
+    );
   }
 
   for (const fixture of ODW_EXAMPLE_FIXTURE_SNAPSHOTS) {
     const upstreamSource = new URL(`examples/${fixture.fileName}`, odwReferenceCheckout);
     if (!isExistingFile(upstreamSource)) {
-      return {
-        code: "missing-upstream-example",
-        message: `Missing allow-listed upstream ODW example ${fixture.fileName} under ODW_REFERENCE_CHECKOUT.`,
-        path: fileURLToPath(upstreamSource),
-        rule: null,
-        anchor: null,
-        occurrenceCount: null,
-        remediation:
-          "Restore the upstream example or update the allow-list in a separate roadmap task.",
-      };
+      return missingUpstreamExampleFailure(fixture.fileName, upstreamSource);
     }
   }
 
@@ -320,19 +299,6 @@ const currentCounts = () => {
     totalFixtures:
       ODW_EXAMPLE_FIXTURE_SNAPSHOTS.length + MASKING_FIXTURE_SNAPSHOTS.length + invalidWorkflows,
   };
-};
-
-/**
- * Normalizes a directory URL before report and path resolution.
- */
-const normalizeDirectoryUrl = (url: URL): URL => {
-  const normalized = new URL(url.href);
-  normalized.search = "";
-  normalized.hash = "";
-  if (!normalized.pathname.endsWith("/")) {
-    normalized.pathname = `${normalized.pathname}/`;
-  }
-  return normalized;
 };
 
 /**

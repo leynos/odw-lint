@@ -7,6 +7,11 @@ import { relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { FixtureRefreshFailure } from "./refresh-metadata";
 
+const ODW_REFERENCE_CHECKOUT_REMEDIATION =
+  "Set ODW_REFERENCE_CHECKOUT to a source-backed open-dynamic-workflows checkout.";
+const MISSING_UPSTREAM_EXAMPLE_REMEDIATION =
+  "Restore the upstream example or update the allow-list in a separate roadmap task.";
+
 /**
  * Validates one managed path before comparing or writing it.
  *
@@ -54,6 +59,62 @@ export const invalidArgumentsFailure = (message: string): FixtureRefreshFailure 
   occurrenceCount: null,
   remediation: "Use file: directory URLs for fixture refresh paths.",
 });
+
+/**
+ * Builds a refresh failure for missing or invalid ODW reference checkouts.
+ *
+ * @param message - Maintainer-facing checkout failure summary.
+ * @param path - Resolved checkout filesystem path.
+ * @returns Report-compatible checkout failure.
+ */
+export const missingOdwReferenceCheckoutFailure = (
+  message: string,
+  path: string,
+): FixtureRefreshFailure => ({
+  code: "missing-odw-reference-checkout",
+  message,
+  path,
+  rule: null,
+  anchor: null,
+  occurrenceCount: null,
+  remediation: ODW_REFERENCE_CHECKOUT_REMEDIATION,
+});
+
+/**
+ * Builds a refresh failure for allow-listed ODW examples missing upstream.
+ *
+ * @param fileName - Missing upstream example basename.
+ * @param upstreamSource - Resolved upstream example URL.
+ * @returns Report-compatible missing-example failure.
+ */
+export const missingUpstreamExampleFailure = (
+  fileName: string,
+  upstreamSource: URL,
+): FixtureRefreshFailure => ({
+  code: "missing-upstream-example",
+  message: `Missing allow-listed upstream ODW example ${fileName} under ODW_REFERENCE_CHECKOUT.`,
+  path: fileURLToPath(upstreamSource),
+  rule: null,
+  anchor: null,
+  occurrenceCount: null,
+  remediation: MISSING_UPSTREAM_EXAMPLE_REMEDIATION,
+});
+
+/**
+ * Normalizes a filesystem directory URL without file-style parent resolution.
+ *
+ * @param url - Directory URL to normalize.
+ * @returns URL copy with no query, no fragment, and a trailing slash.
+ */
+export const normalizeDirectoryUrl = (url: URL): URL => {
+  const normalized = new URL(url.href);
+  normalized.search = "";
+  normalized.hash = "";
+  if (!normalized.pathname.endsWith("/")) {
+    normalized.pathname = `${normalized.pathname}/`;
+  }
+  return normalized;
+};
 
 /**
  * Converts a file URL to a filesystem path only when Node can do so safely.

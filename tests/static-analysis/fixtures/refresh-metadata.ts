@@ -9,6 +9,7 @@
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import type { SourceSpan } from "odw-lint";
+import { normalizeDirectoryUrl } from "./refresh-targets";
 import { refreshFixtureFiles } from "./refresh-writers";
 
 export {
@@ -16,6 +17,7 @@ export {
   deriveSha256,
   FixtureRefreshError,
 } from "./refresh-derivation";
+export { normalizeDirectoryUrl } from "./refresh-targets";
 
 export type FixtureRefreshMode = "dry-run" | "write";
 export type FixtureRefreshFailureCode =
@@ -84,22 +86,6 @@ export const MANIFEST_PATHS = [
   "tests/static-analysis/fixtures/invalid-workflows/manifests/syntax-error.ts",
   "tests/static-analysis/fixtures/invalid-workflows/manifests/unsupported-import-export.ts",
 ] as const;
-
-/**
- * Normalizes a filesystem directory URL without file-style parent resolution.
- *
- * @param url - Directory URL to normalize.
- * @returns URL copy with no query, no fragment, and a trailing slash.
- */
-export const normalizeDirectoryUrl = (url: URL): URL => {
-  const normalized = new URL(url.href);
-  normalized.search = "";
-  normalized.hash = "";
-  if (!normalized.pathname.endsWith("/")) {
-    normalized.pathname = `${normalized.pathname}/`;
-  }
-  return normalized;
-};
 
 /**
  * Resolves the default sibling ODW checkout for a repository root.

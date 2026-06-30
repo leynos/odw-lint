@@ -195,7 +195,7 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
   - Success: maintainers can refresh valid, invalid, masking, and hostile
     fixture metadata with one documented command and review deterministic
     changes.
-  - [ ] 1.3.5.1. Centralize fixture refresh path and failure helpers.
+  - [x] 1.3.5.1. Centralize fixture refresh path and failure helpers.
     - Addendum (from audit:1.5.1; medium). Single-source duplicated refresh
       URL normalization and repeated non-argument refresh failure construction
       so fixture refresh reports, checkout resolution, and missing-upstream
