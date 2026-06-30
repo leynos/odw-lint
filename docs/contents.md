@@ -72,6 +72,8 @@ entry; that index enumerates every current rule page.
   source-scanning fixtures.
 - [Audit 1.4.1](issues/audit-1.4.1.md) records review findings for repository
   build-gate freshness.
+- [Audit 1.5.1](issues/audit-1.5.1.md) records review findings for the source
+  and test file-size guard.
 - [Audit 1.5.3](issues/audit-1.5.3.md) records review findings for roadmap
   workflow review gates.
 - [Audit 2.1.6](issues/audit-2.1.6.md) records review findings for the
