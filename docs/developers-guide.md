@@ -143,6 +143,14 @@ unknown input at the boundary.
 Use `make test` to run the Bun test suite. Add or update tests when behaviour
 changes, and cover happy paths, unhappy paths, and relevant edge cases.
 
+The Bun suite includes a file-size guard in
+`tests/build-gate/file-size.test.ts`, so `make all` runs it through
+`make test`. The guard covers tracked TypeScript files under `src/` and
+`tests/`, with a limit of 400 physical source lines per file. Raw JavaScript
+workflow fixtures, snapshots, documentation, generated output, ignored paths
+and untracked scratch files are intentionally out of scope for roadmap task
+1.5.1.
+
 The Bun suite includes a package export-surface guard in
 `tests/diagnostics/public-api-surface.test.ts`. Intentional public API changes
 to the package entry must update that file's reviewed

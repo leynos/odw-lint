@@ -211,7 +211,7 @@ can be enforced automatically before parser, rule, and reporter work expands.
 Its outcome informs later review gates that must catch workflow defects without
 depending on manual post-commit audits.
 
-- [ ] 1.5.1. Add an automated file-size guard for source and test code.
+- [x] 1.5.1. Add an automated file-size guard for source and test code.
   - Requires steps 1.1-1.3.
   - Make the AGENTS.md source and test file-size convention executable in the
     repository gate.

@@ -101,6 +101,8 @@ entry; that index enumerates every current rule page.
   generation and refresh tooling.
 - [Roadmap 1.4.1 ExecPlan](execplans/roadmap-1-4-1.md) plans repository
   build-gate freshness.
+- [Roadmap 1.5.1 ExecPlan](execplans/roadmap-1-5-1.md) plans the automated
+  file-size guard for source and test code.
 - [Roadmap 1.5.3 ExecPlan](execplans/roadmap-1-5-3.md) plans roadmap workflow
   review-gate hardening.
 - [Roadmap 2.1.4 ExecPlan](execplans/roadmap-2-1-4.md) plans the forbidden
