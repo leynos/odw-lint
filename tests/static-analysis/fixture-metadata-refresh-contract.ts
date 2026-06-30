@@ -2,6 +2,8 @@
  * @file Compile-time contracts for fixture metadata refresh exports.
  */
 
+import type { InvalidWorkflowFixtureFamily } from "./fixtures/invalid-workflows/manifest-types";
+import { INVALID_FAMILY_ORDER } from "./fixtures/refresh-manifest-source";
 import type {
   DiagnosticSpanAnchor,
   FixtureRefreshFailure,
@@ -55,11 +57,16 @@ if (import.meta.url === "") {
     fallbackByteOffset: 0,
   } satisfies DiagnosticSpanAnchor;
   const error = new FixtureRefreshError(failure);
+  const invalidFamilyOrder = INVALID_FAMILY_ORDER;
 
   report.failures satisfies readonly FixtureRefreshFailure[];
   error.failure satisfies FixtureRefreshFailure;
   options.shouldWrite satisfies boolean;
   anchor.fallbackByteOffset satisfies number;
+  null as unknown as Exclude<
+    InvalidWorkflowFixtureFamily,
+    (typeof invalidFamilyOrder)[number]
+  > satisfies never;
 
   // @ts-expect-error Failure codes must come from the reviewed report contract.
   const invalidFailureCode: FixtureRefreshFailureCode = "missing-fixture";

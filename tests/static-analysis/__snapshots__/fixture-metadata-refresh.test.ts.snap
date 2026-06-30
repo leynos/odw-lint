@@ -41,6 +41,8 @@ exports[`fixture metadata refresh helpers returns a sorted dry-run report for th
     "tests/static-analysis/fixtures/invalid-workflows/manifests/unsupported-import-export.ts",
     "tests/static-analysis/fixtures/masking.ts",
     "tests/static-analysis/fixtures/odw-examples.ts",
+  ],
+  "wouldWritePaths": [
     "tests/static-analysis/fixtures/odw-examples/adversarial-verify.js",
     "tests/static-analysis/fixtures/odw-examples/agent-daily-digest.js",
     "tests/static-analysis/fixtures/odw-examples/codex-claude-loop.js",
@@ -51,7 +53,6 @@ exports[`fixture metadata refresh helpers returns a sorted dry-run report for th
     "tests/static-analysis/fixtures/odw-examples/routing.js",
     "tests/static-analysis/fixtures/odw-examples/tournament.js",
   ],
-  "wouldWritePaths": [],
   "writtenPaths": [],
 }
 `;

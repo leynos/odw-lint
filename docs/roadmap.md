@@ -181,7 +181,7 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
       fixture hashing and source-reading helpers across corpus tests before
       loader parity and real lint execution reuse them. Lightweight addendum
       pass.
-- [ ] 1.3.5. Add fixture metadata generation and refresh tooling.
+- [x] 1.3.5. Add fixture metadata generation and refresh tooling.
   - Requires 1.3.1, 1.3.2, 1.3.3, and 1.3.4.
   - Provide a focused script or Make target that refreshes fixture hashes,
     UTF-8 spans, display positions, and reviewer-facing span text without

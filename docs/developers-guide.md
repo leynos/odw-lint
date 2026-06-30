@@ -74,6 +74,11 @@ linting, type checking, or tests use the installed toolchain.
 
 Run `make markdownlint` as well when Markdown files change.
 
+Run `make refresh-fixtures` after changing workflow fixture source, copied ODW
+examples, or static-analysis fixture manifests. The target refreshes fixture
+hashes, invalid diagnostic spans and reviewer-facing span text, then prints a
+JSON report of changed, unchanged and out-of-scope paths.
+
 ## Bun Scripts
 
 The Makefile delegates TypeScript tooling to Bun package scripts:
@@ -181,6 +186,21 @@ ODW example workflow snapshots live under
 `tests/static-analysis/fixtures/odw-examples/`. Refresh them from the
 source-backed sibling checkout identified by `ODW_REFERENCE_CHECKOUT`; do not
 record host-specific absolute paths in committed documentation or manifests.
+Run the refresh through the Make target so dependency installation and the
+script entry point stay consistent:
+
+```sh
+make refresh-fixtures
+```
+
+When `ODW_REFERENCE_CHECKOUT` is unset, the script looks for a sibling
+`open-dynamic-workflows/` checkout from either the ordinary repository layout
+or a df12 worktree layout. Set `ODW_REFERENCE_CHECKOUT` to an absolute or
+repository-relative path when using another source-backed checkout:
+
+```sh
+ODW_REFERENCE_CHECKOUT=../open-dynamic-workflows make refresh-fixtures
+```
 
 The copied `.js` snapshots are intentionally excluded from Biome and Oxlint so
 their source stays byte-for-byte identical to upstream ODW examples. Do not
@@ -198,6 +218,10 @@ ordinary JavaScript. Keep `tests/static-analysis/fixtures/invalid-workflows.ts`
 in sync with every raw fixture by updating the family, path, SHA-256 hash,
 expected status, diagnostic rule, severity, message, UTF-8 source span, and
 reviewer-facing `spanText`.
+For invalid diagnostic spans, choose a `spanText` anchor that appears exactly
+once in the raw fixture source. The refresh script derives UTF-8 offsets,
+display line and column positions from that anchor. If the anchor is missing or
+duplicated, update the manifest intentionally rather than guessing a span.
 
 Synthetic masking fixtures live under
 `tests/static-analysis/fixtures/masking/`. They are owned by `odw-lint`, not
@@ -213,6 +237,14 @@ records trusted source snapshots and static expectations only; it must not
 import, evaluate or execute workflow bodies during ordinary tests. Roadmap task
 2.1.5 owns the future no-side-effect lint execution regression for hostile
 metadata fixtures.
+
+After a refresh, review the JSON report and the Git diff. Then run:
+
+```sh
+make all
+make markdownlint
+make nixie
+```
 
 ### Source-span helpers
 

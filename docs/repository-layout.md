@@ -106,12 +106,18 @@ contracts. Fixture subdirectories have different ownership rules:
   fixtures for decoy workflow syntax inside comments, strings, regex literals
   and template literals. These fixtures may be formatted by repository tooling,
   but their manifest hashes must stay synchronized.
+- `tests/static-analysis/fixtures/refresh-metadata.ts` is the maintainer
+  refresh script behind `make refresh-fixtures`. It refreshes copied ODW example
+  snapshots and static-analysis fixture manifests without executing raw workflow
+  fixture source.
 
 ## Tooling boundaries
 
 Use the Makefile as the maintainer entry point for validation. `make all` is
 the full code gate; Markdown changes also require `make markdownlint`, and
 Mermaid changes require `make nixie`.
+Use `make refresh-fixtures` when workflow fixture source or manifest metadata
+changes.
 
 Use package and configuration files for their narrow responsibilities:
 

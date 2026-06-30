@@ -21,6 +21,8 @@ type MakeDryRunResult = {
   readonly output: string;
 };
 
+type MakeTarget = "build" | "refresh-fixtures";
+
 const olderThanMarker = new Date("2026-01-01T00:00:00.000Z");
 const markerTime = new Date("2026-01-01T00:01:00.000Z");
 const newerThanMarker = new Date("2026-01-01T00:02:00.000Z");
@@ -52,10 +54,10 @@ function createTemporaryProject(inputTimes: readonly PackageInputTime[]): string
 }
 
 /**
- * Run the build target in dry-run mode without performing dependency installs.
+ * Run a Make target in dry-run mode without performing build actions.
  */
-function runMakeBuildDryRun(cwd: string): MakeDryRunResult {
-  const result = spawnSync("make", ["--dry-run", "--no-print-directory", "build"], {
+function runMakeDryRun(cwd: string, target: MakeTarget): MakeDryRunResult {
+  const result = spawnSync("make", ["--dry-run", "--no-print-directory", target], {
     cwd,
     encoding: "utf8",
   });
@@ -76,7 +78,7 @@ function expectInstallScheduling(
   const projectPath = createTemporaryProject(inputTimes);
 
   try {
-    const result = runMakeBuildDryRun(projectPath);
+    const result = runMakeDryRun(projectPath, "build");
 
     expect(result.status).toBe(0);
     expect(result.output.includes("bun install")).toBe(shouldInstall);
@@ -104,5 +106,19 @@ describe("Makefile build gate", () => {
 
   it("keeps installed dependencies when bun.lock matches node_modules freshness", () => {
     expectInstallScheduling([{ file: "bun.lock", mtime: markerTime }], false);
+  });
+
+  it("documents the fixture refresh target and wires it through Bun", () => {
+    const projectPath = createTemporaryProject([]);
+
+    try {
+      const result = runMakeDryRun(projectPath, "refresh-fixtures");
+
+      expect(result.status).toBe(0);
+      expect(result.output).toContain("bun run tests/static-analysis/fixtures/refresh-metadata.ts");
+      expect(result.output).not.toContain("bun install");
+    } finally {
+      rmSync(projectPath, { recursive: true, force: true });
+    }
   });
 });

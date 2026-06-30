@@ -97,6 +97,8 @@ entry; that index enumerates every current rule page.
   fixture coverage.
 - [Roadmap 1.3.4 ExecPlan](execplans/roadmap-1-3-4.md) plans masking and
   source-scanning fixtures.
+- [Roadmap 1.3.5 ExecPlan](execplans/roadmap-1-3-5.md) plans fixture metadata
+  generation and refresh tooling.
 - [Roadmap 1.4.1 ExecPlan](execplans/roadmap-1-4-1.md) plans repository
   build-gate freshness.
 - [Roadmap 1.5.3 ExecPlan](execplans/roadmap-1-5-3.md) plans roadmap workflow

@@ -1,0 +1,71 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`fixture metadata refresh boundary failures reports non-file refresh URLs as invalid arguments 1`] = `
+[
+  {
+    "anchor": null,
+    "code": "invalid-arguments",
+    "message": "repositoryRoot must be a file: directory URL.",
+    "occurrenceCount": null,
+    "path": null,
+    "remediation": "Use file: directory URLs for fixture refresh paths.",
+    "rule": null,
+  },
+]
+`;
+
+exports[`fixture metadata refresh boundary failures reports malformed file URLs as invalid arguments 1`] = `
+[
+  {
+    "anchor": null,
+    "code": "invalid-arguments",
+    "message": "repositoryRoot must be a valid file: directory URL.",
+    "occurrenceCount": null,
+    "path": null,
+    "remediation": "Use file: directory URLs for fixture refresh paths.",
+    "rule": null,
+  },
+]
+`;
+
+exports[`fixture metadata refresh boundary failures reports file-valued repository roots as invalid arguments 1`] = `
+[
+  {
+    "anchor": null,
+    "code": "invalid-arguments",
+    "message": "repositoryRoot is not a directory: <temp>/odw-lint/not-a-directory",
+    "occurrenceCount": null,
+    "path": null,
+    "remediation": "Use file: directory URLs for fixture refresh paths.",
+    "rule": null,
+  },
+]
+`;
+
+exports[`fixture metadata refresh boundary failures reports file-valued ODW reference checkouts as missing directories 1`] = `
+[
+  {
+    "anchor": null,
+    "code": "missing-odw-reference-checkout",
+    "message": "ODW_REFERENCE_CHECKOUT is not a directory: <temp>/open-dynamic-workflows/not-a-directory",
+    "occurrenceCount": null,
+    "path": "<temp>/open-dynamic-workflows/not-a-directory",
+    "remediation": "Set ODW_REFERENCE_CHECKOUT to a source-backed open-dynamic-workflows checkout.",
+    "rule": null,
+  },
+]
+`;
+
+exports[`fixture metadata refresh boundary failures reports directory placeholders for upstream ODW examples 1`] = `
+[
+  {
+    "anchor": null,
+    "code": "missing-upstream-example",
+    "message": "Missing allow-listed upstream ODW example routing.js under ODW_REFERENCE_CHECKOUT.",
+    "occurrenceCount": null,
+    "path": "<temp>/open-dynamic-workflows/examples/routing.js",
+    "remediation": "Restore the upstream example or update the allow-list in a separate roadmap task.",
+    "rule": null,
+  },
+]
+`;

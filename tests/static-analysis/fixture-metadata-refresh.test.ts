@@ -5,10 +5,14 @@
 import { describe, expect, it } from "bun:test";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  captureRefreshFailure,
+  normalizeReportForAssertion,
+} from "./fixture-metadata-refresh-assertions";
+import { createTempRefreshWorkspace, runRefreshCli } from "./fixture-metadata-refresh-workspace";
 import type { FixtureRefreshFailure, FixtureRefreshReport } from "./fixtures/refresh-metadata";
 import {
   defaultOdwReferenceCheckout,
@@ -206,12 +210,11 @@ describe("fixture metadata refresh helpers", () => {
   });
 
   it("returns a sorted dry-run report for the current checked-out corpus", () => {
-    const temp = mkdtempSync(join(tmpdir(), "odw-lint-refresh-"));
+    const temp = createTempRefreshWorkspace();
     try {
-      mkdirSync(join(temp, "open-dynamic-workflows"));
       const report = refreshFixtureMetadata({
-        repositoryRoot,
-        odwReferenceCheckout: pathToFileURL(join(temp, "open-dynamic-workflows")),
+        repositoryRoot: pathToFileURL(temp.repositoryRoot),
+        odwReferenceCheckout: pathToFileURL(temp.odwReferenceCheckout),
         shouldWrite: false,
       });
 
@@ -225,31 +228,130 @@ describe("fixture metadata refresh helpers", () => {
       expect(report.managedPaths).toEqual([...report.managedPaths].sort());
       expect(normalizeReportForAssertion(report)).toMatchSnapshot();
     } finally {
-      rmSync(temp, { recursive: true, force: true });
+      temp.remove();
     }
   });
 
-  it("rejects write-mode refresh until manifest writing is implemented", () => {
-    const report = refreshFixtureMetadata({
-      repositoryRoot,
-      odwReferenceCheckout: repositoryRoot,
-      shouldWrite: true,
-    });
+  it("rewrites manifests deterministically and preserves raw ODW example bytes", () => {
+    const temp = createTempRefreshWorkspace();
+    try {
+      const upstreamPath = join(temp.odwReferenceCheckout, "examples", "routing.js");
+      const copiedPath = join(
+        temp.repositoryRoot,
+        "tests/static-analysis/fixtures/odw-examples/routing.js",
+      );
+      const upstreamBytes = readFileSync(upstreamPath);
+      const report = refreshFixtureMetadata({
+        repositoryRoot: pathToFileURL(temp.repositoryRoot),
+        odwReferenceCheckout: pathToFileURL(temp.odwReferenceCheckout),
+        shouldWrite: true,
+      });
 
-    expect(report.mode).toBe("write");
-    expect(report.writtenPaths).toEqual([]);
-    expect(report.failures).toEqual([
-      {
-        code: "invalid-arguments",
-        message: "Write-mode fixture refresh is implemented by roadmap work item 2.",
-        path: null,
-        rule: null,
-        anchor: null,
-        occurrenceCount: null,
-        remediation:
-          "Run dry-run mode for this helper slice, or continue with work item 2 before using write mode.",
-      },
-    ]);
+      expect(report.mode).toBe("write");
+      expect(report.failures).toEqual([]);
+      expect(report.writtenPaths).toContain(
+        "tests/static-analysis/fixtures/odw-examples/routing.js",
+      );
+      expect(readFileSync(copiedPath)).toEqual(upstreamBytes);
+      expect(
+        readFileSync(
+          join(temp.repositoryRoot, "tests/static-analysis/fixtures/masking.ts"),
+          "utf8",
+        ),
+      ).toContain("MASKING_FIXTURE_SNAPSHOTS");
+    } finally {
+      temp.remove();
+    }
+  });
+
+  it("is idempotent when write mode runs twice against a temporary corpus", () => {
+    const temp = createTempRefreshWorkspace();
+    try {
+      const options = {
+        repositoryRoot: pathToFileURL(temp.repositoryRoot),
+        odwReferenceCheckout: pathToFileURL(temp.odwReferenceCheckout),
+        shouldWrite: true,
+      } as const;
+
+      const first = refreshFixtureMetadata(options);
+      const second = refreshFixtureMetadata(options);
+
+      expect(first.failures).toEqual([]);
+      expect(first.writtenPaths.length).toBeGreaterThan(0);
+      expect(second.failures).toEqual([]);
+      expect(second.writtenPaths).toEqual([]);
+      expect(second.managedPaths).toEqual(first.managedPaths);
+      expect(second.unchangedPaths).toEqual(second.managedPaths);
+    } finally {
+      temp.remove();
+    }
+  });
+
+  it("reports missing allow-listed upstream ODW examples", () => {
+    const temp = createTempRefreshWorkspace({ omitExample: "routing.js" });
+    try {
+      const report = refreshFixtureMetadata({
+        repositoryRoot: pathToFileURL(temp.repositoryRoot),
+        odwReferenceCheckout: pathToFileURL(temp.odwReferenceCheckout),
+        shouldWrite: true,
+      });
+
+      expect(report.failures).toHaveLength(1);
+      expect(report.failures[0]?.code).toBe("missing-upstream-example");
+      expect(report.failures[0]?.message).toContain("routing.js");
+      expect(report.failures[0]?.message).toContain("ODW_REFERENCE_CHECKOUT");
+    } finally {
+      temp.remove();
+    }
+  });
+
+  it("reports extra upstream ODW examples without copying them", () => {
+    const temp = createTempRefreshWorkspace({ extraExample: "new-upstream.js" });
+    try {
+      const report = refreshFixtureMetadata({
+        repositoryRoot: pathToFileURL(temp.repositoryRoot),
+        odwReferenceCheckout: pathToFileURL(temp.odwReferenceCheckout),
+        shouldWrite: true,
+      });
+
+      expect(report.failures).toEqual([]);
+      expect(report.extraUpstreamExamples).toEqual(["new-upstream.js"]);
+      expect(report.managedPaths).not.toContain(
+        "tests/static-analysis/fixtures/odw-examples/new-upstream.js",
+      );
+    } finally {
+      temp.remove();
+    }
+  });
+
+  it("prints a parseable dry-run report from the CLI", () => {
+    const temp = createTempRefreshWorkspace();
+    try {
+      const result = runRefreshCli(["--dry-run"], temp);
+
+      expect(result.status).toBe(0);
+      expect(result.stderr).toBe("");
+      const report = JSON.parse(String(result.stdout)) as FixtureRefreshReport;
+      expect(report.mode).toBe("dry-run");
+      expect(report.failures).toEqual([]);
+    } finally {
+      temp.remove();
+    }
+  });
+
+  it("prints actionable CLI failures to stderr", () => {
+    const temp = createTempRefreshWorkspace({ omitExample: "routing.js" });
+    try {
+      const result = runRefreshCli(["--dry-run"], temp);
+
+      expect(result.status).toBe(1);
+      expect(result.stdout).toBe("");
+      const report = JSON.parse(String(result.stderr)) as FixtureRefreshReport;
+      expect(report.failures[0]?.code).toBe("missing-upstream-example");
+      expect(report.failures[0]?.message).toContain("routing.js");
+    } finally {
+      temp.remove();
+    }
   });
 
   it("stays import-safe for hostile metadata fixtures in a fresh module graph", () => {
@@ -277,41 +379,3 @@ describe("fixture metadata refresh helpers", () => {
     expect(result.stderr).toBe("");
   });
 });
-
-/**
- * Captures an expected refresh failure from span derivation.
- */
-const captureRefreshFailure = (
-  sourceText: string,
-  spanText: string,
-  fallbackByteOffset = 0,
-): FixtureRefreshReport["failures"][number] => {
-  try {
-    deriveAnchoredDiagnosticSpan(
-      { filePath: "fixtures/example.js", sourceText },
-      {
-        fixturePath: "fixtures/example.js",
-        rule: "odw/meta-name",
-        spanText,
-        fallbackByteOffset,
-      },
-    );
-  } catch (error) {
-    if (error instanceof FixtureRefreshError) {
-      return error.failure;
-    }
-    throw error;
-  }
-  throw new Error("Expected fixture refresh failure.");
-};
-
-/**
- * Removes machine-specific paths from a refresh report before snapshotting.
- */
-const normalizeReportForAssertion = (report: FixtureRefreshReport): FixtureRefreshReport => {
-  return {
-    ...report,
-    repositoryRoot: "<repositoryRoot>",
-    odwReferenceCheckout: "<odwReferenceCheckout>",
-  };
-};

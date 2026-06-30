@@ -5,7 +5,7 @@ This ExecPlan (execution plan) is a living document. The sections
 `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
 proceeds.
 
-Status: DRAFT
+Status: COMPLETE
 
 ## Purpose / big picture
 
@@ -170,10 +170,12 @@ conflict in `Decision Log`, and escalate.
   formatter commands path-safe.
 - [x] (2026-06-29T22:49Z) Work item 1: Add import-safe fixture metadata
   derivation helpers.
-- [ ] Work item 2: Add deterministic manifest refresh writing for every
-  fixture corpus.
-- [ ] Work item 3: Add the fixture refresh Make target and build-gate tests.
-- [ ] Work item 4: Document the refresh workflow and close roadmap task 1.3.5.
+- [x] (2026-06-29T23:58Z) Work item 2: Add deterministic manifest refresh
+  writing for every fixture corpus.
+- [x] (2026-06-30T10:58Z) Work item 3: Add the fixture refresh Make target and
+  build-gate tests.
+- [x] (2026-06-30T10:58Z) Work item 4: Document the refresh workflow and close
+  roadmap task 1.3.5.
 
 ## Surprises & discoveries
 
@@ -220,6 +222,22 @@ conflict in `Decision Log`, and escalate.
   passed 11 tests after adding `refresh-metadata.ts`. Impact: later work items
   can build deterministic manifest writing on the same import-safe helper
   surface.
+
+- Observation: generated manifest source must match Biome's formatted output
+  exactly for refresh idempotence. Evidence: the first write-mode
+  implementation rewrote manifests after formatting; after moving manifest
+  source generation into `refresh-manifest-source.ts` and expanding generated
+  helper/object literal shapes, a second write-mode refresh reported
+  `writtenPaths: []`. Impact: the writer now separates filesystem/report
+  orchestration from TypeScript source generation.
+
+- Observation: CodeRabbit review for work item 2 identified URL-boundary and
+  helper-duplication risks. Evidence: the review requested file-backed URL
+  validation, directory validation for `ODW_REFERENCE_CHECKOUT`, fully seeded
+  temp manifests, shared derivation helpers, and an invalid-family ordering
+  guard. Impact: the implementation now returns structured failures for bad
+  URL inputs, shares SHA/span derivation through `refresh-derivation.ts`, and
+  tests file-valued checkout failures.
 
 ## Decision log
 
@@ -271,12 +289,40 @@ conflict in `Decision Log`, and escalate.
   directory to avoid looking inside the worktree container.
   Date/Author: 2026-06-29T22:49Z / Codex.
 
+- Decision: split manifest source generation from refresh write orchestration.
+  Rationale: the writer applies copies, comparisons and reports, while
+  `refresh-manifest-source.ts` owns deterministic TypeScript source generation
+  for the seven manifest modules. The split keeps files under the 400-line
+  project limit and makes idempotence issues easier to isolate.
+  Date/Author: 2026-06-29T23:58Z / Codex.
+
+- Decision: centralize SHA and anchor-span derivation in
+  `refresh-derivation.ts`.
+  Rationale: the public refresh API and generated manifest source need one
+  exact implementation for UTF-8 offset validation, overlapping anchor
+  detection and failure construction, without creating a runtime import cycle
+  between the writer and public wrapper modules.
+  Date/Author: 2026-06-30T00:21Z / Codex.
+
 ## Outcomes & retrospective
 
 Work item 1 added the import-safe refresh helper core and focused tests. The
 module now exports the report, failure, URL-resolution, SHA-256 and diagnostic
 span derivation contracts that later work items extend into manifest writing
 and a Makefile target. It still deliberately avoids repository writes.
+
+Work item 2 added write-mode refresh, CLI stdout/stderr behaviour, deterministic
+manifest source generation, ODW allow-list copying, extra-upstream reporting and
+temporary-corpus tests that do not require a sibling checkout during `make all`.
+The current worktree refresh is idempotent after formatting: a second write-mode
+run with the source-backed ODW checkout reported no `writtenPaths`.
+
+Work item 3 added `make refresh-fixtures` and a build-gate test that dry-runs
+the target without mutating repository files. Work item 4 documented the
+maintainer workflow, the `ODW_REFERENCE_CHECKOUT` override, raw-fixture safety
+rules, anchor selection, and post-refresh validation. Roadmap task 1.3.5 is now
+closed, while the later loader-parity and no-side-effect lint execution tasks
+remain open.
 
 ## Context and orientation
 
@@ -716,8 +762,7 @@ Validation commands from the worktree root:
 
 ```bash
 make build
-ODW_REFERENCE_CHECKOUT="${ODW_REFERENCE_CHECKOUT:-../../open-dynamic-workflows/}" \
-  bun run tests/static-analysis/fixtures/refresh-metadata.ts
+bun run tests/static-analysis/fixtures/refresh-metadata.ts
 bunx @biomejs/biome format --write \
   tests/static-analysis/fixtures/refresh-metadata.ts \
   tests/static-analysis/fixture-metadata-refresh.test.ts
@@ -1087,3 +1132,13 @@ Do not add or use:
   handling for `defaultOdwReferenceCheckout(repositoryRoot: URL)`, and
   path-safe formatter commands for optional generated files. Work item 1 has
   since implemented the import-safe helper slice.
+- 2026-06-29: Work item 2 implemented deterministic write-mode refresh, CLI
+  report output, generated manifest source, ODW example copying, extra-upstream
+  reporting and temporary-corpus idempotence tests. Manifest source generation
+  was split from filesystem writes to keep code files under 400 lines and to
+  make Biome-formatted output idempotent.
+- 2026-06-30: Work items 3 and 4 completed the Makefile entry point,
+  build-gate wiring tests, maintainer documentation, repository-layout notes,
+  contents index entry and roadmap close-out for task 1.3.5. The work remains
+  scoped to fixture refresh tooling and does not close later loader-parity or
+  no-side-effect execution tasks.
