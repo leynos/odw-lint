@@ -45,6 +45,12 @@ ownership, and integration tests. See
   - See [technical-design.md](technical-design.md) §7.
   - Success: command arguments, flags, and exit codes match the
     `ruff check`-style design.
+  - [ ] 1.1.3.1. Add the first user-facing guide.
+    - Addendum (from audit:1.5.1; low). Add a minimal user's guide covering
+      the intended `odw-lint check` command shape, diagnostic report contract,
+      rule-reference navigation, configuration placeholders, and current
+      non-goals before the first executable CLI slice lands. Lightweight
+      addendum pass.
 
 ### 1.2. Build the diagnostic and source-position spine
 
@@ -189,6 +195,11 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
   - Success: maintainers can refresh valid, invalid, masking, and hostile
     fixture metadata with one documented command and review deterministic
     changes.
+  - [ ] 1.3.5.1. Centralize fixture refresh path and failure helpers.
+    - Addendum (from audit:1.5.1; medium). Single-source duplicated refresh
+      URL normalization and repeated non-argument refresh failure construction
+      so fixture refresh reports, checkout resolution, and missing-upstream
+      errors cannot diverge. Lightweight addendum pass.
 
 ### 1.4. Harden repository build-gate freshness
 
@@ -217,6 +228,17 @@ depending on manual post-commit audits.
     repository gate.
   - Success: `make all` or an equivalent commit gate fails when source or test
     TypeScript files exceed the configured project limit.
+  - [ ] 1.5.1.1. Reconcile file-size guard scope and Git runner shapes.
+    - Addendum (from review:1.5.1; low). Align the injectable Git runner result
+      type with Bun's nullable spawn output and clarify the documented
+      difference between tracked TypeScript enforcement, ignored untracked
+      scratch paths, and deferred non-TypeScript code-file policy. Lightweight
+      addendum pass.
+  - [ ] 1.5.1.2. Split near-limit architecture and fixture refresh suites.
+    - Addendum (from audit:1.5.1; medium). Split broad architecture and
+      fixture metadata refresh coverage by contract before either suite reaches
+      the file-size guard during unrelated parser or fixture work. Lightweight
+      addendum pass.
 - [x] 1.5.2. Add a branch-freshness review guard for roadmap tasks.
   - Requires steps 1.1-1.4.
   - Detect task branches that would delete newer `origin/main` roadmap, docs,
@@ -244,6 +266,9 @@ depending on manual post-commit audits.
   - Add a lightweight whitespace check for tracked files or diffs so committed
     snapshots and fixtures cannot carry trailing whitespace after normal gates
     pass.
+  - Reuse tracked-file enumeration from branch-freshness only if the
+    whitespace guard proves the shared helper shape; otherwise keep the gate
+    local until a second write-side hygiene check needs it.
   - Success: the repository gate fails on trailing whitespace without
     reformatting raw fixture files.
 
