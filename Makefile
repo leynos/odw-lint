@@ -1,4 +1,4 @@
-.PHONY: help all clean build lint biomejs oxlint fmt check-fmt typecheck test refresh-fixtures markdownlint nixie
+.PHONY: help all clean build lint biomejs oxlint fmt check-fmt typecheck test refresh-fixtures branch-freshness markdownlint nixie
 
 .DEFAULT_GOAL := all
 
@@ -35,6 +35,9 @@ test: build ## Run tests
 
 refresh-fixtures: build ## Refresh workflow fixture metadata
 	bun run tests/static-analysis/fixtures/refresh-metadata.ts
+
+branch-freshness: ## Check roadmap task branch freshness
+	bun run tests/build-gate/branch-freshness-git.ts
 
 markdownlint: ## Lint Markdown files
 	bunx markdownlint-cli2 '**/*.md'

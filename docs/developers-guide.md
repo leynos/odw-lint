@@ -74,6 +74,13 @@ linting, type checking, or tests use the installed toolchain.
 
 Run `make markdownlint` as well when Markdown files change.
 
+Run `make branch-freshness` before requesting review for roadmap task
+branches. The target refreshes `origin/main`, checks protected `docs/**` and
+`tests/**` changes, and fails when the task branch would present unrelated
+newer main-branch work as deletions in review. It exits successfully on
+non-roadmap branches, and exits with a usage error when the worktree is dirty.
+Keep it outside `make all` because it performs a network fetch.
+
 Run `make refresh-fixtures` after changing workflow fixture source, copied ODW
 examples, or static-analysis fixture manifests. The target refreshes fixture
 hashes, invalid diagnostic spans and reviewer-facing span text, then prints a

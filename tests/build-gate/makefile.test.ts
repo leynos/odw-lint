@@ -21,7 +21,7 @@ type MakeDryRunResult = {
   readonly output: string;
 };
 
-type MakeTarget = "build" | "refresh-fixtures";
+type MakeTarget = "branch-freshness" | "build" | "refresh-fixtures";
 
 const olderThanMarker = new Date("2026-01-01T00:00:00.000Z");
 const markerTime = new Date("2026-01-01T00:01:00.000Z");
@@ -116,6 +116,20 @@ describe("Makefile build gate", () => {
 
       expect(result.status).toBe(0);
       expect(result.output).toContain("bun run tests/static-analysis/fixtures/refresh-metadata.ts");
+      expect(result.output).not.toContain("bun install");
+    } finally {
+      rmSync(projectPath, { recursive: true, force: true });
+    }
+  });
+
+  it("documents the branch-freshness target and wires it through Bun", () => {
+    const projectPath = createTemporaryProject([]);
+
+    try {
+      const result = runMakeDryRun(projectPath, "branch-freshness");
+
+      expect(result.status).toBe(0);
+      expect(result.output).toContain("bun run tests/build-gate/branch-freshness-git.ts");
       expect(result.output).not.toContain("bun install");
     } finally {
       rmSync(projectPath, { recursive: true, force: true });

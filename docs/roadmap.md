@@ -217,7 +217,7 @@ depending on manual post-commit audits.
     repository gate.
   - Success: `make all` or an equivalent commit gate fails when source or test
     TypeScript files exceed the configured project limit.
-- [ ] 1.5.2. Add a branch-freshness review guard for roadmap tasks.
+- [x] 1.5.2. Add a branch-freshness review guard for roadmap tasks.
   - Requires steps 1.1-1.4.
   - Detect task branches that would delete newer `origin/main` roadmap, docs,
     or test work outside the declared task scope after fetching current
