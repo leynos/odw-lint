@@ -293,6 +293,9 @@ Internal source-helper ownership is split by responsibility:
   offsets, and UTF-16 text indexes.
 - `src/static-analysis/source-indexes.ts` owns private index storage and
   guarded lookup for factory-created source records.
+- `src/static-analysis/source-mask.ts` owns inert-region masking for future
+  envelope scans. It blanks comments, strings, whole template literals, and
+  regex literals while preserving UTF-16 text indexes and line terminators.
 - `src/static-analysis/source-position.ts` owns offset lookup, span
   construction, and caller-supplied span validation.
 - `src/static-analysis/source-snippet.ts` owns validated source slicing and

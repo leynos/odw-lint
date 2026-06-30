@@ -9,6 +9,8 @@ export {
   snippetForSpan,
   spanFromOffsets,
 } from "./source-file";
+export type { MaskedSource, SourceMaskKind, SourceMaskRange } from "./source-mask";
+export { maskNonCodeSource } from "./source-mask";
 export type {
   OriginalSourceFile,
   SourceLine,

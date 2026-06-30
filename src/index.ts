@@ -46,9 +46,13 @@ export {
 } from "./diagnostics/types";
 export {
   createOriginalSourceFile,
+  type MaskedSource,
+  maskNonCodeSource,
   type OriginalSourceFile,
   positionAtOffset,
   type SourceLine,
+  type SourceMaskKind,
+  type SourceMaskRange,
   SourceOffsetError,
   type SourceSnippet,
   STATIC_ANALYSIS_BOUNDARY,

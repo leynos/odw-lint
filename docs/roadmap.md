@@ -263,13 +263,16 @@ This step answers whether the linter can reproduce ODW's loader boundary
 statically. It unlocks metadata rules and body parsing. See
 [technical-design.md](technical-design.md) §§5, 6.2, 6.4, and 9.1.
 
-- [ ] 2.1.1. Implement a source masker for comments, strings, template
+- [x] 2.1.1. Implement a source masker for comments, strings, template
   literals, and regex literals.
   - Requires steps 1.1-1.3 and 2.1.4.
   - See [technical-design.md](technical-design.md) §§5 and 6.2.
   - Success: masking fixtures from 1.3.3 produce zero envelope diagnostics, and
     each manifest `metaName` matches the real metadata declaration extracted
     from original source.
+  - Completion note: whole template literals are inert for envelope masking,
+    and the committed test-only probe consumes the masking fixture manifest
+    without adding the production envelope scanner.
 - [ ] 2.1.2. Implement static `export const meta` extraction and unsupported
   import/export detection.
   - Requires 2.1.1 and 2.1.6.

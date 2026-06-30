@@ -13,6 +13,7 @@ const SOURCE_HELPER_MODULES = [
   "index.ts",
   "source-file.ts",
   "source-indexes.ts",
+  "source-mask.ts",
   "source-position.ts",
   "source-scan.ts",
   "source-snippet.ts",
@@ -146,6 +147,7 @@ describe("source-file helper architecture", () => {
   it("keeps scan and index ownership in focused modules", () => {
     expect(existsSync("src/static-analysis/source-scan.ts")).toBeTrue();
     expect(existsSync("src/static-analysis/source-indexes.ts")).toBeTrue();
+    expect(existsSync("src/static-analysis/source-mask.ts")).toBeTrue();
     expect(existsSync("src/static-analysis/source-position.ts")).toBeTrue();
     expect(existsSync("src/static-analysis/source-snippet.ts")).toBeTrue();
     expect(existsSync("src/static-analysis/source-file.ts")).toBeTrue();
@@ -172,6 +174,47 @@ describe("source-file helper architecture", () => {
 
     expect(topLevelDeclarationNames("src/static-analysis/source-file.ts")).toContain(
       "createOriginalSourceFile",
+    );
+  });
+
+  it("keeps inert-region masking in source-mask", () => {
+    expectModuleDeclarations("src/static-analysis/source-mask.ts", [
+      "MaskedSource",
+      "REGEX_ALLOWED_PREVIOUS_CHARACTERS",
+      "SourceMaskKind",
+      "SourceMaskRange",
+      "TemplateScanState",
+      "TemplateScanStep",
+      "blankMaskedRange",
+      "createMaskedRange",
+      "isCommentStart",
+      "isLineTerminatorCharacter",
+      "isRegexClassBoundary",
+      "isRegexAllowedAfter",
+      "isRegexDelimiter",
+      "isStringLikeDelimiter",
+      "isTemplateClose",
+      "isTemplateExpressionOpen",
+      "lastSignificantCharacterInRange",
+      "maskNonCodeSource",
+      "nextOrdinaryTemplateStep",
+      "nextSignificantCharacterAfterRange",
+      "nextTemplateIndex",
+      "nextTemplateStep",
+      "scanCommentRange",
+      "scanEscapedDelimitedEnd",
+      "scanLineCommentEnd",
+      "scanMaskRange",
+      "scanQuotedStringRange",
+      "scanRegexEnd",
+      "scanRegexFlagsEnd",
+      "scanRegexRange",
+      "scanTemplateEnd",
+      "scanTemplateRange",
+    ]);
+
+    expect(topLevelDeclarationNames("src/static-analysis/source-file.ts")).not.toContain(
+      "maskNonCodeSource",
     );
   });
 
