@@ -45,7 +45,7 @@ ownership, and integration tests. See
   - See [technical-design.md](technical-design.md) §7.
   - Success: command arguments, flags, and exit codes match the
     `ruff check`-style design.
-  - [ ] 1.1.3.1. Add the first user-facing guide.
+  - [x] 1.1.3.1. Add the first user-facing guide.
     - Addendum (from audit:1.5.1; low). Add a minimal user's guide covering
       the intended `odw-lint check` command shape, diagnostic report contract,
       rule-reference navigation, configuration placeholders, and current

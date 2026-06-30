@@ -12,6 +12,9 @@ entry; that index enumerates every current rule page.
 
 - [Documentation contents](contents.md) is this index and should be the first
   stop when choosing which document to open.
+- [User's guide](users-guide.md) explains the intended command shape,
+  diagnostic report contract, rule navigation, configuration placeholders and
+  current non-goals for workflow authors.
 - [Repository layout](repository-layout.md) explains repository paths,
   ownership boundaries, fixture constraints and tooling responsibilities.
 - [Developers' guide](developers-guide.md) explains maintainer workflow,
@@ -83,6 +86,8 @@ entry; that index enumerates every current rule page.
 
 - [Roadmap 1.1.1 ExecPlan](execplans/roadmap-1-1-1.md) plans the
   static-analysis and packaging boundary work.
+- [Roadmap 1.1.3 ExecPlan](execplans/roadmap-1-1-3.md) records the public
+  command contract addenda.
 - [Roadmap 1.2.1 ExecPlan](execplans/roadmap-1-2-1.md) plans the diagnostic
   rule identifier and severity spine.
 - [Roadmap 1.2.2 ExecPlan](execplans/roadmap-1-2-2.md) plans the source
