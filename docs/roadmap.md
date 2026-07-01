@@ -388,9 +388,12 @@ statically. It unlocks metadata rules and body parsing. See
   - Addendum source: review:2.1.7; medium.
   - Introduce the typed template contract needed for source-specific diagnostic
     interpolation before parser-backed body rules start emitting dynamic
-    messages.
+    messages. Update the architecture and public API guard fixtures when the
+    template module or package-entry exports change.
   - Success: fixture parity can continue checking reviewed messages without
-    weakening dynamic diagnostics to broad string assertions.
+    weakening dynamic diagnostics to broad string assertions, and
+    `tests/diagnostics/architecture-fixtures.ts` plus
+    `tests/diagnostics/public-api-fixtures.ts` pin the new module and exports.
 - [x] 2.1.9. Split source-mask token scanners into focused modules.
   - Requires 2.1.1.
   - Addendum source: audit:2.1.7; medium.
