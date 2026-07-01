@@ -271,6 +271,14 @@ depending on manual post-commit audits.
     local until a second write-side hygiene check needs it.
   - Success: the repository gate fails on trailing whitespace without
     reformatting raw fixture files.
+- [ ] 1.5.5. Consolidate build-gate Git support behind one helper seam.
+  - Requires 1.5.1, 1.5.2, and 1.5.4.
+  - Addendum source: audit:2.1.7; medium.
+  - Share the Git runner, tracked-file listing, temporary-repository setup, and
+    CLI output capture used by file-size, branch-freshness, and whitespace
+    hygiene gates while preserving each gate's feature-specific policy.
+  - Success: build-gate tests exercise one documented Git support helper and no
+    gate carries a forked subprocess or tracked-file enumeration contract.
 
 ## 2. First vertical slice: ODW dialect validation
 
@@ -361,6 +369,39 @@ statically. It unlocks metadata rules and body parsing. See
     not become parallel sources of truth.
   - Success: fixture expectations fail when a diagnostic rule, default
     severity, message contract, or docs slug diverges from the catalogue.
+  - [ ] 2.1.7.1. Guard representative diagnostic examples against catalogue
+    message drift.
+    - Addendum source: review:2.1.7; low.
+    - Make public consumer or type examples use catalogue-backed diagnostic
+      messages where representative examples would otherwise preserve stale
+      literal strings.
+    - Success: changing a reviewed catalogue message breaks the representative
+      example contract before examples drift.
+- [ ] 2.1.8. Define diagnostic message templates for parser-backed rules.
+  - Requires 2.1.7.
+  - Addendum source: review:2.1.7; medium.
+  - Introduce the typed template contract needed for source-specific diagnostic
+    interpolation before parser-backed body rules start emitting dynamic
+    messages.
+  - Success: fixture parity can continue checking reviewed messages without
+    weakening dynamic diagnostics to broad string assertions.
+- [ ] 2.1.9. Split source-mask token scanners into focused modules.
+  - Requires 2.1.1.
+  - Addendum source: audit:2.1.7; medium.
+  - Separate comment, string, template, regex, and delimiter masking helpers so
+    future envelope and AST-fact work extends focused scanners instead of a
+    near-limit production file.
+  - Success: the source-mask facade preserves current masking behaviour, each
+    token family has a named implementation home, and existing masking fixture
+    and property tests remain green.
+- [ ] 2.1.10. Canonicalize diagnostic rule documentation link contracts.
+  - Requires 2.1.6.
+  - Addendum source: audit:2.1.7; medium.
+  - Choose one emitted documentation-link shape for rule diagnostics and update
+    catalogue, schema, docs, and tests before text and JSON reporters expose the
+    field to downstream integrations.
+  - Success: diagnostic metadata exposes one tested rule-documentation reference
+    format and no code or docs describe a competing URL/path shape.
 
 ### 2.2. Normalize and parse workflow bodies with SWC
 
@@ -369,7 +410,7 @@ source without losing span fidelity. It informs all later AST rules. See
 [technical-design.md](technical-design.md) §§6.1 and 11.5.
 
 - [ ] 2.2.1. Add `@swc/core` and implement the parser adapter.
-  - Requires 2.1.2.
+  - Requires 2.1.2 and 2.1.8.
   - See [technical-design.md](technical-design.md) §§4 and 6.1.
   - Success: body syntax errors become `odw/body-syntax` diagnostics rather
     than thrown exceptions.
@@ -387,7 +428,7 @@ source without losing span fidelity. It informs all later AST rules. See
     template interpolation.
 - [ ] 2.2.4. Implement workflow AST facts for lexical bindings and source
   masks.
-  - Requires 2.1.1 and 2.2.2.
+  - Requires 2.1.9 and 2.2.2.
   - See [technical-design.md](technical-design.md) §§6.2 and 9.3.
   - Provide binding facts for global-helper shadowing and original-source
     comment or literal masks for suppression parsing.
@@ -442,7 +483,7 @@ unlocks CI adoption and user feedback. See
   - Success: human output contains enough location information to fix a
     fixture without opening JSON.
 - [ ] 2.4.3. Add JSON output and a JSON contract fixture.
-  - Requires 1.2.1 and 2.4.1.
+  - Requires 1.2.1, 2.1.10, and 2.4.1.
   - See [technical-design.md](technical-design.md) §8.
   - Success: JSON output is stable under snapshot tests and includes the
     versioned envelope.
