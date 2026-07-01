@@ -344,9 +344,20 @@ Internal source-helper ownership is split by responsibility:
   offsets, and UTF-16 text indexes.
 - `src/static-analysis/source-indexes.ts` owns private index storage and
   guarded lookup for factory-created source records.
-- `src/static-analysis/source-mask.ts` owns inert-region masking for future
-  envelope scans. It blanks comments, strings, whole template literals, and
-  regex literals while preserving UTF-16 text indexes and line terminators.
+- `src/static-analysis/source-mask.ts` is the inert-region masking facade and
+  scan orchestrator for future envelope scans. It exposes `maskNonCodeSource`,
+  keeps scanner ordering, and preserves UTF-16 text indexes and line
+  terminators.
+- `src/static-analysis/source-mask-types.ts` owns mask data types used by the
+  facade and internal scanner modules.
+- `src/static-analysis/source-mask-delimiters.ts` owns shared delimiter and
+  range helpers, including line-terminator classification and range blanking.
+- `src/static-analysis/source-mask-comments.ts`,
+  `src/static-analysis/source-mask-strings.ts`,
+  `src/static-analysis/source-mask-templates.ts`, and
+  `src/static-analysis/source-mask-regex.ts` own the comment, quoted-string,
+  template-literal, and regex-literal token scanners. External scanner code
+  still calls `maskNonCodeSource` rather than importing these internal modules.
 - `src/static-analysis/source-position.ts` owns offset lookup, span
   construction, and caller-supplied span validation.
 - `src/static-analysis/source-snippet.ts` owns validated source slicing and

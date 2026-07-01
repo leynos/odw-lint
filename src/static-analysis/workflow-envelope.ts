@@ -5,7 +5,8 @@ import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic, SourceSpan } from "../diagnostics/types";
 import { maskNonCodeSource } from "./source-mask";
 import { spanFromOffsets, spanFromTextIndexes } from "./source-position";
-import type { OriginalSourceFile, WorkflowEnvelopeScanResult, WorkflowMetaValue } from "./types";
+import type { OriginalSourceFile, WorkflowEnvelopeScanResult } from "./types";
+import { scanMetaValue } from "./workflow-envelope-meta-value";
 import {
   isTopLevel,
   nextDepthState,
@@ -48,7 +49,8 @@ function ruleDefinitionFor(ruleId: string): RuleDefinition {
 export const scanWorkflowEnvelope = (
   sourceFile: OriginalSourceFile,
 ): WorkflowEnvelopeScanResult => {
-  const maskedText = maskNonCodeSource(sourceFile).maskedText;
+  const maskedSource = maskNonCodeSource(sourceFile);
+  const { maskedText } = maskedSource;
   const metaDeclaration = findMetaDeclaration(maskedText);
 
   if (metaDeclaration === undefined) {
@@ -60,7 +62,12 @@ export const scanWorkflowEnvelope = (
     });
   }
 
-  const metaValue = scanMetaValue(sourceFile, maskedText, metaDeclaration.assignmentEndIndex);
+  const metaValue = scanMetaValue(
+    sourceFile,
+    maskedText,
+    maskedSource.ranges,
+    metaDeclaration.assignmentEndIndex,
+  );
   const unsupportedDeclarations = findUnsupportedDeclarations(
     sourceFile,
     maskedText,
@@ -153,142 +160,6 @@ const isIdentifierPart = (character: string | undefined): boolean => {
   return character !== undefined && /[$_\p{ID_Continue}]/u.test(character);
 };
 
-/** Scans the metadata value state after the assignment operator. */
-const scanMetaValue = (
-  sourceFile: OriginalSourceFile,
-  maskedText: string,
-  valueSearchIndex: number,
-): WorkflowMetaValue => {
-  const valueStartIndex = nextMetadataValueIndex(sourceFile.sourceText, valueSearchIndex);
-  if (valueStartIndex === undefined) {
-    return Object.freeze({
-      kind: "missing-value",
-      span: spanFromTextIndexes(sourceFile, maskedText.length, maskedText.length),
-    });
-  }
-
-  if (sourceFile.sourceText[valueStartIndex] === ";") {
-    return Object.freeze({
-      kind: "missing-value",
-      span: spanFromTextIndexes(sourceFile, valueStartIndex, valueStartIndex),
-    });
-  }
-
-  if (sourceFile.sourceText[valueStartIndex] !== "{") {
-    return nonObjectMetaValue(sourceFile, maskedText, valueStartIndex);
-  }
-
-  return objectMetaValue(sourceFile, maskedText, valueStartIndex);
-};
-
-/** Builds metadata state for computed or otherwise non-object expressions. */
-const nonObjectMetaValue = (
-  sourceFile: OriginalSourceFile,
-  maskedText: string,
-  startIndex: number,
-): WorkflowMetaValue => {
-  const statementEndIndex = topLevelStatementEndIndex(maskedText, startIndex);
-  const expressionEndIndex = trimStatementTerminator(
-    sourceFile.sourceText,
-    startIndex,
-    trimTrailingWhitespaceIndex(sourceFile.sourceText, startIndex, statementEndIndex),
-  );
-
-  return Object.freeze({
-    kind: "non-object-expression",
-    expressionStartSpan: spanFromTextIndexes(sourceFile, startIndex, startIndex + 1),
-    expressionSpan: spanFromTextIndexes(sourceFile, startIndex, expressionEndIndex),
-  });
-};
-
-/** Builds metadata state for object literals and unterminated objects. */
-const objectMetaValue = (
-  sourceFile: OriginalSourceFile,
-  maskedText: string,
-  startIndex: number,
-): WorkflowMetaValue => {
-  const closeBraceIndex = matchingBraceIndex(maskedText, startIndex);
-  if (closeBraceIndex === undefined) {
-    return Object.freeze({
-      kind: "unterminated-object",
-      openBraceSpan: spanFromTextIndexes(sourceFile, startIndex, startIndex + 1),
-      span: spanFromTextIndexes(sourceFile, startIndex, maskedText.length),
-    });
-  }
-
-  return Object.freeze({
-    kind: "object",
-    span: spanFromTextIndexes(sourceFile, startIndex, closeBraceIndex + 1),
-    openBraceSpan: spanFromTextIndexes(sourceFile, startIndex, startIndex + 1),
-    closeBraceSpan: spanFromTextIndexes(sourceFile, closeBraceIndex, closeBraceIndex + 1),
-  });
-};
-
-/** Finds the next metadata value token while keeping comments inert. */
-const nextMetadataValueIndex = (text: string, startIndex: number): number | undefined => {
-  for (let index = startIndex; index < text.length; index += 1) {
-    const character = text[index] ?? "";
-    if (/\s/u.test(character)) {
-      continue;
-    }
-    if (text.startsWith("//", index)) {
-      index = scanLineCommentEnd(text, index + 2) - 1;
-      continue;
-    }
-    if (text.startsWith("/*", index)) {
-      index = scanBlockCommentEnd(text, index + 2) - 1;
-      continue;
-    }
-    return index;
-  }
-
-  return undefined;
-};
-
-/** Finds the end of a line comment from the first character after `//`. */
-const scanLineCommentEnd = (text: string, startIndex: number): number => {
-  for (let index = startIndex; index < text.length; index += 1) {
-    const character = text[index] ?? "";
-    if (isLineTerminator(character)) {
-      return index;
-    }
-  }
-  return text.length;
-};
-
-/** Checks for JavaScript line terminators. */
-const isLineTerminator = (character: string): boolean => {
-  return (
-    character === "\n" || character === "\r" || character === "\u2028" || character === "\u2029"
-  );
-};
-
-/** Finds the end of a block comment from the first character after `/*`. */
-const scanBlockCommentEnd = (text: string, startIndex: number): number => {
-  const terminatorIndex = text.indexOf("*/", startIndex);
-  return terminatorIndex === -1 ? text.length : terminatorIndex + 2;
-};
-
-/** Finds a matching `}` for an object that starts at `startIndex`. */
-const matchingBraceIndex = (maskedText: string, startIndex: number): number | undefined => {
-  let depth = 0;
-
-  for (let index = startIndex; index < maskedText.length; index += 1) {
-    const character = maskedText[index];
-    if (character === "{") {
-      depth += 1;
-    }
-    if (character === "}") {
-      depth -= 1;
-      if (depth === 0) {
-        return index;
-      }
-    }
-  }
-
-  return undefined;
-};
-
 /** Builds the body span from the end of the extractable metadata prefix. */
 const bodySpanForMetaValue = (
   sourceFile: OriginalSourceFile,
@@ -307,28 +178,6 @@ const bodyStartOffset = (
 ): number => {
   const bodyStartIndex = topLevelStatementEndIndex(maskedText, metaDeclaration.assignmentEndIndex);
   return spanFromTextIndexes(sourceFile, bodyStartIndex, bodyStartIndex).start.offset;
-};
-
-/** Removes trailing whitespace from an expression span without crossing start. */
-const trimTrailingWhitespaceIndex = (
-  text: string,
-  startIndex: number,
-  endIndex: number,
-): number => {
-  let trimmedEndIndex = endIndex;
-  while (trimmedEndIndex > startIndex && /\s/u.test(text[trimmedEndIndex - 1] ?? "")) {
-    trimmedEndIndex -= 1;
-  }
-  return trimmedEndIndex;
-};
-
-/** Removes a trailing statement terminator from a metadata expression span. */
-const trimStatementTerminator = (text: string, startIndex: number, endIndex: number): number => {
-  if (endIndex <= startIndex) {
-    return endIndex;
-  }
-
-  return text[endIndex - 1] === ";" ? endIndex - 1 : endIndex;
 };
 
 /** Builds a missing-metadata diagnostic at the start of the original source. */

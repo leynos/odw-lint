@@ -87,6 +87,11 @@ ODW runtime helpers that start runs or dispatch agents. The design rationale
 lives in [technical-design.md](technical-design.md) and
 [ADR 0001](adr/0001-static-analysis-boundary.md).
 
+The source-mask facade in `src/static-analysis/source-mask.ts` composes focused
+internal mask helpers. Keep comment, quoted-string, template-literal, regex,
+type, delimiter, and range helper changes inside the corresponding
+`source-mask-*` module instead of growing the facade.
+
 ## Test and fixture boundaries
 
 `tests/diagnostics/` protects the diagnostic surface. It includes tests for

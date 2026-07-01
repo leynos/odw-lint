@@ -391,7 +391,7 @@ statically. It unlocks metadata rules and body parsing. See
     messages.
   - Success: fixture parity can continue checking reviewed messages without
     weakening dynamic diagnostics to broad string assertions.
-- [ ] 2.1.9. Split source-mask token scanners into focused modules.
+- [x] 2.1.9. Split source-mask token scanners into focused modules.
   - Requires 2.1.1.
   - Addendum source: audit:2.1.7; medium.
   - Separate comment, string, template, regex, and delimiter masking helpers so

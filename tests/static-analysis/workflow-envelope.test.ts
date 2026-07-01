@@ -149,6 +149,18 @@ describe("workflow envelope metadata value states", () => {
     expect(envelope.bodySpan.start.line).toBe(5);
   });
 
+  it("keeps raw-line quoted strings inside the metadata object span", () => {
+    const sourceText = 'export const meta = { name: "n", description: "broken\nline" };';
+    const envelope = expectScannedEnvelope(scanWorkflowEnvelope(sourceFile(sourceText)));
+
+    expect(envelope.metaValue.kind).toBe("object");
+    if (envelope.metaValue.kind === "object") {
+      expect(spanText(sourceText, envelope.metaValue.span)).toBe(
+        '{ name: "n", description: "broken\nline" }',
+      );
+    }
+  });
+
   it("records computed metadata as a non-object expression", () => {
     const sourceText = "export const meta = makeMeta();\nif (ready) { await agent({}); }";
     const envelope = expectScannedEnvelope(scanWorkflowEnvelope(sourceFile(sourceText)));

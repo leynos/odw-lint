@@ -148,6 +148,49 @@ describe("maskNonCodeSource", () => {
     ]);
   });
 
+  it("masks keyword-led regex literals", () => {
+    assertMaskContract("function pattern() { return /}`/g; }\nconst after = 1;", [
+      { kind: "regex", text: "/}`/g" },
+    ]);
+  });
+
+  it("masks operator-keyword-led regex literals", () => {
+    assertMaskContract(
+      [
+        "const kind = typeof /x/;",
+        "delete /x/.source;",
+        "switch (value) { case /x/: break; }",
+        "const matched = value instanceof /x/;",
+        "if (ok) value(); else /x/.test(value);",
+        "do /x/.test(value); while (false);",
+        "const has = key in /x/;",
+        "for (const value of /x/) { break; }",
+        "void /x/.source;",
+      ].join("\n"),
+      [
+        { kind: "regex", text: "/x/" },
+        { kind: "regex", text: "/x/" },
+        { kind: "regex", text: "/x/" },
+        { kind: "regex", text: "/x/" },
+        { kind: "regex", text: "/x/" },
+        { kind: "regex", text: "/x/" },
+        { kind: "regex", text: "/x/" },
+        { kind: "regex", text: "/x/" },
+        { kind: "regex", text: "/x/" },
+      ],
+    );
+  });
+
+  it("masks regexes with leading class-close literals and slashes in classes", () => {
+    assertMaskContract("const pattern = /[]/]/g; const after = 1;", [
+      { kind: "regex", text: "/[]/]/g" },
+    ]);
+  });
+
+  it("leaves postfix-operator division visible", () => {
+    assertMaskContract("counter++ / divisor;\nother-- / divisor;", []);
+  });
+
   it("leaves division-like slashes visible after string, template, and regex expressions", () => {
     const templateText = "`template`";
 
@@ -169,6 +212,14 @@ describe("maskNonCodeSource", () => {
       expect(maskedSource.ranges).toEqual([]);
       expect(maskedSource.maskedText).toBe(sourceText);
     }
+  });
+
+  it("leaves escaped-line-terminator regex candidates visible", () => {
+    const sourceText = "const a = (/export\\\nconst b = 1;";
+    const maskedSource = maskNonCodeSource(sourceFileFor(sourceText));
+
+    expect(maskedSource.ranges).toEqual([]);
+    expect(maskedSource.maskedText).toBe(sourceText);
   });
 
   it("leaves division-like slashes visible", () => {

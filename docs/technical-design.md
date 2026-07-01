@@ -126,6 +126,14 @@ The envelope scanner should use the same string, comment, template, and regex
 masking strategy as ODW's loader. That avoids false positives when
 `export const meta =` or braces appear inside strings or comments.
 
+The source masker keeps a stable public facade at
+`src/static-analysis/source-mask.ts`, while its implementation is split by
+source-token family. Mask data types live in `source-mask-types.ts`, shared
+delimiter and range helpers live in `source-mask-delimiters.ts`, and comments,
+quoted strings, whole template literals, and regex literals each have focused
+internal scanner modules. Public scanner code calls `maskNonCodeSource` through
+the facade; token-family modules remain internal implementation details.
+
 ### 6.3. Metadata classification
 
 Metadata diagnostics must separate three cases:

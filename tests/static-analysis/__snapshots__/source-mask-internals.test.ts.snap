@@ -1,0 +1,29 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`source-mask template scanner skips comments before keyword-led regex literals inside template expressions 1`] = `
+{
+  "maskedText": "const x =                                                               ; const y = 1;",
+  "ranges": [
+    {
+      "endIndex": 72,
+      "kind": "template",
+      "startIndex": 10,
+    },
+  ],
+  "sourceFile": {
+    [Symbol(OriginalSourceFile)]: true,
+    "byteLength": 86,
+    "filePath": "workflow.odw.js",
+    "lines": [
+      {
+        "contentEndOffset": 86,
+        "line": 1,
+        "startOffset": 0,
+        "terminatorEndOffset": 86,
+        "text": "const x = \`value \${(() => { return /* c */ /}\`/.test(input); })()} tail\`; const y = 1;",
+      },
+    ],
+    "sourceText": "const x = \`value \${(() => { return /* c */ /}\`/.test(input); })()} tail\`; const y = 1;",
+  },
+}
+`;
