@@ -2,7 +2,7 @@
  * @file Passive boundary constants and types for the static-analysis pipeline.
  */
 
-import type { SourcePosition } from "../diagnostics/types";
+import type { Diagnostic, SourcePosition, SourceSpan } from "../diagnostics/types";
 
 /**
  * Stable identifier for the owned production static-analysis boundary.
@@ -67,6 +67,59 @@ export type OriginalSourceFile = {
   readonly byteLength: number;
   /** Display lines derived from the original source text. */
   readonly lines: readonly SourceLine[];
+};
+
+export type WorkflowEnvelopeScanResult =
+  | {
+      readonly status: "missing-meta";
+      readonly sourceFile: OriginalSourceFile;
+      readonly diagnostics: readonly Diagnostic[];
+      readonly envelope: undefined;
+    }
+  | {
+      readonly status: "scanned";
+      readonly sourceFile: OriginalSourceFile;
+      readonly diagnostics: readonly Diagnostic[];
+      readonly envelope: WorkflowEnvelope;
+    };
+
+export type WorkflowEnvelope = {
+  readonly sourceFile: OriginalSourceFile;
+  readonly metaDeclarationSpan: SourceSpan;
+  readonly metaExportKeywordSpan: SourceSpan;
+  readonly metaAssignmentOperatorSpan: SourceSpan;
+  readonly metaValue: WorkflowMetaValue;
+  readonly bodySpan: SourceSpan;
+  readonly unsupportedDeclarations: readonly UnsupportedWorkflowSyntax[];
+};
+
+export type WorkflowMetaValue =
+  | {
+      readonly kind: "object";
+      readonly span: SourceSpan;
+      readonly openBraceSpan: SourceSpan;
+      readonly closeBraceSpan: SourceSpan;
+    }
+  | {
+      readonly kind: "non-object-expression";
+      readonly expressionStartSpan: SourceSpan;
+      readonly expressionSpan: SourceSpan;
+    }
+  | {
+      readonly kind: "unterminated-object";
+      readonly openBraceSpan: SourceSpan;
+      readonly span: SourceSpan;
+    }
+  | {
+      readonly kind: "missing-value";
+      readonly span: SourceSpan;
+    };
+
+export type UnsupportedWorkflowSyntax = {
+  readonly kind: "import" | "export";
+  readonly keyword: "import" | "export";
+  readonly span: SourceSpan;
+  readonly sourceText: string;
 };
 
 /**

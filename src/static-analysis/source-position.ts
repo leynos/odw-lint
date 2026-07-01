@@ -10,6 +10,8 @@ import type { SourcePosition, SourceSpan } from "../diagnostics/types";
 import { sourceIndexes } from "./source-indexes";
 import { type OriginalSourceFile, SourceOffsetError } from "./types";
 
+const TEXT_ENCODER = new TextEncoder();
+
 /**
  * Converts one valid UTF-8 byte offset to a display position.
  *
@@ -70,6 +72,72 @@ export const spanFromOffsets = (
     start: positionAtOffset(file, startOffset),
     end: positionAtOffset(file, endOffset),
   });
+};
+
+/**
+ * Builds an original-source span from UTF-16 source-text indexes.
+ *
+ * @param file - Original source-file record created by the factory.
+ * @param startIndex - Inclusive JavaScript string index into original source.
+ * @param endIndex - Exclusive JavaScript string index into original source.
+ * @returns A source span whose positions match original UTF-8 byte offsets.
+ */
+export const spanFromTextIndexes = (
+  file: OriginalSourceFile,
+  startIndex: number,
+  endIndex: number,
+): SourceSpan => {
+  const startOffset = byteOffsetFromTextIndex(file, startIndex);
+  const endOffset = byteOffsetFromTextIndex(file, endIndex);
+
+  return spanFromOffsets(file, startOffset, endOffset);
+};
+
+/** Converts a JavaScript string index to an original-source UTF-8 byte offset. */
+const byteOffsetFromTextIndex = (file: OriginalSourceFile, index: number): number => {
+  validateTextIndex(file, index);
+
+  return TEXT_ENCODER.encode(file.sourceText.slice(0, index)).byteLength;
+};
+
+/** Rejects text indexes that cannot map cleanly onto source characters. */
+const validateTextIndex = (file: OriginalSourceFile, index: number): void => {
+  if (!isValidTextIndexBounds(file, index)) {
+    throw new SourceOffsetError(`Source text index ${index} is outside ${file.filePath}.`);
+  }
+  if (isInsideSurrogatePair(file.sourceText, index)) {
+    throw new SourceOffsetError(`Source text index ${index} splits a surrogate pair.`);
+  }
+};
+
+/** Checks whether a source-text index is in the valid half-open range. */
+const isValidTextIndexBounds = (file: OriginalSourceFile, index: number): boolean => {
+  if (!Number.isInteger(index)) {
+    return false;
+  }
+
+  return index >= 0 && index <= file.sourceText.length;
+};
+
+/** Checks whether an index lands between UTF-16 surrogate halves. */
+const isInsideSurrogatePair = (text: string, index: number): boolean => {
+  if (index <= 0 || index >= text.length) {
+    return false;
+  }
+  const previous = text.charCodeAt(index - 1);
+  const current = text.charCodeAt(index);
+
+  return isHighSurrogate(previous) && isLowSurrogate(current);
+};
+
+/** Checks whether a UTF-16 code unit is a leading surrogate. */
+const isHighSurrogate = (codeUnit: number): boolean => {
+  return codeUnit >= 0xd800 && codeUnit <= 0xdbff;
+};
+
+/** Checks whether a UTF-16 code unit is a trailing surrogate. */
+const isLowSurrogate = (codeUnit: number): boolean => {
+  return codeUnit >= 0xdc00 && codeUnit <= 0xdfff;
 };
 
 /**

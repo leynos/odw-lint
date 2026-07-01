@@ -17,6 +17,10 @@ export type {
   SourceSnippet,
   StaticAnalysisComponent,
   StaticAnalysisStage,
+  UnsupportedWorkflowSyntax,
+  WorkflowEnvelope,
+  WorkflowEnvelopeScanResult,
+  WorkflowMetaValue,
   WorkflowSource,
 } from "./types";
 export {
@@ -25,3 +29,4 @@ export {
   STATIC_ANALYSIS_COMPONENTS,
   STATIC_ANALYSIS_STAGES,
 } from "./types";
+export { scanWorkflowEnvelope } from "./workflow-envelope";

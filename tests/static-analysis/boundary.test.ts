@@ -9,6 +9,7 @@ import type {
   SourceSnippet,
   StaticAnalysisComponent,
   StaticAnalysisStage,
+  WorkflowEnvelopeScanResult,
   WorkflowSource,
 } from "odw-lint";
 import {
@@ -18,6 +19,7 @@ import {
   STATIC_ANALYSIS_BOUNDARY,
   STATIC_ANALYSIS_COMPONENTS,
   STATIC_ANALYSIS_STAGES,
+  scanWorkflowEnvelope,
   sliceSourceSpan,
   snippetForSpan,
   spanFromOffsets,
@@ -112,5 +114,19 @@ describe("static-analysis boundary exports", () => {
     } satisfies SourceSnippet;
     expect(snippet.text).toBe("");
     expect(SourceOffsetError).toBeFunction();
+  });
+
+  it("exposes the workflow envelope scanner after metadata states are complete", () => {
+    const sourceFile = createOriginalSourceFile({
+      filePath: "workflows/example.js",
+      sourceText: 'export const meta = { name: "example" };',
+    });
+    const result = scanWorkflowEnvelope(sourceFile) satisfies WorkflowEnvelopeScanResult;
+
+    expect(result.status).toBe("scanned");
+    if (result.status !== "scanned") {
+      throw new Error("Expected package entry scanner to find metadata.");
+    }
+    expect(result.envelope.metaValue.kind).toBe("object");
   });
 });

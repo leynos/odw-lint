@@ -220,15 +220,23 @@ describe("source-file helper architecture", () => {
 
   it("keeps offset lookup and span validation in source-position", () => {
     expectModuleDeclarations("src/static-analysis/source-position.ts", [
-      "isSamePosition",
+      "TEXT_ENCODER",
+      "byteOffsetFromTextIndex",
+      "isHighSurrogate",
+      "isInsideSurrogatePair",
+      "isLowSurrogate",
       "isObjectRecord",
+      "isSamePosition",
       "isSourcePositionLike",
       "isSourceSpanLike",
+      "isValidTextIndexBounds",
       "positionAtOffset",
       "sourceSpan",
       "spanFromOffsets",
+      "spanFromTextIndexes",
       "validateOffsetBounds",
       "validateSourceSpan",
+      "validateTextIndex",
     ]);
 
     expect(topLevelDeclarationNames("src/static-analysis/source-file.ts")).not.toContain(
@@ -240,6 +248,12 @@ describe("source-file helper architecture", () => {
     expect(topLevelDeclarationNames("src/static-analysis/source-file.ts")).not.toContain(
       "validateSourceSpan",
     );
+
+    const envelopeSource = readFileSync("src/static-analysis/workflow-envelope.ts", "utf8");
+    expect(envelopeSource).toContain(
+      'import { spanFromOffsets, spanFromTextIndexes } from "./source-position";',
+    );
+    expect(envelopeSource).not.toContain('from "./source-file"');
   });
 
   it("keeps slicing and snippets in source-snippet", () => {

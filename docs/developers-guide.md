@@ -40,12 +40,35 @@ parser, mapper, and reporter code may consume through `odw-lint`. It must stay
 free of executable ODW runtime imports and should expose package-level
 contracts only through explicit named re-exports.
 
-The scaffold is deliberately passive. It exports the boundary identifier,
-workflow source shape, component labels, and stage labels, but it does not
-parse workflow bodies or emit diagnostics. Direct SWC calls belong only in the
-future parser adapter from roadmap task 2.2.1. Task 1.1.1 also deliberately
-does not add `@swc/core`, `parseWithSwc`, a public parser failure contract, or
-the forbidden-import architecture test.
+The first envelope scanner lives in
+`src/static-analysis/workflow-envelope.ts`. It extracts `export const meta`
+from masked source, records metadata value state, reports missing metadata and
+unsupported top-level imports or exports, and exposes source spans in the
+original source file. Direct SWC calls belong only in the future parser adapter
+from roadmap task 2.2.1.
+
+### Workflow envelope scanner
+
+`scanWorkflowEnvelope` accepts only an `OriginalSourceFile` created by
+`createOriginalSourceFile`. Do not pass structurally reconstructed source
+objects, because envelope spans depend on the private source indexes created by
+the factory.
+
+Production scanner code must call `maskNonCodeSource` before looking for
+metadata, import/export tokens, braces, comments, strings, templates, or
+regex-sensitive syntax. The scanner starts from masked-source UTF-16 string
+indexes, then converts them back to original-source UTF-8 byte offsets before
+calling `spanFromOffsets`.
+
+The scanner records whether metadata is an object literal, a non-object
+expression, an unterminated object, or a missing value. Metadata field
+diagnostics such as `odw/meta-name`, `odw/meta-description`, and
+`odw/meta-statically-unprovable` are deferred to roadmap task 2.1.3.
+
+Production modules under `src/static-analysis/` use relative internal imports
+for scanner collaborators. Public-consumer tests may import
+`scanWorkflowEnvelope` and its envelope types from `"odw-lint"` to verify the
+package entry.
 
 When extending this area, keep the roadmap sequencing intact: task 2.1.4 owns
 the forbidden-import architecture test for production code, and task 2.2.1 owns

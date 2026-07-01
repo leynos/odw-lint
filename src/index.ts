@@ -60,8 +60,13 @@ export {
   STATIC_ANALYSIS_STAGES,
   type StaticAnalysisComponent,
   type StaticAnalysisStage,
+  scanWorkflowEnvelope,
   sliceSourceSpan,
   snippetForSpan,
   spanFromOffsets,
+  type UnsupportedWorkflowSyntax,
+  type WorkflowEnvelope,
+  type WorkflowEnvelopeScanResult,
+  type WorkflowMetaValue,
   type WorkflowSource,
 } from "./static-analysis";

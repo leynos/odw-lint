@@ -298,12 +298,17 @@ statically. It unlocks metadata rules and body parsing. See
   - Completion note: whole template literals are inert for envelope masking,
     and the committed test-only probe consumes the masking fixture manifest
     without adding the production envelope scanner.
-- [ ] 2.1.2. Implement static `export const meta` extraction and unsupported
+- [x] 2.1.2. Implement static `export const meta` extraction and unsupported
   import/export detection.
   - Requires 2.1.1 and 2.1.6.
   - See [technical-design.md](technical-design.md) §§6.2 and 9.1.
   - Success: valid ODW examples pass envelope scanning and invalid import or
     export fixtures fail with exact spans.
+  - Completion note: `scanWorkflowEnvelope` now extracts the real masked
+    metadata declaration without executing source, records metadata value
+    state, preserves Unicode-safe UTF-8 spans, and emits exact
+    `odw/no-import-export` diagnostics for unsupported fixtures. Metadata
+    field classification remains deferred to 2.1.3.
 - [ ] 2.1.3. Implement metadata classification for runtime-invalid,
   statically unprovable, and Claude-incompatible cases.
   - Requires 2.1.2.
