@@ -43,7 +43,7 @@ const isSiblingOdwExecutablePath = (moduleSpecifier: string): boolean => {
  * @returns `true` when production code must not import the specifier.
  */
 export const isForbiddenOdwImport = (moduleSpecifier: string): boolean => {
-  const normalized = moduleSpecifier.replaceAll("\\", "/").replace(/\.(?:ts|js)$/u, "");
+  const normalized = moduleSpecifier.replaceAll("\\", "/").replace(/\.(?:cts|mts|ts|js)$/u, "");
 
   if (normalized === "odw") {
     return true;

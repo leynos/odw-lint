@@ -6,10 +6,12 @@
  */
 
 import ts from "typescript";
+import { scriptKindForSourcePath } from "./source-parsing";
 
 export type ImportLikeEdge = {
   readonly filePath: string;
   readonly moduleSpecifier: string;
+  readonly isTypeOnly: boolean;
 };
 
 export type ComputedDynamicImport = {
@@ -111,12 +113,13 @@ const pushImportLikeEdge = (
   edges: ImportLikeEdge[],
   filePath: string,
   moduleSpecifier: string | undefined,
+  isTypeOnly = false,
 ): void => {
   if (moduleSpecifier === undefined) {
     return;
   }
 
-  edges.push({ filePath, moduleSpecifier });
+  edges.push({ filePath, moduleSpecifier, isTypeOnly });
 };
 
 /** Classifies import and require calls into literal and computed facts. */
@@ -140,7 +143,11 @@ const collectCallExpressionFacts = (
       });
       return;
     }
-    facts.importLikeEdges.push({ filePath: sourceFile.fileName, moduleSpecifier });
+    facts.importLikeEdges.push({
+      filePath: sourceFile.fileName,
+      moduleSpecifier,
+      isTypeOnly: false,
+    });
     return;
   }
 
@@ -152,7 +159,11 @@ const collectCallExpressionFacts = (
       });
       return;
     }
-    facts.importLikeEdges.push({ filePath: sourceFile.fileName, moduleSpecifier });
+    facts.importLikeEdges.push({
+      filePath: sourceFile.fileName,
+      moduleSpecifier,
+      isTypeOnly: false,
+    });
   }
 };
 
@@ -172,7 +183,7 @@ export const importArchitectureFactsFromSource = (
     sourceText,
     ts.ScriptTarget.Latest,
     true,
-    ts.ScriptKind.TS,
+    scriptKindForSourcePath(filePath),
   );
   const importLikeEdges: ImportLikeEdge[] = [];
   const computedDynamicImports: ComputedDynamicImport[] = [];
@@ -180,11 +191,21 @@ export const importArchitectureFactsFromSource = (
 
   const visit = (node: ts.Node): void => {
     if (ts.isImportDeclaration(node)) {
-      pushImportLikeEdge(importLikeEdges, filePath, moduleSpecifierText(node.moduleSpecifier));
+      pushImportLikeEdge(
+        importLikeEdges,
+        filePath,
+        moduleSpecifierText(node.moduleSpecifier),
+        node.importClause?.isTypeOnly === true,
+      );
     }
 
     if (ts.isExportDeclaration(node)) {
-      pushImportLikeEdge(importLikeEdges, filePath, moduleSpecifierText(node.moduleSpecifier));
+      pushImportLikeEdge(
+        importLikeEdges,
+        filePath,
+        moduleSpecifierText(node.moduleSpecifier),
+        node.isTypeOnly,
+      );
     }
 
     if (ts.isImportEqualsDeclaration(node)) {
@@ -196,7 +217,7 @@ export const importArchitectureFactsFromSource = (
     }
 
     if (ts.isImportTypeNode(node)) {
-      pushImportLikeEdge(importLikeEdges, filePath, importTypeSpecifierText(node));
+      pushImportLikeEdge(importLikeEdges, filePath, importTypeSpecifierText(node), true);
     }
 
     if (ts.isCallExpression(node)) {

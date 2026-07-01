@@ -161,7 +161,10 @@ The Bun suite includes a file-size guard in
 `tests/`, with a limit of 400 physical source lines per file. Raw JavaScript
 workflow fixtures, snapshots, documentation, generated output, ignored paths
 and untracked scratch files are intentionally out of scope for roadmap task
-1.5.1.
+1.5.1. Untracked scratch files stay outside the guard because they are not
+reviewable commit content. Non-TypeScript code-file enforcement is also
+deferred; add a separate roadmap task before extending the guard to JavaScript
+fixtures, shell scripts, generated examples, or other file families.
 
 The Bun suite includes a package export-surface guard in
 `tests/diagnostics/public-api-surface.test.ts`. Intentional public API changes

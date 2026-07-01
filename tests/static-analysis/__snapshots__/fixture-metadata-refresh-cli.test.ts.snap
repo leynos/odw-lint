@@ -1,0 +1,90 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`fixture metadata refresh CLI prints a parseable dry-run report from the CLI 1`] = `
+{
+  "counts": {
+    "hostileMetadata": 2,
+    "invalidDiagnostics": 14,
+    "invalidWorkflows": 14,
+    "masking": 9,
+    "odwExamples": 9,
+    "totalFixtures": 32,
+  },
+  "extraUpstreamExamples": [],
+  "failures": [],
+  "managedPaths": [
+    "tests/static-analysis/fixtures/invalid-workflows/manifests/hostile-metadata.ts",
+    "tests/static-analysis/fixtures/invalid-workflows/manifests/malformed-metadata.ts",
+    "tests/static-analysis/fixtures/invalid-workflows/manifests/missing-metadata.ts",
+    "tests/static-analysis/fixtures/invalid-workflows/manifests/syntax-error.ts",
+    "tests/static-analysis/fixtures/invalid-workflows/manifests/unsupported-import-export.ts",
+    "tests/static-analysis/fixtures/masking.ts",
+    "tests/static-analysis/fixtures/odw-examples.ts",
+    "tests/static-analysis/fixtures/odw-examples/adversarial-verify.js",
+    "tests/static-analysis/fixtures/odw-examples/agent-daily-digest.js",
+    "tests/static-analysis/fixtures/odw-examples/codex-claude-loop.js",
+    "tests/static-analysis/fixtures/odw-examples/deep-research.js",
+    "tests/static-analysis/fixtures/odw-examples/fan-out-reduce.js",
+    "tests/static-analysis/fixtures/odw-examples/generate-and-filter.js",
+    "tests/static-analysis/fixtures/odw-examples/loop-until-dry.js",
+    "tests/static-analysis/fixtures/odw-examples/routing.js",
+    "tests/static-analysis/fixtures/odw-examples/tournament.js",
+  ],
+  "mode": "dry-run",
+  "odwReferenceCheckout": "<odwReferenceCheckout>",
+  "repositoryRoot": "<repositoryRoot>",
+  "unchangedPaths": [
+    "tests/static-analysis/fixtures/invalid-workflows/manifests/hostile-metadata.ts",
+    "tests/static-analysis/fixtures/invalid-workflows/manifests/malformed-metadata.ts",
+    "tests/static-analysis/fixtures/invalid-workflows/manifests/missing-metadata.ts",
+    "tests/static-analysis/fixtures/invalid-workflows/manifests/syntax-error.ts",
+    "tests/static-analysis/fixtures/invalid-workflows/manifests/unsupported-import-export.ts",
+    "tests/static-analysis/fixtures/masking.ts",
+    "tests/static-analysis/fixtures/odw-examples.ts",
+  ],
+  "wouldWritePaths": [
+    "tests/static-analysis/fixtures/odw-examples/adversarial-verify.js",
+    "tests/static-analysis/fixtures/odw-examples/agent-daily-digest.js",
+    "tests/static-analysis/fixtures/odw-examples/codex-claude-loop.js",
+    "tests/static-analysis/fixtures/odw-examples/deep-research.js",
+    "tests/static-analysis/fixtures/odw-examples/fan-out-reduce.js",
+    "tests/static-analysis/fixtures/odw-examples/generate-and-filter.js",
+    "tests/static-analysis/fixtures/odw-examples/loop-until-dry.js",
+    "tests/static-analysis/fixtures/odw-examples/routing.js",
+    "tests/static-analysis/fixtures/odw-examples/tournament.js",
+  ],
+  "writtenPaths": [],
+}
+`;
+
+exports[`fixture metadata refresh CLI prints actionable CLI failures to stderr 1`] = `
+{
+  "counts": {
+    "hostileMetadata": 2,
+    "invalidDiagnostics": 14,
+    "invalidWorkflows": 14,
+    "masking": 9,
+    "odwExamples": 9,
+    "totalFixtures": 32,
+  },
+  "extraUpstreamExamples": [],
+  "failures": [
+    {
+      "anchor": null,
+      "code": "missing-upstream-example",
+      "message": "Missing allow-listed upstream ODW example routing.js under ODW_REFERENCE_CHECKOUT.",
+      "occurrenceCount": null,
+      "path": "<odwReferenceCheckout>/examples/routing.js",
+      "remediation": "Restore the upstream example or update the allow-list in a separate roadmap task.",
+      "rule": null,
+    },
+  ],
+  "managedPaths": [],
+  "mode": "dry-run",
+  "odwReferenceCheckout": "<odwReferenceCheckout>",
+  "repositoryRoot": "<repositoryRoot>",
+  "unchangedPaths": [],
+  "wouldWritePaths": [],
+  "writtenPaths": [],
+}
+`;

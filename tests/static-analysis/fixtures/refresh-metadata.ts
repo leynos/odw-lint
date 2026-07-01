@@ -107,7 +107,7 @@ export const defaultOdwReferenceCheckout = (repositoryRoot: URL): URL => {
  *
  * @param repositoryRoot - Repository root directory URL.
  * @param overridePath - Optional filesystem path from `ODW_REFERENCE_CHECKOUT`.
- * @returns Directory or path URL for the effective ODW reference checkout.
+ * @returns Directory URL for the effective ODW reference checkout.
  */
 export const resolveOdwReferenceCheckout = (
   repositoryRoot: URL,
@@ -118,7 +118,7 @@ export const resolveOdwReferenceCheckout = (
   }
 
   const normalizedRootPath = fileURLToPath(normalizeDirectoryUrl(repositoryRoot));
-  return pathToFileURL(resolve(normalizedRootPath, overridePath));
+  return normalizeDirectoryUrl(pathToFileURL(resolve(normalizedRootPath, overridePath)));
 };
 
 /**

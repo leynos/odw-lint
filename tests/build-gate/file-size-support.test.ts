@@ -114,6 +114,16 @@ describe("file-size guard support", () => {
     ).toThrow(/git ls-files -z -- src tests.*status 128.*fatal: not a git repository/s);
   });
 
+  it("converts non-zero Git listings with nullable output into project-owned errors", () => {
+    expect(() =>
+      trackedSourceAndTestTypeScriptFiles(() => ({
+        status: null,
+        stdout: null,
+        stderr: null,
+      })),
+    ).toThrow(/git ls-files -z -- src tests.*status null/s);
+  });
+
   it("converts failed Git spawns into project-owned errors", () => {
     expect(() =>
       trackedSourceAndTestTypeScriptFiles(() => ({

@@ -45,10 +45,11 @@ export const captureRefreshFailure = (
  * @returns Report with stable placeholder paths.
  */
 export const normalizeReportForAssertion = (report: FixtureRefreshReport): FixtureRefreshReport => {
+  const stableRoot = (path: string): string => path.replace(/\/+$/u, "");
   const normalizePathText = (value: string): string =>
     value
-      .replaceAll(report.repositoryRoot, "<repositoryRoot>")
-      .replaceAll(report.odwReferenceCheckout, "<odwReferenceCheckout>");
+      .replaceAll(stableRoot(report.repositoryRoot), "<repositoryRoot>")
+      .replaceAll(stableRoot(report.odwReferenceCheckout), "<odwReferenceCheckout>");
   const normalizePaths = (paths: readonly string[]): readonly string[] =>
     paths.map((path) => normalizePathText(path));
 

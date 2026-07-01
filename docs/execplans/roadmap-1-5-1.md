@@ -343,6 +343,20 @@ limit, and records the deliberate exclusions for raw JavaScript workflow
 fixtures, snapshots, docs and untracked files. `docs/roadmap.md` marks task
 1.5.1 complete.
 
+## Addenda
+
+- [x] 1.5.1.1. Reconcile file-size guard scope and Git runner shapes.
+  - Addendum pass 2026-06-30T15:31Z aligned `GitFileListingResult` with Bun's
+    nullable spawn result fields, added nullable-output coverage for injected
+    Git runner failures, and clarified that tracked TypeScript enforcement
+    excludes untracked scratch files while non-TypeScript code-file policy is
+    deferred to a separate roadmap task.
+- [x] 1.5.1.2. Split near-limit architecture and fixture refresh suites.
+  - Addendum pass 2026-06-30T15:31Z split diagnostic architecture coverage
+    into module-inventory, package-entry, and import-policy suites, and split
+    fixture metadata refresh coverage into workspace, derivation, and CLI
+    suites while preserving the existing dry-run snapshot contract.
+
 ## Context and orientation
 
 The current repository is a private Bun and TypeScript package. The Makefile is
@@ -468,8 +482,8 @@ export type FileSizeViolation = {
 
 export type GitFileListingResult = {
   readonly status: number | null;
-  readonly stdout: string;
-  readonly stderr: string;
+  readonly stdout: string | null;
+  readonly stderr: string | null;
   readonly error?: Error;
 };
 
@@ -892,8 +906,8 @@ export type FileSizeViolation = {
 
 export type GitFileListingResult = {
   readonly status: number | null;
-  readonly stdout: string;
-  readonly stderr: string;
+  readonly stdout: string | null;
+  readonly stderr: string | null;
   readonly error?: Error;
 };
 

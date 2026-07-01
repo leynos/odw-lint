@@ -9,6 +9,24 @@ import { readFileSync } from "node:fs";
 import ts from "typescript";
 
 /**
+ * Selects the TypeScript parser mode from the repository path extension.
+ *
+ * @param relativePath - Repository-relative source path to classify.
+ * @returns TypeScript parser script kind for the path.
+ */
+export const scriptKindForSourcePath = (relativePath: string): ts.ScriptKind => {
+  if (relativePath.endsWith(".tsx")) {
+    return ts.ScriptKind.TSX;
+  }
+
+  if (relativePath.endsWith(".jsx")) {
+    return ts.ScriptKind.JSX;
+  }
+
+  return ts.ScriptKind.TS;
+};
+
+/**
  * Parses a repository-relative TypeScript file.
  *
  * @param relativePath - Repository-relative path to the TypeScript source.
@@ -17,7 +35,13 @@ import ts from "typescript";
 export const parseSource = (relativePath: string): ts.SourceFile => {
   const source = readFileSync(relativePath, "utf8");
 
-  return ts.createSourceFile(relativePath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  return ts.createSourceFile(
+    relativePath,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKindForSourcePath(relativePath),
+  );
 };
 
 /** Extracts an identifier name from declaration nodes that have one. */

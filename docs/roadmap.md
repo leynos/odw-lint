@@ -228,13 +228,13 @@ depending on manual post-commit audits.
     repository gate.
   - Success: `make all` or an equivalent commit gate fails when source or test
     TypeScript files exceed the configured project limit.
-  - [ ] 1.5.1.1. Reconcile file-size guard scope and Git runner shapes.
+  - [x] 1.5.1.1. Reconcile file-size guard scope and Git runner shapes.
     - Addendum (from review:1.5.1; low). Align the injectable Git runner result
       type with Bun's nullable spawn output and clarify the documented
       difference between tracked TypeScript enforcement, ignored untracked
       scratch paths, and deferred non-TypeScript code-file policy. Lightweight
       addendum pass.
-  - [ ] 1.5.1.2. Split near-limit architecture and fixture refresh suites.
+  - [x] 1.5.1.2. Split near-limit architecture and fixture refresh suites.
     - Addendum (from audit:1.5.1; medium). Split broad architecture and
       fixture metadata refresh coverage by contract before either suite reaches
       the file-size guard during unrelated parser or fixture work. Lightweight

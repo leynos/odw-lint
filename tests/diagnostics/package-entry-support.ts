@@ -97,6 +97,24 @@ export const packageManifestExportKeys = (manifest: unknown): readonly string[] 
 };
 
 /**
+ * Reads one validated package export target by subpath.
+ *
+ * @param manifest - Parsed package manifest value.
+ * @param exportKey - Package export key to read.
+ * @returns String target for the requested export key.
+ * @throws Error when the requested export target is not a string.
+ */
+export const packageExportTarget = (manifest: unknown, exportKey: string): string => {
+  const target = packageExportsRecord(manifest)[exportKey];
+
+  if (typeof target !== "string") {
+    throw new Error(`package.json exports["${exportKey}"] must be a string target`);
+  }
+
+  return target;
+};
+
+/**
  * Reads validated root export targets keyed by package condition.
  *
  * @param manifest - Parsed package manifest value.

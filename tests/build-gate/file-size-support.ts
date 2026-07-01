@@ -15,8 +15,8 @@ export type FileSizeViolation = {
 
 export type GitFileListingResult = {
   readonly status: number | null;
-  readonly stdout: string;
-  readonly stderr: string;
+  readonly stdout: string | null;
+  readonly stderr: string | null;
   readonly error?: Error;
 };
 
@@ -116,7 +116,7 @@ export function trackedSourceAndTestTypeScriptFiles(
 
   assertGitFileListingSucceeded(result);
 
-  return parseNulSeparatedPaths(result.stdout).filter(isSourceOrTestTypeScriptPath);
+  return parseNulSeparatedPaths(result.stdout ?? "").filter(isSourceOrTestTypeScriptPath);
 }
 
 /** Run the tracked-file query against the local Git index. */
@@ -149,7 +149,7 @@ function assertGitFileListingSucceeded(result: GitFileListingResult): void {
 
   if (result.status !== 0) {
     throw new Error(
-      `${gitFileListingCommand} failed with status ${String(result.status)}: ${result.stderr}`,
+      `${gitFileListingCommand} failed with status ${String(result.status)}: ${result.stderr ?? ""}`,
     );
   }
 }
