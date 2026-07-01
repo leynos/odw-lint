@@ -349,7 +349,7 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:2.1.6; low). Link `docs/rules/index.md` from the
       first user-facing or interim developer-guide navigation surface.
       Lightweight addendum pass.
-- [ ] 2.1.7. Add rule-catalogue parity checks for fixture diagnostics.
+- [x] 2.1.7. Add rule-catalogue parity checks for fixture diagnostics.
   - Requires 2.1.6 and step 1.3.
   - Check fixture manifest expectations against the typed rule catalogue so
     rule identifiers, default severities, messages, and rule documentation do

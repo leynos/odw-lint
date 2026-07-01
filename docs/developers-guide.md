@@ -174,9 +174,9 @@ removals from `src/index.ts` fail the default repository gate.
 
 The rule catalogue is the production source of truth for rule identifiers,
 categories, default severities, configuration keys, documentation slugs, and
-release status. The diagnostic JSON Schema derives its `rule` enum from
-`RULE_IDS`, and rule documentation pages under `docs/rules/` must begin with
-this fixed metadata table before any prose:
+diagnostic message contracts. The diagnostic JSON Schema derives its `rule`
+enum from `RULE_IDS`, and rule documentation pages under `docs/rules/` must
+begin with this fixed metadata table before any prose:
 
 ```markdown
 # `odw/example-rule`
@@ -195,8 +195,8 @@ entry has a matching page, that metadata values match the catalogue, and that
 `docs/rules/index.md` links to every rule page.
 `tests/diagnostics/schema.test.ts` checks that the JSON Schema enum uses the
 same `RULE_IDS` array. Update the catalogue, schema snapshot, rule page, index,
-and parity test expectations in the same change when adding, renaming, or
-releasing a rule.
+fixture manifest expectations, and parity test expectations in the same change
+when adding, renaming, releasing, or changing the reviewed messages for a rule.
 
 Behavioural tests should use `@aboviq/bun-test-cucumber` with Gherkin feature
 files. Snapshot tests should use Bun's built-in snapshot testing support.
@@ -241,6 +241,11 @@ ordinary JavaScript. Keep `tests/static-analysis/fixtures/invalid-workflows.ts`
 in sync with every raw fixture by updating the family, path, SHA-256 hash,
 expected status, diagnostic rule, severity, message, UTF-8 source span, and
 reviewer-facing `spanText`.
+Fixture diagnostic expectations are checked against the rule catalogue for
+rule identifier, default severity, reviewed message, and documentation path
+parity. When an invalid fixture needs a different reviewer-facing `message`,
+extend the matching catalogue entry in the same change rather than treating the
+manifest as a separate source of truth.
 For invalid diagnostic spans, choose a `spanText` anchor that appears exactly
 once in the raw fixture source. The refresh script derives UTF-8 offsets,
 display line and column positions from that anchor. If the anchor is missing or

@@ -19,7 +19,7 @@ describe("diagnostics", () => {
       file: "examples/fan-out-reduce.js",
       rule: makeRuleId("odw/meta-required"),
       severity: "error",
-      message: "workflow must export const meta",
+      message: "Workflow source must export literal metadata.",
       span: {
         start: { offset: 0, line: 1, column: 1 },
         end: { offset: 0, line: 1, column: 1 },
@@ -32,7 +32,7 @@ describe("diagnostics", () => {
       file: "examples/fan-out-reduce.js",
       rule: "odw/meta-required",
       severity: "error",
-      message: "workflow must export const meta",
+      message: "Workflow source must export literal metadata.",
     });
   });
 

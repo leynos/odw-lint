@@ -75,9 +75,10 @@ where those materials live.
 
 `src/diagnostics/` owns diagnostic data and presentation contracts. The rule
 catalogue is the source of truth for rule identifiers, categories, default
-severities, configuration keys, documentation slugs and release status. Any
-catalogue change must stay aligned with JSON Schema generation, public exports,
-rule documentation and parity tests.
+severities, configuration keys, documentation slugs, diagnostic message
+contracts and release status. Any catalogue change must stay aligned with JSON
+Schema generation, public exports, fixture expectations, rule documentation and
+parity tests.
 
 `src/static-analysis/` owns source modelling and static source inspection. It
 may build indexes, spans and snippets from workflow source, but production code
@@ -110,6 +111,11 @@ contracts. Fixture subdirectories have different ownership rules:
   refresh script behind `make refresh-fixtures`. It refreshes copied ODW example
   snapshots and static-analysis fixture manifests without executing raw workflow
   fixture source.
+
+Invalid fixture diagnostic expectations are checked against the rule catalogue
+for rule identifier, default severity, reviewed message contract and derived
+rule documentation path. Update the catalogue and fixture manifest together
+when a fixture's expected diagnostic message intentionally changes.
 
 ## Tooling boundaries
 

@@ -1,3 +1,3 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`public diagnostic consumer keeps public diagnostic values importable from the package entry 1`] = `"workflow.js:1:1 error odw/meta-required workflow must export const meta"`;
+exports[`public diagnostic consumer keeps public diagnostic values importable from the package entry 1`] = `"workflow.js:1:1 error odw/meta-required Workflow source must export literal metadata."`;

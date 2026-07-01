@@ -289,7 +289,7 @@ JSON output is a versioned object, not a bare diagnostics array:
       "file": "examples/fan-out-reduce.js",
       "rule": "odw/meta-required",
       "severity": "error",
-      "message": "workflow must export const meta",
+      "message": "Workflow source must export literal metadata.",
       "span": {
         "start": { "offset": 0, "line": 1, "column": 1 },
         "end": { "offset": 0, "line": 1, "column": 1 }
@@ -309,6 +309,9 @@ The diagnostic contract has these invariants:
 - `rule` is constrained to the catalogue-derived `RULE_IDS` enum and is stable
   once released.
 - `severity` is one of `error`, `warning`, `info`, or `hint`.
+- `message` must match one of the exact message strings recorded for the rule
+  in the catalogue, unless the same implementation change extends that
+  catalogue contract deliberately.
 - `span` always refers to original source, not normalized source.
 - `offset` is a zero-based UTF-8 byte offset into the original file.
 - `line` and `column` are one-based display positions. `column` is counted in
@@ -331,11 +334,12 @@ schema-version review and compatibility handling.
 
 `src/diagnostics/rule-catalogue.ts` is the implementation source of truth for
 rule identifiers, categories, default severities, configuration keys,
-documentation slugs, and release status. This section records the taxonomy
-rationale and reviewed rule intent; tests keep the catalogue aligned with the
-public package entry, diagnostic schema enum, and rule documentation pages.
-Rule documentation lives under `docs/rules/`, with one page per catalogue
-`docsSlug` and an index that links every rule.
+documentation slugs, diagnostic message contracts, and release status. This
+section records the taxonomy rationale and reviewed rule intent; tests keep the
+catalogue aligned with the public package entry, diagnostic schema enum,
+fixture expectations, and rule documentation pages. Rule documentation lives
+under `docs/rules/`, with one page per catalogue `docsSlug` and an index that
+links every rule.
 
 ### 9.1. Dialect errors
 

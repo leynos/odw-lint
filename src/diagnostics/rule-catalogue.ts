@@ -2,9 +2,9 @@
  * @file Typed catalogue of ODW lint rule metadata.
  *
  * This module is the production source of truth for rule identifiers,
- * categories, default severities, configuration keys, documentation slugs, and
- * release status. Keep it inert: importing the catalogue must never evaluate
- * workflow source or ODW runtime code.
+ * categories, default severities, configuration keys, documentation slugs,
+ * diagnostic messages, and release status. Keep it inert: importing the
+ * catalogue must never evaluate workflow source or ODW runtime code.
  */
 
 import { makeRuleId, type RuleId } from "./rule-id";
@@ -48,17 +48,29 @@ export type RuleDefinition = {
   readonly configKey: RuleId;
   /** Markdown page slug under `docs/rules/`. */
   readonly docsSlug: string;
+  /** Exact diagnostic messages this rule may emit in reviewed fixtures. */
+  readonly messages: readonly string[];
   /** Whether current checker code may emit this rule. */
   readonly releaseStatus: RuleReleaseStatus;
 };
 
+/** Trusted literal metadata for one rule definition. */
+type RuleDefinitionInput = {
+  readonly id: string;
+  readonly category: RuleCategory;
+  readonly defaultSeverity: DiagnosticSeverity;
+  readonly releaseStatus: RuleReleaseStatus;
+  readonly messages?: readonly string[];
+};
+
 /** Builds one rule definition from trusted literal metadata. */
-const ruleDefinition = (
-  id: string,
-  category: RuleCategory,
-  defaultSeverity: DiagnosticSeverity,
-  releaseStatus: RuleReleaseStatus,
-): RuleDefinition => {
+const ruleDefinition = ({
+  id,
+  category,
+  defaultSeverity,
+  releaseStatus,
+  messages = [],
+}: RuleDefinitionInput): RuleDefinition => {
   const ruleId = makeRuleId(id);
 
   return Object.freeze({
@@ -67,6 +79,7 @@ const ruleDefinition = (
     defaultSeverity,
     configKey: ruleId,
     docsSlug: id.slice("odw/".length),
+    messages: Object.freeze([...messages]),
     releaseStatus,
   });
 };
@@ -75,23 +88,121 @@ const ruleDefinition = (
  * Production rule metadata in the reviewed taxonomy order.
  */
 export const RULE_CATALOGUE = Object.freeze([
-  ruleDefinition("odw/meta-required", "dialect", "error", "released"),
-  ruleDefinition("odw/meta-object", "dialect", "error", "released"),
-  ruleDefinition("odw/meta-statically-unprovable", "dialect", "warning", "released"),
-  ruleDefinition("odw/meta-name", "dialect", "error", "released"),
-  ruleDefinition("odw/meta-description", "dialect", "error", "released"),
-  ruleDefinition("odw/no-import-export", "dialect", "error", "released"),
-  ruleDefinition("odw/body-syntax", "dialect", "error", "released"),
-  ruleDefinition("odw/claude-pure-meta", "claude-compatibility", "warning", "released"),
-  ruleDefinition("odw/no-date-now", "claude-compatibility", "warning", "released"),
-  ruleDefinition("odw/no-math-random", "claude-compatibility", "warning", "released"),
-  ruleDefinition("odw/no-argless-new-date", "claude-compatibility", "warning", "released"),
-  ruleDefinition("odw/no-odw-only-validate", "claude-compatibility", "info", "released"),
-  ruleDefinition("odw/bounded-loop", "orchestration-risk", "warning", "planned"),
-  ruleDefinition("odw/bounded-fanout", "orchestration-risk", "warning", "planned"),
-  ruleDefinition("odw/no-promise-race", "orchestration-risk", "warning", "planned"),
-  ruleDefinition("odw/schema-for-structured-agent", "orchestration-risk", "info", "planned"),
-  ruleDefinition("odw/worktree-isolation-note", "orchestration-risk", "info", "planned"),
+  ruleDefinition({
+    id: "odw/meta-required",
+    category: "dialect",
+    defaultSeverity: "error",
+    releaseStatus: "released",
+    messages: ["Workflow source must export literal metadata."],
+  }),
+  ruleDefinition({
+    id: "odw/meta-object",
+    category: "dialect",
+    defaultSeverity: "error",
+    releaseStatus: "released",
+    messages: [
+      "Workflow metadata must be an object literal.",
+      "Workflow metadata object literal must be complete.",
+    ],
+  }),
+  ruleDefinition({
+    id: "odw/meta-statically-unprovable",
+    category: "dialect",
+    defaultSeverity: "warning",
+    releaseStatus: "released",
+    messages: ["Workflow metadata must remain statically provable without evaluation."],
+  }),
+  ruleDefinition({
+    id: "odw/meta-name",
+    category: "dialect",
+    defaultSeverity: "error",
+    releaseStatus: "released",
+    messages: ["Workflow metadata must include a non-empty name string."],
+  }),
+  ruleDefinition({
+    id: "odw/meta-description",
+    category: "dialect",
+    defaultSeverity: "error",
+    releaseStatus: "released",
+    messages: [
+      "Workflow metadata must include a non-empty description string.",
+      "Workflow metadata description must be a string.",
+    ],
+  }),
+  ruleDefinition({
+    id: "odw/no-import-export",
+    category: "dialect",
+    defaultSeverity: "error",
+    releaseStatus: "released",
+    messages: ["Workflow body must not add top-level imports or exports."],
+  }),
+  ruleDefinition({
+    id: "odw/body-syntax",
+    category: "dialect",
+    defaultSeverity: "error",
+    releaseStatus: "released",
+    messages: ["Workflow body must be syntactically complete after ODW normalization."],
+  }),
+  ruleDefinition({
+    id: "odw/claude-pure-meta",
+    category: "claude-compatibility",
+    defaultSeverity: "warning",
+    releaseStatus: "released",
+  }),
+  ruleDefinition({
+    id: "odw/no-date-now",
+    category: "claude-compatibility",
+    defaultSeverity: "warning",
+    releaseStatus: "released",
+  }),
+  ruleDefinition({
+    id: "odw/no-math-random",
+    category: "claude-compatibility",
+    defaultSeverity: "warning",
+    releaseStatus: "released",
+  }),
+  ruleDefinition({
+    id: "odw/no-argless-new-date",
+    category: "claude-compatibility",
+    defaultSeverity: "warning",
+    releaseStatus: "released",
+  }),
+  ruleDefinition({
+    id: "odw/no-odw-only-validate",
+    category: "claude-compatibility",
+    defaultSeverity: "info",
+    releaseStatus: "released",
+  }),
+  ruleDefinition({
+    id: "odw/bounded-loop",
+    category: "orchestration-risk",
+    defaultSeverity: "warning",
+    releaseStatus: "planned",
+  }),
+  ruleDefinition({
+    id: "odw/bounded-fanout",
+    category: "orchestration-risk",
+    defaultSeverity: "warning",
+    releaseStatus: "planned",
+  }),
+  ruleDefinition({
+    id: "odw/no-promise-race",
+    category: "orchestration-risk",
+    defaultSeverity: "warning",
+    releaseStatus: "planned",
+  }),
+  ruleDefinition({
+    id: "odw/schema-for-structured-agent",
+    category: "orchestration-risk",
+    defaultSeverity: "info",
+    releaseStatus: "planned",
+  }),
+  ruleDefinition({
+    id: "odw/worktree-isolation-note",
+    category: "orchestration-risk",
+    defaultSeverity: "info",
+    releaseStatus: "planned",
+  }),
 ] as const satisfies readonly RuleDefinition[]);
 
 /**

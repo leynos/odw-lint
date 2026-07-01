@@ -7,6 +7,7 @@ import { Buffer } from "node:buffer";
 import { existsSync } from "node:fs";
 import { TextDecoder } from "node:util";
 import type { SourceSpan, WorkflowSource } from "odw-lint";
+import { RULE_CATALOGUE, type RuleDefinition, ruleDocsPath } from "odw-lint";
 import {
   copiedFixtureFileNames,
   fixtureSourceUrl,
@@ -14,6 +15,10 @@ import {
   sha256,
 } from "./fixtures/corpus-support";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
+import type {
+  InvalidWorkflowFixtureDiagnostic,
+  InvalidWorkflowFixtureSnapshot,
+} from "./fixtures/invalid-workflows/manifest-types";
 
 const FIXTURE_DIRECTORY = new URL("./fixtures/invalid-workflows/", import.meta.url);
 const MANIFEST_FIXTURE_ROOT = "tests/static-analysis/fixtures/invalid-workflows/";
@@ -40,22 +45,6 @@ const EXPECTED_FILE_NAMES = [
   "syntax-error/body-unclosed-block.js",
   "syntax-error/body-unclosed-call.js",
 ] as const;
-const EXPECTED_RULES = [
-  "odw/body-syntax",
-  "odw/body-syntax",
-  "odw/meta-description",
-  "odw/meta-description",
-  "odw/meta-name",
-  "odw/meta-name",
-  "odw/meta-object",
-  "odw/meta-object",
-  "odw/meta-required",
-  "odw/meta-statically-unprovable",
-  "odw/meta-statically-unprovable",
-  "odw/meta-statically-unprovable",
-  "odw/no-import-export",
-  "odw/no-import-export",
-] as const;
 const FAMILY_ORDER = [
   "missing-metadata",
   "malformed-metadata",
@@ -63,6 +52,12 @@ const FAMILY_ORDER = [
   "unsupported-import-export",
   "syntax-error",
 ] as const;
+
+type FixtureDiagnostic = {
+  readonly fixture: InvalidWorkflowFixtureSnapshot;
+  readonly diagnostic: InvalidWorkflowFixtureDiagnostic;
+  readonly rule: RuleDefinition;
+};
 
 /** Sorts fixture paths by the manifest family order, then filename. */
 const orderInvalidFixtureNames = (fileNames: readonly string[]): string[] => {
@@ -122,6 +117,32 @@ const expectSpanToMatchSource = (
   expect(positionForOffset(sourceText, span.start.offset)).toEqual(span.start);
   expect(positionForOffset(sourceText, span.end.offset)).toEqual(span.end);
   expect(decodeSpanText(sourceText, span)).toBe(expectedSpanText);
+};
+
+/** Finds the catalogue rule that owns an invalid fixture diagnostic. */
+const catalogueRuleForFixtureDiagnostic = (
+  diagnostic: InvalidWorkflowFixtureDiagnostic,
+): RuleDefinition => {
+  const matchingRule = RULE_CATALOGUE.find((rule) => {
+    return String(rule.id) === String(diagnostic.rule);
+  });
+
+  if (matchingRule === undefined) {
+    throw new Error(`Fixture diagnostic references uncatalogued rule ${String(diagnostic.rule)}.`);
+  }
+
+  return matchingRule;
+};
+
+/** Pairs every invalid fixture diagnostic with its catalogue rule. */
+const fixtureDiagnostics = (): readonly FixtureDiagnostic[] => {
+  return INVALID_WORKFLOW_FIXTURE_SNAPSHOTS.flatMap((fixture) => {
+    return fixture.expectedDiagnostics.map((diagnostic) => ({
+      fixture,
+      diagnostic,
+      rule: catalogueRuleForFixtureDiagnostic(diagnostic),
+    }));
+  });
 };
 
 describe("invalid workflow fixture snapshots", () => {
@@ -257,9 +278,10 @@ describe("invalid workflow fixture snapshots", () => {
   it("records the expected metadata status and rule coverage", () => {
     const families = INVALID_WORKFLOW_FIXTURE_SNAPSHOTS.map((fixture) => fixture.family);
     const statuses = INVALID_WORKFLOW_FIXTURE_SNAPSHOTS.map((fixture) => fixture.expectedStatus);
-    const rules = INVALID_WORKFLOW_FIXTURE_SNAPSHOTS.flatMap((fixture) =>
-      fixture.expectedDiagnostics.map((diagnostic) => String(diagnostic.rule)),
-    ).sort();
+    const rules = fixtureDiagnostics().map(({ diagnostic }) => String(diagnostic.rule));
+    const rulesWithFixtureMessages = RULE_CATALOGUE.filter((rule) => rule.messages.length > 0).map(
+      (rule) => String(rule.id),
+    );
 
     expect(new Set(families)).toEqual(
       new Set([
@@ -271,7 +293,17 @@ describe("invalid workflow fixture snapshots", () => {
       ]),
     );
     expect(new Set(statuses)).toEqual(new Set(["error", "warning"]));
-    expect(rules).toEqual([...EXPECTED_RULES]);
+    expect([...new Set(rules)].sort()).toEqual(rulesWithFixtureMessages.sort());
+  });
+
+  it("matches fixture diagnostics to the rule catalogue", () => {
+    for (const { fixture, diagnostic, rule } of fixtureDiagnostics()) {
+      expect(rule.releaseStatus).toBe("released");
+      expect(diagnostic.severity).toBe(rule.defaultSeverity);
+      expect(rule.messages).toContain(diagnostic.message);
+      expect(existsSync(ruleDocsPath(rule))).toBeTrue();
+      expect(fixture.expectedDiagnostics).toContain(diagnostic);
+    }
   });
 
   it("matches the compact invalid manifest snapshot", () => {
