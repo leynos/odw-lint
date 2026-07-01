@@ -38,6 +38,8 @@ import {
   makeRuleId,
   parseRuleId,
   positionAtOffset,
+  RULE_CATALOGUE,
+  ruleDocsPath,
   SourceOffsetError,
   STATIC_ANALYSIS_BOUNDARY,
   STATIC_ANALYSIS_COMPONENTS,
@@ -48,17 +50,38 @@ import {
   TOOL_NAME,
 } from "odw-lint";
 
+const META_REQUIRED_RULE = RULE_CATALOGUE.find((rule) => String(rule.id) === "odw/meta-required");
+
+/** Returns the catalogued message used by public diagnostic examples. */
+const metaRequiredMessage = (): string => {
+  const [message] = META_REQUIRED_RULE?.messages ?? [];
+
+  if (message === undefined) {
+    throw new Error("odw/meta-required must keep a representative public example message.");
+  }
+
+  return message;
+};
+
 describe("public diagnostic consumer", () => {
   it("can construct and read required diagnostic report fields", () => {
+    const rule = META_REQUIRED_RULE;
+    const message = metaRequiredMessage();
+
+    if (rule === undefined) {
+      throw new Error("odw/meta-required must stay available to public consumers.");
+    }
+
     const diagnostic = {
       file: "workflows/example.js",
-      rule: makeRuleId("odw/meta-required"),
+      rule: rule.id,
       severity: "error",
-      message: "Workflow source must export literal metadata.",
+      message,
       span: {
         start: { offset: 0, line: 1, column: 1 },
         end: { offset: 0, line: 1, column: 1 },
       },
+      docs: ruleDocsPath(rule),
     } satisfies Diagnostic;
 
     const summary = {
@@ -87,7 +110,7 @@ describe("public diagnostic consumer", () => {
       file: "workflow.js",
       rule: ruleId,
       severity: "error",
-      message: "Workflow source must export literal metadata.",
+      message: metaRequiredMessage(),
       span: {
         start: { offset: 0, line: 1, column: 1 },
         end: { offset: 0, line: 1, column: 1 },

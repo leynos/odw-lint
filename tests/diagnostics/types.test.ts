@@ -8,23 +8,54 @@ import type {
   DiagnosticReport,
   DiagnosticSeverity,
   DiagnosticSummary,
+  RuleDefinition,
   RuleId,
   RuleIdParseResult,
 } from "odw-lint";
-import { DIAGNOSTIC_SCHEMA_VERSION, DIAGNOSTIC_SEVERITIES, makeRuleId, TOOL_NAME } from "odw-lint";
+import {
+  DIAGNOSTIC_SCHEMA_VERSION,
+  DIAGNOSTIC_SEVERITIES,
+  RULE_CATALOGUE,
+  ruleDocsPath,
+  TOOL_NAME,
+} from "odw-lint";
+
+/** Returns the catalogued rule used by representative diagnostic examples. */
+const representativeRule = (): RuleDefinition => {
+  const rule = RULE_CATALOGUE.find((candidate) => String(candidate.id) === "odw/meta-required");
+
+  if (rule === undefined) {
+    throw new Error("odw/meta-required must stay available for representative diagnostics.");
+  }
+
+  return rule;
+};
+
+/** Returns the catalogued message used by representative diagnostics. */
+const representativeMessage = (rule: RuleDefinition): string => {
+  const [message] = rule.messages;
+
+  if (message === undefined) {
+    throw new Error("odw/meta-required must keep a representative diagnostic message.");
+  }
+
+  return message;
+};
 
 describe("diagnostics", () => {
   it("constructs a representative diagnostic with a literal source span", () => {
+    const rule = representativeRule();
+    const message = representativeMessage(rule);
     const diagnostic: Diagnostic = {
       file: "examples/fan-out-reduce.js",
-      rule: makeRuleId("odw/meta-required"),
+      rule: rule.id,
       severity: "error",
-      message: "Workflow source must export literal metadata.",
+      message,
       span: {
         start: { offset: 0, line: 1, column: 1 },
         end: { offset: 0, line: 1, column: 1 },
       },
-      docs: "https://github.com/leynos/odw-lint/docs/rules/meta-required.md",
+      docs: ruleDocsPath(rule),
       suggestions: [],
     };
 
@@ -32,7 +63,7 @@ describe("diagnostics", () => {
       file: "examples/fan-out-reduce.js",
       rule: "odw/meta-required",
       severity: "error",
-      message: "Workflow source must export literal metadata.",
+      message,
     });
   });
 

@@ -428,6 +428,11 @@ round 1 closed the remaining review blockers by replacing stale
 `workflow must export const meta` public examples with the catalogued
 `Workflow source must export literal metadata.` message.
 
+## Addenda
+
+- [x] 2.1.7.1. Guard representative diagnostic examples against catalogue
+  message drift.
+
 ## Context and orientation
 
 The current diagnostic model lives under `src/diagnostics/`. Rule identifiers

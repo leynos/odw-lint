@@ -369,7 +369,7 @@ statically. It unlocks metadata rules and body parsing. See
     not become parallel sources of truth.
   - Success: fixture expectations fail when a diagnostic rule, default
     severity, message contract, or docs slug diverges from the catalogue.
-  - [ ] 2.1.7.1. Guard representative diagnostic examples against catalogue
+  - [x] 2.1.7.1. Guard representative diagnostic examples against catalogue
     message drift.
     - Addendum source: review:2.1.7; low.
     - Make public consumer or type examples use catalogue-backed diagnostic
