@@ -113,6 +113,12 @@ linting, type checking, or tests use the installed toolchain.
 and tabs. It reports path and line diagnostics only; it does not rewrite raw
 workflow fixtures, copied ODW examples, or snapshot files.
 
+Build-gate Git command execution, tracked-file listing, temporary repository
+setup, repository-relative writes, fixture commits, and captured CLI output
+live in `tests/build-gate/git-support.ts`. Keep feature-specific policy in the
+corresponding gate module, such as file-size path filtering, whitespace scan
+rules, and branch-freshness classification.
+
 Run `make markdownlint` as well when Markdown files change.
 
 Run `make branch-freshness` before requesting review for roadmap task branches.

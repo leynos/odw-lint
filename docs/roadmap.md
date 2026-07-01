@@ -271,7 +271,7 @@ depending on manual post-commit audits.
     local until a second write-side hygiene check needs it.
   - Success: the repository gate fails on trailing whitespace without
     reformatting raw fixture files.
-- [ ] 1.5.5. Consolidate build-gate Git support behind one helper seam.
+- [x] 1.5.5. Consolidate build-gate Git support behind one helper seam.
   - Requires 1.5.1, 1.5.2, and 1.5.4.
   - Addendum source: audit:2.1.7; medium.
   - Share the Git runner, tracked-file listing, temporary-repository setup, and

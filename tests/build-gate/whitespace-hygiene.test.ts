@@ -3,82 +3,15 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { readFileSync, rmSync, unlinkSync } from "node:fs";
+import { join } from "node:path";
+import {
+  commitAll,
+  createCapturedCliOutput,
+  createTemporaryRepository,
+  writeRepositoryFile,
+} from "./git-support";
 import { runWhitespaceHygieneCli } from "./whitespace-hygiene";
-
-type CapturedCliOutput = {
-  readonly stdout: string;
-  readonly stderr: string;
-  readonly writeOut: (message: string) => void;
-  readonly writeErr: (message: string) => void;
-};
-
-/**
- * Create a temporary Git repository for one whitespace hygiene scenario.
- */
-function createTemporaryRepository(): string {
-  const repositoryPath = mkdtempSync(join(tmpdir(), "odw-lint-whitespace-"));
-
-  git(repositoryPath, ["init", "--initial-branch=main"]);
-  git(repositoryPath, ["config", "user.name", "Whitespace Hygiene Test"]);
-  git(repositoryPath, ["config", "user.email", "whitespace-hygiene@example.test"]);
-
-  return repositoryPath;
-}
-
-/**
- * Run a Git command and fail fast when fixture setup is broken.
- */
-function git(cwd: string, args: readonly string[]): void {
-  const result = spawnSync("git", args, { cwd, encoding: "utf8" });
-
-  if (result.status !== 0) {
-    throw new Error(`git ${args.join(" ")} failed in ${cwd}\n${result.stdout}${result.stderr}`);
-  }
-}
-
-/**
- * Write a repository-relative file, creating parent directories as needed.
- */
-function writeRepositoryFile(repositoryPath: string, path: string, content: string | Buffer): void {
-  const target = join(repositoryPath, path);
-
-  mkdirSync(dirname(target), { recursive: true });
-  writeFileSync(target, content);
-}
-
-/**
- * Stage and commit all current fixture changes.
- */
-function commitAll(repositoryPath: string, message = "Seed repository"): void {
-  git(repositoryPath, ["add", "."]);
-  git(repositoryPath, ["commit", "-m", message]);
-}
-
-/**
- * Create writers that capture CLI output for assertions.
- */
-function createCapturedCliOutput(): CapturedCliOutput {
-  const output = { stdout: "", stderr: "" };
-
-  return {
-    get stdout() {
-      return output.stdout;
-    },
-    get stderr() {
-      return output.stderr;
-    },
-    writeOut: (message) => {
-      output.stdout += message;
-    },
-    writeErr: (message) => {
-      output.stderr += message;
-    },
-  };
-}
 
 describe("runWhitespaceHygieneCli", () => {
   it("exits successfully for clean tracked text", () => {

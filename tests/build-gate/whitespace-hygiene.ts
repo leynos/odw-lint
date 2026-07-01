@@ -2,15 +2,14 @@
  * @file Git-backed tracked-file trailing whitespace hygiene guard.
  */
 
-import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { cwd, exit, stderr, stdout } from "node:process";
 import { fileURLToPath } from "node:url";
+import { lsTrackedFiles } from "./git-support";
 import {
   findTrailingWhitespaceViolations,
   formatWhitespaceViolations,
-  parseNulSeparatedPaths,
 } from "./whitespace-hygiene-support";
 
 export type WhitespaceHygieneExitCode = 0 | 1 | 2;
@@ -19,16 +18,6 @@ type CliWriters = {
   readonly writeOut: (message: string) => void;
   readonly writeErr: (message: string) => void;
 };
-
-type GitFileListingResult = {
-  readonly status: number | null;
-  readonly stdout: string;
-  readonly stderr: string;
-  readonly error?: Error;
-};
-
-const gitFileListingArgs = ["ls-files", "-z", "--full-name"] as const;
-const gitFileListingCommand = `git ${gitFileListingArgs.join(" ")}`;
 
 /**
  * Run the command-line guard and return its process exit code.
@@ -69,51 +58,7 @@ export function runWhitespaceHygieneCli(
  * List every tracked repository path using Git's NUL-separated output.
  */
 function trackedRepositoryFiles(repositoryPath: string): readonly string[] {
-  const result = runGitFileListing(repositoryPath);
-
-  assertGitFileListingSucceeded(result);
-
-  return parseNulSeparatedPaths(result.stdout);
-}
-
-/**
- * Run the tracked-file query against the local Git index.
- */
-function runGitFileListing(repositoryPath: string): GitFileListingResult {
-  const result = spawnSync("git", gitFileListingArgs, {
-    cwd: repositoryPath,
-    encoding: "utf8",
-  });
-
-  if (result.error instanceof Error) {
-    return {
-      status: result.status,
-      stdout: result.stdout,
-      stderr: result.stderr,
-      error: result.error,
-    };
-  }
-
-  return {
-    status: result.status,
-    stdout: result.stdout,
-    stderr: result.stderr,
-  };
-}
-
-/**
- * Raise a clear project-owned error when Git cannot list tracked paths.
- */
-function assertGitFileListingSucceeded(result: GitFileListingResult): void {
-  if (result.error !== undefined) {
-    throw new Error(`${gitFileListingCommand} failed: ${result.error.message}`);
-  }
-
-  if (result.status !== 0) {
-    throw new Error(
-      `${gitFileListingCommand} failed with status ${String(result.status)}: ${result.stderr}`,
-    );
-  }
+  return lsTrackedFiles({ repositoryPath });
 }
 
 /**

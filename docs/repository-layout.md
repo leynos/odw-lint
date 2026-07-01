@@ -122,6 +122,13 @@ for rule identifier, default severity, reviewed message contract and derived
 rule documentation path. Update the catalogue and fixture manifest together
 when a fixture's expected diagnostic message intentionally changes.
 
+`tests/build-gate/` protects repository-maintenance gates. Shared Git
+subprocess execution, tracked-file listing, temporary repository setup,
+repository-relative writes, fixture commits, and CLI-output capture belong in
+`tests/build-gate/git-support.ts`. Individual gate modules keep their own
+feature policy, including file-size path scope, whitespace content scanning and
+branch-freshness classification.
+
 ## Tooling boundaries
 
 Use the Makefile as the maintainer entry point for validation. `make all` is

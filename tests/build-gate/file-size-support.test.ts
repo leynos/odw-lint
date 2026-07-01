@@ -7,11 +7,10 @@ import {
   countPhysicalLines,
   findOversizedSourceAndTestFiles,
   formatFileSizeViolations,
-  type GitFileListingResult,
   isSourceOrTestTypeScriptPath,
-  parseNulSeparatedPaths,
   trackedSourceAndTestTypeScriptFiles,
 } from "./file-size-support";
+import type { GitCommandResult, GitRunner } from "./git-support";
 
 describe("file-size guard support", () => {
   it.each([
@@ -22,20 +21,6 @@ describe("file-size guard support", () => {
     ["deliberate blank final line", "const value = 1;\n\n", 2],
   ])("counts physical lines for %s", (_caseName, sourceText, expectedLineCount) => {
     expect(countPhysicalLines(sourceText)).toBe(expectedLineCount);
-  });
-
-  it("parses NUL-separated Git path output", () => {
-    expect(parseNulSeparatedPaths("src/index.ts\0tests/example.test.ts\0")).toEqual([
-      "src/index.ts",
-      "tests/example.test.ts",
-    ]);
-  });
-
-  it("parses NUL-separated Git path output without a trailing separator", () => {
-    expect(parseNulSeparatedPaths("src/index.ts\0tests/example.test.ts")).toEqual([
-      "src/index.ts",
-      "tests/example.test.ts",
-    ]);
   });
 
   it.each([
@@ -105,51 +90,75 @@ describe("file-size guard support", () => {
   });
 
   it("converts non-zero Git listings into project-owned errors", () => {
-    expect(() =>
-      trackedSourceAndTestTypeScriptFiles(() => ({
-        status: 128,
-        stdout: "",
-        stderr: "fatal: not a git repository",
-      })),
-    ).toThrow(/git ls-files -z -- src tests.*status 128.*fatal: not a git repository/s);
+    const gitRunner = createGitRunner({
+      status: 128,
+      signal: null,
+      stdout: "",
+      stderr: "fatal: not a git repository",
+    });
+
+    expect(() => trackedSourceAndTestTypeScriptFiles(gitRunner)).toThrow(
+      /git ls-files -z --full-name -- src tests.*status 128.*fatal: not a git repository/s,
+    );
   });
 
-  it("converts non-zero Git listings with nullable output into project-owned errors", () => {
-    expect(() =>
-      trackedSourceAndTestTypeScriptFiles(() => ({
-        status: null,
-        stdout: null,
-        stderr: null,
-      })),
-    ).toThrow(/git ls-files -z -- src tests.*status null/s);
+  it("converts non-zero Git listings with empty output into project-owned errors", () => {
+    const gitRunner = createGitRunner({
+      status: null,
+      signal: null,
+      stdout: "",
+      stderr: "",
+    });
+
+    expect(() => trackedSourceAndTestTypeScriptFiles(gitRunner)).toThrow(
+      /git ls-files -z --full-name -- src tests.*status null/s,
+    );
   });
 
   it("converts failed Git spawns into project-owned errors", () => {
-    expect(() =>
-      trackedSourceAndTestTypeScriptFiles(() => ({
-        status: null,
-        stdout: "",
-        stderr: "",
-        error: new Error("spawn git ENOENT"),
-      })),
-    ).toThrow(/git ls-files -z -- src tests.*spawn git ENOENT/s);
+    const gitRunner = createGitRunner({
+      status: null,
+      signal: null,
+      stdout: "",
+      stderr: "",
+      error: new Error("spawn git ENOENT"),
+    });
+
+    expect(() => trackedSourceAndTestTypeScriptFiles(gitRunner)).toThrow(
+      /git ls-files -z --full-name -- src tests.*spawn git ENOENT/s,
+    );
   });
 
-  it("filters injected tracked Git output without invoking a subprocess", () => {
-    const gitResult: GitFileListingResult = {
-      status: 0,
-      stdout: [
-        "src/index.ts",
-        "src/generated.js",
-        "tests/build-gate/file-size.test.ts",
-        "docs/architecture.ts",
-      ].join("\0"),
-      stderr: "",
+  it("passes source and test pathspecs to shared tracked-file listing", () => {
+    const calls: string[][] = [];
+    const gitRunner: GitRunner = {
+      run: (args) => {
+        calls.push([...args]);
+        return {
+          status: 0,
+          signal: null,
+          stdout: [
+            "src/index.ts",
+            "src/generated.js",
+            "tests/build-gate/file-size.test.ts",
+            "docs/architecture.ts",
+          ].join("\0"),
+          stderr: "",
+        };
+      },
     };
 
-    expect(trackedSourceAndTestTypeScriptFiles(() => gitResult)).toEqual([
+    expect(trackedSourceAndTestTypeScriptFiles(gitRunner)).toEqual([
       "src/index.ts",
       "tests/build-gate/file-size.test.ts",
     ]);
+    expect(calls).toEqual([["ls-files", "-z", "--full-name", "--", "src", "tests"]]);
   });
 });
+
+/** Create an injected Git runner for file-size support tests. */
+function createGitRunner(result: GitCommandResult): GitRunner {
+  return {
+    run: () => result,
+  };
+}

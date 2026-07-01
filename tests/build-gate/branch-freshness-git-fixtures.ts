@@ -2,10 +2,12 @@
  * @file Temporary Git repositories for branch-freshness build-gate tests.
  */
 
-import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { createCapturedCliOutput, runFixtureGit as git, writeRepositoryFile } from "./git-support";
+
+export { createCapturedCliOutput, writeRepositoryFile };
 
 /** Temporary repository set used by one branch-freshness test. */
 export type GitFixture = {
@@ -14,12 +16,6 @@ export type GitFixture = {
   readonly main: string;
   readonly task: string;
   readonly dispose: () => void;
-};
-
-/** Captured branch-freshness CLI output. */
-export type CapturedCliOutput = {
-  readonly stdout: string;
-  readonly stderr: string;
 };
 
 const initialRoadmap = [
@@ -167,62 +163,6 @@ export function mergeMainIntoTask(fixture: GitFixture): void {
  */
 export function checkoutTaskBranch(fixture: GitFixture, branchName: string): void {
   git(fixture.task, ["checkout", "-B", branchName]);
-}
-
-/**
- * Write a repository-relative file.
- *
- * @param repositoryPath Repository working-tree path.
- * @param path Repository-relative file path.
- * @param content File content to write.
- */
-export function writeRepositoryFile(repositoryPath: string, path: string, content: string): void {
-  const target = join(repositoryPath, path);
-
-  mkdirSync(dirname(target), { recursive: true });
-  writeFileSync(target, content);
-}
-
-/**
- * Create writers that capture CLI output for assertions.
- *
- * @returns Mutable captured stdout and stderr plus writer callbacks.
- */
-export function createCapturedCliOutput(): CapturedCliOutput & {
-  readonly writeOut: (message: string) => void;
-  readonly writeErr: (message: string) => void;
-} {
-  const output = { stdout: "", stderr: "" };
-
-  return {
-    get stdout() {
-      return output.stdout;
-    },
-    get stderr() {
-      return output.stderr;
-    },
-    writeOut: (message) => {
-      output.stdout += message;
-    },
-    writeErr: (message) => {
-      output.stderr += message;
-    },
-  };
-}
-
-/**
- * Run a Git command and fail fast when fixture setup is broken.
- *
- * @param cwd Working directory for the Git command.
- * @param args Git arguments excluding the `git` executable.
- * @throws Error when Git returns a non-zero status.
- */
-export function git(cwd: string, args: readonly string[]): void {
-  const result = spawnSync("git", args, { cwd, encoding: "utf8" });
-
-  if (result.status !== 0) {
-    throw new Error(`git ${args.join(" ")} failed in ${cwd}\n${result.stdout}${result.stderr}`);
-  }
 }
 
 /** Configure deterministic commits in a temporary repository. */

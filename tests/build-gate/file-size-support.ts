@@ -2,7 +2,7 @@
  * @file Test-only helpers for enforcing source and test TypeScript file sizes.
  */
 
-import { spawnSync } from "node:child_process";
+import { type GitRunner, lsTrackedFiles } from "./git-support";
 
 export const SOURCE_AND_TEST_LINE_LIMIT = 400;
 export const SOURCE_AND_TEST_ROOTS = ["src", "tests"] as const;
@@ -13,16 +13,6 @@ export type FileSizeViolation = {
   readonly limit: number;
 };
 
-export type GitFileListingResult = {
-  readonly status: number | null;
-  readonly stdout: string | null;
-  readonly stderr: string | null;
-  readonly error?: Error;
-};
-
-export type GitFileListingRunner = () => GitFileListingResult;
-
-const gitFileListingCommand = "git ls-files -z -- src tests";
 const typeScriptExtensions = [".ts", ".tsx", ".mts", ".cts"] as const;
 
 /**
@@ -53,16 +43,6 @@ export function isSourceOrTestTypeScriptPath(path: string): boolean {
     SOURCE_AND_TEST_ROOTS.some((root) => path.startsWith(`${root}/`)) &&
     typeScriptExtensions.some((extension) => path.endsWith(extension))
   );
-}
-
-/**
- * Parse Git's NUL-separated path stream into concrete path strings.
- *
- * @param output - Raw NUL-separated stdout from `git ls-files -z`.
- * @returns Repository-relative paths with empty separator segments removed.
- */
-export function parseNulSeparatedPaths(output: string): readonly string[] {
-  return output.split("\0").filter((path) => path.length > 0);
 }
 
 /**
@@ -106,50 +86,14 @@ export function formatFileSizeViolations(violations: readonly FileSizeViolation[
 /**
  * List tracked TypeScript source and test files from Git.
  *
- * @param runGit - Optional runner for `git ls-files`, used by unit tests.
+ * @param gitRunner - Optional runner for `git ls-files`, used by unit tests.
  * @returns Tracked repository-relative TypeScript paths under `src/` and `tests/`.
  */
-export function trackedSourceAndTestTypeScriptFiles(
-  runGit: GitFileListingRunner = runGitFileListing,
-): readonly string[] {
-  const result = runGit();
+export function trackedSourceAndTestTypeScriptFiles(gitRunner?: GitRunner): readonly string[] {
+  const options =
+    gitRunner === undefined
+      ? { pathspecs: SOURCE_AND_TEST_ROOTS }
+      : { pathspecs: SOURCE_AND_TEST_ROOTS, gitRunner };
 
-  assertGitFileListingSucceeded(result);
-
-  return parseNulSeparatedPaths(result.stdout ?? "").filter(isSourceOrTestTypeScriptPath);
-}
-
-/** Run the tracked-file query against the local Git index. */
-function runGitFileListing(): GitFileListingResult {
-  const result = spawnSync("git", ["ls-files", "-z", "--", "src", "tests"], {
-    encoding: "utf8",
-  });
-
-  if (result.error instanceof Error) {
-    return {
-      status: result.status,
-      stdout: result.stdout,
-      stderr: result.stderr,
-      error: result.error,
-    };
-  }
-
-  return {
-    status: result.status,
-    stdout: result.stdout,
-    stderr: result.stderr,
-  };
-}
-
-/** Raise a clear project-owned error when Git cannot list tracked paths. */
-function assertGitFileListingSucceeded(result: GitFileListingResult): void {
-  if (result.error !== undefined) {
-    throw new Error(`${gitFileListingCommand} failed: ${result.error.message}`);
-  }
-
-  if (result.status !== 0) {
-    throw new Error(
-      `${gitFileListingCommand} failed with status ${String(result.status)}: ${result.stderr ?? ""}`,
-    );
-  }
+  return lsTrackedFiles(options).filter(isSourceOrTestTypeScriptPath);
 }

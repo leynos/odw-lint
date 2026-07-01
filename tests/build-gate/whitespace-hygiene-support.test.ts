@@ -6,7 +6,6 @@ import { describe, expect, it } from "bun:test";
 import {
   findTrailingWhitespaceViolations,
   formatWhitespaceViolations,
-  parseNulSeparatedPaths,
 } from "./whitespace-hygiene-support";
 
 const filePath = "fixtures/workflow.js";
@@ -20,12 +19,6 @@ function findViolations(source: string): ReturnType<typeof findTrailingWhitespac
     return Buffer.from(source, "utf8");
   });
 }
-
-describe("parseNulSeparatedPaths", () => {
-  it("removes empty separator segments from Git path streams", () => {
-    expect(parseNulSeparatedPaths("src/a.ts\0tests/b.ts\0\0")).toEqual(["src/a.ts", "tests/b.ts"]);
-  });
-});
 
 describe("findTrailingWhitespaceViolations", () => {
   it("reports trailing spaces before LF", () => {

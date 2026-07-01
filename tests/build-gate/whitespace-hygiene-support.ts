@@ -19,16 +19,6 @@ const space = 0x20;
 const tab = 0x09;
 
 /**
- * Parse Git's NUL-separated path stream into concrete path strings.
- *
- * @param output - Raw NUL-separated stdout from `git ls-files -z`.
- * @returns Repository-relative paths with empty separator segments removed.
- */
-export function parseNulSeparatedPaths(output: string): readonly string[] {
-  return output.split("\0").filter((path) => path.length > 0);
-}
-
-/**
  * Find trailing spaces and tabs in tracked text files.
  *
  * @param paths - Repository-relative tracked paths to inspect.

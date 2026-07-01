@@ -13,13 +13,8 @@ import {
   type RoadmapHunk,
 } from "./branch-freshness";
 import { parseNameStatusZ, parseRoadmapDiffHunks } from "./branch-freshness-git-parsing";
-import {
-  createGitRunner,
-  type GitCommandResult,
-  type GitRunner,
-  runGit,
-} from "./branch-freshness-git-runner";
 import { formatBranchFreshnessResult } from "./branch-freshness-report";
+import { createGitRunner, type GitCommandResult, type GitRunner, runGit } from "./git-support";
 
 /** Process exit status used by the command-line guard. */
 export type BranchFreshnessExitCode = 0 | 1 | 2;
