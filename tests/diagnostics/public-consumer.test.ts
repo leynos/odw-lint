@@ -14,6 +14,7 @@ import type {
   InvalidRuleId,
   InvalidRuleIdReason,
   OriginalSourceFile,
+  RuleDocumentationPath,
   RuleId,
   RuleIdParseResult,
   SourceLine,
@@ -189,7 +190,7 @@ describe("public diagnostic consumer", () => {
       readonly severity: DiagnosticSeverity;
       readonly message: string;
       readonly span: SourceSpan;
-      readonly docs?: string;
+      readonly docs?: RuleDocumentationPath;
       readonly suggestions?: readonly { readonly message: string }[];
     }>();
     expectTypeOf<DiagnosticSummary>().toEqualTypeOf<{

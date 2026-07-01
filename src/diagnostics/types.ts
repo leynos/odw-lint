@@ -2,6 +2,7 @@
  * @file Diagnostic report data shapes and stable report constants.
  */
 
+import type { RuleDocumentationPath } from "./rule-catalogue";
 import type { RuleId } from "./rule-id";
 import type { DiagnosticSeverity } from "./severity";
 
@@ -59,8 +60,8 @@ export type Diagnostic = {
   readonly message: string;
   /** Source span in the original workflow file. */
   readonly span: SourceSpan;
-  /** Optional documentation URL for the rule. */
-  readonly docs?: string;
+  /** Optional repository-relative documentation path for the rule. */
+  readonly docs?: RuleDocumentationPath;
   /** Optional suggestions for resolving the diagnostic. */
   readonly suggestions?: readonly DiagnosticSuggestion[];
 };

@@ -9,6 +9,7 @@ import type {
   DiagnosticSeverity,
   DiagnosticSummary,
   RuleDefinition,
+  RuleDocumentationPath,
   RuleId,
   RuleIdParseResult,
 } from "odw-lint";
@@ -64,6 +65,7 @@ describe("diagnostics", () => {
       rule: "odw/meta-required",
       severity: "error",
       message,
+      docs: "docs/rules/meta-required.md",
     });
   });
 
@@ -106,11 +108,16 @@ describe("diagnostics", () => {
           readonly column: number;
         };
       };
-      readonly docs?: string;
+      readonly docs?: RuleDocumentationPath;
       readonly suggestions?: readonly {
         readonly message: string;
       }[];
     }>();
+    expectTypeOf<"docs/rules/meta-required.md">().toMatchTypeOf<RuleDocumentationPath>();
+    // @ts-expect-error diagnostic docs are repository-relative rule pages, not hosted URLs.
+    const absoluteDocsUrl: RuleDocumentationPath =
+      "https://github.com/leynos/odw-lint/docs/rules/meta-required.md";
+    void absoluteDocsUrl;
     expectTypeOf<DiagnosticSummary>().toEqualTypeOf<{
       readonly files: number;
       readonly errors: number;

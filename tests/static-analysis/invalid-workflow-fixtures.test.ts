@@ -2,7 +2,7 @@
  * @file Invalid ODW workflow fixture manifest tests.
  */
 
-import { describe, expect, it } from "bun:test";
+import { describe, expect, expectTypeOf, it } from "bun:test";
 import { Buffer } from "node:buffer";
 import { existsSync } from "node:fs";
 import { TextDecoder } from "node:util";
@@ -16,6 +16,7 @@ import {
 } from "./fixtures/corpus-support";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
 import type {
+  diagnostic,
   InvalidWorkflowFixtureDiagnostic,
   InvalidWorkflowFixtureSnapshot,
 } from "./fixtures/invalid-workflows/manifest-types";
@@ -301,9 +302,14 @@ describe("invalid workflow fixture snapshots", () => {
       expect(rule.releaseStatus).toBe("released");
       expect(diagnostic.severity).toBe(rule.defaultSeverity);
       expect(rule.messages).toContain(diagnostic.message);
+      expect(diagnostic.docs).toBe(ruleDocsPath(rule));
       expect(existsSync(ruleDocsPath(rule))).toBeTrue();
       expect(fixture.expectedDiagnostics).toContain(diagnostic);
     }
+  });
+
+  it("keeps manifest builders responsible for derived docs paths", () => {
+    expectTypeOf<Parameters<typeof diagnostic>[0]>().not.toHaveProperty("docs");
   });
 
   it("matches the compact invalid manifest snapshot", () => {
@@ -315,6 +321,7 @@ describe("invalid workflow fixture snapshots", () => {
         diagnostics: fixture.expectedDiagnostics.map((diagnostic) => ({
           rule: String(diagnostic.rule),
           severity: diagnostic.severity,
+          docs: diagnostic.docs,
           spanTextLines: diagnostic.spanText.split("\n"),
         })),
       })),

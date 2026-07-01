@@ -6,7 +6,7 @@
  */
 
 import type { Diagnostic, DiagnosticSeverity, DiagnosticSummary } from "odw-lint";
-import { makeRuleId, RULE_IDS } from "odw-lint";
+import { RULE_CATALOGUE, RULE_IDS, ruleDocsPath } from "odw-lint";
 
 export const documentedRuleIds = RULE_IDS;
 
@@ -29,6 +29,8 @@ export const severitySummaryKeys = {
   hint: "hints",
 } as const satisfies Record<DiagnosticSeverity, keyof DiagnosticSummary>;
 
+const META_REQUIRED_RULE = RULE_CATALOGUE[0];
+
 /**
  * Builds a diagnostic fixture with the requested severity.
  *
@@ -38,12 +40,13 @@ export const severitySummaryKeys = {
 export const diagnosticForSeverity = (severity: DiagnosticSeverity): Diagnostic => {
   return {
     file: `examples/${severity}.js`,
-    rule: makeRuleId("odw/meta-required"),
+    rule: META_REQUIRED_RULE.id,
     severity,
     message: `${severity} diagnostic`,
     span: {
       start: { offset: 0, line: 1, column: 1 },
       end: { offset: 0, line: 1, column: 1 },
     },
+    docs: ruleDocsPath(META_REQUIRED_RULE),
   };
 };

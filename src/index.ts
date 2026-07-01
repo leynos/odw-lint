@@ -17,6 +17,7 @@ export {
   RULE_RELEASE_STATUSES,
   type RuleCategory,
   type RuleDefinition,
+  type RuleDocumentationPath,
   type RuleReleaseStatus,
   ruleDocsPath,
 } from "./diagnostics/rule-catalogue";

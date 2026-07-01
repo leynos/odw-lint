@@ -5,6 +5,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/meta-description.md",
         "rule": "odw/meta-description",
         "severity": "error",
         "spanTextLines": [
@@ -22,6 +23,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/meta-name.md",
         "rule": "odw/meta-name",
         "severity": "error",
         "spanTextLines": [
@@ -39,6 +41,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/meta-required.md",
         "rule": "odw/meta-required",
         "severity": "error",
         "spanTextLines": [
@@ -53,6 +56,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/meta-statically-unprovable.md",
         "rule": "odw/meta-statically-unprovable",
         "severity": "warning",
         "spanTextLines": [
@@ -67,6 +71,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/meta-name.md",
         "rule": "odw/meta-name",
         "severity": "error",
         "spanTextLines": [
@@ -81,6 +86,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/meta-object.md",
         "rule": "odw/meta-object",
         "severity": "error",
         "spanTextLines": [
@@ -95,6 +101,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/meta-description.md",
         "rule": "odw/meta-description",
         "severity": "error",
         "spanTextLines": [
@@ -109,6 +116,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/meta-object.md",
         "rule": "odw/meta-object",
         "severity": "error",
         "spanTextLines": [
@@ -127,6 +135,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/meta-statically-unprovable.md",
         "rule": "odw/meta-statically-unprovable",
         "severity": "warning",
         "spanTextLines": [
@@ -144,6 +153,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/meta-statically-unprovable.md",
         "rule": "odw/meta-statically-unprovable",
         "severity": "warning",
         "spanTextLines": [
@@ -160,6 +170,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/no-import-export.md",
         "rule": "odw/no-import-export",
         "severity": "error",
         "spanTextLines": [
@@ -174,6 +185,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/no-import-export.md",
         "rule": "odw/no-import-export",
         "severity": "error",
         "spanTextLines": [
@@ -188,6 +200,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/body-syntax.md",
         "rule": "odw/body-syntax",
         "severity": "error",
         "spanTextLines": [
@@ -204,6 +217,7 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
   {
     "diagnostics": [
       {
+        "docs": "docs/rules/body-syntax.md",
         "rule": "odw/body-syntax",
         "severity": "error",
         "spanTextLines": [

@@ -4,6 +4,7 @@ exports[`diagnostic reports creates a versioned report envelope over the same di
 {
   "diagnostics": [
     {
+      "docs": "docs/rules/meta-required.md",
       "file": "examples/error.js",
       "message": "error diagnostic",
       "rule": "odw/meta-required",
@@ -22,6 +23,7 @@ exports[`diagnostic reports creates a versioned report envelope over the same di
       },
     },
     {
+      "docs": "docs/rules/meta-required.md",
       "file": "examples/hint.js",
       "message": "hint diagnostic",
       "rule": "odw/meta-required",

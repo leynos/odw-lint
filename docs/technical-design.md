@@ -1,18 +1,17 @@
 # odw-lint technical design
 
-Status: Draft v0.1
-Audience: implementers, maintainers, and reviewers
-Companion documents: [terms of reference](terms-of-reference.md) and
-[roadmap](roadmap.md). Architectural decisions live under [adr](adr/).
-Updated: 2026-06-28
+Status: Draft v0.1 Audience: implementers, maintainers, and reviewers Companion
+documents: [terms of reference](terms-of-reference.md) and
+[roadmap](roadmap.md). Architectural decisions live under [adr](adr/). Updated:
+2026-06-28
 
 ## 1. Problem statement
 
 ODW workflows are JavaScript-like scripts with runtime-specific semantics:
-`export const meta`, injected workflow globals, top-level `await`, and
-top-level `return`. ODW currently exposes `validate(source)` as an injected
-primitive for generated workflows, but it does not expose a host-side lint or
-validation command for repository authors and CI.
+`export const meta`, injected workflow globals, top-level `await`, and top-level
+`return`. ODW currently exposes `validate(source)` as an injected primitive
+for generated workflows, but it does not expose a host-side lint or validation
+command for repository authors and CI.
 
 `odw-lint` will provide a static checker for ODW workflow files. It must detect
 workflow-dialect errors, compatibility hazards, and high-risk orchestration
@@ -69,8 +68,8 @@ Build a TypeScript CLI around a small static-analysis pipeline:
 6. Emit text or JSON diagnostics with stable exit codes.
 
 The v1 design deliberately keeps Biome and Oxlint outside the core. Their
-plugin systems can host selected rules later, but neither should define the
-ODW dialect contract.
+plugin systems can host selected rules later, but neither should define the ODW
+dialect contract.
 
 ## 5. Static-analysis boundary
 
@@ -92,9 +91,9 @@ after the contract is proven, but `odw-lint` v1 does not wait for ODW to expose
 one.
 
 The design does not allow an informal "port or share small helpers" approach,
-nor does it allow production code to import private ODW runtime helpers.
-Parity is maintained by fixtures and drift tests, not by delegating to an
-executable loader path.
+nor does it allow production code to import private ODW runtime helpers. Parity
+is maintained by fixtures and drift tests, not by delegating to an executable
+loader path.
 
 ## 6. Architecture
 
@@ -124,8 +123,8 @@ The analysis model has three layers:
 | `WorkflowAstFacts`  | SWC AST, primitive calls, loops, fan-out expressions, randomness/time hazards, schema literals               | Parser adapter and fact collectors |
 
 The envelope scanner should use the same string, comment, template, and regex
-masking strategy as ODW's loader. That avoids false positives when `export const
-meta =` or braces appear inside strings or comments.
+masking strategy as ODW's loader. That avoids false positives when
+`export const meta =` or braces appear inside strings or comments.
 
 ### 6.3. Metadata classification
 
@@ -137,9 +136,9 @@ Metadata diagnostics must separate three cases:
 | Statically unprovable | ODW's executable runtime might accept the metadata, but `odw-lint` cannot prove that safely without evaluating source. | Warning in default mode, configurable to error |
 | Claude-incompatible   | ODW can accept the workflow, but Claude Code's static workflow reader would reject it.                                 | Warning, promoted by `--strict-claude`         |
 
-`odw/meta-object` is reserved for metadata that the static parser proves is
-not an object in the supported static contract. Computed metadata that might
-run under ODW but cannot be proven safely should use
+`odw/meta-object` is reserved for metadata that the static parser proves is not
+an object in the supported static contract. Computed metadata that might run
+under ODW but cannot be proven safely should use
 `odw/meta-statically-unprovable`, not an ordinary runtime-invalid error.
 
 ### 6.4. Do not execute source
@@ -210,11 +209,10 @@ include globs. If no configuration exists, it checks these roots when present:
 - `.claude/workflows/**/*.js`
 - `workflows/**/*.js`
 
-ODW-style name resolution and managed-root precedence are deferred to the
-future `odw check` integration, where ODW can reuse its own resolver. The
-standalone CLI may expose `--odw-roots` later, but v1 should not silently
-pretend to run ODW's resolver semantics without importing the resolver
-contract.
+ODW-style name resolution and managed-root precedence are deferred to the future
+`odw check` integration, where ODW can reuse its own resolver. The standalone
+CLI may expose `--odw-roots` later, but v1 should not silently pretend to run
+ODW's resolver semantics without importing the resolver contract.
 
 File-discovery rules:
 
@@ -294,7 +292,7 @@ JSON output is a versioned object, not a bare diagnostics array:
         "start": { "offset": 0, "line": 1, "column": 1 },
         "end": { "offset": 0, "line": 1, "column": 1 }
       },
-      "docs": "https://github.com/leynos/odw-lint/docs/rules/meta-required.md",
+      "docs": "docs/rules/meta-required.md",
       "suggestions": []
     }
   ]
@@ -312,6 +310,10 @@ The diagnostic contract has these invariants:
 - `message` must match one of the exact message strings recorded for the rule
   in the catalogue, unless the same implementation change extends that
   catalogue contract deliberately.
+- `docs`, when present, is the repository-relative Markdown path under
+  `docs/rules/` for the catalogued rule. Reporters or hosted documentation
+  layers may convert that path to a URL at presentation time, but diagnostic
+  objects do not carry host-specific links.
 - `span` always refers to original source, not normalized source.
 - `offset` is a zero-based UTF-8 byte offset into the original file.
 - `line` and `column` are one-based display positions. `column` is counted in
@@ -471,10 +473,10 @@ The implementation test suite must include an architecture rule that scans
 production `odw-lint` imports and fails if any production module imports the
 executable ODW loader, primitive factory, runtime launcher, or worker path.
 
-The security regression fixture must include metadata that writes a file,
-reads an environment variable, throws a custom side-effect marker, or otherwise
-would be observable if evaluated. The expected outcome is a diagnostic and no
-side effect.
+The security regression fixture must include metadata that writes a file, reads
+an environment variable, throws a custom side-effect marker, or otherwise would
+be observable if evaluated. The expected outcome is a diagnostic and no side
+effect.
 
 ### 11.4. Combinatorial surface
 
@@ -496,10 +498,10 @@ full end-to-end CI scenario that checks multiple files and fails on warnings.
 ### 11.5. Span-mapping invariant
 
 Every diagnostic span must point into the original source. A fixture suite
-should assert line, column, and snippet for each rule that reports on normalized
-body AST nodes. The suite must include LF, CRLF, Unicode, comments, regex
-literals, template text, and template interpolation. This is the most important
-correctness property after dialect parity.
+should assert line, column, and snippet for each rule that reports on
+normalized body AST nodes. The suite must include LF, CRLF, Unicode, comments,
+regex literals, template text, and template interpolation. This is the most
+important correctness property after dialect parity.
 
 ## 12. Security and failure modes
 

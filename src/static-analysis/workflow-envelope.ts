@@ -1,5 +1,6 @@
 /** @file Static, non-executing workflow envelope scanner for ODW source files. */
 
+import { RULE_CATALOGUE, type RuleDefinition, ruleDocsPath } from "../diagnostics/rule-catalogue";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic, SourceSpan } from "../diagnostics/types";
 import { maskNonCodeSource } from "./source-mask";
@@ -18,6 +19,7 @@ const NO_IMPORT_EXPORT_RULE = makeRuleId("odw/no-import-export");
 const META_REQUIRED_MESSAGE = "Workflow source must export literal metadata.";
 const NO_IMPORT_EXPORT_MESSAGE = "Workflow body must not add top-level imports or exports.";
 
+const META_REQUIRED_RULE_DEFINITION = ruleDefinitionFor(META_REQUIRED_RULE);
 type MetaDeclarationMatch = {
   readonly declarationStartIndex: number;
   readonly declarationEndIndex: number;
@@ -27,6 +29,16 @@ type MetaDeclarationMatch = {
   readonly assignmentEndIndex: number;
 };
 
+/** Finds the catalogue definition for a diagnostic emitted by this scanner. */
+function ruleDefinitionFor(ruleId: string): RuleDefinition {
+  const matchingRule = RULE_CATALOGUE.find((rule) => String(rule.id) === ruleId);
+
+  if (matchingRule === undefined) {
+    throw new Error(`Workflow envelope scanner references uncatalogued rule ${ruleId}.`);
+  }
+
+  return matchingRule;
+}
 /**
  * Scans one original workflow source file for its static ODW envelope.
  *
@@ -327,6 +339,7 @@ const metaRequiredDiagnostic = (sourceFile: OriginalSourceFile): Diagnostic => {
     severity: "error",
     message: META_REQUIRED_MESSAGE,
     span: spanFromOffsets(sourceFile, 0, 0),
+    docs: ruleDocsPath(META_REQUIRED_RULE_DEFINITION),
   });
 };
 
@@ -338,5 +351,8 @@ const noImportExportDiagnostic = (sourceFile: OriginalSourceFile, span: SourceSp
     severity: "error",
     message: NO_IMPORT_EXPORT_MESSAGE,
     span,
+    docs: ruleDocsPath(NO_IMPORT_EXPORT_RULE_DEFINITION),
   });
 };
+
+const NO_IMPORT_EXPORT_RULE_DEFINITION = ruleDefinitionFor(NO_IMPORT_EXPORT_RULE);

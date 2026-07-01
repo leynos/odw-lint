@@ -30,6 +30,7 @@ export const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
   "RULE_RELEASE_STATUSES",
   "RuleCategory",
   "RuleDefinition",
+  "RuleDocumentationPath",
   "RuleId",
   "RuleIdParseResult",
   "RuleReleaseStatus",

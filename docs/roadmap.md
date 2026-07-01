@@ -400,7 +400,7 @@ statically. It unlocks metadata rules and body parsing. See
   - Success: the source-mask facade preserves current masking behaviour, each
     token family has a named implementation home, and existing masking fixture
     and property tests remain green.
-- [ ] 2.1.10. Canonicalize diagnostic rule documentation link contracts.
+- [x] 2.1.10. Canonicalize diagnostic rule documentation link contracts.
   - Requires 2.1.6.
   - Addendum source: audit:2.1.7; medium.
   - Choose one emitted documentation-link shape for rule diagnostics and update

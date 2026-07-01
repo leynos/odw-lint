@@ -9,6 +9,7 @@ exports[`diagnostic JSON Schema matches the reviewed schema snapshot 1`] = `
         "additionalProperties": false,
         "properties": {
           "docs": {
+            "pattern": "^docs/rules/[a-z0-9]+(?:-[a-z0-9]+)*\\.md$",
             "type": "string",
           },
           "file": {

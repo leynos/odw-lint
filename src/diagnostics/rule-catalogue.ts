@@ -35,6 +35,10 @@ export const RULE_RELEASE_STATUSES = Object.freeze(["planned", "released"] as co
 export type RuleReleaseStatus = (typeof RULE_RELEASE_STATUSES)[number];
 
 /**
+ * Repository-relative Markdown documentation path for one catalogued rule.
+ */
+export type RuleDocumentationPath = `docs/rules/${string}.md`;
+/**
  * Complete metadata for one diagnostic rule.
  */
 export type RuleDefinition = {
@@ -230,6 +234,6 @@ export const PLANNED_RULE_IDS = Object.freeze(
  * @param rule Catalogued rule definition.
  * @returns Markdown page path under `docs/rules/`.
  */
-export const ruleDocsPath = (rule: RuleDefinition): `docs/rules/${string}.md` => {
+export const ruleDocsPath = (rule: RuleDefinition): RuleDocumentationPath => {
   return `docs/rules/${rule.docsSlug}.md`;
 };

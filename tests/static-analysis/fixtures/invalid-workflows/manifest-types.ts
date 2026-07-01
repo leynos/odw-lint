@@ -2,8 +2,14 @@
  * @file Shared invalid workflow fixture manifest types and builders.
  */
 
-import type { DiagnosticSeverity, RuleId, SourceSpan } from "odw-lint";
-import { makeRuleId } from "odw-lint";
+import type {
+  DiagnosticSeverity,
+  RuleDefinition,
+  RuleDocumentationPath,
+  RuleId,
+  SourceSpan,
+} from "odw-lint";
+import { makeRuleId, RULE_CATALOGUE, ruleDocsPath } from "odw-lint";
 import { deepFreezeFixtureManifest } from "../manifest-freeze";
 
 /**
@@ -39,6 +45,11 @@ export interface InvalidWorkflowFixtureDiagnostic {
    * Reviewer-facing diagnostic message.
    */
   readonly message: string;
+
+  /**
+   * Repository-relative documentation path for the diagnostic rule.
+   */
+  readonly docs: RuleDocumentationPath;
 
   /**
    * Source span in original UTF-8 source coordinates.
@@ -95,6 +106,13 @@ type InvalidWorkflowFixtureInput = Omit<
   readonly expectedDiagnostics: readonly InvalidWorkflowFixtureDiagnostic[];
 };
 
+type InvalidWorkflowFixtureDiagnosticInput = Omit<
+  InvalidWorkflowFixtureDiagnostic,
+  "rule" | "docs"
+> & {
+  readonly rule: string;
+};
+
 /**
  * Builds one runtime-frozen invalid workflow fixture manifest entry.
  *
@@ -111,6 +129,17 @@ export const invalidWorkflowFixture = (
   });
 };
 
+/** Finds the catalogue definition for a fixture diagnostic rule. */
+const ruleDefinitionForDiagnostic = (rule: RuleId): RuleDefinition => {
+  const matchingRule = RULE_CATALOGUE.find((candidate) => String(candidate.id) === String(rule));
+
+  if (matchingRule === undefined) {
+    throw new Error(`Fixture diagnostic references uncatalogued rule ${String(rule)}.`);
+  }
+
+  return matchingRule;
+};
+
 /**
  * Creates one expected diagnostic with a validated rule identifier.
  *
@@ -118,8 +147,10 @@ export const invalidWorkflowFixture = (
  * @returns Frozen diagnostic metadata with a branded rule identifier.
  */
 export const diagnostic = (
-  diagnosticFixture: Omit<InvalidWorkflowFixtureDiagnostic, "rule"> & { readonly rule: string },
+  diagnosticFixture: InvalidWorkflowFixtureDiagnosticInput,
 ): InvalidWorkflowFixtureDiagnostic => {
+  const rule = makeRuleId(diagnosticFixture.rule);
+  const ruleDefinition = ruleDefinitionForDiagnostic(rule);
   const span = deepFreezeFixtureManifest({
     start: { ...diagnosticFixture.span.start },
     end: { ...diagnosticFixture.span.end },
@@ -127,7 +158,8 @@ export const diagnostic = (
 
   return deepFreezeFixtureManifest({
     ...diagnosticFixture,
-    rule: makeRuleId(diagnosticFixture.rule),
+    rule,
+    docs: ruleDocsPath(ruleDefinition),
     span,
   });
 };

@@ -10,6 +10,10 @@ import { DIAGNOSTIC_SEVERITIES } from "./severity";
 import { DIAGNOSTIC_SCHEMA_VERSION, TOOL_NAME } from "./types";
 
 const stringSchema = { type: "string" } as const;
+const ruleDocumentationPathSchema = {
+  type: "string",
+  pattern: "^docs/rules/[a-z0-9]+(?:-[a-z0-9]+)*\\.md$",
+} as const;
 const nonNegativeIntegerSchema = { type: "integer", minimum: 0 } as const;
 const oneBasedIntegerSchema = { type: "integer", minimum: 1 } as const;
 
@@ -86,7 +90,7 @@ export const DIAGNOSTIC_REPORT_SCHEMA = {
           severity: { enum: DIAGNOSTIC_SEVERITIES },
           message: stringSchema,
           span: sourceSpanSchema,
-          docs: stringSchema,
+          docs: ruleDocumentationPathSchema,
           suggestions: {
             type: "array",
             minItems: 0,

@@ -40,12 +40,11 @@ parser, mapper, and reporter code may consume through `odw-lint`. It must stay
 free of executable ODW runtime imports and should expose package-level
 contracts only through explicit named re-exports.
 
-The first envelope scanner lives in
-`src/static-analysis/workflow-envelope.ts`. It extracts `export const meta`
-from masked source, records metadata value state, reports missing metadata and
-unsupported top-level imports or exports, and exposes source spans in the
-original source file. Direct SWC calls belong only in the future parser adapter
-from roadmap task 2.2.1.
+The first envelope scanner lives in `src/static-analysis/workflow-envelope.ts`.
+It extracts `export const meta` from masked source, records metadata value
+state, reports missing metadata and unsupported top-level imports or exports,
+and exposes source spans in the original source file. Direct SWC calls belong
+only in the future parser adapter from roadmap task 2.2.1.
 
 ### Workflow envelope scanner
 
@@ -116,12 +115,12 @@ workflow fixtures, copied ODW examples, or snapshot files.
 
 Run `make markdownlint` as well when Markdown files change.
 
-Run `make branch-freshness` before requesting review for roadmap task
-branches. The target refreshes `origin/main`, checks protected `docs/**` and
-`tests/**` changes, and fails when the task branch would present unrelated
-newer main-branch work as deletions in review. It exits successfully on
-non-roadmap branches, and exits with a usage error when the worktree is dirty.
-Keep it outside `make all` because it performs a network fetch.
+Run `make branch-freshness` before requesting review for roadmap task branches.
+The target refreshes `origin/main`, checks protected `docs/**` and `tests/**`
+changes, and fails when the task branch would present unrelated newer
+main-branch work as deletions in review. It exits successfully on non-roadmap
+branches, and exits with a usage error when the worktree is dirty. Keep it
+outside `make all` because it performs a network fetch.
 
 Run `make refresh-fixtures` after changing workflow fixture source, copied ODW
 examples, or static-analysis fixture manifests. The target refreshes fixture
@@ -277,16 +276,18 @@ Do not import, evaluate, execute, or format invalid workflow fixtures as
 ordinary JavaScript. Keep `tests/static-analysis/fixtures/invalid-workflows.ts`
 in sync with every raw fixture by updating the family, path, SHA-256 hash,
 expected status, diagnostic rule, severity, message, UTF-8 source span, and
-reviewer-facing `spanText`.
-Fixture diagnostic expectations are checked against the rule catalogue for
-rule identifier, default severity, reviewed message, and documentation path
-parity. When an invalid fixture needs a different reviewer-facing `message`,
-extend the matching catalogue entry in the same change rather than treating the
-manifest as a separate source of truth.
-For invalid diagnostic spans, choose a `spanText` anchor that appears exactly
-once in the raw fixture source. The refresh script derives UTF-8 offsets,
-display line and column positions from that anchor. If the anchor is missing or
-duplicated, update the manifest intentionally rather than guessing a span.
+reviewer-facing `spanText`. Fixture diagnostic expectations are checked against
+the rule catalogue for rule identifier, default severity, reviewed message, and
+documentation path parity. When an invalid fixture needs a different
+reviewer-facing `message`, extend the matching catalogue entry in the same
+change rather than treating the manifest as a separate source of truth.
+Diagnostic documentation paths are derived from `ruleDocsPath(rule)` and remain
+repository-relative paths under `docs/rules/`; hosted URLs belong in later
+reporting or documentation presentation layers. For invalid diagnostic spans,
+choose a `spanText` anchor that appears exactly once in the raw fixture source.
+The refresh script derives UTF-8 offsets, display line and column positions
+from that anchor. If the anchor is missing or duplicated, update the manifest
+intentionally rather than guessing a span.
 
 Synthetic masking fixtures live under
 `tests/static-analysis/fixtures/masking/`. They are owned by `odw-lint`, not

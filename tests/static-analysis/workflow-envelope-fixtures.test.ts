@@ -59,6 +59,7 @@ describe("workflow envelope invalid fixture diagnostics", () => {
         rule: diagnostic.rule,
         severity: diagnostic.severity,
         message: diagnostic.message,
+        docs: diagnostic.docs,
         span: diagnostic.span,
         spanText: spanTextFor(sourceFile, diagnostic.span),
       })),

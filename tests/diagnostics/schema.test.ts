@@ -17,6 +17,13 @@ describe("diagnostic JSON Schema", () => {
     expect(diagnosticItemSchema.properties.rule.enum).toBe(RULE_IDS);
   });
 
+  it("constrains diagnostic docs to repository-relative rule pages", () => {
+    expect(diagnosticItemSchema.properties.docs).toEqual({
+      type: "string",
+      pattern: "^docs/rules/[a-z0-9]+(?:-[a-z0-9]+)*\\.md$",
+    });
+  });
+
   it("requires the documented top-level envelope keys", () => {
     expect(DIAGNOSTIC_REPORT_SCHEMA.required).toEqual([
       "schemaVersion",
