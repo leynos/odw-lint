@@ -112,6 +112,8 @@ entry; that index enumerates every current rule page.
   file-size guard for source and test code.
 - [Roadmap 1.5.3 ExecPlan](execplans/roadmap-1-5-3.md) plans roadmap workflow
   review-gate hardening.
+- [Roadmap 2.1.3 ExecPlan](execplans/roadmap-2-1-3.md) plans runtime-invalid
+  and statically unprovable metadata classification.
 - [Roadmap 2.1.4 ExecPlan](execplans/roadmap-2-1-4.md) plans the forbidden
   executable-runtime import architecture guard.
 - [Roadmap 2.1.6 ExecPlan](execplans/roadmap-2-1-6.md) plans the

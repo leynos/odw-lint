@@ -48,7 +48,7 @@ describe("workflow envelope metadata declaration scan", () => {
     expect(result.envelope).toBeUndefined();
     expect(diagnosticSummaries(sourceText, result.diagnostics)).toEqual([
       {
-        message: "Workflow metadata must declare export const meta.",
+        message: "Workflow source must export literal metadata.",
         rule: makeRuleId("odw/meta-required"),
         severity: "error",
         spanText: "",

@@ -60,7 +60,7 @@ const EXPECTED_RULE_ROWS = [
     "error",
     "meta-description",
     [
-      "Workflow metadata must include a non-empty description string.",
+      "Workflow metadata must include a description string.",
       "Workflow metadata description must be a string.",
     ],
     "released",

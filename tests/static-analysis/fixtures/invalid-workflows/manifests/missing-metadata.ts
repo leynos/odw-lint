@@ -21,7 +21,7 @@ export const MISSING_METADATA_FIXTURES = deepFreezeFixtureManifest([
       diagnostic({
         rule: "odw/meta-description",
         severity: "error",
-        message: "Workflow metadata must include a non-empty description string.",
+        message: "Workflow metadata must include a description string.",
         span: {
           start: { offset: 20, line: 1, column: 21 },
           end: { offset: 89, line: 4, column: 2 },

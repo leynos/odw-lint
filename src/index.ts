@@ -45,10 +45,15 @@ export {
   type ToolInfo,
 } from "./diagnostics/types";
 export {
+  classifyWorkflowMetadata,
   createOriginalSourceFile,
   type MaskedSource,
   maskNonCodeSource,
   type OriginalSourceFile,
+  type ParsedMetadataPrimitive,
+  type ParsedMetadataProperty,
+  type ParsedMetadataValue,
+  parseWorkflowMetadataLiteral,
   positionAtOffset,
   type SourceLine,
   type SourceMaskKind,
@@ -67,6 +72,10 @@ export {
   type UnsupportedWorkflowSyntax,
   type WorkflowEnvelope,
   type WorkflowEnvelopeScanResult,
+  type WorkflowMetadataClassification,
+  type WorkflowMetadataFacts,
+  type WorkflowMetadataParseResult,
+  type WorkflowMetadataPortability,
   type WorkflowMetaValue,
   type WorkflowSource,
 } from "./static-analysis";

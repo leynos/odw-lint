@@ -30,3 +30,14 @@ export {
   STATIC_ANALYSIS_STAGES,
 } from "./types";
 export { scanWorkflowEnvelope } from "./workflow-envelope";
+export {
+  classifyWorkflowMetadata,
+  type ParsedMetadataPrimitive,
+  type ParsedMetadataProperty,
+  type ParsedMetadataValue,
+  parseWorkflowMetadataLiteral,
+  type WorkflowMetadataClassification,
+  type WorkflowMetadataFacts,
+  type WorkflowMetadataParseResult,
+  type WorkflowMetadataPortability,
+} from "./workflow-metadata";

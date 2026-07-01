@@ -1,0 +1,54 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`workflow metadata parser edge cases snapshots a fully parsed nested object literal 1`] = `
+{
+  "properties": [
+    {
+      "key": "name",
+      "value": {
+        "kind": "primitive",
+        "value": "n",
+      },
+    },
+    {
+      "key": "description",
+      "value": {
+        "kind": "primitive",
+        "value": "d",
+      },
+    },
+    {
+      "key": "nested",
+      "value": {
+        "kind": "object",
+        "properties": [
+          {
+            "key": "ok",
+            "value": {
+              "kind": "primitive",
+              "value": true,
+            },
+          },
+        ],
+      },
+    },
+    {
+      "key": "flags",
+      "value": {
+        "items": [
+          {
+            "kind": "primitive",
+            "value": false,
+          },
+          {
+            "kind": "primitive",
+            "value": null,
+          },
+        ],
+        "kind": "array",
+      },
+    },
+  ],
+  "status": "parsed",
+}
+`;

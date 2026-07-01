@@ -125,7 +125,7 @@ export const RULE_CATALOGUE = Object.freeze([
     defaultSeverity: "error",
     releaseStatus: "released",
     messages: [
-      "Workflow metadata must include a non-empty description string.",
+      "Workflow metadata must include a description string.",
       "Workflow metadata description must be a string.",
     ],
   }),

@@ -61,9 +61,22 @@ indexes, then converts them back to original-source UTF-8 byte offsets before
 calling `spanFromOffsets`.
 
 The scanner records whether metadata is an object literal, a non-object
-expression, an unterminated object, or a missing value. Metadata field
-diagnostics such as `odw/meta-name`, `odw/meta-description`, and
-`odw/meta-statically-unprovable` are deferred to roadmap task 2.1.3.
+expression, an unterminated object, or a missing value. The metadata classifier
+in `src/static-analysis/workflow-metadata.ts` consumes those envelope facts and
+emits the runtime-invalid metadata diagnostics `odw/meta-object`,
+`odw/meta-name`, and `odw/meta-description`, plus
+`odw/meta-statically-unprovable` for metadata that would require source
+evaluation. It must continue to parse source text passively and must not import
+or call executable ODW loader, primitive, launcher, worker, runtime,
+scheduler, metadata-evaluating, or agent-dispatch paths.
+
+The focused classifier tests live in
+`tests/static-analysis/workflow-metadata.test.ts`. Invalid fixture parity for
+the task-owned metadata and envelope rules lives in
+`tests/static-analysis/invalid-workflow-metadata-parity.test.ts`. Task 3.1.1
+still owns user-visible `odw/claude-pure-meta` emission; do not add that
+diagnostic to the metadata classifier before the pure-literal compatibility
+task lands.
 
 Production modules under `src/static-analysis/` use relative internal imports
 for scanner collaborators. Public-consumer tests may import
@@ -71,8 +84,9 @@ for scanner collaborators. Public-consumer tests may import
 package entry.
 
 When extending this area, keep the roadmap sequencing intact: task 2.1.4 owns
-the forbidden-import architecture test for production code, and task 2.2.1 owns
-the SWC parser adapter.
+the forbidden-import architecture test for production code, task 2.2.1 owns the
+SWC parser adapter, and task 3.1.1 owns Claude pure-metadata compatibility
+diagnostics.
 
 ## Commit Gate
 

@@ -317,13 +317,19 @@ statically. It unlocks metadata rules and body parsing. See
     state, preserves Unicode-safe UTF-8 spans, and emits exact
     `odw/no-import-export` diagnostics for unsupported fixtures. Metadata
     field classification remains deferred to 2.1.3.
-- [ ] 2.1.3. Implement metadata classification for runtime-invalid,
+- [x] 2.1.3. Implement metadata classification for runtime-invalid,
   statically unprovable, and Claude-incompatible cases.
   - Requires 2.1.2.
   - See [technical-design.md](technical-design.md) §§6.3 and 9.1.
   - Success: computed metadata receives `odw/meta-statically-unprovable`
     rather than being executed or collapsed into an ordinary ODW-invalid
     diagnostic.
+  - Completion note: `classifyWorkflowMetadata` now emits runtime-invalid
+    metadata diagnostics and one passive `odw/meta-statically-unprovable`
+    warning for computed metadata, with invalid fixture parity and hostile
+    source tests proving classification does not evaluate workflow metadata.
+    User-visible `odw/claude-pure-meta` emission remains deferred to task
+    3.1.1.
 - [x] 2.1.4. Add a forbidden-import architecture test for production code.
   - Requires 1.1.1.
   - See [technical-design.md](technical-design.md) §§5 and 11.3.

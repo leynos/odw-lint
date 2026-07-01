@@ -15,7 +15,7 @@ import { findUnsupportedDeclarations } from "./workflow-envelope-unsupported";
 const META_EXPORT_PATTERN = /export\s+const\s+meta\s*=/y;
 const META_REQUIRED_RULE = makeRuleId("odw/meta-required");
 const NO_IMPORT_EXPORT_RULE = makeRuleId("odw/no-import-export");
-const META_REQUIRED_MESSAGE = "Workflow metadata must declare export const meta.";
+const META_REQUIRED_MESSAGE = "Workflow source must export literal metadata.";
 const NO_IMPORT_EXPORT_MESSAGE = "Workflow body must not add top-level imports or exports.";
 
 type MetaDeclarationMatch = {
@@ -147,7 +147,7 @@ const scanMetaValue = (
   maskedText: string,
   valueSearchIndex: number,
 ): WorkflowMetaValue => {
-  const valueStartIndex = nextNonWhitespaceIndex(maskedText, valueSearchIndex);
+  const valueStartIndex = nextMetadataValueIndex(sourceFile.sourceText, valueSearchIndex);
   if (valueStartIndex === undefined) {
     return Object.freeze({
       kind: "missing-value",
@@ -155,14 +155,14 @@ const scanMetaValue = (
     });
   }
 
-  if (maskedText[valueStartIndex] === ";") {
+  if (sourceFile.sourceText[valueStartIndex] === ";") {
     return Object.freeze({
       kind: "missing-value",
       span: spanFromTextIndexes(sourceFile, valueStartIndex, valueStartIndex),
     });
   }
 
-  if (maskedText[valueStartIndex] !== "{") {
+  if (sourceFile.sourceText[valueStartIndex] !== "{") {
     return nonObjectMetaValue(sourceFile, maskedText, valueStartIndex);
   }
 
@@ -177,9 +177,9 @@ const nonObjectMetaValue = (
 ): WorkflowMetaValue => {
   const statementEndIndex = topLevelStatementEndIndex(maskedText, startIndex);
   const expressionEndIndex = trimStatementTerminator(
-    maskedText,
+    sourceFile.sourceText,
     startIndex,
-    trimTrailingWhitespaceIndex(maskedText, startIndex, statementEndIndex),
+    trimTrailingWhitespaceIndex(sourceFile.sourceText, startIndex, statementEndIndex),
   );
 
   return Object.freeze({
@@ -212,15 +212,49 @@ const objectMetaValue = (
   });
 };
 
-/** Finds the next non-whitespace source-text index. */
-const nextNonWhitespaceIndex = (text: string, startIndex: number): number | undefined => {
+/** Finds the next metadata value token while keeping comments inert. */
+const nextMetadataValueIndex = (text: string, startIndex: number): number | undefined => {
   for (let index = startIndex; index < text.length; index += 1) {
-    if (!/\s/u.test(text[index] ?? "")) {
-      return index;
+    const character = text[index] ?? "";
+    if (/\s/u.test(character)) {
+      continue;
     }
+    if (text.startsWith("//", index)) {
+      index = scanLineCommentEnd(text, index + 2) - 1;
+      continue;
+    }
+    if (text.startsWith("/*", index)) {
+      index = scanBlockCommentEnd(text, index + 2) - 1;
+      continue;
+    }
+    return index;
   }
 
   return undefined;
+};
+
+/** Finds the end of a line comment from the first character after `//`. */
+const scanLineCommentEnd = (text: string, startIndex: number): number => {
+  for (let index = startIndex; index < text.length; index += 1) {
+    const character = text[index] ?? "";
+    if (isLineTerminator(character)) {
+      return index;
+    }
+  }
+  return text.length;
+};
+
+/** Checks for JavaScript line terminators. */
+const isLineTerminator = (character: string): boolean => {
+  return (
+    character === "\n" || character === "\r" || character === "\u2028" || character === "\u2029"
+  );
+};
+
+/** Finds the end of a block comment from the first character after `/*`. */
+const scanBlockCommentEnd = (text: string, startIndex: number): number => {
+  const terminatorIndex = text.indexOf("*/", startIndex);
+  return terminatorIndex === -1 ? text.length : terminatorIndex + 2;
 };
 
 /** Finds a matching `}` for an object that starts at `startIndex`. */
