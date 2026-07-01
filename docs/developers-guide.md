@@ -63,6 +63,7 @@ make all
 
 - `make build`
 - `make check-fmt`
+- `make whitespace-hygiene`
 - `make lint`
 - `make typecheck`
 - `make test`
@@ -71,6 +72,10 @@ make all
 marker depends on both `package.json` and `bun.lock`, so a lockfile-only
 dependency update is expected to rerun `bun install` before formatting,
 linting, type checking, or tests use the installed toolchain.
+
+`make whitespace-hygiene` scans tracked non-binary files for trailing spaces
+and tabs. It reports path and line diagnostics only; it does not rewrite raw
+workflow fixtures, copied ODW examples, or snapshot files.
 
 Run `make markdownlint` as well when Markdown files change.
 

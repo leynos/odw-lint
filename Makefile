@@ -1,8 +1,8 @@
-.PHONY: help all clean build lint biomejs oxlint fmt check-fmt typecheck test refresh-fixtures branch-freshness markdownlint nixie
+.PHONY: help all clean build lint biomejs oxlint fmt check-fmt typecheck test refresh-fixtures whitespace-hygiene branch-freshness markdownlint nixie
 
 .DEFAULT_GOAL := all
 
-all: build check-fmt lint typecheck test
+all: build check-fmt whitespace-hygiene lint typecheck test
 
 node_modules: package.json bun.lock
 	bun install
@@ -35,6 +35,9 @@ test: build ## Run tests
 
 refresh-fixtures: build ## Refresh workflow fixture metadata
 	bun run tests/static-analysis/fixtures/refresh-metadata.ts
+
+whitespace-hygiene: ## Check tracked files for trailing whitespace
+	bun run tests/build-gate/whitespace-hygiene.ts
 
 branch-freshness: ## Check roadmap task branch freshness
 	bun run tests/build-gate/branch-freshness-git.ts

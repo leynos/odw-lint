@@ -21,14 +21,11 @@ describe("fixture metadata refresh manifest source", () => {
         directoryUrl(temp.repositoryRoot),
         directoryUrl(temp.odwReferenceCheckout),
       );
-      const representativeSources = Object.fromEntries(
-        representativeManifestPaths.map((relativePath) => [
-          relativePath,
-          sourceForPath(files, relativePath),
-        ]),
+      const representativeSources = representativeManifestPaths.map((relativePath) =>
+        formatRepresentativeSource(relativePath, sourceForPath(files, relativePath)),
       );
 
-      expect(representativeSources).toMatchSnapshot();
+      expect(representativeSources.join("\n")).toMatchSnapshot();
     } finally {
       temp.remove();
     }
@@ -53,6 +50,12 @@ const sourceForPath = (
   }
   return file.source;
 };
+
+/**
+ * Renders one generated source with a path heading for stable snapshot review.
+ */
+const formatRepresentativeSource = (relativePath: string, source: string): string =>
+  [`## ${relativePath}`, "", source].join("\n");
 
 /**
  * Converts a temp directory path into a child-resolving file URL.

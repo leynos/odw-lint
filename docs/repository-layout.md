@@ -114,7 +114,8 @@ contracts. Fixture subdirectories have different ownership rules:
 ## Tooling boundaries
 
 Use the Makefile as the maintainer entry point for validation. `make all` is
-the full code gate; Markdown changes also require `make markdownlint`, and
+the full code gate; it includes the tracked-file whitespace hygiene guard under
+`tests/build-gate/`. Markdown changes also require `make markdownlint`, and
 Mermaid changes require `make nixie`.
 Use `make refresh-fixtures` when workflow fixture source or manifest metadata
 changes.

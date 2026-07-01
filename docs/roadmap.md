@@ -261,7 +261,7 @@ depending on manual post-commit audits.
     - Addendum (from audit:2.1.6; medium). Centralize package manifest parsing
       and package facade export extraction for public API and architecture
       tests. Lightweight addendum pass.
-- [ ] 1.5.4. Add tracked-file whitespace hygiene to the commit gate.
+- [x] 1.5.4. Add tracked-file whitespace hygiene to the commit gate.
   - Requires 1.5.2.
   - Add a lightweight whitespace check for tracked files or diffs so committed
     snapshots and fixtures cannot carry trailing whitespace after normal gates
