@@ -115,9 +115,9 @@ contracts. Fixture subdirectories have different ownership rules:
   and template literals. These fixtures may be formatted by repository tooling,
   but their manifest hashes must stay synchronized.
 - `tests/static-analysis/fixtures/refresh-metadata.ts` is the maintainer
-  refresh script behind `make refresh-fixtures`. It refreshes copied ODW example
-  snapshots and static-analysis fixture manifests without executing raw workflow
-  fixture source.
+  refresh script behind `make refresh-fixtures`. It refreshes copied ODW
+  example snapshots and static-analysis fixture manifests without executing raw
+  workflow fixture source.
 
 Invalid fixture diagnostic expectations are checked against the rule catalogue
 for rule identifier, default severity, exact reviewed messages or reviewed
@@ -126,20 +126,24 @@ messages must use catalogue-owned templates rather than broad substring
 assertions. Update the catalogue and fixture manifest together when a fixture's
 expected diagnostic message intentionally changes.
 
-`tests/build-gate/` protects repository-maintenance gates. Shared Git
-subprocess execution, tracked-file listing, temporary repository setup,
-repository-relative writes, fixture commits, and CLI-output capture belong in
-`tests/build-gate/git-support.ts`. Individual gate modules keep their own
-feature policy, including file-size path scope, whitespace content scanning and
-branch-freshness classification.
+`tests/build-gate/` protects repository-maintenance gates. Shared command
+execution, Git subprocess execution, tracked-file listing, temporary repository
+setup, repository-relative writes, fixture commits, and CLI-output capture
+belong in `tests/build-gate/git-support.ts`. Individual gate modules keep their
+own feature policy, including file-size path scope, whitespace content
+scanning, branch-freshness classification, and review-evidence classification.
 
 ## Tooling boundaries
 
 Use the Makefile as the maintainer entry point for validation. `make all` is
 the full code gate; it includes the tracked-file whitespace hygiene guard under
 `tests/build-gate/`. Markdown changes also require `make markdownlint`, and
-Mermaid changes require `make nixie`.
-Use `make refresh-fixtures` when workflow fixture source or manifest metadata
+Mermaid changes require `make nixie`. Roadmap review support lives in
+non-recursive review targets: `make branch-freshness` checks task branches
+against protected `origin/main` changes, and `make review-evidence` re-runs
+`make all`, `make markdownlint`, and `make nixie` through the shared build-gate
+command runner before reporting the selected review path. Use
+`make refresh-fixtures` when workflow fixture source or manifest metadata
 changes.
 
 Use package and configuration files for their narrow responsibilities:

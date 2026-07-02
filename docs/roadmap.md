@@ -820,7 +820,7 @@ types" and [developers-guide.md](developers-guide.md) "Documentation Upkeep".
   - Success: maintainers can find every current documentation family and
     repository path from one canonical navigation trail without inferring
     layout from file names.
-  - [ ] 4.4.1.1. Refresh build-gate repository-layout guidance.
+  - [x] 4.4.1.1. Refresh build-gate repository-layout guidance.
     - Addendum (from audit:1.5.6; low). Update the canonical layout guide so
       `tests/build-gate/` and `git-support.ts` cover generalized build gates
       and the review-evidence target. Lightweight addendum pass.
