@@ -602,6 +602,16 @@ const result = spawnSync(process.execPath, ["--eval", script], {
 expect(result.status).toBe(0);
 ```
 
+## Addenda
+
+- [ ] 2.1.5.1. Extract structured cold-module-graph import-safety helpers.
+  - Source: review:2.1.5; severity low.
+  - Scope: centralize the duplicated fresh-module-graph spawn guard shared by
+    hostile metadata and fixture refresh tests, including typed script
+    construction and structured failure output.
+  - Success: both import-safety guards consume one helper and report actionable
+    failure details without weakening the no-execution security assertions.
+
 ## Interfaces and dependencies
 
 Use these existing, stable surfaces (no new APIs are introduced):

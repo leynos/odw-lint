@@ -1127,6 +1127,13 @@ rule page.
     `docs/contents.md` or a user's guide remain deferred.
   - Success: readers can discover the rule reference from project
     documentation without already knowing the `docs/rules/` path.
+- [ ] 2.1.6.3. Add failing and fixed rule-reference examples.
+  - Source: audit:2.1.5; severity low.
+  - Scope: add concrete failing-then-fixed examples to released rule
+    documentation pages, reusing invalid workflow fixtures where they improve
+    reviewability.
+  - Success: released rule pages show actionable examples that remain aligned
+    with the catalogue and fixture expectations.
 
 ## Revision note
 

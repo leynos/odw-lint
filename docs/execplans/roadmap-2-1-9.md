@@ -1324,6 +1324,16 @@ locked development tooling:
 - `@biomejs/biome@2.5.1` for file-scoped TypeScript formatting.
 - Repository Makefile targets for full validation.
 
+## Addenda
+
+- [ ] 2.1.9.1. Consolidate string delimiter classification.
+  - Source: audit:2.1.5; severity medium.
+  - Scope: move duplicated string-delimiter predicates into
+    `source-mask-delimiters.ts` so token scanners share the documented
+    delimiter source of truth.
+  - Success: source-mask string, template, regex, and facade tests pin one
+    delimiter predicate without changing masking behaviour.
+
 ## Revision note
 
 Planning round 1 created the ExecPlan for roadmap task 2.1.9. It fixed the

@@ -279,6 +279,16 @@ depending on manual post-commit audits.
     hygiene gates while preserving each gate's feature-specific policy.
   - Success: build-gate tests exercise one documented Git support helper and no
     gate carries a forked subprocess or tracked-file enumeration contract.
+- [ ] 1.5.6. Add independent roadmap audit review evidence gates.
+  - Requires 1.5.2 and 1.5.5.
+  - Add a roadmap review or audit workflow check, permission profile, or
+    equivalent gate that re-runs repository gates with command execution
+    enabled, reports explicit degraded-mode evidence when execution is
+    unavailable, and selects an explicit fallback when the scrutineer
+    dual-review path is quota-blocked.
+  - Success: benchmark and audit reviews no longer rely solely on a task
+    agent's self-reported gate output or silently substitute the intended
+    dual-review path.
 
 ## 2. First vertical slice: ODW dialect validation
 
@@ -358,6 +368,11 @@ statically. It unlocks metadata rules and body parsing. See
     `scanWorkflowEnvelope` and `classifyWorkflowMetadata` path and through the
     public `odw-lint` entry in a fresh module graph, asserting exact diagnostics
     with no hostile side effect marker.
+  - [ ] 2.1.5.1. Extract structured cold-module-graph import-safety helpers.
+    - Addendum (from review:2.1.5; low). Centralize the duplicated
+      fresh-module-graph spawn guard for hostile metadata and fixture refresh
+      tests, with typed script construction and structured failure output.
+      Lightweight addendum pass.
 - [x] 2.1.6. Introduce the typed rule catalogue and rule-doc parity checks.
   - Requires 1.2.1.
   - Store rule identifiers, categories, default severities, docs slugs, and
@@ -373,6 +388,10 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:2.1.6; low). Link `docs/rules/index.md` from the
       first user-facing or interim developer-guide navigation surface.
       Lightweight addendum pass.
+  - [ ] 2.1.6.3. Add failing and fixed rule-reference examples.
+    - Addendum (from audit:2.1.5; low). Add concrete failing-then-fixed
+      examples to released rule documentation pages, reusing invalid workflow
+      fixtures where they improve reviewability. Lightweight addendum pass.
 - [x] 2.1.7. Add rule-catalogue parity checks for fixture diagnostics.
   - Requires 2.1.6 and step 1.3.
   - Check fixture manifest expectations against the typed rule catalogue so
@@ -408,6 +427,10 @@ statically. It unlocks metadata rules and body parsing. See
   - Success: the source-mask facade preserves current masking behaviour, each
     token family has a named implementation home, and existing masking fixture
     and property tests remain green.
+  - [ ] 2.1.9.1. Consolidate string delimiter classification.
+    - Addendum (from audit:2.1.5; medium). Move duplicated string-delimiter
+      predicates into `source-mask-delimiters.ts` so token scanners share the
+      documented delimiter source of truth. Lightweight addendum pass.
 - [x] 2.1.10. Canonicalize diagnostic rule documentation link contracts.
   - Requires 2.1.6.
   - Addendum source: audit:2.1.7; medium.
@@ -416,6 +439,21 @@ statically. It unlocks metadata rules and body parsing. See
     field to downstream integrations.
   - Success: diagnostic metadata exposes one tested rule-documentation reference
     format and no code or docs describe a competing URL/path shape.
+- [ ] 2.1.11. Broaden hostile metadata side-effect fixtures.
+  - Requires 1.3.5 and 2.1.5.
+  - Add at least one filesystem-write or environment-read hostile metadata
+    fixture through the refresh tooling, updating hashes, spans, snapshots, and
+    fixture-count guards without evaluating fixture source.
+  - Success: the hostile metadata regression exercises global-write,
+    thrown-marker, and filesystem or environment side-effect observables while
+    fixture refresh output remains deterministic.
+- [ ] 2.1.12. Introduce a static workflow lint entry point.
+  - Requires 2.1.3, 2.1.5, and 2.1.7.
+  - Add a production `lintWorkflowSource` entry point that owns the merge of
+    envelope-scan and metadata-classification diagnostics before the `check`
+    command consumes the static loader boundary.
+  - Success: tests and future CLI work consume one call that emits complete
+    envelope and metadata diagnostics without reimplementing merge order.
 
 ### 2.2. Normalize and parse workflow bodies with SWC
 
