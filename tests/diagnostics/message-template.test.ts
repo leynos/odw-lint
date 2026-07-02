@@ -6,12 +6,16 @@ import { describe, expect, expectTypeOf, it } from "bun:test";
 import * as fc from "fast-check";
 import {
   createMessageTemplate,
+  type MessageTemplate,
   type MessageTemplateValues,
   messageMatchesTemplate,
   renderMessageTemplate,
 } from "odw-lint";
 
 const MESSAGE_TEMPLATE_PROPERTY_RUNNER = { seed: 0x2182026, numRuns: 200 } as const;
+const MAX_TEST_TEMPLATE_LENGTH = 2_000;
+const MAX_TEST_PLACEHOLDER_OCCURRENCES = 16;
+const MAX_TEST_MATCH_CANDIDATE_LENGTH = 8_192;
 const GENERATED_TEMPLATE_PARTS = fc.array(
   fc.constantFrom(
     { kind: "literal", text: "Workflow body: " },
@@ -50,13 +54,21 @@ describe("diagnostic message templates", () => {
   it("extracts unique placeholders in first-appearance order", () => {
     const template = createMessageTemplate("{detail}: {token} then {detail}");
 
-    expect(template).toEqual({
-      template: "{detail}: {token} then {detail}",
-      placeholders: ["detail", "token"],
-    });
+    expect(template.template).toBe("{detail}: {token} then {detail}");
+    expect(template.placeholders).toEqual(["detail", "token"]);
     expect(Object.isFrozen(template)).toBeTrue();
     expect(Object.isFrozen(template.placeholders)).toBeTrue();
     expectTypeOf(template.placeholders).toEqualTypeOf<readonly string[]>();
+  });
+
+  it("rejects structural templates at the public TypeScript boundary", () => {
+    const structuralTemplate = {
+      template: "{detail}",
+      placeholders: ["detail"] as const,
+    };
+
+    expectTypeOf<typeof structuralTemplate>().not.toMatchTypeOf<MessageTemplate>();
+    expectTypeOf(createMessageTemplate("{detail}")).toMatchTypeOf<MessageTemplate>();
   });
 
   it.each([
@@ -69,6 +81,20 @@ describe("diagnostic message templates", () => {
     expect(() => createMessageTemplate(templateText)).toThrow(/placeholder/u);
   });
 
+  it("rejects templates that exceed bounded matching complexity", () => {
+    expect(() => createMessageTemplate("x".repeat(MAX_TEST_TEMPLATE_LENGTH + 1))).toThrow(
+      /maximum length/u,
+    );
+
+    const placeholderHeavyTemplate = Array.from(
+      { length: MAX_TEST_PLACEHOLDER_OCCURRENCES + 1 },
+      (_value, index) => `{detail${index}}`,
+    ).join(" ");
+    expect(() => createMessageTemplate(placeholderHeavyTemplate)).toThrow(
+      /maximum placeholder count/u,
+    );
+  });
+
   it("renders all placeholder occurrences with exact values", () => {
     const template = createMessageTemplate("{detail}: {token} then {detail}");
 
@@ -78,6 +104,18 @@ describe("diagnostic message templates", () => {
         token: "}",
       }),
     ).toBe("missing brace: } then missing brace");
+  });
+
+  it("renders and matches literal-only templates through the shared token path", () => {
+    const template = createMessageTemplate("Workflow metadata must be an object literal.");
+
+    expect(renderMessageTemplate(template, {})).toBe(
+      "Workflow metadata must be an object literal.",
+    );
+    expect(
+      messageMatchesTemplate(template, "Workflow metadata must be an object literal."),
+    ).toBeTrue();
+    expect(messageMatchesTemplate(template, "Workflow metadata must be an object")).toBeFalse();
   });
 
   it("rejects missing and unknown render values", () => {
@@ -134,6 +172,18 @@ describe("diagnostic message templates", () => {
       ),
     ).toBeTrue();
     expect(messageMatchesTemplate(template, "same: } then different")).toBeFalse();
+  });
+
+  it("rejects overlong candidate messages before regex matching", () => {
+    const template = createMessageTemplate("Workflow body: {detail}");
+
+    expect(messageMatchesTemplate(template, `Workflow body: ${"x".repeat(16)}`)).toBeTrue();
+    expect(
+      messageMatchesTemplate(
+        template,
+        `Workflow body: ${"x".repeat(MAX_TEST_MATCH_CANDIDATE_LENGTH)}`,
+      ),
+    ).toBeFalse();
   });
 
   it("matches every generated rendered message to its template", () => {

@@ -5,21 +5,38 @@
  * parser detail to stay reviewable without weakening tests to substring checks.
  */
 
+const messageTemplateBrand: unique symbol = Symbol("messageTemplate");
+
 /** A reviewed diagnostic message with zero or more `{name}` placeholders. */
 export type MessageTemplate = {
   /** Reviewed template text containing `{name}` placeholders. */
   readonly template: string;
   /** Unique placeholder names in first-appearance order. */
   readonly placeholders: readonly string[];
+  /** Brands reviewed templates so only `createMessageTemplate` can create them. */
+  readonly [messageTemplateBrand]: true;
 };
 
 /** Placeholder values keyed by placeholder name. */
 export type MessageTemplateValues = Readonly<Record<string, string>>;
 
+type MessageTemplateToken =
+  | { readonly kind: "literal"; readonly text: string }
+  | { readonly kind: "placeholder"; readonly name: string };
+
+type ParsedMessageTemplate = {
+  readonly tokens: readonly MessageTemplateToken[];
+  readonly placeholders: readonly string[];
+};
+
 const PLACEHOLDER_NAME_SOURCE = "[A-Za-z][A-Za-z0-9]*";
 const PLACEHOLDER_NAME_PATTERN = new RegExp(`^${PLACEHOLDER_NAME_SOURCE}$`, "u");
-const PLACEHOLDER_PATTERN_SOURCE = `\\{(${PLACEHOLDER_NAME_SOURCE})\\}`;
 const REGEXP_METACHARACTER_PATTERN = /[\\^$.*+?()[\]{}|]/gu;
+const MAX_TEMPLATE_LENGTH = 2_000;
+const MAX_TEMPLATE_PLACEHOLDER_OCCURRENCES = 16;
+const MAX_MATCH_CANDIDATE_LENGTH = 8_192;
+const compiledTemplateRegexes = new WeakMap<MessageTemplate, RegExp>();
+const parsedTemplateTokens = new WeakMap<MessageTemplate, readonly MessageTemplateToken[]>();
 
 /**
  * Parses reviewed template text into a frozen message template.
@@ -28,12 +45,20 @@ const REGEXP_METACHARACTER_PATTERN = /[\\^$.*+?()[\]{}|]/gu;
  * @returns Frozen message template with unique placeholder names.
  */
 export const createMessageTemplate = (template: string): MessageTemplate => {
-  const placeholders = scanPlaceholders(template);
-
-  return Object.freeze({
+  assertTemplateLength(template);
+  const parsedTemplate = parseTemplate(template);
+  const messageTemplate = {
     template,
-    placeholders: Object.freeze([...placeholders]),
+    placeholders: Object.freeze([...parsedTemplate.placeholders]),
+  } as MessageTemplate;
+
+  Object.defineProperty(messageTemplate, messageTemplateBrand, {
+    value: true,
+    enumerable: false,
   });
+  parsedTemplateTokens.set(messageTemplate, Object.freeze([...parsedTemplate.tokens]));
+
+  return Object.freeze(messageTemplate);
 };
 
 /**
@@ -49,9 +74,9 @@ export const renderMessageTemplate = (
 ): string => {
   assertValueKeysMatchTemplate(template, values);
 
-  return template.template.replaceAll(placeholderMatcher(), (_match, name: string) => {
-    return requiredPlaceholderValue(values, name);
-  });
+  return tokensFor(template)
+    .map((token) => renderToken(token, values))
+    .join("");
 };
 
 /**
@@ -62,14 +87,21 @@ export const renderMessageTemplate = (
  * @returns True when the message fully matches the reviewed template.
  */
 export const messageMatchesTemplate = (template: MessageTemplate, message: string): boolean => {
+  if (!isMatchCandidateWithinBounds(message)) {
+    return false;
+  }
+
   return templateRegex(template).test(message);
 };
 
-/** Extracts valid placeholder names in stable first-appearance order. */
-const scanPlaceholders = (template: string): readonly string[] => {
+/** Parses reviewed template text into reusable render and match tokens. */
+const parseTemplate = (template: string): ParsedMessageTemplate => {
+  const tokens: MessageTemplateToken[] = [];
   const placeholders: string[] = [];
   const seenPlaceholders = new Set<string>();
+  let placeholderOccurrences = 0;
   let index = 0;
+  let literalStart = 0;
 
   while (index < template.length) {
     const character = template[index] ?? "";
@@ -86,16 +118,44 @@ const scanPlaceholders = (template: string): readonly string[] => {
       throw new Error("Message template contains an unclosed placeholder.");
     }
 
+    tokens.push({ kind: "literal", text: template.slice(literalStart, index) });
     const name = template.slice(index + 1, closeIndex);
     assertPlaceholderName(name);
+    placeholderOccurrences += 1;
+    assertPlaceholderOccurrences(placeholderOccurrences);
+    tokens.push({ kind: "placeholder", name });
     if (!seenPlaceholders.has(name)) {
       placeholders.push(name);
       seenPlaceholders.add(name);
     }
     index = closeIndex + 1;
+    literalStart = index;
   }
 
-  return placeholders;
+  tokens.push({ kind: "literal", text: template.slice(literalStart) });
+
+  return {
+    tokens: Object.freeze(tokens),
+    placeholders: Object.freeze(placeholders),
+  };
+};
+
+/** Verifies reviewed templates stay small enough for deterministic matching. */
+const assertTemplateLength = (template: string): void => {
+  if (template.length > MAX_TEMPLATE_LENGTH) {
+    throw new Error(
+      `Message template exceeds maximum length of ${MAX_TEMPLATE_LENGTH} characters.`,
+    );
+  }
+};
+
+/** Verifies dynamic placeholders cannot create pathological matchers. */
+const assertPlaceholderOccurrences = (placeholderOccurrences: number): void => {
+  if (placeholderOccurrences > MAX_TEMPLATE_PLACEHOLDER_OCCURRENCES) {
+    throw new Error(
+      `Message template exceeds maximum placeholder count of ${MAX_TEMPLATE_PLACEHOLDER_OCCURRENCES}.`,
+    );
+  }
 };
 
 /** Verifies a placeholder name is explicit and unambiguous. */
@@ -144,37 +204,57 @@ const requiredPlaceholderValue = (values: MessageTemplateValues, name: string): 
   return value;
 };
 
-/** Converts reviewed template text to a whole-message matching expression. */
-const templateRegex = (template: MessageTemplate): RegExp => {
-  const parts: string[] = ["^"];
-  const capturedNames = new Set<string>();
-  let index = 0;
-
-  for (const match of template.template.matchAll(placeholderMatcher())) {
-    const matchText = match[0];
-    const placeholderName = match[1];
-    const matchIndex = match.index;
-    if (matchIndex === undefined) {
-      throw new Error("Message template placeholder match is missing its index.");
-    }
-    if (placeholderName === undefined) {
-      throw new Error("Message template placeholder match is missing its name.");
-    }
-
-    parts.push(escapeRegExp(template.template.slice(index, matchIndex)));
-    parts.push(placeholderPattern(placeholderName, capturedNames));
-    index = matchIndex + matchText.length;
+/** Renders one parsed template token. */
+const renderToken = (token: MessageTemplateToken, values: MessageTemplateValues): string => {
+  if (token.kind === "literal") {
+    return token.text;
   }
 
-  parts.push(escapeRegExp(template.template.slice(index)));
-  parts.push("$");
-
-  return new RegExp(parts.join(""), "u");
+  return requiredPlaceholderValue(values, token.name);
 };
 
-/** Creates a fresh placeholder matcher so global regex state cannot leak. */
-const placeholderMatcher = (): RegExp => {
-  return new RegExp(PLACEHOLDER_PATTERN_SOURCE, "gu");
+/** Reports whether parser detail is small enough to attempt template matching. */
+const isMatchCandidateWithinBounds = (message: string): boolean => {
+  return message.length <= MAX_MATCH_CANDIDATE_LENGTH;
+};
+
+/** Returns the token stream attached to an opaque reviewed template. */
+const tokensFor = (template: MessageTemplate): readonly MessageTemplateToken[] => {
+  const tokens = parsedTemplateTokens.get(template);
+  if (tokens === undefined) {
+    throw new Error("Message template was not created by createMessageTemplate.");
+  }
+
+  return tokens;
+};
+
+/** Converts reviewed template text to a whole-message matching expression. */
+const templateRegex = (template: MessageTemplate): RegExp => {
+  const compiledRegex = compiledTemplateRegexes.get(template);
+  if (compiledRegex !== undefined) {
+    return compiledRegex;
+  }
+
+  const parts: string[] = ["^"];
+  const capturedNames = new Set<string>();
+
+  for (const token of tokensFor(template)) {
+    parts.push(tokenPattern(token, capturedNames));
+  }
+  parts.push("$");
+
+  const regex = new RegExp(parts.join(""), "u");
+  compiledTemplateRegexes.set(template, regex);
+  return regex;
+};
+
+/** Builds a regex fragment for one parsed template token. */
+const tokenPattern = (token: MessageTemplateToken, capturedNames: Set<string>): string => {
+  if (token.kind === "literal") {
+    return escapeRegExp(token.text);
+  }
+
+  return placeholderPattern(token.name, capturedNames);
 };
 
 /** Builds a capture or backreference for a placeholder occurrence. */

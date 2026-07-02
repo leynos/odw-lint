@@ -341,6 +341,19 @@ rule meanings remain compatible. Renaming or removing a released rule, changing
 an existing rule's meaning, or changing the diagnostic object shape requires
 schema-version review and compatibility handling.
 
+Reviewed message templates keep dynamic diagnostics inside the same catalogue
+contract as exact messages. Template text may contain placeholders of the form
+`{name}`, where `name` starts with an ASCII letter and continues with ASCII
+letters or digits. Braces have no literal escape syntax in the current
+contract. Rendering requires exactly the declared placeholder keys as own,
+non-empty string values; missing keys, unknown keys, inherited keys, and empty
+values are invalid. Matching is anchored to the whole diagnostic message:
+literal segments are escaped, each placeholder must match at least one
+character, repeated placeholders must match the same text, and overlong
+candidate messages are rejected before regex matching. Rule authors attach
+reviewed templates through `RuleDefinition.messageTemplates`; fixture parity
+accepts a dynamic message only when it matches one of those reviewed templates.
+
 ## 9. Rule taxonomy
 
 `src/diagnostics/rule-catalogue.ts` is the implementation source of truth for

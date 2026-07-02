@@ -276,6 +276,35 @@ same `RULE_IDS` array. Update the catalogue, schema snapshot, rule page, index,
 fixture manifest expectations, and parity test expectations in the same change
 when adding, renaming, releasing, or changing the reviewed messages for a rule.
 
+### Message templates
+
+Rule authors use `messageTemplates` only when a diagnostic must include
+source-specific parser detail that cannot be reviewed as one exact string.
+Templates are authored as raw strings in the rule catalogue and are parsed by
+`createMessageTemplate` when the catalogue entry is built. Current rules keep
+`messageTemplates` empty until they emit dynamic parser-backed diagnostics.
+
+A template placeholder is written as `{name}`. The name must begin with an
+ASCII letter and may continue with ASCII letters or digits. Literal `{` and
+`}` characters are not part of the template grammar today; add a design note
+before introducing escape syntax. Empty placeholders, whitespace in placeholder
+names, numeric first characters, unclosed `{`, and unopened `}` are rejected
+when the catalogue is constructed. Reviewed templates are also bounded by
+length and placeholder-count limits so matcher construction stays predictable.
+
+`renderMessageTemplate(template, values)` requires the value object to contain
+exactly the placeholder names declared by the template. Missing keys, unknown
+extra keys, inherited keys, and empty string values are errors. Repeated
+placeholder occurrences render the same value each time.
+
+`messageMatchesTemplate(template, message)` answers whether a concrete
+diagnostic message could have been rendered from the reviewed template. Matching
+is whole-message only: literal text is escaped, placeholders match one or more
+characters, repeated placeholders must match the same dynamic text, and
+unrelated prefixes, suffixes, empty placeholder runs, or overlong candidate
+messages fail. Fixture parity uses this helper rather than substring checks, so
+dynamic messages remain reviewable.
+
 Behavioural tests should use `@aboviq/bun-test-cucumber` with Gherkin feature
 files. Snapshot tests should use Bun's built-in snapshot testing support.
 Property tests should use `fast-check`, and exhaustive bounded proofs should use

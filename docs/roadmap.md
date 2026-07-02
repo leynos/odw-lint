@@ -454,19 +454,19 @@ statically. It unlocks metadata rules and body parsing. See
     weakening dynamic diagnostics to broad string assertions, and
     `tests/diagnostics/architecture-fixtures.ts` plus
     `tests/diagnostics/public-api-fixtures.ts` pin the new module and exports.
-  - [ ] 2.1.8.1. Brand diagnostic message templates.
+  - [x] 2.1.8.1. Brand diagnostic message templates.
     - Addendum (from review:2.1.8; low). Make `MessageTemplate` opaque so
       render and match helpers only accept templates that passed
       `createMessageTemplate`. Lightweight addendum pass.
-  - [ ] 2.1.8.2. Cache and harden message-template matching.
+  - [x] 2.1.8.2. Cache and harden message-template matching.
     - Addendum (from review:2.1.8; medium). Memoize compiled match regexes and
       add candidate length or placeholder-complexity guards before dynamic
       parser detail reaches this path. Lightweight addendum pass.
-  - [ ] 2.1.8.3. Single-source message-template tokenization.
+  - [x] 2.1.8.3. Single-source message-template tokenization.
     - Addendum (from audit:2.1.8; low). Build rendering and matching from one
       placeholder token stream so the `{name}` grammar cannot diverge.
       Lightweight addendum pass.
-  - [ ] 2.1.8.4. Document the public message-template contract.
+  - [x] 2.1.8.4. Document the public message-template contract.
     - Addendum (from audit:2.1.8; medium). Document the placeholder grammar,
       render requirements, and matching semantics for rule authors. Lightweight
       addendum pass.

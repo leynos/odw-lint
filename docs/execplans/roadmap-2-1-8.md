@@ -537,7 +537,7 @@ Validation evidence at closeout:
 
 ## Addenda
 
-- [ ] 2.1.8.1. Brand diagnostic message templates.
+- [x] 2.1.8.1. Brand diagnostic message templates.
   - Source: review:2.1.8.
   - Severity: low.
   - Scope: make `MessageTemplate` opaque so render and match helpers only
@@ -545,7 +545,7 @@ Validation evidence at closeout:
   - Success: hand-built structural template objects cannot reach
     `renderMessageTemplate` or `messageMatchesTemplate` through the public
     TypeScript contract.
-- [ ] 2.1.8.2. Cache and harden message-template matching.
+- [x] 2.1.8.2. Cache and harden message-template matching.
   - Source: review:2.1.8.
   - Severity: medium.
   - Scope: memoize compiled match regexes and add candidate length or
@@ -554,14 +554,14 @@ Validation evidence at closeout:
   - Success: repeated matching reuses compiled templates, and adversarial
     candidate messages or placeholder-heavy templates are rejected or bounded
     before super-linear backtracking becomes attacker-relevant.
-- [ ] 2.1.8.3. Single-source message-template tokenization.
+- [x] 2.1.8.3. Single-source message-template tokenization.
   - Source: audit:2.1.8.
   - Severity: low.
   - Scope: build rendering and matching from one placeholder token stream so
     the `{name}` grammar cannot diverge between creation and matching.
   - Success: placeholder scanning, rendering, and matcher construction share
     one parser path while existing template behaviour stays pinned.
-- [ ] 2.1.8.4. Document the public message-template contract.
+- [x] 2.1.8.4. Document the public message-template contract.
   - Source: audit:2.1.8.
   - Severity: medium.
   - Scope: document the placeholder grammar, render requirements, and matching
