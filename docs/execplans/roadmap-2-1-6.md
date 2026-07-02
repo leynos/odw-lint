@@ -1134,6 +1134,14 @@ rule page.
     reviewability.
   - Success: released rule pages show actionable examples that remain aligned
     with the catalogue and fixture expectations.
+- [ ] 2.1.6.4. Centralize catalogue rule and message lookup helpers.
+  - Source: audit:2.2.1; severity medium.
+  - Scope: add diagnostics-layer helpers for rule-definition lookup and first
+    reviewed-message access, then route envelope, metadata, and body-parser
+    diagnostic builders through that shared access pattern.
+  - Success: parser-backed diagnostics can add catalogue-owned messages without
+    copying local `RULE_CATALOGUE.find(...)` or first-message guard logic into
+    each checker.
 
 ## Revision note
 

@@ -428,6 +428,11 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:2.1.5; low). Add concrete failing-then-fixed
       examples to released rule documentation pages, reusing invalid workflow
       fixtures where they improve reviewability. Lightweight addendum pass.
+  - [ ] 2.1.6.4. Centralize catalogue rule and message lookup helpers.
+    - Addendum (from audit:2.2.1; medium). Move repeated rule-definition and
+      first-message access behind diagnostics-layer helpers before
+      parser-backed diagnostics multiply catalogue access patterns.
+      Lightweight addendum pass.
 - [x] 2.1.7. Add rule-catalogue parity checks for fixture diagnostics.
   - Requires 2.1.6 and step 1.3.
   - Check fixture manifest expectations against the typed rule catalogue so
@@ -573,6 +578,15 @@ source without losing span fidelity. It informs all later AST rules. See
   - Success: a parser-backed fixture diagnostic matches `ruleAllowsMessage`
     through a reviewed template rather than an exact-only or substring
     assertion.
+- [ ] 2.2.6. Narrow body-syntax spans when parser offsets are structured.
+  - Requires 2.2.3.
+  - Revisit the SWC parser adapter, or an equivalent parser error channel, once
+    it exposes stable syntax-error byte offsets, and map
+    `odw/body-syntax` diagnostics from the whole body to the offending token
+    without parsing rendered diagnostic prose.
+  - Success: parser-backed syntax diagnostics still use original-source spans,
+    and a structured-offset fixture proves the span narrows to the failure
+    token without weakening the fallback for parsers that expose no offset.
 
 ### 2.3. Prove ODW loader parity before shipping dialect checks
 
