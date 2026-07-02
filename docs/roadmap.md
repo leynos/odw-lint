@@ -418,6 +418,22 @@ statically. It unlocks metadata rules and body parsing. See
     weakening dynamic diagnostics to broad string assertions, and
     `tests/diagnostics/architecture-fixtures.ts` plus
     `tests/diagnostics/public-api-fixtures.ts` pin the new module and exports.
+  - [ ] 2.1.8.1. Brand diagnostic message templates.
+    - Addendum (from review:2.1.8; low). Make `MessageTemplate` opaque so
+      render and match helpers only accept templates that passed
+      `createMessageTemplate`. Lightweight addendum pass.
+  - [ ] 2.1.8.2. Cache and harden message-template matching.
+    - Addendum (from review:2.1.8; medium). Memoize compiled match regexes and
+      add candidate length or placeholder-complexity guards before dynamic
+      parser detail reaches this path. Lightweight addendum pass.
+  - [ ] 2.1.8.3. Single-source message-template tokenization.
+    - Addendum (from audit:2.1.8; low). Build rendering and matching from one
+      placeholder token stream so the `{name}` grammar cannot diverge.
+      Lightweight addendum pass.
+  - [ ] 2.1.8.4. Document the public message-template contract.
+    - Addendum (from audit:2.1.8; medium). Document the placeholder grammar,
+      render requirements, and matching semantics for rule authors. Lightweight
+      addendum pass.
 - [x] 2.1.9. Split source-mask token scanners into focused modules.
   - Requires 2.1.1.
   - Addendum source: audit:2.1.7; medium.
@@ -488,6 +504,14 @@ source without losing span fidelity. It informs all later AST rules. See
     `parallel`, `Array`, `Number`, `Object`, and `Math` identifiers, and
     directive-like text in strings, templates, regexes, and block comments is
     ignored.
+- [ ] 2.2.5. Adopt message templates in the first parser-backed rule.
+  - Requires 2.1.8 and 2.2.1.
+  - Render the first dynamic parser diagnostic through a catalogue-owned
+    reviewed message template, and exercise the template branch of invalid
+    fixture parity through real parser detail.
+  - Success: a parser-backed fixture diagnostic matches `ruleAllowsMessage`
+    through a reviewed template rather than an exact-only or substring
+    assertion.
 
 ### 2.3. Prove ODW loader parity before shipping dialect checks
 

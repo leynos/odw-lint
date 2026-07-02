@@ -535,6 +535,41 @@ Validation evidence at closeout:
   item after one recoverable rate-limit retry.
 - The final status-only CodeRabbit review completed with no findings.
 
+## Addenda
+
+- [ ] 2.1.8.1. Brand diagnostic message templates.
+  - Source: review:2.1.8.
+  - Severity: low.
+  - Scope: make `MessageTemplate` opaque so render and match helpers only
+    accept templates that passed `createMessageTemplate`.
+  - Success: hand-built structural template objects cannot reach
+    `renderMessageTemplate` or `messageMatchesTemplate` through the public
+    TypeScript contract.
+- [ ] 2.1.8.2. Cache and harden message-template matching.
+  - Source: review:2.1.8.
+  - Severity: medium.
+  - Scope: memoize compiled match regexes and add candidate length or
+    placeholder-complexity guards before dynamic parser detail reaches this
+    path.
+  - Success: repeated matching reuses compiled templates, and adversarial
+    candidate messages or placeholder-heavy templates are rejected or bounded
+    before super-linear backtracking becomes attacker-relevant.
+- [ ] 2.1.8.3. Single-source message-template tokenization.
+  - Source: audit:2.1.8.
+  - Severity: low.
+  - Scope: build rendering and matching from one placeholder token stream so
+    the `{name}` grammar cannot diverge between creation and matching.
+  - Success: placeholder scanning, rendering, and matcher construction share
+    one parser path while existing template behaviour stays pinned.
+- [ ] 2.1.8.4. Document the public message-template contract.
+  - Source: audit:2.1.8.
+  - Severity: medium.
+  - Scope: document the placeholder grammar, render requirements, and matching
+    semantics for rule authors.
+  - Success: the public or maintainer documentation explains how reviewed
+    templates are authored, rendered, matched, and attached to rule catalogue
+    entries.
+
 ## Context and orientation
 
 The diagnostic model lives under `src/diagnostics/`. Relevant modules:
