@@ -13,7 +13,10 @@ import {
   blankMaskedRange,
   createMaskedRange,
   isLineTerminatorCharacter,
+  isQuotedStringDelimiter,
+  isRegexDelimiter,
   isStringLikeDelimiter,
+  isTemplateDelimiter,
   scanEscapedDelimitedEnd,
 } from "../../src/static-analysis/source-mask-delimiters";
 import { scanQuotedStringRange } from "../../src/static-analysis/source-mask-strings";
@@ -90,7 +93,13 @@ describe("source-mask delimiter helpers", () => {
     expect(scanEscapedDelimitedEnd("`open", 0, "`")).toBe(5);
   });
 
-  it("identifies string-like template delimiters", () => {
+  it("identifies shared token delimiters", () => {
+    expect(["'", '"'].every(isQuotedStringDelimiter)).toBeTrue();
+    expect(["`", "/", "x"].some(isQuotedStringDelimiter)).toBeFalse();
+    expect(isTemplateDelimiter("`")).toBeTrue();
+    expect(["'", '"', "/"].some(isTemplateDelimiter)).toBeFalse();
+    expect(isRegexDelimiter("/")).toBeTrue();
+    expect(["'", '"', "`"].some(isRegexDelimiter)).toBeFalse();
     expect(["'", '"', "`"].every(isStringLikeDelimiter)).toBeTrue();
     expect(["/", "{", "x"].some(isStringLikeDelimiter)).toBeFalse();
   });

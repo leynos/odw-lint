@@ -9,7 +9,9 @@ import { scanCommentRange } from "./source-mask-comments";
 import {
   createMaskedRange,
   isLineTerminatorCharacter,
+  isRegexDelimiter,
   isStringLikeDelimiter,
+  isTemplateDelimiter,
   scanEscapedDelimitedEnd,
 } from "./source-mask-delimiters";
 import type { SourceMaskRange } from "./source-mask-types";
@@ -36,7 +38,7 @@ export const scanTemplateRange = (
   startIndex: number,
   character: string,
 ): SourceMaskRange | undefined => {
-  if (character !== "`") {
+  if (!isTemplateDelimiter(character)) {
     return undefined;
   }
 
@@ -132,7 +134,7 @@ const nextTemplateExpressionIndex = (sourceText: string, index: number): number 
   if (isTemplateRegexStart(sourceText, index, character)) {
     return scanTemplateRegexEnd(sourceText, index);
   }
-  if (character === "`") {
+  if (isTemplateDelimiter(character)) {
     return scanTemplateEnd(sourceText, index);
   }
   if (isStringLikeDelimiter(character)) {
@@ -144,7 +146,7 @@ const nextTemplateExpressionIndex = (sourceText: string, index: number): number 
 
 /** Checks the local preceding-token regex heuristic. */
 const isTemplateRegexStart = (sourceText: string, index: number, character: string): boolean => {
-  if (character !== "/") {
+  if (!isRegexDelimiter(character)) {
     return false;
   }
 
@@ -301,7 +303,7 @@ const nextTemplateRegexStep = (
       nextIndex: regexIndex + 1,
     };
   }
-  if (regexCharacter === "/" && !isInCharacterClass) {
+  if (isRegexDelimiter(regexCharacter) && !isInCharacterClass) {
     return {
       endIndex: regexIndex + 1,
       isInCharacterClass,
@@ -351,7 +353,7 @@ const isLeadingTemplateRegexClassClose = (sourceText: string, regexIndex: number
  * @returns Whether the current state closes the outer template literal.
  */
 export const isTemplateClose = (sourceText: string, state: TemplateScanState): boolean => {
-  return state.expressionDepth === 0 && sourceText[state.index] === "`";
+  return state.expressionDepth === 0 && isTemplateDelimiter(sourceText[state.index] ?? "");
 };
 
 /**

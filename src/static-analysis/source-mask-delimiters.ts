@@ -84,11 +84,41 @@ export const scanEscapedDelimitedEnd = (
 };
 
 /**
+ * Checks for a single-quoted or double-quoted string start.
+ *
+ * @param character - Source character to classify.
+ * @returns Whether the character can delimit a quoted string.
+ */
+export const isQuotedStringDelimiter = (character: string): boolean => {
+  return character === "'" || character === '"';
+};
+
+/**
+ * Checks for a template-literal delimiter.
+ *
+ * @param character - Source character to classify.
+ * @returns Whether the character can delimit a template literal.
+ */
+export const isTemplateDelimiter = (character: string): boolean => {
+  return character === "`";
+};
+
+/**
+ * Checks for a regex-literal delimiter.
+ *
+ * @param character - Source character to classify.
+ * @returns Whether the character can delimit a regex literal.
+ */
+export const isRegexDelimiter = (character: string): boolean => {
+  return character === "/";
+};
+
+/**
  * Checks for a nested string-like token start.
  *
  * @param character - Source character to classify.
  * @returns Whether the character can open string-like template content.
  */
 export const isStringLikeDelimiter = (character: string): boolean => {
-  return character === "'" || character === '"' || character === "`";
+  return isQuotedStringDelimiter(character) || isTemplateDelimiter(character);
 };

@@ -5,7 +5,11 @@
  * terminator, while this module owns the string-token start rules.
  */
 
-import { createMaskedRange, isLineTerminatorCharacter } from "./source-mask-delimiters";
+import {
+  createMaskedRange,
+  isLineTerminatorCharacter,
+  isQuotedStringDelimiter,
+} from "./source-mask-delimiters";
 import type { SourceMaskRange } from "./source-mask-types";
 
 /**
@@ -21,7 +25,7 @@ export const scanQuotedStringRange = (
   startIndex: number,
   character: string,
 ): SourceMaskRange | undefined => {
-  if (character !== "'" && character !== '"') {
+  if (!isQuotedStringDelimiter(character)) {
     return undefined;
   }
 

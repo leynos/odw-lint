@@ -38,4 +38,9 @@ describe("source-mask quoted-string scanner", () => {
       endIndex: 5,
     });
   });
+
+  it("ignores template and regex delimiters", () => {
+    expect(scanQuotedStringRange("`template`", 0, "`")).toBeUndefined();
+    expect(scanQuotedStringRange("/pattern/", 0, "/")).toBeUndefined();
+  });
 });

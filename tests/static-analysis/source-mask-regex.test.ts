@@ -9,6 +9,7 @@ import { describe, expect, it } from "bun:test";
 import {
   isLeadingRegexClassClose,
   isRegexAllowedAfter,
+  isRegexBodyEndDelimiter,
   isRegexClassClose,
   scanRegexEnd,
   scanRegexFlagsEnd,
@@ -30,6 +31,12 @@ describe("source-mask regex scanner", () => {
   it("scans escaped slashes and flags", () => {
     expect(scanRegexEnd("/a\\/b/g", 0)).toBe(7);
     expect(scanRegexFlagsEnd("/x/gim;", 3)).toBe(6);
+  });
+
+  it("uses shared slash delimiter classification outside character classes", () => {
+    expect(isRegexBodyEndDelimiter("/", false)).toBeTrue();
+    expect(isRegexBodyEndDelimiter("/", true)).toBeFalse();
+    expect(isRegexBodyEndDelimiter("x", false)).toBeFalse();
   });
 
   it("rejects line terminators and empty regex bodies", () => {

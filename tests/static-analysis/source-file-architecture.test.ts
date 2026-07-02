@@ -203,7 +203,10 @@ describe("source-file helper architecture", () => {
       "blankMaskedRange",
       "createMaskedRange",
       "isLineTerminatorCharacter",
+      "isQuotedStringDelimiter",
+      "isRegexDelimiter",
       "isStringLikeDelimiter",
+      "isTemplateDelimiter",
       "scanEscapedDelimitedEnd",
     ]);
     expectModuleDeclarations("src/static-analysis/source-mask-comments.ts", [
@@ -252,10 +255,10 @@ describe("source-file helper architecture", () => {
       "REGEX_DISALLOWED_PREVIOUS_TOKENS",
       "RegexScanStep",
       "isRegexAllowedAfter",
+      "isRegexBodyEndDelimiter",
       "isRegexClassBoundary",
       "isRegexClassClose",
       "isRegexClassOpen",
-      "isRegexDelimiter",
       "isLeadingRegexClassClose",
       "nextEscapedRegexScanStep",
       "nextRegexClassBoundaryStep",

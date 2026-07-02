@@ -5,7 +5,11 @@
  * appears after one of the static source contexts where a regex may start.
  */
 
-import { createMaskedRange, isLineTerminatorCharacter } from "./source-mask-delimiters";
+import {
+  createMaskedRange,
+  isLineTerminatorCharacter,
+  isRegexDelimiter,
+} from "./source-mask-delimiters";
 import type { SourceMaskRange } from "./source-mask-types";
 
 export const REGEX_ALLOWED_PREVIOUS_CHARACTERS = new Set("([{,;:=!&|?+-*%<>~^".split(""));
@@ -44,7 +48,7 @@ export const scanRegexRange = (
   previousSignificantToken: string,
 ): SourceMaskRange | undefined => {
   if (
-    character !== "/" ||
+    !isRegexDelimiter(character) ||
     !isRegexAllowedAfter(previousSignificantCharacter, previousSignificantToken)
   ) {
     return undefined;
@@ -140,7 +144,7 @@ export const nextRegexScanStep = (
   if (classBoundaryStep !== undefined) {
     return classBoundaryStep;
   }
-  if (isRegexDelimiter(character, isInCharacterClass)) {
+  if (isRegexBodyEndDelimiter(character, isInCharacterClass)) {
     return {
       endIndex: scanRegexFlagsEnd(sourceText, index + 1),
       isInCharacterClass,
@@ -271,8 +275,11 @@ export const isLeadingRegexClassClose = (sourceText: string, index: number): boo
  * @param isInCharacterClass - Whether the scanner is inside `[...]`.
  * @returns Whether the current slash closes the regex literal.
  */
-export const isRegexDelimiter = (character: string, isInCharacterClass: boolean): boolean => {
-  if (character !== "/") {
+export const isRegexBodyEndDelimiter = (
+  character: string,
+  isInCharacterClass: boolean,
+): boolean => {
+  if (!isRegexDelimiter(character)) {
     return false;
   }
 

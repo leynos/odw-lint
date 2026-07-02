@@ -204,6 +204,14 @@ describe("maskNonCodeSource", () => {
     );
   });
 
+  it("keeps delimiter-specific mask kinds stable", () => {
+    assertMaskContract("const value = 's' + `t` + /r/;", [
+      { kind: "string", text: "'s'" },
+      { kind: "template", text: "`t`" },
+      { kind: "regex", text: "/r/" },
+    ]);
+  });
+
   it("leaves unterminated regex candidates visible at JavaScript line terminators", () => {
     for (const terminator of ["\n", "\r", "\u2028", "\u2029"]) {
       const sourceText = `const a = (/export${terminator}const b = 1;`;

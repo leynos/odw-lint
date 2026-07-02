@@ -1326,7 +1326,7 @@ locked development tooling:
 
 ## Addenda
 
-- [ ] 2.1.9.1. Consolidate string delimiter classification.
+- [x] 2.1.9.1. Consolidate string delimiter classification.
   - Source: audit:2.1.5; severity medium.
   - Scope: move duplicated string-delimiter predicates into
     `source-mask-delimiters.ts` so token scanners share the documented

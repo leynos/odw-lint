@@ -479,7 +479,7 @@ statically. It unlocks metadata rules and body parsing. See
   - Success: the source-mask facade preserves current masking behaviour, each
     token family has a named implementation home, and existing masking fixture
     and property tests remain green.
-  - [ ] 2.1.9.1. Consolidate string delimiter classification.
+  - [x] 2.1.9.1. Consolidate string delimiter classification.
     - Addendum (from audit:2.1.5; medium). Move duplicated string-delimiter
       predicates into `source-mask-delimiters.ts` so token scanners share the
       documented delimiter source of truth. Lightweight addendum pass.
