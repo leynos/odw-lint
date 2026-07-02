@@ -236,6 +236,50 @@ export const PLANNED_RULE_IDS = Object.freeze(
 );
 
 /**
+ * Finds the catalogued definition for one rule identifier.
+ *
+ * @param ruleId - Branded rule identifier referenced by diagnostic builders.
+ * @returns The reviewed catalogue entry for `ruleId`.
+ * @throws Error when `ruleId` is not present in the production catalogue.
+ */
+export const ruleDefinitionFor = (ruleId: RuleId): RuleDefinition => {
+  const rule = RULE_CATALOGUE.find((candidate) => candidate.id === ruleId);
+
+  if (rule === undefined) {
+    throw new Error(`Missing diagnostic rule catalogue entry for ${ruleId}.`);
+  }
+
+  return rule;
+};
+
+/**
+ * Returns one reviewed diagnostic message for a catalogued rule.
+ *
+ * @param rule - Catalogued rule definition.
+ * @param messageIndex - Zero-based reviewed message index.
+ * @returns The reviewed message at `messageIndex`.
+ * @throws Error when the rule has no reviewed message at `messageIndex`.
+ */
+export const reviewedRuleMessage = (rule: RuleDefinition, messageIndex: number): string => {
+  const message = rule.messages[messageIndex];
+  if (message === undefined) {
+    throw new Error(`Missing reviewed diagnostic message ${messageIndex} for ${rule.id}.`);
+  }
+
+  return message;
+};
+
+/**
+ * Returns the first reviewed diagnostic message for a catalogued rule.
+ *
+ * @param rule - Catalogued rule definition.
+ * @returns The first reviewed diagnostic message.
+ */
+export const firstReviewedRuleMessage = (rule: RuleDefinition): string => {
+  return reviewedRuleMessage(rule, 0);
+};
+
+/**
  * Returns the repository-relative documentation page path for a rule.
  *
  * @param rule Catalogued rule definition.

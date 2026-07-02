@@ -1,5 +1,11 @@
 /** @file Static, non-executing metadata classification for ODW workflow source. */
 
+import {
+  firstReviewedRuleMessage,
+  type RuleDefinition,
+  reviewedRuleMessage,
+  ruleDefinitionFor,
+} from "../diagnostics/rule-catalogue";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic, SourceSpan } from "../diagnostics/types";
 import { textIndexAtOffset } from "./source-indexes";
@@ -11,13 +17,22 @@ const META_OBJECT_RULE = makeRuleId("odw/meta-object");
 const META_NAME_RULE = makeRuleId("odw/meta-name");
 const META_DESCRIPTION_RULE = makeRuleId("odw/meta-description");
 const META_STATICALLY_UNPROVABLE_RULE = makeRuleId("odw/meta-statically-unprovable");
-const META_OBJECT_MESSAGE = "Workflow metadata must be an object literal.";
-const META_OBJECT_COMPLETE_MESSAGE = "Workflow metadata object literal must be complete.";
-const META_NAME_MESSAGE = "Workflow metadata must include a non-empty name string.";
-const META_DESCRIPTION_REQUIRED_MESSAGE = "Workflow metadata must include a description string.";
-const META_DESCRIPTION_STRING_MESSAGE = "Workflow metadata description must be a string.";
-const META_STATICALLY_UNPROVABLE_MESSAGE =
-  "Workflow metadata must remain statically provable without evaluation.";
+const META_OBJECT_RULE_DEFINITION = ruleDefinitionFor(META_OBJECT_RULE);
+const META_NAME_RULE_DEFINITION = ruleDefinitionFor(META_NAME_RULE);
+const META_DESCRIPTION_RULE_DEFINITION = ruleDefinitionFor(META_DESCRIPTION_RULE);
+const META_STATICALLY_UNPROVABLE_RULE_DEFINITION = ruleDefinitionFor(
+  META_STATICALLY_UNPROVABLE_RULE,
+);
+const META_OBJECT_MESSAGE = firstReviewedRuleMessage(META_OBJECT_RULE_DEFINITION);
+const META_OBJECT_COMPLETE_MESSAGE = reviewedRuleMessage(META_OBJECT_RULE_DEFINITION, 1);
+const META_NAME_MESSAGE = firstReviewedRuleMessage(META_NAME_RULE_DEFINITION);
+const META_DESCRIPTION_REQUIRED_MESSAGE = firstReviewedRuleMessage(
+  META_DESCRIPTION_RULE_DEFINITION,
+);
+const META_DESCRIPTION_STRING_MESSAGE = reviewedRuleMessage(META_DESCRIPTION_RULE_DEFINITION, 1);
+const META_STATICALLY_UNPROVABLE_MESSAGE = firstReviewedRuleMessage(
+  META_STATICALLY_UNPROVABLE_RULE_DEFINITION,
+);
 
 export type WorkflowMetadataPortability = "pure-literal" | "not-statically-provable";
 
@@ -138,8 +153,7 @@ const classifyScannedMetaValue = (
     return runtimeInvalid([
       metadataDiagnostic(
         sourceFile,
-        META_OBJECT_RULE,
-        "error",
+        META_OBJECT_RULE_DEFINITION,
         META_OBJECT_MESSAGE,
         metaValue.span,
       ),
@@ -149,8 +163,7 @@ const classifyScannedMetaValue = (
     return runtimeInvalid([
       metadataDiagnostic(
         sourceFile,
-        META_OBJECT_RULE,
-        "error",
+        META_OBJECT_RULE_DEFINITION,
         META_OBJECT_COMPLETE_MESSAGE,
         metaValue.span,
       ),
@@ -163,8 +176,7 @@ const classifyScannedMetaValue = (
     return runtimeInvalid([
       metadataDiagnostic(
         sourceFile,
-        META_OBJECT_RULE,
-        "error",
+        META_OBJECT_RULE_DEFINITION,
         META_OBJECT_MESSAGE,
         metaValue.expressionSpan,
       ),
@@ -183,8 +195,7 @@ const requiredFieldDiagnostics = (
     diagnostics.push(
       metadataDiagnostic(
         sourceFile,
-        META_NAME_RULE,
-        "error",
+        META_NAME_RULE_DEFINITION,
         META_NAME_MESSAGE,
         facts.name?.value.span ?? facts.objectSpan,
       ),
@@ -194,8 +205,7 @@ const requiredFieldDiagnostics = (
     diagnostics.push(
       metadataDiagnostic(
         sourceFile,
-        META_DESCRIPTION_RULE,
-        "error",
+        META_DESCRIPTION_RULE_DEFINITION,
         META_DESCRIPTION_REQUIRED_MESSAGE,
         facts.objectSpan,
       ),
@@ -207,8 +217,7 @@ const requiredFieldDiagnostics = (
     diagnostics.push(
       metadataDiagnostic(
         sourceFile,
-        META_DESCRIPTION_RULE,
-        "error",
+        META_DESCRIPTION_RULE_DEFINITION,
         META_DESCRIPTION_STRING_MESSAGE,
         facts.description.value.span,
       ),
@@ -221,15 +230,14 @@ const requiredFieldDiagnostics = (
 /** Builds a frozen metadata diagnostic for one source span. */
 const metadataDiagnostic = (
   sourceFile: OriginalSourceFile,
-  rule: Diagnostic["rule"],
-  severity: Diagnostic["severity"],
+  rule: RuleDefinition,
   message: string,
   span: SourceSpan,
 ): Diagnostic => {
   return Object.freeze({
     file: sourceFile.filePath,
-    rule,
-    severity,
+    rule: rule.id,
+    severity: rule.defaultSeverity,
     message,
     span,
   });
@@ -253,8 +261,7 @@ const staticallyUnprovable = (
     diagnostics: Object.freeze([
       metadataDiagnostic(
         sourceFile,
-        META_STATICALLY_UNPROVABLE_RULE,
-        "warning",
+        META_STATICALLY_UNPROVABLE_RULE_DEFINITION,
         META_STATICALLY_UNPROVABLE_MESSAGE,
         span,
       ),

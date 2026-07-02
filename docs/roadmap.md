@@ -428,7 +428,7 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:2.1.5; low). Add concrete failing-then-fixed
       examples to released rule documentation pages, reusing invalid workflow
       fixtures where they improve reviewability. Lightweight addendum pass.
-  - [ ] 2.1.6.4. Centralize catalogue rule and message lookup helpers.
+  - [x] 2.1.6.4. Centralize catalogue rule and message lookup helpers.
     - Addendum (from audit:2.2.1; medium). Move repeated rule-definition and
       first-message access behind diagnostics-layer helpers before
       parser-backed diagnostics multiply catalogue access patterns.

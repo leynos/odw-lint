@@ -6,7 +6,11 @@
  */
 
 import { type ParseOptions, parseSync } from "@swc/core";
-import { RULE_CATALOGUE, type RuleDefinition, ruleDocsPath } from "../diagnostics/rule-catalogue";
+import {
+  firstReviewedRuleMessage,
+  ruleDefinitionFor,
+  ruleDocsPath,
+} from "../diagnostics/rule-catalogue";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic } from "../diagnostics/types";
 import type { WorkflowEnvelope } from "./types";
@@ -18,7 +22,7 @@ export type WorkflowBodyParseResult =
 
 const BODY_SYNTAX_RULE = makeRuleId("odw/body-syntax");
 const BODY_SYNTAX_RULE_DEFINITION = ruleDefinitionFor(BODY_SYNTAX_RULE);
-const BODY_SYNTAX_MESSAGE = firstRuleMessage(BODY_SYNTAX_RULE_DEFINITION);
+const BODY_SYNTAX_MESSAGE = firstReviewedRuleMessage(BODY_SYNTAX_RULE_DEFINITION);
 const WORKFLOW_BODY_PARSE_OPTIONS: ParseOptions = {
   syntax: "ecmascript",
   jsx: false,
@@ -55,23 +59,3 @@ const bodySyntaxDiagnostic = (envelope: WorkflowEnvelope): Diagnostic => {
     docs: ruleDocsPath(BODY_SYNTAX_RULE_DEFINITION),
   });
 };
-
-/** Returns one catalogued rule definition by identifier. */
-function ruleDefinitionFor(ruleId: ReturnType<typeof makeRuleId>): RuleDefinition {
-  const rule = RULE_CATALOGUE.find((candidate) => candidate.id === ruleId);
-  if (rule === undefined) {
-    throw new Error(`Missing diagnostic rule catalogue entry for ${ruleId}.`);
-  }
-
-  return rule;
-}
-
-/** Returns the first reviewed catalogue message for a rule. */
-function firstRuleMessage(rule: RuleDefinition): string {
-  const message = rule.messages[0];
-  if (message === undefined) {
-    throw new Error(`Missing diagnostic message for ${rule.id}.`);
-  }
-
-  return message;
-}

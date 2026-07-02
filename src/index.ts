@@ -16,6 +16,7 @@ export {
 } from "./diagnostics/message-template";
 export { countDiagnostics, createDiagnosticReport } from "./diagnostics/report";
 export {
+  firstReviewedRuleMessage,
   PLANNED_RULE_IDS,
   RELEASED_RULE_IDS,
   RULE_CATALOGUE,
@@ -26,6 +27,8 @@ export {
   type RuleDefinition,
   type RuleDocumentationPath,
   type RuleReleaseStatus,
+  reviewedRuleMessage,
+  ruleDefinitionFor,
   ruleDocsPath,
 } from "./diagnostics/rule-catalogue";
 export {

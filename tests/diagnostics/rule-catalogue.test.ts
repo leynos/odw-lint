@@ -5,7 +5,9 @@
 import { describe, expect, expectTypeOf, it } from "bun:test";
 import {
   DIAGNOSTIC_SEVERITIES,
+  firstReviewedRuleMessage,
   type MessageTemplate,
+  makeRuleId,
   PLANNED_RULE_IDS,
   RELEASED_RULE_IDS,
   RULE_CATALOGUE,
@@ -16,6 +18,8 @@ import {
   type RuleDefinition,
   type RuleId,
   type RuleReleaseStatus,
+  reviewedRuleMessage,
+  ruleDefinitionFor,
   ruleDocsPath,
 } from "odw-lint";
 
@@ -244,5 +248,27 @@ describe("rule catalogue", () => {
   it("builds repository-relative documentation paths", () => {
     expect(ruleDocsPath(RULE_CATALOGUE[0] as RuleDefinition)).toBe("docs/rules/meta-required.md");
     expectTypeOf<(typeof RULE_IDS)[number]>().toEqualTypeOf<RuleId>();
+  });
+
+  it("finds rule definitions by catalogued identifier", () => {
+    expect(ruleDefinitionFor(makeRuleId("odw/meta-required"))).toBe(RULE_CATALOGUE[0]);
+    expect(() => ruleDefinitionFor(makeRuleId("odw/uncatalogued-rule"))).toThrow(
+      "Missing diagnostic rule catalogue entry for odw/uncatalogued-rule.",
+    );
+  });
+
+  it("returns reviewed diagnostic messages by index", () => {
+    const metaObjectRule = ruleDefinitionFor(makeRuleId("odw/meta-object"));
+    const plannedRule = ruleDefinitionFor(makeRuleId("odw/bounded-loop"));
+
+    expect(firstReviewedRuleMessage(metaObjectRule)).toBe(
+      "Workflow metadata must be an object literal.",
+    );
+    expect(reviewedRuleMessage(metaObjectRule, 1)).toBe(
+      "Workflow metadata object literal must be complete.",
+    );
+    expect(() => firstReviewedRuleMessage(plannedRule)).toThrow(
+      "Missing reviewed diagnostic message 0 for odw/bounded-loop.",
+    );
   });
 });
