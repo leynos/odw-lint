@@ -85,15 +85,16 @@ export function runBranchFreshnessCli(
       ? ({ status: "usage-error", message: cliOptions.usageError } satisfies BranchFreshnessResult)
       : checkBranchFreshness(makeCheckOptions(repositoryPath, cliOptions.taskOverride));
   const report = formatBranchFreshnessResult(result);
+  const exitCode = exitCodeForBranchFreshness(result);
 
-  if (result.status === "usage-error") {
+  if (exitCode === 2) {
     writers.writeErr(report);
-    return 2;
+    return exitCode;
   }
 
   writers.writeOut(report);
 
-  return result.status === "stale" ? 1 : 0;
+  return exitCode;
 }
 
 /** Check the dirty-worktree precondition before comparing committed state. */

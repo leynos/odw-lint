@@ -246,7 +246,7 @@ depending on manual post-commit audits.
     `origin/main`.
   - Success: review or gate output flags stale task branches before they can
     present unrelated main-branch work as deletions.
-  - [ ] 1.5.2.1. Unify branch-freshness exit-code mapping.
+  - [x] 1.5.2.1. Unify branch-freshness exit-code mapping.
     - Addendum (from audit:1.5.6; medium). Route the branch-freshness CLI
       through its exported exit-code mapping so status additions cannot drift
       between tests and process behaviour. Lightweight addendum pass.

@@ -391,7 +391,7 @@ CodeRabbit pass completed with `findings:0`.
 
 ## Addenda
 
-- [ ] 1.5.2.1. Unify branch-freshness exit-code mapping.
+- [x] 1.5.2.1. Unify branch-freshness exit-code mapping.
   - Source: audit:1.5.6; severity medium.
   - Scope: route the branch-freshness CLI through its exported exit-code
     mapping so status additions cannot drift between tests and process

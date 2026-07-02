@@ -3,6 +3,7 @@
  */
 
 import { describe, expect, it } from "bun:test";
+import type { BranchFreshnessResult } from "./branch-freshness";
 import {
   checkBranchFreshness,
   exitCodeForBranchFreshness,
@@ -51,6 +52,27 @@ describe("Git branch-freshness parsing", () => {
 });
 
 describe("Git-backed branch-freshness guard", () => {
+  it("maps every branch-freshness result status through the exported exit-code table", () => {
+    const resultsByStatus = {
+      fresh: { status: "fresh", taskId: "1.5.2" },
+      skipped: { status: "skipped", reason: "not on a roadmap task branch" },
+      stale: {
+        status: "stale",
+        taskId: "1.5.2",
+        findings: [
+          {
+            path: "docs/roadmap.md",
+            reason: "protected upstream change is outside the declared task scope",
+            detail: "Fetch, then rebase or merge current origin/main before review.",
+          },
+        ],
+      },
+      "usage-error": { status: "usage-error", message: "working tree must be clean" },
+    } satisfies Record<BranchFreshnessResult["status"], BranchFreshnessResult>;
+
+    expect(Object.values(resultsByStatus).map(exitCodeForBranchFreshness)).toEqual([0, 0, 1, 2]);
+  });
+
   it("passes a fresh roadmap branch that already contains origin/main", () => {
     withFixture((fixture) => {
       commitMainChange(
