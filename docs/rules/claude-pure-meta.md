@@ -14,3 +14,29 @@ that relies on computation rather than a pure literal shape.
 
 Prefer a plain metadata object made from literal values. Move computed values
 into the workflow body when they are not needed for discovery.
+
+## Failing example
+
+```js
+const workflowName = "dynamic-name";
+
+export const meta = {
+  name: workflowName,
+  description: "Uses computed metadata.",
+  phases: [{ title: "Run" }],
+};
+
+await agent("Draft status.");
+```
+
+## Fixed example
+
+```js
+export const meta = {
+  name: "dynamic-name",
+  description: "Uses static metadata.",
+  phases: [{ title: "Run" }],
+};
+
+await agent("Draft status.");
+```

@@ -14,3 +14,29 @@ parseable body.
 
 Fix the syntax error at the reported span, then rerun the checker to reveal any
 deeper dialect or compatibility diagnostics.
+
+## Failing example
+
+This mirrors the `body-unclosed-call.js` invalid workflow fixture.
+
+```js
+export const meta = {
+  name: "body-unclosed-call",
+  description: "Unclosed call fixture.",
+  phases: [{ title: "Run" }],
+};
+
+await agent("draft"
+```
+
+## Fixed example
+
+```js
+export const meta = {
+  name: "body-unclosed-call",
+  description: "Unclosed call fixture.",
+  phases: [{ title: "Run" }],
+};
+
+await agent("draft");
+```

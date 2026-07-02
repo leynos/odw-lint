@@ -14,3 +14,25 @@ can identify and run the workflow.
 
 Add a top-level `export const meta = { ... }` object before the workflow body.
 Do not hide the metadata behind computed exports or runtime construction.
+
+## Failing example
+
+This mirrors the `missing-meta.js` invalid workflow fixture.
+
+```js
+phase("Run");
+
+await agent("Draft status.");
+```
+
+## Fixed example
+
+```js
+export const meta = {
+  name: "missing-meta",
+  description: "Missing metadata fixture.",
+  phases: [{ title: "Run" }],
+};
+
+await agent("Draft status.");
+```

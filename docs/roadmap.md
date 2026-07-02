@@ -424,7 +424,7 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:2.1.6; low). Link `docs/rules/index.md` from the
       first user-facing or interim developer-guide navigation surface.
       Lightweight addendum pass.
-  - [ ] 2.1.6.3. Add failing and fixed rule-reference examples.
+  - [x] 2.1.6.3. Add failing and fixed rule-reference examples.
     - Addendum (from audit:2.1.5; low). Add concrete failing-then-fixed
       examples to released rule documentation pages, reusing invalid workflow
       fixtures where they improve reviewability. Lightweight addendum pass.

@@ -13,3 +13,28 @@ inside ODW, but it does not map cleanly to pure Claude Code execution.
 
 Keep validation behind an ODW-specific path, or replace it with a host-provided
 check when the workflow must remain portable.
+
+## Failing example
+
+```js
+export const meta = {
+  name: "validate-generated-workflow",
+  description: "Validate generated workflow source.",
+  phases: [{ title: "Run" }],
+};
+
+const result = validate(args.generatedWorkflowSource);
+await agent(`Summarize validation result: ${JSON.stringify(result)}.`);
+```
+
+## Fixed example
+
+```js
+export const meta = {
+  name: "validate-generated-workflow",
+  description: "Summarize supplied validation output.",
+  phases: [{ title: "Run" }],
+};
+
+await agent(`Summarize validation result: ${JSON.stringify(args.validationResult)}.`);
+```

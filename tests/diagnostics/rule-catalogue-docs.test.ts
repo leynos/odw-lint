@@ -25,6 +25,11 @@ type RuleIndexRow = {
   readonly releaseStatus: string;
 };
 
+type RuleExampleSection = {
+  readonly heading: "## Failing example" | "## Fixed example";
+  readonly rule: RuleDefinition;
+};
+
 /** Returns the repository-relative rule page path for assertions. */
 const rulePagePath = (rule: RuleDefinition): string => {
   return path.join("docs", "rules", `${rule.docsSlug}.md`);
@@ -175,6 +180,24 @@ const documentedRulePageSlugs = (): readonly string[] => {
     .sort();
 };
 
+/** Reports whether a released rule page includes one named example section. */
+const hasRuleExampleSection = ({ rule, heading }: RuleExampleSection): boolean => {
+  const markdown = readMarkdown(rulePagePath(rule));
+  const headingStart = markdown.indexOf(heading);
+
+  if (headingStart < 0) {
+    return false;
+  }
+
+  const nextHeadingStart = markdown.indexOf("\n## ", headingStart + heading.length);
+  const section =
+    nextHeadingStart < 0
+      ? markdown.slice(headingStart)
+      : markdown.slice(headingStart, nextHeadingStart);
+
+  return section.includes("\n```js\n");
+};
+
 describe("rule catalogue documentation", () => {
   it("maps every catalogue docs slug to a rule page", () => {
     for (const rule of RULE_CATALOGUE) {
@@ -206,5 +229,20 @@ describe("rule catalogue documentation", () => {
 
   it("rejects orphan rule pages not backed by the catalogue", () => {
     expect(documentedRulePageSlugs()).toEqual(RULE_CATALOGUE.map((rule) => rule.docsSlug).sort());
+  });
+
+  it("keeps released rule pages actionable with failing and fixed examples", () => {
+    const missingExamples = RULE_CATALOGUE.filter(
+      (rule) => rule.releaseStatus === "released",
+    ).flatMap((rule) => {
+      return [
+        { rule, heading: "## Failing example" as const },
+        { rule, heading: "## Fixed example" as const },
+      ].flatMap((section) => {
+        return hasRuleExampleSection(section) ? [] : [`${rulePagePath(rule)}: ${section.heading}`];
+      });
+    });
+
+    expect(missingExamples).toEqual([]);
   });
 });
