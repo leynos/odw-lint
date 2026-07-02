@@ -3,12 +3,16 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { spawnSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { normalizeReportForAssertion } from "./fixture-metadata-refresh-assertions";
 import { createTempRefreshWorkspace, runRefreshCli } from "./fixture-metadata-refresh-workspace";
 import type { FixtureRefreshReport } from "./fixtures/refresh-metadata";
+import {
+  expectFreshModuleGraphSuccess,
+  freshModuleGraphScript,
+  runFreshModuleGraphScript,
+} from "./fresh-module-graph";
 
 declare global {
   // The hostile fixture writes this marker only if source is evaluated.
@@ -58,28 +62,25 @@ describe("fixture metadata refresh CLI", () => {
   });
 
   it("stays import-safe for hostile metadata fixtures in a fresh module graph", () => {
-    const result = spawnSync(
-      process.execPath,
-      [
-        "--eval",
+    const result = runFreshModuleGraphScript({
+      cwd: repositoryRootPath,
+      executablePath: process.execPath,
+      script: freshModuleGraphScript([
+        "globalThis.__odwLintHostileMetadataWasEvaluated = undefined;",
+        'const module = await import("./tests/static-analysis/fixtures/refresh-metadata.ts");',
         [
-          "globalThis.__odwLintHostileMetadataWasEvaluated = undefined;",
-          'const module = await import("./tests/static-analysis/fixtures/refresh-metadata.ts");',
-          'if (module.deriveSha256("safe").length !== 64) process.exit(2);',
-          "if (globalThis.__odwLintHostileMetadataWasEvaluated !== undefined) process.exit(3);",
-        ].join("\n"),
-      ],
-      {
-        cwd: repositoryRootPath,
-        encoding: "utf8",
-        timeout: 5_000,
-      },
-    );
+          'if (module.deriveSha256("safe").length !== 64) {',
+          '  failFreshModuleGraphCheck({ code: "unexpected-digest", status: 2 });',
+          "}",
+        ],
+        [
+          "if (globalThis.__odwLintHostileMetadataWasEvaluated !== undefined) {",
+          '  failFreshModuleGraphCheck({ code: "hostile-marker-set", status: 3 });',
+          "}",
+        ],
+      ]),
+    });
 
-    expect(result.error).toBeUndefined();
-    expect(result.signal).toBeNull();
-    expect(result.status).toBe(0);
-    expect(result.stdout).toBe("");
-    expect(result.stderr).toBe("");
+    expectFreshModuleGraphSuccess(result);
   });
 });

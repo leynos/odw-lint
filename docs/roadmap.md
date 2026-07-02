@@ -368,7 +368,7 @@ statically. It unlocks metadata rules and body parsing. See
     `scanWorkflowEnvelope` and `classifyWorkflowMetadata` path and through the
     public `odw-lint` entry in a fresh module graph, asserting exact diagnostics
     with no hostile side effect marker.
-  - [ ] 2.1.5.1. Extract structured cold-module-graph import-safety helpers.
+  - [x] 2.1.5.1. Extract structured cold-module-graph import-safety helpers.
     - Addendum (from review:2.1.5; low). Centralize the duplicated
       fresh-module-graph spawn guard for hostile metadata and fixture refresh
       tests, with typed script construction and structured failure output.

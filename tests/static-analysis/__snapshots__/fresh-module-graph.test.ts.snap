@@ -1,0 +1,92 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`fresh module graph helpers builds structured failure scripts in statement order 1`] = `
+"const failFreshModuleGraphCheck = (failure) => {
+  console.error(JSON.stringify({ source: "fresh-module-graph", ...failure }));
+  process.exit(typeof failure.status === "number" ? failure.status : 1);
+};
+const value = 1;
+if (value !== 1) {
+  failFreshModuleGraphCheck({ code: "wrong-value", status: 2 });
+}"
+`;
+
+exports[`fresh module graph helpers reports the first failing process condition with context 1`] = `
+{
+  "clean": undefined,
+  "signalBeforeStatus": {
+    "command": [
+      "bun",
+      "--eval",
+      "script",
+    ],
+    "cwd": "/repo",
+    "reason": "signal",
+    "script": "script",
+    "signal": "SIGTERM",
+    "status": 2,
+    "stderr": "",
+    "stdout": "",
+  },
+  "spawnErrorBeforeSignal": {
+    "command": [
+      "bun",
+      "--eval",
+      "script",
+    ],
+    "cwd": "/repo",
+    "error": {
+      "message": "spawn failed",
+      "name": "Error",
+    },
+    "reason": "spawn-error",
+    "script": "script",
+    "signal": "SIGTERM",
+    "status": 2,
+    "stderr": "stderr",
+    "stdout": "stdout",
+  },
+  "statusBeforeOutput": {
+    "command": [
+      "bun",
+      "--eval",
+      "script",
+    ],
+    "cwd": "/repo",
+    "reason": "status",
+    "script": "script",
+    "signal": null,
+    "status": 2,
+    "stderr": "stderr",
+    "stdout": "stdout",
+  },
+  "stderrAfterStdout": {
+    "command": [
+      "bun",
+      "--eval",
+      "script",
+    ],
+    "cwd": "/repo",
+    "reason": "stdout",
+    "script": "script",
+    "signal": null,
+    "status": 0,
+    "stderr": "stderr",
+    "stdout": "stdout",
+  },
+  "stdoutBeforeStderr": {
+    "command": [
+      "bun",
+      "--eval",
+      "script",
+    ],
+    "cwd": "/repo",
+    "reason": "stdout",
+    "script": "script",
+    "signal": null,
+    "status": 0,
+    "stderr": "",
+    "stdout": "stdout",
+  },
+}
+`;

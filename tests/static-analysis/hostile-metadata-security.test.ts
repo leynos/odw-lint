@@ -7,7 +7,6 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { spawnSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createOriginalSourceFile } from "../../src/static-analysis/source-file";
@@ -15,6 +14,11 @@ import { scanWorkflowEnvelope } from "../../src/static-analysis/workflow-envelop
 import { classifyWorkflowMetadata } from "../../src/static-analysis/workflow-metadata";
 import { readFixtureSource } from "./fixtures/corpus-support";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
+import {
+  expectFreshModuleGraphSuccess,
+  freshModuleGraphScript,
+  runFreshModuleGraphScript,
+} from "./fresh-module-graph";
 
 declare global {
   // The hostile fixture writes this marker only if source is evaluated.
@@ -54,7 +58,7 @@ const lintSource = (fixture: { readonly fixturePath: string; readonly sourceText
 
 /** Builds the child-process script that imports only the public lint surface. */
 const publicEntryImportSafetyScript = (): string => {
-  return [
+  return freshModuleGraphScript([
     `globalThis.${HOSTILE_MARKER_PROPERTY} = undefined;`,
     'const { readFileSync } = await import("node:fs");',
     [
@@ -72,11 +76,15 @@ const publicEntryImportSafetyScript = (): string => {
       '  const sourceText = readFileSync(fixturePath, "utf8");',
       "  const sourceFile = createOriginalSourceFile({ filePath: fixturePath, sourceText });",
       "  const classification = classifyWorkflowMetadata(scanWorkflowEnvelope(sourceFile));",
-      "  if (classification.diagnostics.length === 0) process.exit(2);",
-      `  if (globalThis.${HOSTILE_MARKER_PROPERTY} !== undefined) process.exit(3);`,
+      "  if (classification.diagnostics.length === 0) {",
+      '    failFreshModuleGraphCheck({ code: "missing-diagnostics", fixturePath, status: 2 });',
+      "  }",
+      `  if (globalThis.${HOSTILE_MARKER_PROPERTY} !== undefined) {`,
+      '    failFreshModuleGraphCheck({ code: "hostile-marker-set", fixturePath, status: 3 });',
+      "  }",
       "}",
     ].join("\n"),
-  ].join("\n");
+  ]);
 };
 
 describe("hostile metadata security regression", () => {
@@ -127,16 +135,12 @@ describe("hostile metadata security regression", () => {
   }
 
   it("stays import-safe through the public entry in a fresh module graph", () => {
-    const result = spawnSync(process.execPath, ["--eval", publicEntryImportSafetyScript()], {
+    const result = runFreshModuleGraphScript({
       cwd: repositoryRootPath,
-      encoding: "utf8",
-      timeout: 5_000,
+      executablePath: process.execPath,
+      script: publicEntryImportSafetyScript(),
     });
 
-    expect(result.error).toBeUndefined();
-    expect(result.signal).toBeNull();
-    expect(result.status).toBe(0);
-    expect(result.stdout).toBe("");
-    expect(result.stderr).toBe("");
+    expectFreshModuleGraphSuccess(result);
   });
 });
