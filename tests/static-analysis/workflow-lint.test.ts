@@ -18,13 +18,39 @@ declare global {
 }
 
 const HOSTILE_MARKER_PROPERTY = "__odwLintWorkflowLintHostileMetaWasEvaluated";
-const GENERATED_WORKFLOW_SOURCE = fc.oneof(
-  fc.constant("export const meta = { name: 'generated', description: 'ok' };\nreturn 'done';\n"),
-  fc.constant("export const meta = { name: '', description: 'missing name' };\nreturn 'done';\n"),
-  fc.constant("export const meta = { description: 'missing name' };\nreturn 'done';\n"),
-  fc.constant("export const meta = computedMeta;\nreturn 'done';\n"),
-  fc.constant("const value = 1;\nreturn value;\n"),
+const METADATA_PREFIX_SOURCE = fc.constantFrom(
+  "",
+  "// leading comment with inert export const meta = {}\n",
+  "const setup = 1;\n",
+  "/* inert import helper from './helper.js'; */\n",
 );
+const IMPORT_EXPORT_EDGE_SOURCE = fc.constantFrom(
+  "",
+  "import helper from './helper.js';\n",
+  "export const extra = 1;\n",
+  "const dynamicHelper = import('./helper.js');\n",
+);
+const METADATA_NAME_PROPERTY_SOURCE = fc.constantFrom(
+  "name: 'generated'",
+  "name: ''",
+  "name: 42",
+  "description: 'missing name'",
+);
+const GENERATED_WORKFLOW_SOURCE = fc
+  .record({
+    prefix: METADATA_PREFIX_SOURCE,
+    importExportEdge: IMPORT_EXPORT_EDGE_SOURCE,
+    nameProperty: METADATA_NAME_PROPERTY_SOURCE,
+  })
+  .map(({ prefix, importExportEdge, nameProperty }) =>
+    [
+      prefix,
+      importExportEdge,
+      `export const meta = { ${nameProperty}, description: 'ok' };`,
+      "return 'done';",
+      "",
+    ].join("\n"),
+  );
 
 /** Returns only stable rule identifiers for compact diagnostic assertions. */
 const diagnosticRules = (diagnostics: readonly Diagnostic[]): readonly string[] => {
@@ -98,6 +124,11 @@ describe("lintWorkflowSource", () => {
     const result = lintSource("export const meta = { name: 'example' };\nreturn 'done';\n");
 
     expect(Object.isFrozen(result)).toBe(true);
+    expect(Object.isFrozen(result.sourceFile)).toBe(true);
+    expect(Object.isFrozen(result.scan)).toBe(true);
+    expect(Object.isFrozen(result.scan.diagnostics)).toBe(true);
+    expect(Object.isFrozen(result.classification)).toBe(true);
+    expect(Object.isFrozen(result.classification.diagnostics)).toBe(true);
     expect(Object.isFrozen(result.diagnostics)).toBe(true);
   });
 

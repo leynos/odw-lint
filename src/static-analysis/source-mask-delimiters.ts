@@ -7,6 +7,8 @@
 
 import type { SourceMaskKind, SourceMaskRange } from "./source-mask-types";
 
+const WHITESPACE_PATTERN = /^\s$/u;
+
 /**
  * Checks for JavaScript line terminators.
  *
@@ -121,4 +123,14 @@ export const isRegexDelimiter = (character: string): boolean => {
  */
 export const isStringLikeDelimiter = (character: string): boolean => {
   return isQuotedStringDelimiter(character) || isTemplateDelimiter(character);
+};
+
+/**
+ * Checks for JavaScript whitespace.
+ *
+ * @param character - Source character to classify.
+ * @returns Whether the character is JavaScript whitespace or a line terminator.
+ */
+export const isWhitespaceCharacter = (character: string): boolean => {
+  return WHITESPACE_PATTERN.test(character);
 };

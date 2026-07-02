@@ -1,5 +1,6 @@
 /** @file Unsupported import/export scanner for static workflow envelopes. */
 
+import { isIdentifierPartCharacter } from "./javascript-identifiers";
 import { spanFromTextIndexes } from "./source-position";
 import type { OriginalSourceFile, UnsupportedWorkflowSyntax } from "./types";
 import type { DepthState } from "./workflow-envelope-statement";
@@ -101,8 +102,8 @@ const topLevelImportExportAt = (
 /** Checks that a candidate keyword is not embedded in a larger identifier. */
 const hasKeywordBoundaries = (maskedText: string, index: number, keyword: string): boolean => {
   return (
-    !isIdentifierPart(previousCodePoint(maskedText, index)) &&
-    !isIdentifierPart(nextCodePoint(maskedText, index + keyword.length))
+    !isIdentifierPartCharacter(previousCodePoint(maskedText, index)) &&
+    !isIdentifierPartCharacter(nextCodePoint(maskedText, index + keyword.length))
   );
 };
 
@@ -114,11 +115,6 @@ const previousCodePoint = (text: string, index: number): string | undefined => {
 /** Returns the full source code point at `index`, if any. */
 const nextCodePoint = (text: string, index: number): string | undefined => {
   return Array.from(text.slice(index)).at(0);
-};
-
-/** Checks whether a character can continue a JavaScript identifier. */
-const isIdentifierPart = (character: string | undefined): boolean => {
-  return character !== undefined && /[$_\p{ID_Continue}]/u.test(character);
 };
 
 /** Checks whether an `import` keyword is syntax this scanner owns. */

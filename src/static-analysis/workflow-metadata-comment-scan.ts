@@ -1,16 +1,6 @@
 /** @file Shared delimiter and comment scanners for metadata parsing. */
 
-/**
- * Checks for JavaScript line terminators.
- *
- * @param character - Character to test.
- * @returns `true` when the character is a JavaScript line terminator.
- */
-export const isLineTerminator = (character: string): boolean => {
-  return (
-    character === "\n" || character === "\r" || character === "\u2028" || character === "\u2029"
-  );
-};
+import { isLineTerminatorCharacter, isStringLikeDelimiter } from "./source-mask-delimiters";
 
 /**
  * Scans one quoted or template-delimited region.
@@ -55,7 +45,7 @@ export const scanDelimitedEnd = (
 export const scanLineCommentEnd = (text: string, startIndex: number, endIndex: number): number => {
   for (let index = startIndex; index < endIndex; index += 1) {
     const character = text[index] ?? "";
-    if (isLineTerminator(character)) {
+    if (isLineTerminatorCharacter(character)) {
       return index;
     }
   }
@@ -119,5 +109,5 @@ const scanCommentEnd = (text: string, startIndex: number, endIndex: number): num
 
 /** Checks whether a character is a string or template delimiter. */
 const isStringDelimiter = (character: string): character is "'" | '"' | "`" => {
-  return character === "'" || character === '"' || character === "`";
+  return isStringLikeDelimiter(character);
 };

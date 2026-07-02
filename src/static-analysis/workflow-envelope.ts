@@ -3,6 +3,7 @@
 import { RULE_CATALOGUE, type RuleDefinition, ruleDocsPath } from "../diagnostics/rule-catalogue";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic, SourceSpan } from "../diagnostics/types";
+import { isIdentifierPartCharacter } from "./javascript-identifiers";
 import { maskNonCodeSource } from "./source-mask";
 import { spanFromOffsets, spanFromTextIndexes } from "./source-position";
 import type { OriginalSourceFile, WorkflowEnvelopeScanResult } from "./types";
@@ -125,7 +126,7 @@ const findMetaDeclaration = (maskedText: string): MetaDeclarationMatch | undefin
 
 /** Builds metadata declaration facts when a declaration starts at `index`. */
 const metaDeclarationAt = (maskedText: string, index: number): MetaDeclarationMatch | undefined => {
-  if (isIdentifierPart(previousCharacter(maskedText, index))) {
+  if (isIdentifierPartCharacter(previousCodePoint(maskedText, index))) {
     return undefined;
   }
 
@@ -150,14 +151,9 @@ const metaDeclarationAt = (maskedText: string, index: number): MetaDeclarationMa
   });
 };
 
-/** Returns the source character immediately before `index`, if any. */
-const previousCharacter = (text: string, index: number): string | undefined => {
-  return index <= 0 ? undefined : text[index - 1];
-};
-
-/** Checks whether a character can continue a JavaScript identifier. */
-const isIdentifierPart = (character: string | undefined): boolean => {
-  return character !== undefined && /[$_\p{ID_Continue}]/u.test(character);
+/** Returns the full source code point immediately before `index`, if any. */
+const previousCodePoint = (text: string, index: number): string | undefined => {
+  return Array.from(text.slice(0, index)).at(-1);
 };
 
 /** Builds the body span from the end of the extractable metadata prefix. */

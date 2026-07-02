@@ -1,5 +1,7 @@
 /** @file Low-level scanners for static metadata literal parsing. */
 
+import { isIdentifierPartCharacter, isIdentifierStartCharacter } from "./javascript-identifiers";
+import { isStringLikeDelimiter, isWhitespaceCharacter } from "./source-mask-delimiters";
 import {
   scanBlockCommentEnd,
   scanDelimitedEnd,
@@ -45,7 +47,7 @@ export const scanKeyword = (cursor: ParserCursor): boolean | null | undefined =>
  */
 export const skipTrivia = (cursor: ParserCursor): void => {
   while (cursor.index < cursor.endIndex) {
-    if (/\s/u.test(currentCharacter(cursor))) {
+    if (isWhitespaceCharacter(currentCharacter(cursor))) {
       cursor.index += 1;
       continue;
     }
@@ -144,6 +146,30 @@ export const scanNumberEnd = (text: string, startIndex: number, endIndex: number
 };
 
 /**
+ * Scans an identifier token from the current cursor.
+ *
+ * @param cursor - Parser cursor positioned at a possible identifier.
+ * @returns The exclusive identifier end index, or `undefined`.
+ */
+export const scanIdentifierEnd = (cursor: ParserCursor): number | undefined => {
+  const firstCharacter = codePointAt(cursor.text, cursor.index);
+  if (!isIdentifierStart(firstCharacter)) {
+    return undefined;
+  }
+
+  let index = cursor.index + firstCharacter.length;
+  while (index < cursor.endIndex) {
+    const character = codePointAt(cursor.text, index);
+    if (!isIdentifierPart(character)) {
+      return index;
+    }
+    index += character.length;
+  }
+
+  return index;
+};
+
+/**
  * Returns the current source character, or an empty string at EOF.
  *
  * @param cursor - Parser cursor whose current character should be read.
@@ -160,7 +186,7 @@ export const currentCharacter = (cursor: ParserCursor): string => {
  * @returns `true` when the character can start an identifier.
  */
 export const isIdentifierStart = (character: string): boolean => {
-  return /[$_\p{ID_Start}]/u.test(character);
+  return isIdentifierStartCharacter(character);
 };
 
 /**
@@ -170,14 +196,7 @@ export const isIdentifierStart = (character: string): boolean => {
  * @returns `true` when the character can continue an identifier.
  */
 export const isIdentifierPart = (character: string | undefined): boolean => {
-  return (
-    character !== undefined &&
-    (character === "$" ||
-      character === "_" ||
-      character === "\u200c" ||
-      character === "\u200d" ||
-      /\p{ID_Continue}/u.test(character))
-  );
+  return isIdentifierPartCharacter(character);
 };
 
 /**
@@ -213,7 +232,7 @@ export const isArrayTerminator = (character: string): boolean => {
 /** Removes trivia from the end of a scanned expression range. */
 const trimTrailingTriviaIndex = (text: string, startIndex: number, endIndex: number): number => {
   let trimmedEndIndex = endIndex;
-  while (trimmedEndIndex > startIndex && /\s/u.test(text[trimmedEndIndex - 1] ?? "")) {
+  while (trimmedEndIndex > startIndex && isWhitespaceCharacter(text[trimmedEndIndex - 1] ?? "")) {
     trimmedEndIndex -= 1;
   }
   return trimmedEndIndex;
@@ -227,7 +246,13 @@ const isStandaloneKeywordAt = (
   if (!cursor.text.startsWith(keyword, cursor.index)) {
     return false;
   }
-  return !isIdentifierPart(cursor.text[cursor.index + keyword.length]);
+  return !isIdentifierPart(codePointAt(cursor.text, cursor.index + keyword.length));
+};
+
+/** Returns the full source code point at `index`, or an empty EOF marker. */
+const codePointAt = (text: string, index: number): string => {
+  const codePoint = text.codePointAt(index);
+  return codePoint === undefined ? "" : String.fromCodePoint(codePoint);
 };
 
 /** Checks whether a top-level expression terminator has been reached. */
@@ -272,7 +297,7 @@ const nextExpressionDepth = (depth: ExpressionDepth, character: string): Express
 
 /** Checks for any supported string delimiter. */
 const isStringDelimiter = (character: string): character is "'" | '"' | "`" => {
-  return character === "'" || character === '"' || character === "`";
+  return isStringLikeDelimiter(character);
 };
 
 /** Scans a comment from the current index when present. */

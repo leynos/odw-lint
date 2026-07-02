@@ -101,6 +101,16 @@ describe("workflow metadata parser edge cases", () => {
     ]);
   });
 
+  it("parses joiner-bearing identifier property keys", () => {
+    const joinerKey = ["na", "me"].join("\u200c");
+    const facts = parsedFacts(
+      `export const meta = { ${joinerKey}: "joiner", 𐐀Name: "astral", description: "d" };`,
+    );
+
+    expect(facts.properties.map((property) => property.key)).toContain(joinerKey);
+    expect(facts.properties.map((property) => property.key)).toContain("𐐀Name");
+  });
+
   it("parses numeric values with separators", () => {
     const facts = parsedFacts(
       'export const meta = { name: "n", description: "d", retries: 1_000 };',

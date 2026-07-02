@@ -17,6 +17,7 @@ import {
   isRegexDelimiter,
   isStringLikeDelimiter,
   isTemplateDelimiter,
+  isWhitespaceCharacter,
   scanEscapedDelimitedEnd,
 } from "../../src/static-analysis/source-mask-delimiters";
 import { scanQuotedStringRange } from "../../src/static-analysis/source-mask-strings";
@@ -70,6 +71,11 @@ describe("source-mask delimiter helpers", () => {
   it("identifies JavaScript line terminator characters", () => {
     expect(["\n", "\r", "\u2028", "\u2029"].every(isLineTerminatorCharacter)).toBeTrue();
     expect([" ", "x", "`"].some(isLineTerminatorCharacter)).toBeFalse();
+  });
+
+  it("identifies JavaScript whitespace characters", () => {
+    expect([" ", "\t", "\n", "\r", "\u2028", "\u2029"].every(isWhitespaceCharacter)).toBeTrue();
+    expect(["x", "`", ""].some(isWhitespaceCharacter)).toBeFalse();
   });
 
   it("blanks masked ranges while preserving line terminators", () => {

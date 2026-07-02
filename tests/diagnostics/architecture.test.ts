@@ -11,25 +11,25 @@ import { existsSync, readdirSync } from "node:fs";
 import {
   EXPECTED_DIAGNOSTIC_MODULE_FILES,
   EXPECTED_PARSEABLE_SOURCE_FILES,
+  EXPECTED_STATIC_ANALYSIS_MODULE_FILES,
 } from "./architecture-fixtures";
 import { parseSource, topLevelDeclarationNames } from "./import-architecture";
 
-/** Lists current internal diagnostic source modules. */
-const diagnosticModuleFiles = (): readonly string[] => {
-  const diagnosticsPath = "src/diagnostics";
-
-  if (!existsSync(diagnosticsPath)) {
+/** Lists current direct TypeScript source modules below one source directory. */
+const sourceModuleFiles = (sourcePath: string): readonly string[] => {
+  if (!existsSync(sourcePath)) {
     return [];
   }
 
-  return readdirSync(diagnosticsPath)
+  return readdirSync(sourcePath)
     .filter((fileName) => fileName.endsWith(".ts"))
     .sort();
 };
 
 describe("diagnostic architecture", () => {
-  it("pins diagnostic module inventory and parseable sources", () => {
-    expect(diagnosticModuleFiles()).toEqual(EXPECTED_DIAGNOSTIC_MODULE_FILES);
+  it("pins module inventories and parseable sources", () => {
+    expect(sourceModuleFiles("src/diagnostics")).toEqual(EXPECTED_DIAGNOSTIC_MODULE_FILES);
+    expect(sourceModuleFiles("src/static-analysis")).toEqual(EXPECTED_STATIC_ANALYSIS_MODULE_FILES);
 
     for (const sourcePath of EXPECTED_PARSEABLE_SOURCE_FILES) {
       expect(parseSource(sourcePath).fileName).toBe(sourcePath);

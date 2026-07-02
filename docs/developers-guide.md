@@ -67,6 +67,14 @@ diagnostics in canonical order: envelope diagnostics first, then metadata
 diagnostics. The package entry re-exports `lintWorkflowSource` and
 `WorkflowLintResult` for future CLI and public-consumer work.
 
+Static-analysis result contracts freeze the returned result container and any
+array owned by that result at runtime. Nested fact trees owned by a parser, such
+as parsed metadata objects and arrays, are also frozen before they leave their
+module. Reused diagnostic, source-span, and source-position value objects are
+`readonly` compile-time data; consumers must not depend on recursive
+runtime-freezing beyond the producer-owned containers documented by focused
+tests.
+
 The scanner records whether metadata is an object literal, a non-object
 expression, an unterminated object, or a missing value. The metadata classifier
 in `src/static-analysis/workflow-metadata.ts` consumes those envelope facts and

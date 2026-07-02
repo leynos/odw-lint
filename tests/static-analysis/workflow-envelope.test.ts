@@ -309,6 +309,8 @@ describe("workflow envelope unsupported import and export scan", () => {
       "const import$ = 1;",
       "const exporté = 2;",
       "const import𐐀 = 3;",
+      ["const import", "Name = 4;"].join("\u200c"),
+      ["const export", "Name = 5;"].join("\u200d"),
       'const helper = await import("./helper.js");',
     ].join("\n");
     const result = scanWorkflowEnvelope(sourceFile(sourceText));

@@ -32,6 +32,37 @@ export const EXPECTED_DIAGNOSTIC_MODULE_FILES = [
 ] as const;
 
 /**
+ * Source files expected under `src/static-analysis/`.
+ */
+export const EXPECTED_STATIC_ANALYSIS_MODULE_FILES = [
+  "index.ts",
+  "javascript-identifiers.ts",
+  "source-file.ts",
+  "source-indexes.ts",
+  "source-mask-comments.ts",
+  "source-mask-delimiters.ts",
+  "source-mask-regex.ts",
+  "source-mask-strings.ts",
+  "source-mask-templates.ts",
+  "source-mask-types.ts",
+  "source-mask.ts",
+  "source-position.ts",
+  "source-scan.ts",
+  "source-snippet.ts",
+  "types.ts",
+  "workflow-envelope-meta-value.ts",
+  "workflow-envelope-statement.ts",
+  "workflow-envelope-unsupported.ts",
+  "workflow-envelope.ts",
+  "workflow-lint.ts",
+  "workflow-metadata-comment-scan.ts",
+  "workflow-metadata-parser-scan.ts",
+  "workflow-metadata-parser.ts",
+  "workflow-metadata-string-scan.ts",
+  "workflow-metadata.ts",
+] as const;
+
+/**
  * Representative production source files that must remain parseable.
  */
 export const EXPECTED_PARSEABLE_SOURCE_FILES = [

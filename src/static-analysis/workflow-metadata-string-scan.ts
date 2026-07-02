@@ -1,6 +1,7 @@
 /** @file String literal scanner for static metadata parsing. */
 
-import { isLineTerminator, scanDelimitedEnd } from "./workflow-metadata-comment-scan";
+import { isLineTerminatorCharacter } from "./source-mask-delimiters";
+import { scanDelimitedEnd } from "./workflow-metadata-comment-scan";
 import type { ParserCursor } from "./workflow-metadata-parser";
 
 const SIMPLE_ESCAPES = {
@@ -63,7 +64,7 @@ const isUnprovableStringBoundary = (
   if (delimiter === "`") {
     return character === "$" && cursor.text[cursor.index + 1] === "{";
   }
-  return isLineTerminator(character);
+  return isLineTerminatorCharacter(character);
 };
 
 /** Scans one string escape or line continuation. */
@@ -103,7 +104,7 @@ const scanLineContinuationEnd = (
   if (isCrLfContinuation(text, startIndex, endIndex)) {
     return startIndex + 2;
   }
-  if (character !== undefined && isLineTerminator(character)) {
+  if (character !== undefined && isLineTerminatorCharacter(character)) {
     return startIndex + 1;
   }
   return undefined;

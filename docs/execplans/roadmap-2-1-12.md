@@ -207,6 +207,14 @@ point. Final `make all`, `make markdownlint`, and `make nixie` passed, and
 CodeRabbit returned zero findings for each milestone after rate-limit backoffs
 where required.
 
+## Addenda
+
+- [x] 2.1.12.1. Add a static-analysis module-inventory guard.
+- [x] 2.1.12.2. Strengthen workflow-lint merge-order properties.
+- [x] 2.1.12.3. Decide the static-analysis result freeze-depth contract.
+- [x] 2.1.12.4. Consolidate identifier-character classification.
+- [x] 2.1.12.5. Extract shared low-level scanner character predicates.
+
 ## Context and orientation
 
 `odw-lint` is a static linter for Open Dynamic Workflows (ODW) source files. It

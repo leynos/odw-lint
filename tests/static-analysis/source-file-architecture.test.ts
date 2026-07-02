@@ -200,6 +200,7 @@ describe("source-file helper architecture", () => {
       "SourceMaskRange",
     ]);
     expectModuleDeclarations("src/static-analysis/source-mask-delimiters.ts", [
+      "WHITESPACE_PATTERN",
       "blankMaskedRange",
       "createMaskedRange",
       "isLineTerminatorCharacter",
@@ -207,6 +208,7 @@ describe("source-file helper architecture", () => {
       "isRegexDelimiter",
       "isStringLikeDelimiter",
       "isTemplateDelimiter",
+      "isWhitespaceCharacter",
       "scanEscapedDelimitedEnd",
     ]);
     expectModuleDeclarations("src/static-analysis/source-mask-comments.ts", [

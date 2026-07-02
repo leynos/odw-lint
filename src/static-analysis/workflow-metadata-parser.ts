@@ -2,6 +2,7 @@
 
 import type { SourceSpan } from "../diagnostics/types";
 import { textIndexAtOffset } from "./source-indexes";
+import { isStringLikeDelimiter } from "./source-mask-delimiters";
 import { spanFromTextIndexes } from "./source-position";
 import type { OriginalSourceFile, WorkflowEnvelopeScanResult, WorkflowMetaValue } from "./types";
 import type {
@@ -13,12 +14,11 @@ import type {
 import {
   currentCharacter,
   isArrayTerminator,
-  isIdentifierPart,
-  isIdentifierStart,
   isNumberStart,
   isPropertyTerminator,
   scanBalancedEnd,
   scanExpressionEnd,
+  scanIdentifierEnd,
   scanKeyword,
   scanNumberEnd,
   skipTrivia,
@@ -215,11 +215,9 @@ const parsePropertyKey = (
       span: spanFromTextIndexes(cursor.file, startIndex, cursor.index),
     });
   }
-  if (isIdentifierStart(character)) {
-    cursor.index += 1;
-    while (isIdentifierPart(currentCharacter(cursor))) {
-      cursor.index += 1;
-    }
+  const identifierEndIndex = scanIdentifierEnd(cursor);
+  if (identifierEndIndex !== undefined) {
+    cursor.index = identifierEndIndex;
     return Object.freeze({
       value: cursor.text.slice(startIndex, cursor.index),
       span: spanFromTextIndexes(cursor.file, startIndex, cursor.index),
@@ -395,5 +393,5 @@ const spanForUnparsedMetaValue = (
 };
 /** Checks for metadata string delimiters and narrows the delimiter type. */
 const isStringDelimiter = (character: string): character is "'" | '"' | "`" => {
-  return character === "'" || character === '"' || character === "`";
+  return isStringLikeDelimiter(character);
 };
