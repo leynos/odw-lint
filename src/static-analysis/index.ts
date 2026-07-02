@@ -30,6 +30,7 @@ export {
   STATIC_ANALYSIS_STAGES,
 } from "./types";
 export { scanWorkflowEnvelope } from "./workflow-envelope";
+export { lintWorkflowSource, type WorkflowLintResult } from "./workflow-lint";
 export {
   classifyWorkflowMetadata,
   type ParsedMetadataPrimitive,

@@ -4,12 +4,7 @@
 
 import { describe, expect, it } from "bun:test";
 import type { Diagnostic, SourceSpan } from "odw-lint";
-import {
-  classifyWorkflowMetadata,
-  createOriginalSourceFile,
-  scanWorkflowEnvelope,
-  sliceSourceSpan,
-} from "odw-lint";
+import { lintWorkflowSource, sliceSourceSpan } from "odw-lint";
 import { readFixtureSource } from "./fixtures/corpus-support";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
 import type {
@@ -56,15 +51,13 @@ const classifyInvalidFixture = (
   fixture: InvalidWorkflowFixtureSnapshot,
 ): TaskOwnedFixtureResult => {
   const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath);
-  const sourceFile = createOriginalSourceFile({
+  const result = lintWorkflowSource({
     filePath: fixture.fixturePath,
     sourceText,
   });
-  const envelope = scanWorkflowEnvelope(sourceFile);
-  const diagnostics = [
-    ...envelope.diagnostics,
-    ...classifyWorkflowMetadata(envelope).diagnostics,
-  ].filter((diagnostic) => TASK_2_1_3_RULES.has(String(diagnostic.rule)));
+  const diagnostics = result.diagnostics.filter((diagnostic) =>
+    TASK_2_1_3_RULES.has(String(diagnostic.rule)),
+  );
 
   return {
     diagnostics: diagnostics.map((diagnostic) => ({
@@ -72,7 +65,7 @@ const classifyInvalidFixture = (
       severity: diagnostic.severity,
       message: diagnostic.message,
       span: diagnostic.span,
-      spanText: sliceSourceSpan(sourceFile, diagnostic.span),
+      spanText: sliceSourceSpan(result.sourceFile, diagnostic.span),
     })),
     status: statusFromDiagnostics(diagnostics),
   };

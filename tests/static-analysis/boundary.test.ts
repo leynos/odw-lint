@@ -10,10 +10,12 @@ import type {
   StaticAnalysisComponent,
   StaticAnalysisStage,
   WorkflowEnvelopeScanResult,
+  WorkflowLintResult,
   WorkflowSource,
 } from "odw-lint";
 import {
   createOriginalSourceFile,
+  lintWorkflowSource,
   positionAtOffset,
   SourceOffsetError,
   STATIC_ANALYSIS_BOUNDARY,
@@ -128,5 +130,18 @@ describe("static-analysis boundary exports", () => {
       throw new Error("Expected package entry scanner to find metadata.");
     }
     expect(result.envelope.metaValue.kind).toBe("object");
+  });
+
+  it("exposes the workflow lint entry point at the package boundary", () => {
+    const result = lintWorkflowSource({
+      filePath: "workflows/example.js",
+      sourceText: 'export const meta = { name: "example", description: "ok" };',
+    }) satisfies WorkflowLintResult;
+
+    expect(result.diagnostics).toEqual([
+      ...result.scan.diagnostics,
+      ...result.classification.diagnostics,
+    ]);
+    expect(result.classification.status).toBe("valid");
   });
 });

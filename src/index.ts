@@ -55,6 +55,7 @@ export {
 export {
   classifyWorkflowMetadata,
   createOriginalSourceFile,
+  lintWorkflowSource,
   type MaskedSource,
   maskNonCodeSource,
   type OriginalSourceFile,
@@ -80,6 +81,7 @@ export {
   type UnsupportedWorkflowSyntax,
   type WorkflowEnvelope,
   type WorkflowEnvelopeScanResult,
+  type WorkflowLintResult,
   type WorkflowMetadataClassification,
   type WorkflowMetadataFacts,
   type WorkflowMetadataParseResult,

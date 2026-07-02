@@ -499,7 +499,7 @@ statically. It unlocks metadata rules and body parsing. See
   - Success: the hostile metadata regression exercises global-write,
     thrown-marker, and filesystem or environment side-effect observables while
     fixture refresh output remains deterministic.
-- [ ] 2.1.12. Introduce a static workflow lint entry point.
+- [x] 2.1.12. Introduce a static workflow lint entry point.
   - Requires 2.1.3, 2.1.5, and 2.1.7.
   - Add a production `lintWorkflowSource` entry point that owns the merge of
     envelope-scan and metadata-classification diagnostics before the `check`

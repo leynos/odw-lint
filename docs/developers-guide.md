@@ -60,6 +60,13 @@ regex-sensitive syntax. The scanner starts from masked-source UTF-16 string
 indexes, then converts them back to original-source UTF-8 byte offsets before
 calling `spanFromOffsets`.
 
+Use `lintWorkflowSource` as the production entry point when a caller needs the
+complete static workflow diagnostic stream for one source string. It builds the
+original source file, scans the envelope, classifies metadata, and returns
+diagnostics in canonical order: envelope diagnostics first, then metadata
+diagnostics. The package entry re-exports `lintWorkflowSource` and
+`WorkflowLintResult` for future CLI and public-consumer work.
+
 The scanner records whether metadata is an object literal, a non-object
 expression, an unterminated object, or a missing value. The metadata classifier
 in `src/static-analysis/workflow-metadata.ts` consumes those envelope facts and
@@ -73,10 +80,11 @@ scheduler, metadata-evaluating, or agent-dispatch paths.
 The focused classifier tests live in
 `tests/static-analysis/workflow-metadata.test.ts`. Invalid fixture parity for
 the task-owned metadata and envelope rules lives in
-`tests/static-analysis/invalid-workflow-metadata-parity.test.ts`. Task 3.1.1
-still owns user-visible `odw/claude-pure-meta` emission; do not add that
-diagnostic to the metadata classifier before the pure-literal compatibility
-task lands.
+`tests/static-analysis/invalid-workflow-metadata-parity.test.ts`; that parity
+suite consumes `lintWorkflowSource` so the envelope and metadata diagnostic
+merge order has one implementation. Task 3.1.1 still owns user-visible
+`odw/claude-pure-meta` emission; do not add that diagnostic to the metadata
+classifier before the pure-literal compatibility task lands.
 
 Production modules under `src/static-analysis/` use relative internal imports
 for scanner collaborators. Public-consumer tests may import
