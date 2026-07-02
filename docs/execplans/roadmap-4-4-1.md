@@ -274,6 +274,17 @@ revalidated with the same gates and followed by a clean CodeRabbit pass with
 zero findings. The final branch remains Markdown-only and adds no runtime,
 package, dependency, source or test changes.
 
+## Addenda
+
+- [ ] 4.4.1.1. Refresh build-gate repository-layout guidance.
+  - Source: audit:1.5.6; severity low.
+  - Scope: update the canonical layout guide so `tests/build-gate/` and
+    `git-support.ts` cover generalized build gates and the review-evidence
+    target.
+  - Success: `docs/repository-layout.md` agrees with the developers' guide
+    about shared build-gate command support and names the review-evidence
+    responsibility.
+
 ## Context and orientation
 
 This repository is a private TypeScript/Bun project for `odw-lint`, a static

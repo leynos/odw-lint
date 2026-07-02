@@ -246,6 +246,10 @@ depending on manual post-commit audits.
     `origin/main`.
   - Success: review or gate output flags stale task branches before they can
     present unrelated main-branch work as deletions.
+  - [ ] 1.5.2.1. Unify branch-freshness exit-code mapping.
+    - Addendum (from audit:1.5.6; medium). Route the branch-freshness CLI
+      through its exported exit-code mapping so status additions cannot drift
+      between tests and process behaviour. Lightweight addendum pass.
 - [x] 1.5.3. Add a public API removal guard for package exports.
   - Requires 1.2.3.
   - Add an export-surface snapshot or architecture test that compares the
@@ -289,6 +293,38 @@ depending on manual post-commit audits.
   - Success: benchmark and audit reviews no longer rely solely on a task
     agent's self-reported gate output or silently substitute the intended
     dual-review path.
+  - [ ] 1.5.6.1. Make review-evidence gate timeouts configurable.
+    - Addendum (from review:1.5.6; low). Add a documented flag or environment
+      override for per-gate execution timeout so slow review environments do
+      not produce misleading degraded evidence. Lightweight addendum pass.
+  - [ ] 1.5.6.2. Distinguish timed-out review-evidence gates.
+    - Addendum (from review:1.5.6; low). Split timed-out or killed gate
+      executions from spawn-unavailable evidence and map hung gates to
+      reviewer-visible failure. Lightweight addendum pass.
+- [ ] 1.5.7. Invoke review evidence from the roadmap review workflow.
+  - Adopt `make review-evidence` in the roadmap review or audit workflow, or
+    add an equivalent scheduled smoke path, so the gate is run automatically
+    instead of depending on reviewer memory.
+  - Requires 1.5.6.
+  - Success: a normal roadmap review or audit path records review-evidence
+    output without a manual reviewer opting into the target.
+- [ ] 1.5.8. Derive reviewer availability from harness state.
+  - Wire review-evidence reviewer availability from the roadmap or df12-build
+    workflow's observed reviewer state, such as scrutineer quota or
+    unavailable reviewer detection, instead of defaulting an unparameterized
+    run to optimistic availability.
+  - Requires 1.5.6 and 1.5.7.
+  - Success: an unparameterized automated review cannot claim a scrutineer
+    review when the harness knows only coderabbit or local-self-run evidence is
+    available.
+- [ ] 1.5.9. Consolidate build-gate CLI support.
+  - Extract shared CLI writer, default stream, and report-dispatch support for
+    build-gate command modules while preserving each gate's policy and result
+    contract.
+  - Requires 1.5.5 and 1.5.6.
+  - Success: branch-freshness, whitespace-hygiene, and review-evidence CLIs
+    consume one documented CLI-support helper before another build gate clones
+    the same reviewer-facing command boilerplate.
 
 ## 2. First vertical slice: ODW dialect validation
 
@@ -759,6 +795,10 @@ types" and [developers-guide.md](developers-guide.md) "Documentation Upkeep".
   - Success: maintainers can find every current documentation family and
     repository path from one canonical navigation trail without inferring
     layout from file names.
+  - [ ] 4.4.1.1. Refresh build-gate repository-layout guidance.
+    - Addendum (from audit:1.5.6; low). Update the canonical layout guide so
+      `tests/build-gate/` and `git-support.ts` cover generalized build gates
+      and the review-evidence target. Lightweight addendum pass.
 
 ## 5. Deferred extensions
 

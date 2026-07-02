@@ -389,6 +389,16 @@ worktree, and marked roadmap task 1.5.2 complete. Its deterministic close-out
 gates passed: `make all`, `make markdownlint`, and `make nixie`; its
 CodeRabbit pass completed with `findings:0`.
 
+## Addenda
+
+- [ ] 1.5.2.1. Unify branch-freshness exit-code mapping.
+  - Source: audit:1.5.6; severity medium.
+  - Scope: route the branch-freshness CLI through its exported exit-code
+    mapping so status additions cannot drift between tests and process
+    behaviour.
+  - Success: branch-freshness exit-code tests fail if a new result variant is
+    not handled by the exported mapping used by the CLI.
+
 ## Context and orientation
 
 The current repository is a private TypeScript and Bun package. The product

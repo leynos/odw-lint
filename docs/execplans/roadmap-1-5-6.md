@@ -559,6 +559,22 @@ because its fixed GPT-5.3-Codex-Spark quota was exhausted until Jul 7th, 2026
 11:20 AM. Each work item therefore used the explicit degraded operating path:
 local deterministic gates first, then local `coderabbit review --agent`.
 
+## Addenda
+
+- [ ] 1.5.6.1. Make review-evidence gate timeouts configurable.
+  - Source: review:1.5.6; severity low.
+  - Scope: add a documented flag or environment override for per-gate
+    execution timeout so slow review environments do not produce misleading
+    degraded evidence.
+  - Success: review-evidence CLI tests cover the default timeout and an
+    override path without running the full repository gate.
+- [ ] 1.5.6.2. Distinguish timed-out review-evidence gates.
+  - Source: review:1.5.6; severity low.
+  - Scope: split timed-out or killed gate executions from spawn-unavailable
+    evidence and map hung gates to reviewer-visible failure.
+  - Success: review-evidence tests show timed-out or killed commands fail the
+    review evidence while spawn-unavailable remains explicit degraded evidence.
+
 ## Context and Orientation
 
 `odw-lint` is a Bun and TypeScript project that statically lints Open Dynamic
