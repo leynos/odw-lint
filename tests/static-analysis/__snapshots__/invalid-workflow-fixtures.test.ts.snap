@@ -244,7 +244,9 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
         "rule": "odw/body-syntax",
         "severity": "error",
         "spanTextLines": [
-          "{",
+          "",
+          "",
+          "if (args.ready) {",
           "  await agent("Draft status.");",
           "",
         ],
@@ -261,7 +263,9 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
         "rule": "odw/body-syntax",
         "severity": "error",
         "spanTextLines": [
-          "agent("draft"",
+          "",
+          "",
+          "await agent("draft"",
           "",
         ],
       },

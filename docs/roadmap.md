@@ -538,7 +538,7 @@ This step answers whether ODW's top-level body can be represented as parseable
 source without losing span fidelity. It informs all later AST rules. See
 [technical-design.md](technical-design.md) §§6.1 and 11.5.
 
-- [ ] 2.2.1. Add `@swc/core` and implement the parser adapter.
+- [x] 2.2.1. Add `@swc/core` and implement the parser adapter.
   - Requires 2.1.2 and 2.1.8.
   - See [technical-design.md](technical-design.md) §§4 and 6.1.
   - Success: body syntax errors become `odw/body-syntax` diagnostics rather

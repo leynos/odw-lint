@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from "bun:test";
 import type { Diagnostic, SourceSpan } from "odw-lint";
-import { lintWorkflowSource, sliceSourceSpan } from "odw-lint";
+import { lintWorkflowSource, parseWorkflowBody, sliceSourceSpan } from "odw-lint";
 import { readFixtureSource } from "./fixtures/corpus-support";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
 import type {
@@ -26,6 +26,7 @@ const TASK_2_1_3_RULES = new Set([
   "odw/meta-description",
   "odw/no-import-export",
 ]);
+const BODY_SYNTAX_RULES = new Set(["odw/body-syntax"]);
 
 type ComparableDiagnostic = {
   readonly rule: string;
@@ -89,6 +90,54 @@ const comparableFixtureDiagnostics = (
   };
 };
 
+/** Runs the standalone parser adapter for one syntax-error fixture. */
+const classifyBodySyntaxFixture = (
+  fixture: InvalidWorkflowFixtureSnapshot,
+): TaskOwnedFixtureResult => {
+  const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath);
+  const result = lintWorkflowSource({
+    filePath: fixture.fixturePath,
+    sourceText,
+  });
+  if (result.scan.status !== "scanned") {
+    throw new Error(`Expected ${fixture.fixturePath} to expose workflow metadata.`);
+  }
+
+  const parseResult = parseWorkflowBody(result.scan.envelope);
+  const diagnostics = parseResult.ok ? [] : [parseResult.diagnostic];
+
+  return {
+    diagnostics: diagnostics.map((diagnostic) => ({
+      rule: String(diagnostic.rule),
+      severity: diagnostic.severity,
+      message: diagnostic.message,
+      span: diagnostic.span,
+      spanText: sliceSourceSpan(result.sourceFile, diagnostic.span),
+    })),
+    status: statusFromDiagnostics(diagnostics),
+  };
+};
+
+/** Converts body-syntax manifest diagnostics into the parity shape. */
+const comparableBodySyntaxDiagnostics = (
+  diagnostics: readonly InvalidWorkflowFixtureDiagnostic[],
+): TaskOwnedFixtureResult => {
+  const taskDiagnostics = diagnostics.filter((diagnostic) =>
+    BODY_SYNTAX_RULES.has(String(diagnostic.rule)),
+  );
+
+  return {
+    diagnostics: taskDiagnostics.map((diagnostic) => ({
+      rule: String(diagnostic.rule),
+      severity: diagnostic.severity,
+      message: diagnostic.message,
+      span: diagnostic.span,
+      spanText: diagnostic.spanText,
+    })),
+    status: statusFromDiagnostics(taskDiagnostics),
+  };
+};
+
 /** Maps task-owned diagnostics to the fixture status contract. */
 const statusFromDiagnostics = (
   diagnostics: readonly { readonly severity: Diagnostic["severity"] }[],
@@ -114,17 +163,17 @@ describe("invalid workflow metadata classifier parity", () => {
     }
   });
 
-  it("preserves deferred body syntax fixture expectations", () => {
+  it("matches body syntax diagnostics for syntax-error fixtures", () => {
     const syntaxFixtures = INVALID_WORKFLOW_FIXTURE_SNAPSHOTS.filter(
       (fixture) => fixture.family === "syntax-error",
     );
 
     expect(syntaxFixtures).toHaveLength(2);
     for (const fixture of syntaxFixtures) {
-      expect(fixture.expectedDiagnostics.map((diagnostic) => String(diagnostic.rule))).toContain(
-        "odw/body-syntax",
-      );
-      expect(taskOwnedFixtureDiagnostics(fixture.expectedDiagnostics)).toEqual([]);
+      const expected = comparableBodySyntaxDiagnostics(fixture.expectedDiagnostics);
+
+      expect(classifyBodySyntaxFixture(fixture)).toEqual(expected);
+      expect(expected.status).toBe(fixture.expectedStatus);
     }
   });
 });

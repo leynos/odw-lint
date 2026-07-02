@@ -44,8 +44,15 @@ package-level contracts only through explicit named re-exports.
 The first envelope scanner lives in `src/static-analysis/workflow-envelope.ts`.
 It extracts `export const meta` from masked source, records metadata value
 state, reports missing metadata and unsupported top-level imports or exports,
-and exposes source spans in the original source file. Direct SWC calls belong
-only in the future parser adapter from roadmap task 2.2.1.
+and exposes source spans in the original source file.
+
+The workflow body parser adapter lives in
+`src/static-analysis/workflow-body-parser.ts`. `parseWorkflowBody` slices the
+scanned `envelope.bodySpan`, parses it with `@swc/core`'s `parseSync`, and
+converts observed parser syntax failures into `odw/body-syntax` diagnostics
+with original-source spans. The adapter never executes workflow source, never
+calls ODW runtime helpers, and returns a frozen discriminated result instead of
+letting syntax errors escape.
 
 ### Workflow envelope scanner
 
@@ -66,6 +73,13 @@ original source file, scans the envelope, classifies metadata, and returns
 diagnostics in canonical order: envelope diagnostics first, then metadata
 diagnostics. The package entry re-exports `lintWorkflowSource` and
 `WorkflowLintResult` for future CLI and public-consumer work.
+
+`parseWorkflowBody` is intentionally not wired into `lintWorkflowSource` yet.
+Task 2.2.2 owns body normalization for top-level `return` and the valid-example
+pipeline. Until that lands, do not run `parseWorkflowBody` over bodies that
+contain top-level `return`; callers that need full workflow diagnostics should
+continue to use `lintWorkflowSource` for the currently integrated envelope and
+metadata checks.
 
 Static-analysis result contracts freeze the returned result container and any
 array owned by that result at runtime. Nested fact trees owned by a parser, such
@@ -101,8 +115,9 @@ package entry.
 
 When extending this area, keep the roadmap sequencing intact: task 2.1.4 owns
 the forbidden-import architecture test for production code, task 2.2.1 owns the
-SWC parser adapter, and task 3.1.1 owns Claude pure-metadata compatibility
-diagnostics.
+shipped standalone SWC parser adapter, task 2.2.2 owns body normalization and
+valid-example parser integration, and task 3.1.1 owns Claude pure-metadata
+compatibility diagnostics.
 
 ## Commit Gate
 

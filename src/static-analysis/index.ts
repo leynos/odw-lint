@@ -29,6 +29,7 @@ export {
   STATIC_ANALYSIS_COMPONENTS,
   STATIC_ANALYSIS_STAGES,
 } from "./types";
+export { parseWorkflowBody, type WorkflowBodyParseResult } from "./workflow-body-parser";
 export { scanWorkflowEnvelope } from "./workflow-envelope";
 export { lintWorkflowSource, type WorkflowLintResult } from "./workflow-lint";
 export {

@@ -50,6 +50,7 @@ export const EXPECTED_STATIC_ANALYSIS_MODULE_FILES = [
   "source-scan.ts",
   "source-snippet.ts",
   "types.ts",
+  "workflow-body-parser.ts",
   "workflow-envelope-meta-value.ts",
   "workflow-envelope-statement.ts",
   "workflow-envelope-unsupported.ts",

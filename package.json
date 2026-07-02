@@ -37,6 +37,10 @@
     "df12-lints"
   ],
   "dependencyJustifications": {
+    "@swc/core": "Owned static parser chosen by ADR 0001 and technical-design section 13; used only by the workflow body parser adapter to detect body syntax errors without executing source.",
     "df12-lints": "Pinned to the reviewed Git commit that provides the local Oxlint plugin until df12-lints publishes a versioned package with that plugin."
+  },
+  "dependencies": {
+    "@swc/core": "^1.15.43"
   }
 }
