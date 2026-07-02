@@ -7,8 +7,8 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
-/** Captured Git command result used by build-gate helpers. */
-export type GitCommandResult = {
+/** Captured command result used by build-gate helpers. */
+export type CommandResult = {
   readonly status: number | null;
   readonly signal: NodeJS.Signals | null;
   readonly stdout: string;
@@ -16,14 +16,27 @@ export type GitCommandResult = {
   readonly error?: NodeJS.ErrnoException;
 };
 
-/** Minimal Git runner scoped to one repository directory. */
-export type GitRunner = {
-  readonly run: (args: readonly string[]) => GitCommandResult;
+/** Backwards-compatible Git command result alias. */
+export type GitCommandResult = CommandResult;
+
+/** Minimal command runner scoped to one executable and optional working directory. */
+export type CommandRunner = {
+  readonly run: (args: readonly string[]) => CommandResult;
 };
+
+/** Minimal Git runner scoped to one repository directory. */
+export type GitRunner = CommandRunner;
 
 const gitCommandTimeoutMs = 30_000;
 const gitCommandMaxBufferBytes = 64 * 1024 * 1024;
 const trackedFileListingArgs = ["ls-files", "-z", "--full-name"] as const;
+
+export type CommandRunnerOptions = {
+  readonly cwd?: string;
+  readonly env?: NodeJS.ProcessEnv;
+  readonly timeoutMs?: number;
+  readonly maxBufferBytes?: number;
+};
 
 export type GitRunnerOptions = {
   readonly timeoutMs?: number;
@@ -45,24 +58,24 @@ export type TemporaryRepositoryOptions = {
 };
 
 /**
- * Create a Git runner scoped to one repository directory.
+ * Create a command runner scoped to one executable.
  *
- * @param repositoryPath - Repository working-tree path.
+ * @param command - Executable name or path.
  * @param options - Optional runner settings for focused tests.
- * @returns Git runner with terminal prompts disabled and a bounded timeout.
+ * @returns Command runner with UTF-8 output and normalized spawn results.
  */
-export function createGitRunner(repositoryPath: string, options: GitRunnerOptions = {}): GitRunner {
-  const timeout = options.timeoutMs ?? gitCommandTimeoutMs;
-  const maxBuffer = options.maxBufferBytes ?? gitCommandMaxBufferBytes;
-
+export function createCommandRunner(
+  command: string,
+  options: CommandRunnerOptions = {},
+): CommandRunner {
   return {
     run: (args) => {
-      const result = spawnSync("git", args, {
-        cwd: repositoryPath,
+      const result = spawnSync(command, args, {
+        cwd: options.cwd,
         encoding: "utf8",
-        env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
-        timeout,
-        maxBuffer,
+        env: options.env,
+        timeout: options.timeoutMs,
+        maxBuffer: options.maxBufferBytes,
       });
 
       return {
@@ -74,6 +87,22 @@ export function createGitRunner(repositoryPath: string, options: GitRunnerOption
       };
     },
   };
+}
+
+/**
+ * Create a Git runner scoped to one repository directory.
+ *
+ * @param repositoryPath - Repository working-tree path.
+ * @param options - Optional runner settings for focused tests.
+ * @returns Git runner with terminal prompts disabled and a bounded timeout.
+ */
+export function createGitRunner(repositoryPath: string, options: GitRunnerOptions = {}): GitRunner {
+  return createCommandRunner("git", {
+    cwd: repositoryPath,
+    env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
+    timeoutMs: options.timeoutMs ?? gitCommandTimeoutMs,
+    maxBufferBytes: options.maxBufferBytes ?? gitCommandMaxBufferBytes,
+  });
 }
 
 /**

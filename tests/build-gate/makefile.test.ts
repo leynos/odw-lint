@@ -21,7 +21,13 @@ type MakeDryRunResult = {
   readonly output: string;
 };
 
-type MakeTarget = "all" | "branch-freshness" | "build" | "refresh-fixtures" | "whitespace-hygiene";
+type MakeTarget =
+  | "all"
+  | "branch-freshness"
+  | "build"
+  | "refresh-fixtures"
+  | "review-evidence"
+  | "whitespace-hygiene";
 
 const olderThanMarker = new Date("2026-01-01T00:00:00.000Z");
 const markerTime = new Date("2026-01-01T00:01:00.000Z");
@@ -136,6 +142,20 @@ describe("Makefile build gate", () => {
     }
   });
 
+  it("documents the review-evidence target and wires it through Bun", () => {
+    const projectPath = createTemporaryProject([]);
+
+    try {
+      const result = runMakeDryRun(projectPath, "review-evidence");
+
+      expect(result.status).toBe(0);
+      expect(result.output).toContain("bun run tests/build-gate/review-evidence-cli.ts");
+      expect(result.output).not.toContain("bun install");
+    } finally {
+      rmSync(projectPath, { recursive: true, force: true });
+    }
+  });
+
   it("documents the whitespace hygiene target and wires it through Bun", () => {
     const projectPath = createTemporaryProject([]);
 
@@ -145,6 +165,19 @@ describe("Makefile build gate", () => {
       expect(result.status).toBe(0);
       expect(result.output).toContain("bun run tests/build-gate/whitespace-hygiene.ts");
       expect(result.output).not.toContain("bun install");
+    } finally {
+      rmSync(projectPath, { recursive: true, force: true });
+    }
+  });
+
+  it("keeps review evidence outside the full gate", () => {
+    const projectPath = createTemporaryProject([]);
+
+    try {
+      const result = runMakeDryRun(projectPath, "all");
+
+      expect(result.status).toBe(0);
+      expect(result.output).not.toContain("bun run tests/build-gate/review-evidence-cli.ts");
     } finally {
       rmSync(projectPath, { recursive: true, force: true });
     }

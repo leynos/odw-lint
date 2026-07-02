@@ -114,11 +114,13 @@ linting, type checking, or tests use the installed toolchain.
 and tabs. It reports path and line diagnostics only; it does not rewrite raw
 workflow fixtures, copied ODW examples, or snapshot files.
 
-Build-gate Git command execution, tracked-file listing, temporary repository
-setup, repository-relative writes, fixture commits, and captured CLI output
-live in `tests/build-gate/git-support.ts`. Keep feature-specific policy in the
+Build-gate command execution, tracked-file listing, temporary repository setup,
+repository-relative writes, fixture commits, and captured CLI output live in
+`tests/build-gate/git-support.ts`. Use the shared `createCommandRunner`
+subprocess seam for gate commands, including Git through `createGitRunner`, so
+gates share one command-result contract. Keep feature-specific policy in the
 corresponding gate module, such as file-size path filtering, whitespace scan
-rules, and branch-freshness classification.
+rules, branch-freshness classification, and review-evidence classification.
 
 Run `make markdownlint` as well when Markdown files change.
 
@@ -128,6 +130,22 @@ changes, and fails when the task branch would present unrelated newer
 main-branch work as deletions in review. It exits successfully on non-roadmap
 branches, and exits with a usage error when the worktree is dirty. Keep it
 outside `make all` because it performs a network fetch.
+
+Run `make review-evidence` when a roadmap review or audit needs independent
+evidence that the repository gates were re-executed in the task worktree. The
+target runs `make all`, `make markdownlint`, and `make nixie` through the shared
+build-gate command runner, then reports the selected dual-review path. Keep it
+outside `make all` because it re-runs `make all` and is a reviewer-run audit
+gate, not a recursive commit-gate step.
+
+`make review-evidence` exits 0 for `verified`, 1 for a failed re-run gate, 2 for
+usage errors, and 3 for `degraded` evidence. A degraded report means the review
+evidence is incomplete rather than passed: for example, a sandboxed reviewer can
+run `bun run tests/build-gate/review-evidence-cli.ts --no-exec` to record that
+command execution was unavailable. Reviewer path selection is explicit and
+ordered: primary `scrutineer`, fallback `coderabbit`, then degraded
+`local-self-run` when no independent reviewer remains. The report names the
+selected path so quota-blocked review cannot be silently substituted.
 
 Run `make refresh-fixtures` after changing workflow fixture source, copied ODW
 examples, or static-analysis fixture manifests. The target refreshes fixture

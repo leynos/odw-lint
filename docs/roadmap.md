@@ -279,7 +279,7 @@ depending on manual post-commit audits.
     hygiene gates while preserving each gate's feature-specific policy.
   - Success: build-gate tests exercise one documented Git support helper and no
     gate carries a forked subprocess or tracked-file enumeration contract.
-- [ ] 1.5.6. Add independent roadmap audit review evidence gates.
+- [x] 1.5.6. Add independent roadmap audit review evidence gates.
   - Requires 1.5.2 and 1.5.5.
   - Add a roadmap review or audit workflow check, permission profile, or
     equivalent gate that re-runs repository gates with command execution

@@ -7,6 +7,10 @@ import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { delimiter, join } from "node:path";
 import {
+  type CommandResult,
+  type CommandRunner,
+  type CommandRunnerOptions,
+  createCommandRunner,
   createGitRunner,
   type GitCommandResult,
   type GitRunner,
@@ -18,7 +22,8 @@ import {
 type Assert<T extends true> = T;
 type IsAssignable<Actual, Expected> = Actual extends Expected ? true : false;
 
-type _GitCommandResultContract = Assert<
+type _GitCommandResultContract = Assert<IsAssignable<CommandResult, GitCommandResult>>;
+type _CommandResultContract = Assert<
   IsAssignable<
     {
       readonly status: number | null;
@@ -30,12 +35,24 @@ type _GitCommandResultContract = Assert<
     GitCommandResult
   >
 >;
-type _GitRunnerContract = Assert<
+type _GitRunnerContract = Assert<IsAssignable<CommandRunner, GitRunner>>;
+type _CommandRunnerContract = Assert<
   IsAssignable<
     {
-      readonly run: (args: readonly string[]) => GitCommandResult;
+      readonly run: (args: readonly string[]) => CommandResult;
     },
-    GitRunner
+    CommandRunner
+  >
+>;
+type _CommandRunnerOptionsContract = Assert<
+  IsAssignable<
+    {
+      readonly cwd?: string;
+      readonly env?: NodeJS.ProcessEnv;
+      readonly timeoutMs?: number;
+      readonly maxBufferBytes?: number;
+    },
+    CommandRunnerOptions
   >
 >;
 type _GitRunnerOptionsContract = Assert<
@@ -248,6 +265,33 @@ describe("lsTrackedFiles", () => {
     expect(captureErrorMessage(() => lsTrackedFiles({ gitRunner: git }))).toMatchInlineSnapshot(
       `"git ls-files -z --full-name failed with signal SIGTERM: "`,
     );
+  });
+});
+
+describe("createCommandRunner", () => {
+  it("runs a generic command with UTF-8 output and a repository cwd", () => {
+    const repositoryPath = createTemporaryDirectory("odw-lint-command-runner-repo-");
+    const result = createCommandRunner("true", { cwd: repositoryPath }).run([]);
+
+    expect(result).toEqual({
+      status: 0,
+      signal: null,
+      stdout: "",
+      stderr: "",
+    });
+  });
+
+  it("normalizes missing generic command output while preserving errors", () => {
+    const repositoryPath = createTemporaryDirectory("odw-lint-command-runner-repo-");
+    const result = createCommandRunner("odw-lint-definitely-absent-command", {
+      cwd: repositoryPath,
+    }).run([]);
+
+    expect(result.status).toBeNull();
+    expect(result.signal).toBeNull();
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toBe("");
+    expect(result.error).toBeInstanceOf(Error);
   });
 });
 

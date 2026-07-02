@@ -1,4 +1,4 @@
-.PHONY: help all clean build lint biomejs oxlint fmt check-fmt typecheck test refresh-fixtures whitespace-hygiene branch-freshness markdownlint nixie
+.PHONY: help all clean build lint biomejs oxlint fmt check-fmt typecheck test refresh-fixtures whitespace-hygiene branch-freshness review-evidence markdownlint nixie
 
 .DEFAULT_GOAL := all
 
@@ -41,6 +41,9 @@ whitespace-hygiene: ## Check tracked files for trailing whitespace
 
 branch-freshness: ## Check roadmap task branch freshness
 	bun run tests/build-gate/branch-freshness-git.ts
+
+review-evidence: ## Re-run independent roadmap review evidence gates
+	bun run tests/build-gate/review-evidence-cli.ts
 
 markdownlint: ## Lint Markdown files
 	bunx markdownlint-cli2 '**/*.md'
