@@ -3,10 +3,12 @@
  *
  * This module is the production source of truth for rule identifiers,
  * categories, default severities, configuration keys, documentation slugs,
- * diagnostic messages, and release status. Keep it inert: importing the
- * catalogue must never evaluate workflow source or ODW runtime code.
+ * diagnostic messages, diagnostic message templates, and release status. Keep
+ * it inert: importing the catalogue must never evaluate workflow source or ODW
+ * runtime code.
  */
 
+import { createMessageTemplate, type MessageTemplate } from "./message-template";
 import { makeRuleId, type RuleId } from "./rule-id";
 import type { DiagnosticSeverity } from "./severity";
 
@@ -54,6 +56,8 @@ export type RuleDefinition = {
   readonly docsSlug: string;
   /** Exact diagnostic messages this rule may emit in reviewed fixtures. */
   readonly messages: readonly string[];
+  /** Reviewed message templates this rule may render for dynamic diagnostics. */
+  readonly messageTemplates: readonly MessageTemplate[];
   /** Whether current checker code may emit this rule. */
   readonly releaseStatus: RuleReleaseStatus;
 };
@@ -65,6 +69,7 @@ type RuleDefinitionInput = {
   readonly defaultSeverity: DiagnosticSeverity;
   readonly releaseStatus: RuleReleaseStatus;
   readonly messages?: readonly string[];
+  readonly messageTemplates?: readonly string[];
 };
 
 /** Builds one rule definition from trusted literal metadata. */
@@ -74,6 +79,7 @@ const ruleDefinition = ({
   defaultSeverity,
   releaseStatus,
   messages = [],
+  messageTemplates = [],
 }: RuleDefinitionInput): RuleDefinition => {
   const ruleId = makeRuleId(id);
 
@@ -84,6 +90,7 @@ const ruleDefinition = ({
     configKey: ruleId,
     docsSlug: id.slice("odw/".length),
     messages: Object.freeze([...messages]),
+    messageTemplates: Object.freeze(messageTemplates.map(createMessageTemplate)),
     releaseStatus,
   });
 };

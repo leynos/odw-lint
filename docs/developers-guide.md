@@ -35,10 +35,11 @@ package export to `./src/index.ts`; it also exports `./package.json`. There is
 still no published `bin` field while the command surface is being built.
 
 Treat `src/index.ts` as the current private package entry. It re-exports the
-diagnostic contract and the static-analysis source helpers that downstream
-parser, mapper, and reporter code may consume through `odw-lint`. It must stay
-free of executable ODW runtime imports and should expose package-level
-contracts only through explicit named re-exports.
+diagnostic contract, including the reviewed message-template helpers for
+parser-backed dynamic diagnostics, and the static-analysis source helpers that
+downstream parser, mapper, and reporter code may consume through `odw-lint`. It
+must stay free of executable ODW runtime imports and should expose
+package-level contracts only through explicit named re-exports.
 
 The first envelope scanner lives in `src/static-analysis/workflow-envelope.ts`.
 It extracts `export const meta` from masked source, records metadata value
@@ -216,9 +217,10 @@ removals from `src/index.ts` fail the default repository gate.
 
 The rule catalogue is the production source of truth for rule identifiers,
 categories, default severities, configuration keys, documentation slugs, and
-diagnostic message contracts. The diagnostic JSON Schema derives its `rule`
-enum from `RULE_IDS`, and rule documentation pages under `docs/rules/` must
-begin with this fixed metadata table before any prose:
+diagnostic message contracts, including reviewed message templates for dynamic
+parser-backed messages. The diagnostic JSON Schema derives its `rule` enum from
+`RULE_IDS`, and rule documentation pages under `docs/rules/` must begin with
+this fixed metadata table before any prose:
 
 ```markdown
 # `odw/example-rule`
@@ -283,10 +285,12 @@ ordinary JavaScript. Keep `tests/static-analysis/fixtures/invalid-workflows.ts`
 in sync with every raw fixture by updating the family, path, SHA-256 hash,
 expected status, diagnostic rule, severity, message, UTF-8 source span, and
 reviewer-facing `spanText`. Fixture diagnostic expectations are checked against
-the rule catalogue for rule identifier, default severity, reviewed message, and
-documentation path parity. When an invalid fixture needs a different
-reviewer-facing `message`, extend the matching catalogue entry in the same
-change rather than treating the manifest as a separate source of truth.
+the rule catalogue for rule identifier, default severity, exact reviewed
+messages or reviewed message templates, and documentation path parity. Dynamic
+parser-backed messages must match catalogue-owned templates instead of broad
+substring assertions. When an invalid fixture needs a different reviewer-facing
+`message`, extend the matching catalogue entry in the same change rather than
+treating the manifest as a separate source of truth.
 Diagnostic documentation paths are derived from `ruleDocsPath(rule)` and remain
 repository-relative paths under `docs/rules/`; hosted URLs belong in later
 reporting or documentation presentation layers. For invalid diagnostic spans,

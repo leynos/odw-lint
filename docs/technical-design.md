@@ -315,9 +315,10 @@ The diagnostic contract has these invariants:
 - `rule` is constrained to the catalogue-derived `RULE_IDS` enum and is stable
   once released.
 - `severity` is one of `error`, `warning`, `info`, or `hint`.
-- `message` must match one of the exact message strings recorded for the rule
-  in the catalogue, unless the same implementation change extends that
-  catalogue contract deliberately.
+- `message` must equal one of the exact message strings recorded for the rule
+  in the catalogue or match one of that rule's reviewed message templates.
+  Templates are reserved for dynamic parser-backed diagnostics whose concrete
+  details are still checked against reviewed structure.
 - `docs`, when present, is the repository-relative Markdown path under
   `docs/rules/` for the catalogued rule. Reporters or hosted documentation
   layers may convert that path to a URL at presentation time, but diagnostic
@@ -344,12 +345,12 @@ schema-version review and compatibility handling.
 
 `src/diagnostics/rule-catalogue.ts` is the implementation source of truth for
 rule identifiers, categories, default severities, configuration keys,
-documentation slugs, diagnostic message contracts, and release status. This
-section records the taxonomy rationale and reviewed rule intent; tests keep the
-catalogue aligned with the public package entry, diagnostic schema enum,
-fixture expectations, and rule documentation pages. Rule documentation lives
-under `docs/rules/`, with one page per catalogue `docsSlug` and an index that
-links every rule.
+documentation slugs, exact diagnostic message contracts, reviewed diagnostic
+message templates, and release status. This section records the taxonomy
+rationale and reviewed rule intent; tests keep the catalogue aligned with the
+public package entry, diagnostic schema enum, fixture expectations, and rule
+documentation pages. Rule documentation lives under `docs/rules/`, with one
+page per catalogue `docsSlug` and an index that links every rule.
 
 ### 9.1. Dialect errors
 

@@ -5,6 +5,7 @@
 import { describe, expect, expectTypeOf, it } from "bun:test";
 import {
   DIAGNOSTIC_SEVERITIES,
+  type MessageTemplate,
   PLANNED_RULE_IDS,
   RELEASED_RULE_IDS,
   RULE_CATALOGUE,
@@ -212,6 +213,16 @@ describe("rule catalogue", () => {
       expect(rule.releaseStatus).toBe("released");
       expect(rule.messages.length).toBeGreaterThan(0);
     }
+  });
+
+  it("records empty reviewed message templates for current rules", () => {
+    for (const rule of RULE_CATALOGUE) {
+      expect(Array.isArray(rule.messageTemplates)).toBeTrue();
+      expect(Object.isFrozen(rule.messageTemplates)).toBeTrue();
+      expect(rule.messageTemplates).toEqual([]);
+    }
+
+    expectTypeOf<RuleDefinition["messageTemplates"]>().toEqualTypeOf<readonly MessageTemplate[]>();
   });
 
   it("derives public rule lists from the catalogue", () => {

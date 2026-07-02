@@ -73,12 +73,14 @@ where those materials live.
 
 ## Source boundaries
 
-`src/diagnostics/` owns diagnostic data and presentation contracts. The rule
-catalogue is the source of truth for rule identifiers, categories, default
-severities, configuration keys, documentation slugs, diagnostic message
-contracts and release status. Any catalogue change must stay aligned with JSON
-Schema generation, public exports, fixture expectations, rule documentation and
-parity tests.
+`src/diagnostics/` owns diagnostic data and presentation contracts. The
+message-template module owns the parser-backed diagnostic interpolation
+contract used to render reviewed templates and verify concrete dynamic
+messages. The rule catalogue is the source of truth for rule identifiers,
+categories, default severities, configuration keys, documentation slugs,
+diagnostic message contracts and release status. Any catalogue change must stay
+aligned with JSON Schema generation, public exports, fixture expectations, rule
+documentation and parity tests.
 
 `src/static-analysis/` owns source modelling and static source inspection. It
 may build indexes, spans and snippets from workflow source, but production code
@@ -118,9 +120,11 @@ contracts. Fixture subdirectories have different ownership rules:
   fixture source.
 
 Invalid fixture diagnostic expectations are checked against the rule catalogue
-for rule identifier, default severity, reviewed message contract and derived
-rule documentation path. Update the catalogue and fixture manifest together
-when a fixture's expected diagnostic message intentionally changes.
+for rule identifier, default severity, exact reviewed messages or reviewed
+message templates, and derived rule documentation path. Dynamic parser-backed
+messages must use catalogue-owned templates rather than broad substring
+assertions. Update the catalogue and fixture manifest together when a fixture's
+expected diagnostic message intentionally changes.
 
 `tests/build-gate/` protects repository-maintenance gates. Shared Git
 subprocess execution, tracked-file listing, temporary repository setup,

@@ -7,7 +7,13 @@ import { Buffer } from "node:buffer";
 import { existsSync } from "node:fs";
 import { TextDecoder } from "node:util";
 import type { SourceSpan, WorkflowSource } from "odw-lint";
-import { RULE_CATALOGUE, type RuleDefinition, ruleDocsPath } from "odw-lint";
+import {
+  createMessageTemplate,
+  messageMatchesTemplate,
+  RULE_CATALOGUE,
+  type RuleDefinition,
+  ruleDocsPath,
+} from "odw-lint";
 import {
   copiedFixtureFileNames,
   fixtureSourceUrl,
@@ -59,6 +65,8 @@ type FixtureDiagnostic = {
   readonly diagnostic: InvalidWorkflowFixtureDiagnostic;
   readonly rule: RuleDefinition;
 };
+
+type RuleMessageContract = Pick<RuleDefinition, "messages" | "messageTemplates">;
 
 /** Sorts fixture paths by the manifest family order, then filename. */
 const orderInvalidFixtureNames = (fileNames: readonly string[]): string[] => {
@@ -133,6 +141,14 @@ const catalogueRuleForFixtureDiagnostic = (
   }
 
   return matchingRule;
+};
+
+/** Reports whether a diagnostic message satisfies a rule's reviewed contract. */
+const ruleAllowsMessage = (rule: RuleMessageContract, message: string): boolean => {
+  return (
+    rule.messages.includes(message) ||
+    rule.messageTemplates.some((template) => messageMatchesTemplate(template, message))
+  );
 };
 
 /** Pairs every invalid fixture diagnostic with its catalogue rule. */
@@ -301,11 +317,35 @@ describe("invalid workflow fixture snapshots", () => {
     for (const { fixture, diagnostic, rule } of fixtureDiagnostics()) {
       expect(rule.releaseStatus).toBe("released");
       expect(diagnostic.severity).toBe(rule.defaultSeverity);
-      expect(rule.messages).toContain(diagnostic.message);
+      expect(ruleAllowsMessage(rule, diagnostic.message)).toBeTrue();
       expect(diagnostic.docs).toBe(ruleDocsPath(rule));
       expect(existsSync(ruleDocsPath(rule))).toBeTrue();
       expect(fixture.expectedDiagnostics).toContain(diagnostic);
     }
+  });
+
+  it("accepts reviewed templates without allowing near-miss messages", () => {
+    const dynamicRule: RuleMessageContract = {
+      messages: [],
+      messageTemplates: [
+        createMessageTemplate(
+          "Workflow body must be syntactically complete after ODW normalization: {detail}",
+        ),
+      ],
+    };
+    const exactRule: RuleMessageContract = {
+      messages: ["Workflow metadata must be an object literal."],
+      messageTemplates: [],
+    };
+
+    expect(
+      ruleAllowsMessage(
+        dynamicRule,
+        "Workflow body must be syntactically complete after ODW normalization: unexpected token }",
+      ),
+    ).toBeTrue();
+    expect(ruleAllowsMessage(dynamicRule, "unrelated message")).toBeFalse();
+    expect(ruleAllowsMessage(exactRule, "Workflow metadata must be an object")).toBeFalse();
   });
 
   it("keeps manifest builders responsible for derived docs paths", () => {

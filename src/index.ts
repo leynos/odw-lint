@@ -7,6 +7,13 @@
  * ODW runtime code.
  */
 
+export {
+  createMessageTemplate,
+  type MessageTemplate,
+  type MessageTemplateValues,
+  messageMatchesTemplate,
+  renderMessageTemplate,
+} from "./diagnostics/message-template";
 export { countDiagnostics, createDiagnosticReport } from "./diagnostics/report";
 export {
   PLANNED_RULE_IDS,

@@ -6,6 +6,7 @@
  * Package-entry module specifiers expected from `src/index.ts`.
  */
 export const EXPECTED_PACKAGE_ENTRY_MODULE_SPECIFIERS = [
+  "./diagnostics/message-template",
   "./diagnostics/report",
   "./diagnostics/rule-catalogue",
   "./diagnostics/rule-id",
@@ -20,6 +21,7 @@ export const EXPECTED_PACKAGE_ENTRY_MODULE_SPECIFIERS = [
  * Source files expected under `src/diagnostics/`.
  */
 export const EXPECTED_DIAGNOSTIC_MODULE_FILES = [
+  "message-template.ts",
   "report.ts",
   "rule-catalogue.ts",
   "rule-id.ts",
@@ -34,6 +36,7 @@ export const EXPECTED_DIAGNOSTIC_MODULE_FILES = [
  */
 export const EXPECTED_PARSEABLE_SOURCE_FILES = [
   "src/index.ts",
+  "src/diagnostics/message-template.ts",
   "src/diagnostics/report.ts",
   "src/diagnostics/rule-catalogue.ts",
   "src/diagnostics/rule-id.ts",

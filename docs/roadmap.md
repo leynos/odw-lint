@@ -407,7 +407,7 @@ statically. It unlocks metadata rules and body parsing. See
       literal strings.
     - Success: changing a reviewed catalogue message breaks the representative
       example contract before examples drift.
-- [ ] 2.1.8. Define diagnostic message templates for parser-backed rules.
+- [x] 2.1.8. Define diagnostic message templates for parser-backed rules.
   - Requires 2.1.7.
   - Addendum source: review:2.1.7; medium.
   - Introduce the typed template contract needed for source-specific diagnostic
