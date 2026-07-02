@@ -1,0 +1,181 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`parser-backed diagnostic spans round-trips original-source snippets for lf-baseline 1`] = `
+{
+  "rule": "odw/body-syntax",
+  "severity": "error",
+  "span": {
+    "end": {
+      "column": 1,
+      "line": 4,
+      "offset": 101,
+    },
+    "start": {
+      "column": 66,
+      "line": 1,
+      "offset": 65,
+    },
+  },
+  "spanText": ""\\nconst caf\\u00e9 = 1;\\nif (args.ready) {\\n"",
+}
+`;
+
+exports[`parser-backed diagnostic spans round-trips original-source snippets for crlf-terminators 1`] = `
+{
+  "rule": "odw/body-syntax",
+  "severity": "error",
+  "span": {
+    "end": {
+      "column": 1,
+      "line": 4,
+      "offset": 104,
+    },
+    "start": {
+      "column": 66,
+      "line": 1,
+      "offset": 65,
+    },
+  },
+  "spanText": ""\\r\\nconst caf\\u00e9 = 1;\\r\\nif (args.ready) {\\r\\n"",
+}
+`;
+
+exports[`parser-backed diagnostic spans round-trips original-source snippets for unicode-bmp 1`] = `
+{
+  "rule": "odw/body-syntax",
+  "severity": "error",
+  "span": {
+    "end": {
+      "column": 1,
+      "line": 4,
+      "offset": 106,
+    },
+    "start": {
+      "column": 66,
+      "line": 1,
+      "offset": 65,
+    },
+  },
+  "spanText": ""\\nconst d\\u00e9cor = caf\\u00e9;\\nif (args.ready) {\\n"",
+}
+`;
+
+exports[`parser-backed diagnostic spans round-trips original-source snippets for unicode-astral 1`] = `
+{
+  "rule": "odw/body-syntax",
+  "severity": "error",
+  "span": {
+    "end": {
+      "column": 1,
+      "line": 4,
+      "offset": 102,
+    },
+    "start": {
+      "column": 66,
+      "line": 1,
+      "offset": 65,
+    },
+  },
+  "spanText": ""\\nconst s = '\\ud83d\\ude00';\\nif (args.ready) {\\n"",
+}
+`;
+
+exports[`parser-backed diagnostic spans round-trips original-source snippets for line-comment 1`] = `
+{
+  "rule": "odw/body-syntax",
+  "severity": "error",
+  "span": {
+    "end": {
+      "column": 1,
+      "line": 4,
+      "offset": 98,
+    },
+    "start": {
+      "column": 66,
+      "line": 1,
+      "offset": 65,
+    },
+  },
+  "spanText": ""\\n// draft note\\nif (args.ready) {\\n"",
+}
+`;
+
+exports[`parser-backed diagnostic spans round-trips original-source snippets for block-comment 1`] = `
+{
+  "rule": "odw/body-syntax",
+  "severity": "error",
+  "span": {
+    "end": {
+      "column": 1,
+      "line": 5,
+      "offset": 104,
+    },
+    "start": {
+      "column": 66,
+      "line": 1,
+      "offset": 65,
+    },
+  },
+  "spanText": ""\\n/* multi\\n   line */\\nif (args.ready) {\\n"",
+}
+`;
+
+exports[`parser-backed diagnostic spans round-trips original-source snippets for regex-literal 1`] = `
+{
+  "rule": "odw/body-syntax",
+  "severity": "error",
+  "span": {
+    "end": {
+      "column": 1,
+      "line": 4,
+      "offset": 107,
+    },
+    "start": {
+      "column": 66,
+      "line": 1,
+      "offset": 65,
+    },
+  },
+  "spanText": ""\\nconst re = /ab+c\\\\/d/g;\\nif (args.ready) {\\n"",
+}
+`;
+
+exports[`parser-backed diagnostic spans round-trips original-source snippets for template-text 1`] = `
+{
+  "rule": "odw/body-syntax",
+  "severity": "error",
+  "span": {
+    "end": {
+      "column": 1,
+      "line": 4,
+      "offset": 108,
+    },
+    "start": {
+      "column": 66,
+      "line": 1,
+      "offset": 65,
+    },
+  },
+  "spanText": ""\\nconst t = \`plain text\`;\\nif (args.ready) {\\n"",
+}
+`;
+
+exports[`parser-backed diagnostic spans round-trips original-source snippets for template-interpolation 1`] = `
+{
+  "rule": "odw/body-syntax",
+  "severity": "error",
+  "span": {
+    "end": {
+      "column": 1,
+      "line": 4,
+      "offset": 108,
+    },
+    "start": {
+      "column": 66,
+      "line": 1,
+      "offset": 65,
+    },
+  },
+  "spanText": ""\\nconst t = \`hi \${name}\`;\\nif (args.ready) {\\n"",
+}
+`;

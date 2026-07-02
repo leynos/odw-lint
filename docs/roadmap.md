@@ -554,7 +554,7 @@ source without losing span fidelity. It informs all later AST rules. See
   - See [technical-design.md](technical-design.md) §§4 and 6.1.
   - Success: ODW examples containing top-level `return` and `await` parse with
     original-source span mapping.
-- [ ] 2.2.3. Add span snapshot assertions for parser-backed diagnostics.
+- [x] 2.2.3. Add span snapshot assertions for parser-backed diagnostics.
   - Requires 2.2.2.
   - See [technical-design.md](technical-design.md) §11.5.
   - Success: each body diagnostic includes a stable original-source snippet

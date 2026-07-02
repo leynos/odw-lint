@@ -456,6 +456,16 @@ or `snippetForSpan` only after the span has been validated against the same
 `OriginalSourceFile`; both helpers re-check caller-supplied spans so stale
 line, column, or offset data cannot produce misleading text.
 
+`tests/static-analysis/body-diagnostic-spans.test.ts` is the parser-backed
+span snapshot suite for the design invariant in
+`docs/technical-design.md` §11.5. It builds invalid workflow bodies in memory
+and checks each `odw/body-syntax` diagnostic span against an independent
+UTF-8 byte oracle, `sliceSourceSpan`, and `snippetForSpan`. The matrix covers
+LF, CRLF, Unicode BMP and astral code points, comments, regex literals,
+template text, and template interpolation. The snapshots intentionally record
+the whole body slice while the body parser keeps the S2 whole-body fallback;
+future narrowing belongs to roadmap task 2.2.6.
+
 Internal source-helper ownership is split by responsibility:
 
 - `src/static-analysis/source-file.ts` creates `OriginalSourceFile` records and

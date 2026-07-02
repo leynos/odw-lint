@@ -5,8 +5,7 @@
 import { describe, expect, expectTypeOf, it } from "bun:test";
 import { Buffer } from "node:buffer";
 import { existsSync } from "node:fs";
-import { TextDecoder } from "node:util";
-import type { SourceSpan, WorkflowSource } from "odw-lint";
+import type { WorkflowSource } from "odw-lint";
 import {
   createMessageTemplate,
   messageMatchesTemplate,
@@ -26,6 +25,7 @@ import type {
   InvalidWorkflowFixtureDiagnostic,
   InvalidWorkflowFixtureSnapshot,
 } from "./fixtures/invalid-workflows/manifest-types";
+import { expectSpanToMatchSource } from "./source-span-oracle";
 
 const FIXTURE_DIRECTORY = new URL("./fixtures/invalid-workflows/", import.meta.url);
 const MANIFEST_FIXTURE_ROOT = "tests/static-analysis/fixtures/invalid-workflows/";
@@ -34,7 +34,6 @@ const FIXTURE_CORPUS = {
   manifestRoot: MANIFEST_FIXTURE_ROOT,
   recursive: true,
 } as const;
-const SPAN_DECODER = new TextDecoder("utf-8", { fatal: true });
 const HOSTILE_MARKER_PROPERTY = "__odwLintHostileMetadataWasEvaluated";
 const EXPECTED_FILE_NAMES = [
   "missing-metadata/missing-meta-description.js",
@@ -107,43 +106,6 @@ const hostileFixtureMarkerText = (fileName: string): string => {
     default:
       throw new Error(`Missing hostile fixture marker assertion for ${fileName}.`);
   }
-};
-
-/** Decodes a UTF-8 byte range from source text. */
-const decodeSpanText = (sourceText: string, span: SourceSpan): string => {
-  const sourceBytes = Buffer.from(sourceText, "utf8");
-
-  return SPAN_DECODER.decode(sourceBytes.subarray(span.start.offset, span.end.offset));
-};
-
-/** Converts a UTF-8 byte offset into one-based line and Unicode-code-point column. */
-const positionForOffset = (sourceText: string, offset: number): SourceSpan["start"] => {
-  const prefix = Buffer.from(sourceText, "utf8").subarray(0, offset);
-  const prefixText = SPAN_DECODER.decode(prefix);
-  const lines = prefixText.split("\n");
-  const finalLine = lines.at(-1) ?? "";
-
-  return {
-    offset,
-    line: lines.length,
-    column: Array.from(finalLine).length + 1,
-  };
-};
-
-/** Asserts that a source span matches the repository UTF-8 byte-offset contract. */
-const expectSpanToMatchSource = (
-  sourceText: string,
-  span: SourceSpan,
-  expectedSpanText: string,
-): void => {
-  const sourceByteLength = Buffer.byteLength(sourceText, "utf8");
-
-  expect(span.start.offset).toBeGreaterThanOrEqual(0);
-  expect(span.end.offset).toBeGreaterThanOrEqual(span.start.offset);
-  expect(span.end.offset).toBeLessThanOrEqual(sourceByteLength);
-  expect(positionForOffset(sourceText, span.start.offset)).toEqual(span.start);
-  expect(positionForOffset(sourceText, span.end.offset)).toEqual(span.end);
-  expect(decodeSpanText(sourceText, span)).toBe(expectedSpanText);
 };
 
 /** Finds the catalogue rule that owns an invalid fixture diagnostic. */
