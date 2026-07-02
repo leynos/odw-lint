@@ -349,10 +349,15 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:2.1.6; medium). Split source parsing, import-edge
       extraction, ODW import policy, and export facts into focused test
       helpers. Lightweight addendum pass.
-- [ ] 2.1.5. Add the hostile metadata security regression test.
+- [x] 2.1.5. Add the hostile metadata security regression test.
   - Requires 1.3.4 and 2.1.3.
   - See [technical-design.md](technical-design.md) §11.3.
-  - Success: linting hostile metadata leaves no side-effect marker.
+  - Success: linting hostile metadata leaves no side effect marker.
+  - Completion note: `tests/static-analysis/hostile-metadata-security.test.ts`
+    now lints every hostile-metadata fixture through the real
+    `scanWorkflowEnvelope` and `classifyWorkflowMetadata` path and through the
+    public `odw-lint` entry in a fresh module graph, asserting exact diagnostics
+    with no hostile side effect marker.
 - [x] 2.1.6. Introduce the typed rule catalogue and rule-doc parity checks.
   - Requires 1.2.1.
   - Store rule identifiers, categories, default severities, docs slugs, and

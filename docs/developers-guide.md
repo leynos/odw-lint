@@ -306,9 +306,9 @@ strings, regex literals, and template literals.
 
 Loader-parity execution remains owned by roadmap task 2.3.1. The fixture corpus
 records trusted source snapshots and static expectations only; it must not
-import, evaluate or execute workflow bodies during ordinary tests. Roadmap task
-2.1.5 owns the future no-side-effect lint execution regression for hostile
-metadata fixtures.
+import, evaluate or execute workflow bodies during ordinary tests.
+`tests/static-analysis/hostile-metadata-security.test.ts` owns the no-side
+effect lint regression for hostile metadata fixtures.
 
 After a refresh, review the JSON report and the Git diff. Then run:
 
