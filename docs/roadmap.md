@@ -506,6 +506,31 @@ statically. It unlocks metadata rules and body parsing. See
     command consumes the static loader boundary.
   - Success: tests and future CLI work consume one call that emits complete
     envelope and metadata diagnostics without reimplementing merge order.
+  - [ ] 2.1.12.1. Add a static-analysis module-inventory guard.
+    - Addendum (from review:2.1.12; low). Add a readdir-based module
+      inventory guard for `src/static-analysis/`, parallel to the diagnostics
+      inventory guard, so static-analysis modules cannot be added or removed
+      without an explicit reviewed fixture update. Lightweight addendum pass.
+  - [ ] 2.1.12.2. Strengthen workflow-lint merge-order properties.
+    - Addendum (from review:2.1.12; low). Replace the fixed-string
+      `lintWorkflowSource` merge-order property with a structural source
+      generator that composes metadata prefixes, import or export edges, and
+      invalid-name variants. Lightweight addendum pass.
+  - [ ] 2.1.12.3. Decide the static-analysis result freeze-depth contract.
+    - Addendum (from review:2.1.12 and audit:2.1.12; low). Decide whether
+      static-analysis and diagnostic result objects are deep-frozen runtime
+      values or readonly compile-time data, then document and enforce the
+      chosen contract consistently. Lightweight addendum pass.
+  - [ ] 2.1.12.4. Consolidate identifier-character classification.
+    - Addendum (from audit:2.1.12; medium). Move static-analysis identifier
+      start and part predicates onto one spec-correct, ZWNJ/ZWJ-aware helper
+      and add a boundary regression fixture for joiner-bearing identifiers.
+      Lightweight addendum pass.
+  - [ ] 2.1.12.5. Extract shared low-level scanner character predicates.
+    - Addendum (from audit:2.1.12; low). Centralize the remaining
+      string-delimiter and whitespace predicates used by the workflow-metadata
+      and source-mask scanner families, then remove duplicated local helpers.
+      Lightweight addendum pass.
 
 ### 2.2. Normalize and parse workflow bodies with SWC
 
