@@ -1,0 +1,7 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`normalizeWorkflowBody wraps the original body in an async function 1`] = `
+"async function __odwLintWorkflowBody__() {return { done: true };
+
+}"
+`;

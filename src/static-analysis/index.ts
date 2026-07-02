@@ -29,6 +29,11 @@ export {
   STATIC_ANALYSIS_COMPONENTS,
   STATIC_ANALYSIS_STAGES,
 } from "./types";
+export {
+  type NormalizedWorkflowBody,
+  normalizeWorkflowBody,
+  originalSpanFromNormalizedOffsets,
+} from "./workflow-body-normalizer";
 export { parseWorkflowBody, type WorkflowBodyParseResult } from "./workflow-body-parser";
 export { scanWorkflowEnvelope } from "./workflow-envelope";
 export { lintWorkflowSource, type WorkflowLintResult } from "./workflow-lint";

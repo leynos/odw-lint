@@ -548,7 +548,7 @@ source without losing span fidelity. It informs all later AST rules. See
   - See [technical-design.md](technical-design.md) §§4 and 6.1.
   - Success: body syntax errors become `odw/body-syntax` diagnostics rather
     than thrown exceptions.
-- [ ] 2.2.2. Implement body normalization for top-level `return` and
+- [x] 2.2.2. Implement body normalization for top-level `return` and
   `await`.
   - Requires 2.2.1.
   - See [technical-design.md](technical-design.md) §§4 and 6.1.

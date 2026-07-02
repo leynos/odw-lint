@@ -3,15 +3,19 @@
  */
 
 import { describe, expect, it } from "bun:test";
+import { parseSync } from "@swc/core";
 import * as fc from "fast-check";
 import {
   createOriginalSourceFile,
+  normalizeWorkflowBody,
+  originalSpanFromNormalizedOffsets,
   parseWorkflowBody,
   scanWorkflowEnvelope,
   sliceSourceSpan,
   type WorkflowBodyParseResult,
 } from "odw-lint";
 import { readFixtureSource } from "./fixtures/corpus-support";
+import { ODW_EXAMPLE_FIXTURE_SNAPSHOTS } from "./fixtures/odw-examples";
 import { expectScannedEnvelope } from "./workflow-envelope-support";
 
 const INVALID_FIXTURE_CORPUS = {
@@ -52,6 +56,23 @@ const NON_EXPECTED_SYNTAX_ERROR_BODIES = [
   ["missing expression", "const value = ;\n"],
   ["stray closing brace", "}\n"],
 ] as const;
+const ODW_EXAMPLE_FIXTURE_CORPUS = {
+  fixtureDirectory: new URL("./fixtures/odw-examples/", import.meta.url),
+} as const;
+
+type SwcSpanNode = {
+  readonly span: {
+    readonly start: number;
+    readonly end: number;
+  };
+};
+type NormalizedByteSpan = {
+  readonly start: number;
+  readonly end: number;
+};
+type UnknownRecord = {
+  readonly [key: string]: unknown;
+};
 
 /** Builds a scanned workflow envelope for one body snippet. */
 const envelopeForBody = (body: string) => {
@@ -79,6 +100,14 @@ const envelopeForInvalidFixture = (fixturePath: string) => {
   });
 };
 
+/** Reads and scans one trusted ODW example fixture. */
+const envelopeForOdwExample = (fixturePath: string) => {
+  return scannedEnvelopeFor({
+    filePath: fixturePath,
+    sourceText: readFixtureSource(ODW_EXAMPLE_FIXTURE_CORPUS, fixturePath),
+  });
+};
+
 /** Requires a syntax diagnostic result for focused assertions. */
 const expectBodySyntaxDiagnostic = (
   result: WorkflowBodyParseResult,
@@ -89,6 +118,75 @@ const expectBodySyntaxDiagnostic = (
   }
 
   return result.diagnostic;
+};
+
+/** Checks whether a value can be inspected as an object record. */
+const isUnknownRecord = (value: unknown): value is UnknownRecord => {
+  if (typeof value !== "object") {
+    return false;
+  }
+
+  return value !== null;
+};
+
+/** Checks whether an unknown SWC span has numeric byte offsets. */
+const isNumericSwcSpan = (span: unknown): span is SwcSpanNode["span"] => {
+  if (!isUnknownRecord(span)) {
+    return false;
+  }
+  const candidate = span as { readonly start?: unknown; readonly end?: unknown };
+
+  return typeof candidate.start === "number" && typeof candidate.end === "number";
+};
+
+/** Checks whether an unknown SWC value exposes a numeric byte span. */
+const isSwcSpanNode = (value: unknown): value is SwcSpanNode => {
+  if (!isUnknownRecord(value)) {
+    return false;
+  }
+  if (!("span" in value)) {
+    return false;
+  }
+  const candidate = value as { readonly span?: unknown };
+
+  return isNumericSwcSpan(candidate.span);
+};
+
+/** Collects SWC nodes that expose byte spans without depending on AST kinds. */
+const collectSwcSpanNodes = (value: unknown): readonly SwcSpanNode[] => {
+  const nodes: SwcSpanNode[] = [];
+
+  const visit = (candidate: unknown): void => {
+    if (isSwcSpanNode(candidate)) {
+      nodes.push(candidate);
+    }
+    if (!isUnknownRecord(candidate)) {
+      return;
+    }
+    for (const child of Object.values(candidate)) {
+      if (Array.isArray(child)) {
+        for (const item of child) {
+          visit(item);
+        }
+      } else {
+        visit(child);
+      }
+    }
+  };
+
+  visit(value);
+  return nodes;
+};
+
+/** Checks whether a normalized byte span points wholly inside the body slice. */
+const isInNormalizedBodySpan = (
+  span: NormalizedByteSpan,
+  normalized: { readonly prefixByteLength: number; readonly bodyByteLength: number },
+): boolean => {
+  const bodyStart = normalized.prefixByteLength;
+  const bodyEnd = normalized.prefixByteLength + normalized.bodyByteLength;
+
+  return span.start >= bodyStart && span.end <= bodyEnd;
 };
 
 describe("parseWorkflowBody", () => {
@@ -121,6 +219,48 @@ describe("parseWorkflowBody", () => {
 
   it("returns ok for a valid non-return body", () => {
     expect(parseWorkflowBody(envelopeForBody('await agent("ok");\n'))).toEqual({ ok: true });
+  });
+
+  it("returns ok for a top-level return body", () => {
+    expect(parseWorkflowBody(envelopeForBody("return { done: true };\n"))).toEqual({ ok: true });
+  });
+
+  it("keeps top-level await valid after normalization", () => {
+    expect(parseWorkflowBody(envelopeForBody('const x = await agent("ok");\nreturn x;\n'))).toEqual(
+      {
+        ok: true,
+      },
+    );
+  });
+
+  it.each(
+    ODW_EXAMPLE_FIXTURE_SNAPSHOTS.map((fixture) => [fixture.fileName]),
+  )("parses trusted ODW example %s", (fixturePath) => {
+    expect(parseWorkflowBody(envelopeForOdwExample(fixturePath))).toEqual({ ok: true });
+  });
+
+  it("maps a real SWC body node span back to original source", () => {
+    const envelope = envelopeForBody("const marker = 42;\nreturn marker;\n");
+    const normalized = normalizeWorkflowBody(envelope);
+    const program = parseSync(normalized.normalizedText, {
+      syntax: "ecmascript",
+      jsx: false,
+    });
+    const base = program.span.start;
+    const mappedTexts = collectSwcSpanNodes(program)
+      .map((node) => ({
+        start: node.span.start - base,
+        end: node.span.end - base,
+      }))
+      .filter((span) => isInNormalizedBodySpan(span, normalized))
+      .map((span) =>
+        sliceSourceSpan(
+          envelope.sourceFile,
+          originalSpanFromNormalizedOffsets(envelope.sourceFile, normalized, span.start, span.end),
+        ),
+      );
+
+    expect(mappedTexts).toContain("marker");
   });
 
   it("does not throw for malformed bodies", () => {

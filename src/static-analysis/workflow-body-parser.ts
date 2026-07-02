@@ -1,16 +1,16 @@
 /**
  * @file Static SWC adapter for workflow body syntax checks.
  *
- * The adapter parses the original workflow body slice and converts parser
- * failures into project diagnostics. It never executes workflow source.
+ * The adapter parses a normalized workflow body and converts parser failures
+ * into project diagnostics. It never executes workflow source.
  */
 
 import { type ParseOptions, parseSync } from "@swc/core";
 import { RULE_CATALOGUE, type RuleDefinition, ruleDocsPath } from "../diagnostics/rule-catalogue";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic } from "../diagnostics/types";
-import { sliceSourceSpan } from "./source-snippet";
 import type { WorkflowEnvelope } from "./types";
+import { normalizeWorkflowBody } from "./workflow-body-normalizer";
 
 export type WorkflowBodyParseResult =
   | { readonly ok: true }
@@ -22,7 +22,6 @@ const BODY_SYNTAX_MESSAGE = firstRuleMessage(BODY_SYNTAX_RULE_DEFINITION);
 const WORKFLOW_BODY_PARSE_OPTIONS: ParseOptions = {
   syntax: "ecmascript",
   jsx: false,
-  topLevelAwait: true,
 };
 
 /**
@@ -32,10 +31,10 @@ const WORKFLOW_BODY_PARSE_OPTIONS: ParseOptions = {
  * @returns A frozen success result or a frozen `odw/body-syntax` diagnostic.
  */
 export const parseWorkflowBody = (envelope: WorkflowEnvelope): WorkflowBodyParseResult => {
-  const bodyText = sliceSourceSpan(envelope.sourceFile, envelope.bodySpan);
+  const normalized = normalizeWorkflowBody(envelope);
 
   try {
-    parseSync(bodyText, WORKFLOW_BODY_PARSE_OPTIONS);
+    parseSync(normalized.normalizedText, WORKFLOW_BODY_PARSE_OPTIONS);
     return Object.freeze({ ok: true });
   } catch {
     return Object.freeze({
