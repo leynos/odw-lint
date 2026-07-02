@@ -45,6 +45,8 @@ const EXPECTED_FILE_NAMES = [
   "malformed-metadata/meta-not-object.js",
   "malformed-metadata/numeric-meta-description.js",
   "malformed-metadata/unterminated-meta-object.js",
+  "hostile-metadata/env-read-marker.js",
+  "hostile-metadata/fs-write-marker.js",
   "hostile-metadata/global-marker.js",
   "hostile-metadata/throw-marker.js",
   "unsupported-import-export/extra-export-const.js",
@@ -89,6 +91,22 @@ const clearHostileMarker = (): void => {
 /** Reads the hostile fixture marker without coupling tests to global types. */
 const hostileMarkerValue = (): unknown => {
   return (globalThis as Record<string, unknown>)[HOSTILE_MARKER_PROPERTY];
+};
+
+/** Returns the side-effect marker text that must stay inert for a hostile fixture. */
+const hostileFixtureMarkerText = (fileName: string): string => {
+  switch (fileName) {
+    case "env-read-marker.js":
+      return "ODW_LINT_HOSTILE_ENV_PROBE";
+    case "fs-write-marker.js":
+      return "hostile-fs-write-marker";
+    case "global-marker.js":
+      return HOSTILE_MARKER_PROPERTY;
+    case "throw-marker.js":
+      return "ODW_LINT_HOSTILE_METADATA_EVALUATED";
+    default:
+      throw new Error(`Missing hostile fixture marker assertion for ${fileName}.`);
+  }
 };
 
 /** Decodes a UTF-8 byte range from source text. */
@@ -226,6 +244,8 @@ describe("invalid workflow fixture snapshots", () => {
     );
 
     expect(fixtures.map((fixture) => fixture.fileName).sort()).toEqual([
+      "env-read-marker.js",
+      "fs-write-marker.js",
       "global-marker.js",
       "throw-marker.js",
     ]);
@@ -233,11 +253,7 @@ describe("invalid workflow fixture snapshots", () => {
     for (const fixture of fixtures) {
       const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath);
 
-      expect(sourceText).toContain(
-        fixture.fileName === "global-marker.js"
-          ? HOSTILE_MARKER_PROPERTY
-          : "ODW_LINT_HOSTILE_METADATA_EVALUATED",
-      );
+      expect(sourceText).toContain(hostileFixtureMarkerText(fixture.fileName));
       expect(hostileMarkerValue()).toBeUndefined();
       expect(sha256(sourceText)).toBe(fixture.sha256);
 

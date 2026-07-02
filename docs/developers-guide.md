@@ -305,7 +305,11 @@ Invalid workflow fixtures live under
 `tests/static-analysis/fixtures/invalid-workflows/`. They are deliberately raw
 inputs for missing metadata, malformed metadata, unsupported import/export, and
 syntax-error coverage. The `hostile-metadata` family is also raw invalid input:
-its metadata expressions would set or throw visible marker values if evaluated.
+its metadata expressions would write a global marker, throw a custom marker,
+write a marker file, or read an environment probe and surface it through a
+marker if evaluated. Add hostile fixtures through `make refresh-fixtures` so
+their hashes, spans, and reviewer-facing `spanText` remain derived from source
+text rather than hand-edited.
 Do not import, evaluate, execute, or format invalid workflow fixtures as
 ordinary JavaScript. Keep `tests/static-analysis/fixtures/invalid-workflows.ts`
 in sync with every raw fixture by updating the family, path, SHA-256 hash,
@@ -338,7 +342,10 @@ Loader-parity execution remains owned by roadmap task 2.3.1. The fixture corpus
 records trusted source snapshots and static expectations only; it must not
 import, evaluate or execute workflow bodies during ordinary tests.
 `tests/static-analysis/hostile-metadata-security.test.ts` owns the no-side
-effect lint regression for hostile metadata fixtures.
+effect lint regression for hostile metadata fixtures. It observes the global
+marker, marker-file absence, and environment-derived marker value while linting
+fixture source text through the static analysis path and the public package
+entry.
 
 After a refresh, review the JSON report and the Git diff. Then run:
 

@@ -3,12 +3,12 @@
 exports[`fixture metadata refresh helpers returns a sorted dry-run report for the current checked-out corpus 1`] = `
 {
   "counts": {
-    "hostileMetadata": 2,
-    "invalidDiagnostics": 14,
-    "invalidWorkflows": 14,
+    "hostileMetadata": 4,
+    "invalidDiagnostics": 16,
+    "invalidWorkflows": 16,
     "masking": 9,
     "odwExamples": 9,
-    "totalFixtures": 32,
+    "totalFixtures": 34,
   },
   "extraUpstreamExamples": [],
   "failures": [],

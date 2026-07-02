@@ -75,8 +75,15 @@ describe("fresh module graph helpers", () => {
   it("runs scripts in a subprocess and reports spawn failures", () => {
     const success = runFreshModuleGraphScript({
       cwd: repositoryRootPath,
+      env: {
+        ...process.env,
+        ODW_LINT_FRESH_MODULE_GRAPH_TEST: "canary",
+      },
       executablePath: process.execPath,
-      script: "const value = 1;",
+      script: [
+        "const value = process.env.ODW_LINT_FRESH_MODULE_GRAPH_TEST;",
+        'if (value !== "canary") { process.exit(2); }',
+      ].join("\n"),
     });
     expectFreshModuleGraphSuccess(success);
 

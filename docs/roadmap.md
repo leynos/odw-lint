@@ -491,7 +491,7 @@ statically. It unlocks metadata rules and body parsing. See
     field to downstream integrations.
   - Success: diagnostic metadata exposes one tested rule-documentation reference
     format and no code or docs describe a competing URL/path shape.
-- [ ] 2.1.11. Broaden hostile metadata side-effect fixtures.
+- [x] 2.1.11. Broaden hostile metadata side-effect fixtures.
   - Requires 1.3.5 and 2.1.5.
   - Add at least one filesystem-write or environment-read hostile metadata
     fixture through the refresh tooling, updating hashes, spans, snapshots, and

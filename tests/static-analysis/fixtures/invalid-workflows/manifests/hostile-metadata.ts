@@ -14,6 +14,44 @@ import {
 export const HOSTILE_METADATA_FIXTURES = deepFreezeFixtureManifest([
   invalidWorkflowFixture({
     family: "hostile-metadata",
+    fileName: "env-read-marker.js",
+    sha256: "6c256fef53e618ceac2a49f352f9137ed90cd6fe4afbfff113f18952fa5ba383",
+    expectedStatus: "warning",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/meta-statically-unprovable",
+        severity: "warning",
+        message: "Workflow metadata must remain statically provable without evaluation.",
+        span: {
+          start: { offset: 72, line: 3, column: 16 },
+          end: { offset: 256, line: 7, column: 7 },
+        },
+        spanText:
+          '(() => {\n    globalThis.__odwLintHostileMetadataWasEvaluated =\n      process.env.ODW_LINT_HOSTILE_ENV_PROBE ?? "hostile-env-read-marker";\n    return "Hostile metadata fixture.";\n  })()',
+      }),
+    ],
+  }),
+  invalidWorkflowFixture({
+    family: "hostile-metadata",
+    fileName: "fs-write-marker.js",
+    sha256: "adc803b39568cf8b62b42f3f8131b7c58539da4334b384621e7f758166de7bec",
+    expectedStatus: "warning",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/meta-statically-unprovable",
+        severity: "warning",
+        message: "Workflow metadata must remain statically provable without evaluation.",
+        span: {
+          start: { offset: 72, line: 3, column: 16 },
+          end: { offset: 256, line: 9, column: 7 },
+        },
+        spanText:
+          '(() => {\n    require("node:fs").writeFileSync(\n      process.env.ODW_LINT_HOSTILE_FS_MARKER_PATH,\n      "hostile-fs-write-marker",\n    );\n    return "Hostile metadata fixture.";\n  })()',
+      }),
+    ],
+  }),
+  invalidWorkflowFixture({
+    family: "hostile-metadata",
     fileName: "global-marker.js",
     sha256: "af52ec3eea9c361ed0b5bd98263ea76e40a2bf202d5c35074962b1dddb0dcfa3",
     expectedStatus: "warning",

@@ -12,6 +12,7 @@ export type FreshModuleGraphStatement = string | readonly string[];
 
 export type FreshModuleGraphRunOptions = {
   readonly cwd: string;
+  readonly env?: NodeJS.ProcessEnv;
   readonly executablePath: string;
   readonly script: string;
   readonly timeoutMs?: number;
@@ -84,6 +85,7 @@ export const runFreshModuleGraphScript = (
   const result = spawnSync(command[0], command.slice(1), {
     cwd: options.cwd,
     encoding: "utf8",
+    env: options.env,
     timeout: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
   });
 

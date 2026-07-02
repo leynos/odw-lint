@@ -140,6 +140,46 @@ exports[`invalid workflow fixture snapshots matches the compact invalid manifest
         "severity": "warning",
         "spanTextLines": [
           "(() => {",
+          "    globalThis.__odwLintHostileMetadataWasEvaluated =",
+          "      process.env.ODW_LINT_HOSTILE_ENV_PROBE ?? "hostile-env-read-marker";",
+          "    return "Hostile metadata fixture.";",
+          "  })()",
+        ],
+      },
+    ],
+    "expectedStatus": "warning",
+    "family": "hostile-metadata",
+    "fileName": "env-read-marker.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "docs": "docs/rules/meta-statically-unprovable.md",
+        "rule": "odw/meta-statically-unprovable",
+        "severity": "warning",
+        "spanTextLines": [
+          "(() => {",
+          "    require("node:fs").writeFileSync(",
+          "      process.env.ODW_LINT_HOSTILE_FS_MARKER_PATH,",
+          "      "hostile-fs-write-marker",",
+          "    );",
+          "    return "Hostile metadata fixture.";",
+          "  })()",
+        ],
+      },
+    ],
+    "expectedStatus": "warning",
+    "family": "hostile-metadata",
+    "fileName": "fs-write-marker.js",
+  },
+  {
+    "diagnostics": [
+      {
+        "docs": "docs/rules/meta-statically-unprovable.md",
+        "rule": "odw/meta-statically-unprovable",
+        "severity": "warning",
+        "spanTextLines": [
+          "(() => {",
           "    globalThis.__odwLintHostileMetadataWasEvaluated = "hostile-global-marker";",
           "    return "Hostile metadata fixture.";",
           "  })()",
