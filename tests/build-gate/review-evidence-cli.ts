@@ -30,6 +30,7 @@ type CliWriters = {
 
 type CliOptions = {
   readonly executionEnabled: boolean;
+  readonly gateTimeoutMs: number;
   readonly pathAvailability: Readonly<Record<ReviewPath, ReviewPathAvailability>>;
 };
 
@@ -73,7 +74,7 @@ export function runReviewEvidenceCli(
   options: RunReviewEvidenceCliOptions = {},
 ): ReviewEvidenceExitCode {
   const env = options.env ?? process.env;
-  const parsedOptions = parseCliArgs(args, env);
+  const parsedOptions = parseCliArgs(args, env, options.timeoutMs ?? defaultGateTimeoutMs);
   const result =
     "usageError" in parsedOptions
       ? ({
@@ -100,7 +101,9 @@ const collectReviewEvidence = (
 ): ReviewEvidenceResult => {
   const gateCommands = options.gateCommands ?? defaultGateCommands;
   const requiredGates = gateCommands.map(([gate]) => gate);
-  const executions = cliOptions.executionEnabled ? runGateCommands(gateCommands, options) : [];
+  const executions = cliOptions.executionEnabled
+    ? runGateCommands(gateCommands, options, cliOptions)
+    : [];
 
   return classifyReviewEvidence({
     executionEnabled: cliOptions.executionEnabled,
@@ -114,12 +117,13 @@ const collectReviewEvidence = (
 const runGateCommands = (
   gateCommands: readonly GateCommand[],
   options: RunReviewEvidenceCliOptions,
+  cliOptions: CliOptions,
 ): readonly GateExecution[] => {
   const createRunner = options.createRunner ?? createCommandRunner;
   const commandOptions = {
     cwd: options.cwd ?? cwd(),
     env: options.env ?? process.env,
-    timeoutMs: options.timeoutMs ?? defaultGateTimeoutMs,
+    timeoutMs: cliOptions.gateTimeoutMs,
     maxBufferBytes: options.maxBufferBytes ?? defaultGateMaxBufferBytes,
   } satisfies CommandRunnerOptions;
 
@@ -131,6 +135,15 @@ const runGateCommands = (
 
 /** Convert a captured command result into review-evidence gate facts. */
 const gateExecutionFromResult = (gate: ReviewGateId, result: CommandResult): GateExecution => {
+  if (hasTimedOut(result)) {
+    return {
+      gate,
+      status: "failed",
+      exitCode: 1,
+      detail: commandFailureDetail(result),
+    };
+  }
+
   if (result.error !== undefined) {
     return { gate, status: "unavailable", detail: result.error.message };
   }
@@ -147,6 +160,11 @@ const gateExecutionFromResult = (gate: ReviewGateId, result: CommandResult): Gat
   return { gate, status: "passed" };
 };
 
+/** Treat runner timeouts as failed gates, not missing executables. */
+const hasTimedOut = (result: CommandResult): boolean => {
+  return result.error?.code === "ETIMEDOUT";
+};
+
 /** Preserve useful child-process context without leaking multiline report text. */
 const commandFailureDetail = (result: CommandResult): string => {
   const output = result.stderr.trim() || result.stdout.trim();
@@ -155,55 +173,125 @@ const commandFailureDetail = (result: CommandResult): string => {
     return output;
   }
 
+  if (hasTimedOut(result)) {
+    return "command timed out";
+  }
+
   return result.signal === null
     ? "command exited non-zero"
     : `command terminated by ${result.signal}`;
 };
 
 /** Parse CLI flags into classifier inputs. */
-const parseCliArgs = (args: readonly string[], env: NodeJS.ProcessEnv): ParsedCliOptions => {
-  const { ODW_LINT_REVIEW_EXEC: reviewExecutionMode } = env;
-  let executionEnabled = reviewExecutionMode !== "0";
-  let scrutineer: ReviewPathAvailability = defaultPathAvailability.scrutineer;
-  let coderabbit: ReviewPathAvailability = defaultPathAvailability.coderabbit;
-
-  for (const arg of args) {
-    if (arg === "--no-exec") {
-      executionEnabled = false;
-      continue;
-    }
-
-    const scrutineerValue = parseFlagValue(arg, "--scrutineer=");
-    if (scrutineerValue !== undefined) {
-      const parsed = parseAvailability("scrutineer", scrutineerValue);
-      if (typeof parsed === "string") {
-        return { usageError: parsed };
-      }
-      scrutineer = parsed.value;
-      continue;
-    }
-
-    const coderabbitValue = parseFlagValue(arg, "--coderabbit=");
-    if (coderabbitValue !== undefined) {
-      const parsed = parseAvailability("coderabbit", coderabbitValue);
-      if (typeof parsed === "string") {
-        return { usageError: parsed };
-      }
-      coderabbit = parsed.value;
-      continue;
-    }
-
-    return { usageError: `unknown option: ${arg}` };
+const parseCliArgs = (
+  args: readonly string[],
+  env: NodeJS.ProcessEnv,
+  defaultTimeoutMs: number,
+): ParsedCliOptions => {
+  const {
+    ODW_LINT_REVIEW_EXEC: reviewExecutionMode,
+    ODW_LINT_REVIEW_GATE_TIMEOUT_MS: environmentGateTimeoutMs,
+  } = env;
+  const parsedEnvironmentTimeout = parseEnvironmentGateTimeoutMs(
+    environmentGateTimeoutMs,
+    defaultTimeoutMs,
+  );
+  if (typeof parsedEnvironmentTimeout === "string") {
+    return { usageError: parsedEnvironmentTimeout };
   }
 
+  let options: CliOptions = {
+    executionEnabled: reviewExecutionMode !== "0",
+    gateTimeoutMs: parsedEnvironmentTimeout.value,
+    pathAvailability: defaultPathAvailability,
+  };
+
+  for (const arg of args) {
+    const parsedArg = parseCliArg(arg, options);
+    if (typeof parsedArg === "string") {
+      return { usageError: parsedArg };
+    }
+    options = parsedArg;
+  }
+
+  return options;
+};
+
+/** Parse one CLI flag into the accumulated options. */
+const parseCliArg = (arg: string, options: CliOptions): CliOptions | string => {
+  if (arg === "--no-exec") {
+    return { ...options, executionEnabled: false };
+  }
+
+  const gateTimeoutMsValue = parseFlagValue(arg, "--gate-timeout-ms=");
+  if (gateTimeoutMsValue !== undefined) {
+    const parsedTimeout = parseGateTimeoutMs(gateTimeoutMsValue, "--gate-timeout-ms");
+    if (typeof parsedTimeout === "string") {
+      return parsedTimeout;
+    }
+    return { ...options, gateTimeoutMs: parsedTimeout.value };
+  }
+
+  const scrutineerValue = parseFlagValue(arg, "--scrutineer=");
+  if (scrutineerValue !== undefined) {
+    const parsed = parseAvailability("scrutineer", scrutineerValue);
+    if (typeof parsed === "string") {
+      return parsed;
+    }
+    return setPathAvailability(options, "scrutineer", parsed.value);
+  }
+
+  const coderabbitValue = parseFlagValue(arg, "--coderabbit=");
+  if (coderabbitValue !== undefined) {
+    const parsed = parseAvailability("coderabbit", coderabbitValue);
+    if (typeof parsed === "string") {
+      return parsed;
+    }
+    return setPathAvailability(options, "coderabbit", parsed.value);
+  }
+
+  return `unknown option: ${arg}`;
+};
+
+/** Parse the optional environment gate timeout. */
+const parseEnvironmentGateTimeoutMs = (
+  value: string | undefined,
+  defaultTimeoutMs: number,
+): { readonly value: number } | string => {
+  if (value === undefined) {
+    return { value: defaultTimeoutMs };
+  }
+
+  return parseGateTimeoutMs(value, "environment");
+};
+
+/** Update one review-path availability flag without dropping other paths. */
+const setPathAvailability = (
+  options: CliOptions,
+  path: "scrutineer" | "coderabbit",
+  value: ReviewPathAvailability,
+): CliOptions => {
   return {
-    executionEnabled,
+    ...options,
     pathAvailability: {
-      scrutineer,
-      coderabbit,
-      "local-self-run": defaultPathAvailability["local-self-run"],
+      ...options.pathAvailability,
+      [path]: value,
     },
   };
+};
+
+/** Parse the per-gate timeout, rejecting values that would disable the bound. */
+const parseGateTimeoutMs = (
+  value: string,
+  source: "--gate-timeout-ms" | "environment",
+): { readonly value: number } | string => {
+  const timeoutMs = Number(value);
+
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
+    return `invalid gate timeout from ${source}: ${value}`;
+  }
+
+  return { value: timeoutMs };
 };
 
 /** Parse `--name=value` flags without accepting bare values. */

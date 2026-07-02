@@ -146,12 +146,20 @@ build-gate command runner, then reports the selected dual-review path. Keep it
 outside `make all` because it re-runs `make all` and is a reviewer-run audit
 gate, not a recursive commit-gate step.
 
+Each review-evidence gate uses a five-minute command timeout by default. Slow
+review environments may override the per-gate timeout with
+`ODW_LINT_REVIEW_GATE_TIMEOUT_MS=<milliseconds>` or by running
+`bun run tests/build-gate/review-evidence-cli.ts --gate-timeout-ms=<milliseconds>`.
+Timeout overrides must be positive integer millisecond values.
+
 `make review-evidence` exits 0 for `verified`, 1 for a failed re-run gate, 2 for
 usage errors, and 3 for `degraded` evidence. A degraded report means the review
 evidence is incomplete rather than passed: for example, a sandboxed reviewer can
 run `bun run tests/build-gate/review-evidence-cli.ts --no-exec` to record that
-command execution was unavailable. Reviewer path selection is explicit and
-ordered: primary `scrutineer`, fallback `coderabbit`, then degraded
+command execution was unavailable. Spawn-unavailable gates are degraded because
+they did not run; timed-out or killed gates are failed because they did run but
+did not complete successfully. Reviewer path selection is explicit and ordered:
+primary `scrutineer`, fallback `coderabbit`, then degraded
 `local-self-run` when no independent reviewer remains. The report names the
 selected path so quota-blocked review cannot be silently substituted.
 

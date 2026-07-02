@@ -293,11 +293,11 @@ depending on manual post-commit audits.
   - Success: benchmark and audit reviews no longer rely solely on a task
     agent's self-reported gate output or silently substitute the intended
     dual-review path.
-  - [ ] 1.5.6.1. Make review-evidence gate timeouts configurable.
+  - [x] 1.5.6.1. Make review-evidence gate timeouts configurable.
     - Addendum (from review:1.5.6; low). Add a documented flag or environment
       override for per-gate execution timeout so slow review environments do
       not produce misleading degraded evidence. Lightweight addendum pass.
-  - [ ] 1.5.6.2. Distinguish timed-out review-evidence gates.
+  - [x] 1.5.6.2. Distinguish timed-out review-evidence gates.
     - Addendum (from review:1.5.6; low). Split timed-out or killed gate
       executions from spawn-unavailable evidence and map hung gates to
       reviewer-visible failure. Lightweight addendum pass.

@@ -561,14 +561,14 @@ local deterministic gates first, then local `coderabbit review --agent`.
 
 ## Addenda
 
-- [ ] 1.5.6.1. Make review-evidence gate timeouts configurable.
+- [x] 1.5.6.1. Make review-evidence gate timeouts configurable.
   - Source: review:1.5.6; severity low.
   - Scope: add a documented flag or environment override for per-gate
     execution timeout so slow review environments do not produce misleading
     degraded evidence.
   - Success: review-evidence CLI tests cover the default timeout and an
     override path without running the full repository gate.
-- [ ] 1.5.6.2. Distinguish timed-out review-evidence gates.
+- [x] 1.5.6.2. Distinguish timed-out review-evidence gates.
   - Source: review:1.5.6; severity low.
   - Scope: split timed-out or killed gate executions from spawn-unavailable
     evidence and map hung gates to reviewer-visible failure.

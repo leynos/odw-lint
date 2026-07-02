@@ -43,6 +43,13 @@ const makeResult = (overrides: Partial<CommandResult> = {}): CommandResult => ({
   ...overrides,
 });
 
+/** Build the Node-style error shape produced by timed-out child processes. */
+const makeTimeoutError = (): NodeJS.ErrnoException => {
+  const error = new Error("spawn true ETIMEDOUT") as NodeJS.ErrnoException;
+  error.code = "ETIMEDOUT";
+  return error;
+};
+
 /** Create a fake runner factory that records every command invocation. */
 const createFakeRunnerFactory = (
   resultsByCommand: Readonly<Record<string, CommandResult>>,
@@ -161,6 +168,39 @@ describe("runReviewEvidenceCli", () => {
     `);
   });
 
+  it("returns failed evidence and exit 1 when a gate times out", () => {
+    const result = runCli({
+      resultsByCommand: {
+        true: makeResult({
+          status: null,
+          signal: "SIGTERM",
+          error: makeTimeoutError(),
+        }),
+      },
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.output.stdout).toContain("Review evidence: failed");
+    expect(result.output.stdout).toContain("gate make all: failed (exit 1; command timed out)");
+    expect(result.output.stdout).toContain("- failed gate: make all");
+  });
+
+  it("returns failed evidence and exit 1 when a gate is killed", () => {
+    const result = runCli({
+      resultsByCommand: {
+        true: makeResult({
+          status: null,
+          signal: "SIGTERM",
+        }),
+      },
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.output.stdout).toContain(
+      "gate make all: failed (exit 1; command terminated by SIGTERM)",
+    );
+  });
+
   it("returns degraded evidence without spawning when execution is disabled", () => {
     const result = runCli({ args: ["--no-exec"] });
 
@@ -178,6 +218,40 @@ describe("runReviewEvidenceCli", () => {
     expect(result.exitCode).toBe(3);
     expect(result.calls).toEqual([]);
     expect(result.output.stdout).toContain("Review evidence: degraded");
+  });
+
+  it("uses the documented default gate timeout", () => {
+    const result = runCli();
+
+    expect(result.exitCode).toBe(0);
+    expect(result.calls[0]?.options).toMatchObject({
+      timeoutMs: 300000,
+    });
+  });
+
+  it("uses the CLI gate-timeout override for each gate command", () => {
+    const result = runCli({ args: ["--gate-timeout-ms=120000"] });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.calls[0]?.options).toMatchObject({
+      timeoutMs: 120000,
+    });
+  });
+
+  it("uses the environment gate-timeout override", () => {
+    const result = runCli({ env: { ODW_LINT_REVIEW_GATE_TIMEOUT_MS: "450000" } });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.calls[0]?.options).toMatchObject({
+      timeoutMs: 450000,
+    });
+  });
+
+  it("reports usage errors for invalid gate-timeout values", () => {
+    const result = runCli({ args: ["--gate-timeout-ms=0"] });
+
+    expect(result.exitCode).toBe(2);
+    expect(result.output.stderr).toContain("invalid gate timeout from --gate-timeout-ms: 0");
   });
 
   it("reports coderabbit as the explicit fallback when scrutineer is quota-blocked", () => {
