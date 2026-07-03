@@ -55,7 +55,12 @@ const defaultGateCommands: readonly GateCommand[] = [
 
 const defaultGateTimeoutMs = 5 * 60 * 1000;
 const defaultGateMaxBufferBytes = 64 * 1024 * 1024;
-const reviewerAvailabilityValues = ["available", "quota-blocked", "unavailable"] as const;
+const reviewerAvailabilityValues = [
+  "available",
+  "quota-blocked",
+  "unavailable",
+  "no-output",
+] as const;
 const defaultPathAvailability = {
   scrutineer: "available",
   coderabbit: "available",

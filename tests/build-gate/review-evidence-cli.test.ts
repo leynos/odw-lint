@@ -273,6 +273,18 @@ describe("runReviewEvidenceCli", () => {
     expect(result.output.stdout).toContain("degraded reason: no independent dual-review path");
   });
 
+  it("reports local self-run when CodeRabbit returns no usable output", () => {
+    const result = runCli({
+      args: ["--scrutineer=quota-blocked", "--coderabbit=no-output"],
+    });
+
+    expect(result.exitCode).toBe(3);
+    expect(result.output.stdout).toContain(
+      "dual-review path: local-self-run (degraded fallback; scrutineer quota-blocked; coderabbit no-output; local-self-run available)",
+    );
+    expect(result.output.stdout).toContain("degraded reason: no independent dual-review path");
+  });
+
   it("reports usage errors for unknown flags", () => {
     const result = runCli({ args: ["--unknown"] });
 

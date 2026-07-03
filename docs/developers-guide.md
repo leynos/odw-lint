@@ -232,6 +232,15 @@ primary `scrutineer`, fallback `coderabbit`, then degraded
 `local-self-run` when no independent reviewer remains. The report names the
 selected path so quota-blocked review cannot be silently substituted.
 
+When the `coderabbit` fallback is attempted but cannot provide usable findings,
+record that outcome explicitly instead of treating the fallback review as
+complete. Use `--coderabbit=quota-blocked` for rate limits,
+`--coderabbit=unavailable` when the command or service cannot run, and
+`--coderabbit=no-output` when the command returns no usable review output. If
+`scrutineer` is also unavailable or quota-blocked, those states select
+`local-self-run` and classify the evidence as degraded, so missing CodeRabbit
+findings cannot silently satisfy the independent review path.
+
 Run `make refresh-fixtures` after changing workflow fixture source, copied ODW
 examples, or static-analysis fixture manifests. The target refreshes fixture
 hashes, invalid diagnostic spans and reviewer-facing span text, then prints a

@@ -109,9 +109,9 @@ const pathAvailabilityFacts = (): fc.Arbitrary<
   Readonly<Record<ReviewPath, ReviewPathAvailability>>
 > => {
   return fc.record({
-    scrutineer: fc.constantFrom("available", "quota-blocked", "unavailable"),
-    coderabbit: fc.constantFrom("available", "quota-blocked", "unavailable"),
-    "local-self-run": fc.constantFrom("available", "quota-blocked", "unavailable"),
+    scrutineer: fc.constantFrom("available", "quota-blocked", "unavailable", "no-output"),
+    coderabbit: fc.constantFrom("available", "quota-blocked", "unavailable", "no-output"),
+    "local-self-run": fc.constantFrom("available", "quota-blocked", "unavailable", "no-output"),
   });
 };
 

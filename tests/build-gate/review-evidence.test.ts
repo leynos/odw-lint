@@ -62,6 +62,11 @@ const availability = {
     coderabbit: "unavailable",
     "local-self-run": "available",
   },
+  coderabbitNoOutput: {
+    scrutineer: "quota-blocked",
+    coderabbit: "no-output",
+    "local-self-run": "available",
+  },
 } satisfies Record<string, Record<ReviewPath, ReviewPathAvailability>>;
 
 /** Classify a complete default evidence set with focused overrides. */
@@ -112,6 +117,19 @@ describe("selectReviewPath", () => {
       `"scrutineer unavailable; coderabbit unavailable; local-self-run available"`,
     );
   });
+
+  it("selects local self-run when CodeRabbit returns no usable output", () => {
+    const selection = selectReviewPath(availability.coderabbitNoOutput);
+
+    expect(selection).toMatchObject({
+      selected: "local-self-run",
+      isFallback: true,
+      isDegraded: true,
+    });
+    expect(selection.reason).toMatchInlineSnapshot(
+      `"scrutineer quota-blocked; coderabbit no-output; local-self-run available"`,
+    );
+  });
 });
 
 describe("classifyReviewEvidence", () => {
@@ -128,6 +146,13 @@ describe("classifyReviewEvidence", () => {
     ["unavailable gate", "degraded", true, gateExecutions.unavailable, availability.primary],
     ["execution disabled", "degraded", false, gateExecutions.failed, availability.primary],
     ["local self-run", "degraded", true, gateExecutions.passed, availability.localDegraded],
+    [
+      "coderabbit no output",
+      "degraded",
+      true,
+      gateExecutions.passed,
+      availability.coderabbitNoOutput,
+    ],
   ] satisfies readonly (readonly [
     string,
     ReviewEvidenceResult["status"],
@@ -202,6 +227,17 @@ describe("classifyReviewEvidence", () => {
         "no independent dual-review path available",
       ]
     `);
+  });
+
+  it("does not verify fallback evidence when CodeRabbit returns no usable output", () => {
+    const result = classify({
+      pathAvailability: availability.coderabbitNoOutput,
+    });
+
+    expect(result).toMatchObject({ status: "degraded" });
+    expect(result.status === "degraded" ? result.reviewPath.reason : "").toBe(
+      "scrutineer quota-blocked; coderabbit no-output; local-self-run available",
+    );
   });
 
   it("ignores unavailable evidence for gates that are not required", () => {

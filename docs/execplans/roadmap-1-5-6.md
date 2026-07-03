@@ -574,7 +574,7 @@ local deterministic gates first, then local `coderabbit review --agent`.
     evidence and map hung gates to reviewer-visible failure.
   - Success: review-evidence tests show timed-out or killed commands fail the
     review evidence while spawn-unavailable remains explicit degraded evidence.
-- [ ] 1.5.6.3. Add deterministic CodeRabbit fallback evidence.
+- [x] 1.5.6.3. Add deterministic CodeRabbit fallback evidence.
   - Source: review:3.1.2; severity low.
   - Scope: document and test a deterministic offline fallback or retry policy
     when CodeRabbit review is rate-limited, unavailable, or returns no usable

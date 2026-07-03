@@ -50,6 +50,10 @@ describe("roadmap review evidence audit contract", () => {
         name: "requires recorded evidence",
         pattern: /\brecord/i,
       },
+      {
+        name: "blocks silent CodeRabbit fallback completion",
+        pattern: /coderabbit[\s\S]*no\s+usable\s+output/i,
+      },
     ];
 
     for (const { name, pattern } of contractChecks) {

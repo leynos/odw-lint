@@ -301,7 +301,7 @@ depending on manual post-commit audits.
     - Addendum (from review:1.5.6; low). Split timed-out or killed gate
       executions from spawn-unavailable evidence and map hung gates to
       reviewer-visible failure. Lightweight addendum pass.
-  - [ ] 1.5.6.3. Add deterministic CodeRabbit fallback evidence.
+  - [x] 1.5.6.3. Add deterministic CodeRabbit fallback evidence.
     - Addendum (from review:3.1.2; low). Document and test a deterministic
       offline fallback or retry policy when CodeRabbit review produces no
       usable output. Lightweight addendum pass.

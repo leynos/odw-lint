@@ -125,6 +125,9 @@
   review as a real problem. Do not state or imply that any specific Mermaid
   renderer is selected; `make nixie` runs the bare `nixie --no-sandbox` recipe,
   and this repository provisions no renderer for the review-evidence path.
+- When the `coderabbit` fallback is rate-limited, unavailable, or returns no
+  usable output, record that state explicitly with the review-evidence CLI
+  rather than treating the fallback as completed independent review.
 
 ## Refactoring Heuristics & Workflow
 

@@ -15,7 +15,7 @@ export type GateExecution =
   | { readonly gate: ReviewGateId; readonly status: "unavailable"; readonly detail: string };
 
 export type ReviewPath = "scrutineer" | "coderabbit" | "local-self-run";
-export type ReviewPathAvailability = "available" | "quota-blocked" | "unavailable";
+export type ReviewPathAvailability = "available" | "quota-blocked" | "unavailable" | "no-output";
 
 export type ReviewPathSelection =
   | {
