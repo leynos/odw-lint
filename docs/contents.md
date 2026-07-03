@@ -126,6 +126,8 @@ entry; that index enumerates every current rule page.
   roadmap audit review-evidence gates.
 - [Roadmap 1.5.7 ExecPlan](execplans/roadmap-1-5-7.md) plans
   `make review-evidence` as a required roadmap review and audit step.
+- [Roadmap 1.5.9 ExecPlan](execplans/roadmap-1-5-9.md) plans consolidated
+  build-gate CLI writer and report-dispatch support.
 - [Roadmap 2.1.1 ExecPlan](execplans/roadmap-2-1-1.md) plans source masking
   for inert workflow syntax.
 - [Roadmap 2.1.2 ExecPlan](execplans/roadmap-2-1-2.md) plans static envelope

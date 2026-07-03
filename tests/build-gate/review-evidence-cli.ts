@@ -2,8 +2,9 @@
  * @file Reviewer-run CLI for independent roadmap audit evidence.
  */
 
-import { cwd, stderr, stdout } from "node:process";
+import { cwd } from "node:process";
 import { fileURLToPath } from "node:url";
+import { type CliWriters, emitCliReport, resolveCliWriters } from "./cli-support";
 import {
   type CommandResult,
   type CommandRunner,
@@ -23,11 +24,6 @@ import { formatReviewEvidenceResult } from "./review-evidence-report";
 export type GateCommand = readonly [ReviewGateId, string, readonly string[]];
 export type ReviewEvidenceExitCode = 0 | 1 | 2 | 3;
 
-type CliWriters = {
-  readonly writeOut: (message: string) => void;
-  readonly writeErr: (message: string) => void;
-};
-
 type CliOptions = {
   readonly executionEnabled: boolean;
   readonly gateTimeoutMs: number;
@@ -39,8 +35,8 @@ type ParsedCliOptions = CliOptions | { readonly usageError: string };
 export type RunReviewEvidenceCliOptions = {
   readonly createRunner?: (command: string, options?: CommandRunnerOptions) => CommandRunner;
   readonly gateCommands?: readonly GateCommand[];
-  readonly writeOut?: (message: string) => void;
-  readonly writeErr?: (message: string) => void;
+  readonly writeOut?: CliWriters["writeOut"];
+  readonly writeErr?: CliWriters["writeErr"];
   readonly env?: NodeJS.ProcessEnv;
   readonly cwd?: string;
   readonly timeoutMs?: number;
@@ -88,14 +84,12 @@ export function runReviewEvidenceCli(
         } satisfies ReviewEvidenceResult)
       : collectReviewEvidence(parsedOptions, options);
   const report = formatReviewEvidenceResult(result);
-  const writers = cliWriters(options);
+  const writers = resolveCliWriters({
+    writeOut: options.writeOut,
+    writeErr: options.writeErr,
+  });
 
-  if (result.status === "usage-error") {
-    writers.writeErr(report);
-  } else {
-    writers.writeOut(report);
-  }
-
+  emitCliReport({ report, toErr: result.status === "usage-error", writers });
   return exitCodeFor(result);
 }
 
@@ -315,12 +309,6 @@ const parseAvailability = (
 
   return `invalid ${name} availability: ${value}`;
 };
-
-/** Resolve output writers for tests and the real CLI. */
-const cliWriters = (options: RunReviewEvidenceCliOptions): CliWriters => ({
-  writeOut: options.writeOut ?? ((message) => stdout.write(message)),
-  writeErr: options.writeErr ?? ((message) => stderr.write(message)),
-});
 
 /**
  * Map review-evidence statuses to stable process exit codes.

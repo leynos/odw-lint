@@ -4,8 +4,9 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { cwd, exit, stderr, stdout } from "node:process";
+import { cwd, exit } from "node:process";
 import { fileURLToPath } from "node:url";
+import { type CliWriters, emitCliReport, resolveCliWriters } from "./cli-support";
 import { lsTrackedFiles } from "./git-support";
 import {
   findTrailingWhitespaceViolations,
@@ -14,9 +15,10 @@ import {
 
 export type WhitespaceHygieneExitCode = 0 | 1 | 2;
 
-type CliWriters = {
-  readonly writeOut: (message: string) => void;
-  readonly writeErr: (message: string) => void;
+type WhitespaceHygieneCliOutcome = {
+  readonly report: string;
+  readonly toErr: boolean;
+  readonly exitCode: WhitespaceHygieneExitCode;
 };
 
 /**
@@ -28,11 +30,16 @@ type CliWriters = {
  */
 export function runWhitespaceHygieneCli(
   repositoryPath = cwd(),
-  writers: CliWriters = {
-    writeOut: (message) => stdout.write(message),
-    writeErr: (message) => stderr.write(message),
-  },
+  writers: CliWriters = resolveCliWriters(),
 ): WhitespaceHygieneExitCode {
+  const outcome = checkWhitespaceHygiene(repositoryPath);
+
+  emitCliReport({ report: outcome.report, toErr: outcome.toErr, writers });
+  return outcome.exitCode;
+}
+
+/** Check whitespace hygiene and return one already-formatted CLI outcome. */
+function checkWhitespaceHygiene(repositoryPath: string): WhitespaceHygieneCliOutcome {
   try {
     const paths = trackedRepositoryFiles(repositoryPath);
     const violations = findTrailingWhitespaceViolations(paths, (path) =>
@@ -40,17 +47,24 @@ export function runWhitespaceHygieneCli(
     );
 
     if (violations.length === 0) {
-      writers.writeOut("Whitespace hygiene check passed.\n");
-      return 0;
+      return {
+        report: "Whitespace hygiene check passed.\n",
+        toErr: false,
+        exitCode: 0,
+      };
     }
 
-    writers.writeErr(
-      `Trailing whitespace found in tracked files:\n${formatWhitespaceViolations(violations)}\n`,
-    );
-    return 1;
+    return {
+      report: `Trailing whitespace found in tracked files:\n${formatWhitespaceViolations(violations)}\n`,
+      toErr: true,
+      exitCode: 1,
+    };
   } catch (error) {
-    writers.writeErr(`whitespace hygiene check failed: ${errorMessage(error)}\n`);
-    return 2;
+    return {
+      report: `whitespace hygiene check failed: ${errorMessage(error)}\n`,
+      toErr: true,
+      exitCode: 2,
+    };
   }
 }
 

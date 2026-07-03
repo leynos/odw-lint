@@ -3,6 +3,7 @@
  */
 
 import { describe, expect, it } from "bun:test";
+import { readFileSync } from "node:fs";
 import type { BranchFreshnessResult } from "./branch-freshness";
 import {
   checkBranchFreshness,
@@ -21,6 +22,11 @@ import {
   writeRepositoryFile,
 } from "./branch-freshness-git-fixtures";
 import { parseNameStatusZ, parseRoadmapDiffHunks } from "./branch-freshness-git-parsing";
+import type { CliWriters } from "./cli-support";
+
+/** Read the CLI module source for seam-ownership regression checks. */
+const branchFreshnessCliSource = () =>
+  readFileSync(new URL("./branch-freshness-git.ts", import.meta.url), "utf8");
 
 describe("Git branch-freshness parsing", () => {
   it("parses normal, rename, and copy name-status records", () => {
@@ -217,6 +223,7 @@ describe("Git-backed branch-freshness guard", () => {
       writeRepositoryFile(fixture.task, "docs/execplans/roadmap-1-5-2.md", "# Dirty\n");
 
       const output = createCapturedCliOutput();
+      output satisfies CliWriters;
       const exitCode = runBranchFreshnessCli([], fixture.task, output);
 
       expect(exitCode).toBe(2);
@@ -272,6 +279,13 @@ describe("Git-backed branch-freshness guard", () => {
       expect(output.stderr).toContain("missing --task value");
       expect(output.stdout).toBe("");
     });
+  });
+
+  it("uses the shared CLI writer seam", () => {
+    const source = branchFreshnessCliSource();
+
+    expect(source).toContain('from "./cli-support"');
+    expect(source).not.toContain("type CliWriters =");
   });
 });
 

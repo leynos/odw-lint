@@ -321,7 +321,7 @@ depending on manual post-commit audits.
   - Success: an unparameterized automated review cannot claim a scrutineer
     review when the harness knows only coderabbit or local-self-run evidence is
     available.
-- [ ] 1.5.9. Consolidate build-gate CLI support.
+- [x] 1.5.9. Consolidate build-gate CLI support.
   - Extract shared CLI writer, default stream, and report-dispatch support for
     build-gate command modules while preserving each gate's policy and result
     contract.

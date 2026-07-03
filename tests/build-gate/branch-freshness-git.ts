@@ -2,7 +2,7 @@
  * @file Git-backed roadmap branch-freshness review guard.
  */
 
-import { cwd, exit, stderr, stdout } from "node:process";
+import { cwd, exit } from "node:process";
 import { fileURLToPath } from "node:url";
 import {
   type BranchFreshnessResult,
@@ -14,15 +14,11 @@ import {
 } from "./branch-freshness";
 import { parseNameStatusZ, parseRoadmapDiffHunks } from "./branch-freshness-git-parsing";
 import { formatBranchFreshnessResult } from "./branch-freshness-report";
+import { type CliWriters, emitCliReport, resolveCliWriters } from "./cli-support";
 import { createGitRunner, type GitCommandResult, type GitRunner, runGit } from "./git-support";
 
 /** Process exit status used by the command-line guard. */
 export type BranchFreshnessExitCode = 0 | 1 | 2;
-
-type CliWriters = {
-  readonly writeOut: (message: string) => void;
-  readonly writeErr: (message: string) => void;
-};
 
 type CliOptions = { readonly taskOverride?: string } | { readonly usageError: string };
 
@@ -74,10 +70,7 @@ export function checkBranchFreshness(options: BranchFreshnessCheckOptions): Bran
 export function runBranchFreshnessCli(
   args: readonly string[] = [],
   repositoryPath = cwd(),
-  writers: CliWriters = {
-    writeOut: (message) => stdout.write(message),
-    writeErr: (message) => stderr.write(message),
-  },
+  writers: CliWriters = resolveCliWriters(),
 ): BranchFreshnessExitCode {
   const cliOptions = parseCliArgs(args);
   const result =
@@ -87,13 +80,7 @@ export function runBranchFreshnessCli(
   const report = formatBranchFreshnessResult(result);
   const exitCode = exitCodeForBranchFreshness(result);
 
-  if (exitCode === 2) {
-    writers.writeErr(report);
-    return exitCode;
-  }
-
-  writers.writeOut(report);
-
+  emitCliReport({ report, toErr: exitCode === 2, writers });
   return exitCode;
 }
 

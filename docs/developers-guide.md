@@ -204,6 +204,10 @@ subprocess seam for gate commands, including Git through `createGitRunner`, so
 gates share one command-result contract. Keep feature-specific policy in the
 corresponding gate module, such as file-size path filtering, whitespace scan
 rules, branch-freshness classification, and review-evidence classification.
+Build-gate command-line writer resolution, default `stdout` and `stderr`
+streams, and single-report dispatch live in
+`tests/build-gate/cli-support.ts`. Gate modules keep their own report
+formatting and exit-code mapping.
 
 Run `make markdownlint` as well when Markdown files change.
 

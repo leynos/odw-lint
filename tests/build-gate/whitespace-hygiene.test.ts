@@ -5,6 +5,7 @@
 import { describe, expect, it } from "bun:test";
 import { readFileSync, rmSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
+import type { CliWriters } from "./cli-support";
 import {
   commitAll,
   createCapturedCliOutput,
@@ -13,10 +14,22 @@ import {
 } from "./git-support";
 import { runWhitespaceHygieneCli } from "./whitespace-hygiene";
 
+/** Read the CLI module source for seam-ownership regression checks. */
+const whitespaceHygieneCliSource = () =>
+  readFileSync(new URL("./whitespace-hygiene.ts", import.meta.url), "utf8");
+
 describe("runWhitespaceHygieneCli", () => {
+  it("uses the shared CLI writer seam", () => {
+    const source = whitespaceHygieneCliSource();
+
+    expect(source).toContain('from "./cli-support"');
+    expect(source).not.toContain("type CliWriters =");
+  });
+
   it("exits successfully for clean tracked text", () => {
     const repositoryPath = createTemporaryRepository();
     const output = createCapturedCliOutput();
+    output satisfies CliWriters;
 
     try {
       writeRepositoryFile(repositoryPath, "clean.txt", "clean\n");

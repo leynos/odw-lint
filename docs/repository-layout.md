@@ -131,9 +131,12 @@ expected diagnostic message intentionally changes.
 `tests/build-gate/` protects repository-maintenance gates. Shared command
 execution, Git subprocess execution, tracked-file listing, temporary repository
 setup, repository-relative writes, fixture commits, and CLI-output capture
-belong in `tests/build-gate/git-support.ts`. Individual gate modules keep their
-own feature policy, including file-size path scope, whitespace content
-scanning, branch-freshness classification, and review-evidence classification.
+belong in `tests/build-gate/git-support.ts`. Shared command-line writer
+resolution, default stream selection, and single-report dispatch belong in
+`tests/build-gate/cli-support.ts`. Individual gate modules keep their own
+feature policy, including file-size path scope, whitespace content scanning,
+branch-freshness classification, review-evidence classification, report
+formatting, and exit-code mapping.
 
 ## Tooling boundaries
 

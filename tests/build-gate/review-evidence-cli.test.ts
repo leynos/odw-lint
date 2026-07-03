@@ -3,6 +3,8 @@
  */
 
 import { describe, expect, it } from "bun:test";
+import { readFileSync } from "node:fs";
+import type { CliWriters } from "./cli-support";
 import type { CommandResult, CommandRunner, CommandRunnerOptions } from "./git-support";
 import { createCapturedCliOutput } from "./git-support";
 import type { ReviewEvidenceResult, ReviewGateId } from "./review-evidence";
@@ -33,6 +35,10 @@ const onePassingGate = [["make all", "true", []]] satisfies readonly GateCommand
 const oneMissingGate = [
   ["make all", "odw-lint-definitely-absent-command", []],
 ] satisfies readonly GateCommand[];
+
+/** Read the CLI module source for seam-ownership regression checks. */
+const reviewEvidenceCliSource = () =>
+  readFileSync(new URL("./review-evidence-cli.ts", import.meta.url), "utf8");
 
 /** Build a shared command-result fixture with focused overrides. */
 const makeResult = (overrides: Partial<CommandResult> = {}): CommandResult => ({
@@ -87,6 +93,14 @@ const runCli = (
 };
 
 describe("runReviewEvidenceCli", () => {
+  it("uses the shared CLI writer seam", () => {
+    const source = reviewEvidenceCliSource();
+
+    expect(source).toContain('from "./cli-support"');
+    expect(source).not.toContain("type CliWriters =");
+    expect(source).not.toContain("const cliWriters =");
+  });
+
   it("returns verified evidence when every keyed gate passes", () => {
     const result = runCli({
       gateCommands: [
@@ -316,6 +330,7 @@ describe("runReviewEvidenceCli", () => {
 
   it("uses the shared real command runner for a passing command", () => {
     const output = createCapturedCliOutput();
+    output satisfies CliWriters;
     const exitCode = runReviewEvidenceCli([], {
       gateCommands: onePassingGate,
       writeOut: output.writeOut,

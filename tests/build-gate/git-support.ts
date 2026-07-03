@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import type { CliWriters } from "./cli-support";
 
 /** Captured command result used by build-gate helpers. */
 export type CommandResult = {
@@ -46,9 +47,7 @@ export type GitRunnerOptions = {
 export type CapturedCliOutput = {
   readonly stdout: string;
   readonly stderr: string;
-  readonly writeOut: (message: string) => void;
-  readonly writeErr: (message: string) => void;
-};
+} & CliWriters;
 
 export type TemporaryRepositoryOptions = {
   readonly prefix?: string;
