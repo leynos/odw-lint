@@ -632,15 +632,15 @@ source without losing span fidelity. It informs all later AST rules. See
     and a structured-offset fixture proves the span narrows to the failure
     token without weakening the fallback for parsers that expose no offset.
   - Completed by [roadmap-2-2-6.md](execplans/roadmap-2-2-6.md).
-  - [ ] 2.2.6.1. Guard parser-error offset coordinate bases.
+  - [x] 2.2.6.1. Guard parser-error offset coordinate bases.
     - Addendum (from review:2.2.6; medium). Reject or normalize parser-error
       offsets unless their coordinate base is explicit, including scalar caret
       offsets that need token-end synthesis. Lightweight addendum pass.
-  - [ ] 2.2.6.2. Reconcile the span-narrowing public surface.
+  - [x] 2.2.6.2. Reconcile the span-narrowing public surface.
     - Addendum (from audit:2.2.6; medium). Document the current pinned-parser
       inert status, trim speculative exports, and align characterization tests
       with production consumption. Lightweight addendum pass.
-  - [ ] 2.2.6.3. Consolidate parser-range type guards.
+  - [x] 2.2.6.3. Consolidate parser-range type guards.
     - Addendum (from audit:2.2.5; medium). Move duplicated low-level
       static-analysis object and number guards into one reviewed helper used
       by parser-range code and tests. Lightweight addendum pass.

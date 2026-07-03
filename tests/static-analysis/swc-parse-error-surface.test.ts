@@ -8,6 +8,7 @@
 import { describe, expect, it } from "bun:test";
 import { parseSync } from "@swc/core";
 import { createOriginalSourceFile, normalizeWorkflowBody, scanWorkflowEnvelope } from "odw-lint";
+import { isFiniteNumber, isUnknownRecord } from "../../src/static-analysis/value-guards";
 import { expectScannedEnvelope } from "./workflow-envelope-support";
 
 const PARSE_OPTIONS = {
@@ -15,20 +16,6 @@ const PARSE_OPTIONS = {
   jsx: false,
 } as const;
 const STRUCTURED_OFFSET_FIELDS = ["span", "byteOffset", "pos", "start", "offset"] as const;
-
-type UnknownRecord = {
-  readonly [key: string]: unknown;
-};
-
-/** Checks whether an unknown value can be inspected as an object record. */
-const isUnknownRecord = (value: unknown): value is UnknownRecord => {
-  return typeof value === "object" && value !== null;
-};
-
-/** Checks whether an unknown value is a finite numeric parser offset. */
-const isFiniteNumber = (value: unknown): value is number => {
-  return typeof value === "number" && Number.isFinite(value);
-};
 
 /** Checks whether an unknown value is a numeric structured byte range. */
 const isStructuredNumericRange = (value: unknown): boolean => {

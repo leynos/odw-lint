@@ -24,6 +24,7 @@ const SOURCE_HELPER_MODULES = [
   "source-scan.ts",
   "source-snippet.ts",
   "types.ts",
+  "value-guards.ts",
 ] as const;
 
 type ExportDeclarationFact = {
@@ -280,7 +281,6 @@ describe("source-file helper architecture", () => {
       "isHighSurrogate",
       "isInsideSurrogatePair",
       "isLowSurrogate",
-      "isObjectRecord",
       "isSamePosition",
       "isSourcePositionLike",
       "isSourceSpanLike",

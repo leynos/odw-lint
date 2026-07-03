@@ -9,6 +9,7 @@
 import type { SourcePosition, SourceSpan } from "../diagnostics/types";
 import { sourceIndexes } from "./source-indexes";
 import { type OriginalSourceFile, SourceOffsetError } from "./types";
+import { isUnknownRecord } from "./value-guards";
 
 const TEXT_ENCODER = new TextEncoder();
 
@@ -170,14 +171,9 @@ export const validateSourceSpan = (file: OriginalSourceFile, span: SourceSpan): 
   return expectedSpan;
 };
 
-/** Checks whether an unknown value is a non-null object record. */
-const isObjectRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === "object" && value !== null;
-};
-
 /** Checks whether a value has public source-position coordinates. */
 const isSourcePositionLike = (value: unknown): value is SourcePosition => {
-  if (!isObjectRecord(value)) {
+  if (!isUnknownRecord(value)) {
     return false;
   }
   const position = value as {
@@ -195,7 +191,7 @@ const isSourcePositionLike = (value: unknown): value is SourcePosition => {
 
 /** Checks whether a value has the public source-span shape. */
 const isSourceSpanLike = (value: unknown): value is SourceSpan => {
-  if (!isObjectRecord(value)) {
+  if (!isUnknownRecord(value)) {
     return false;
   }
   const span = value as {

@@ -39,9 +39,7 @@ export {
   type WorkflowAstFacts,
 } from "./workflow-ast-facts";
 export {
-  type NormalizedByteRange,
   type NormalizedWorkflowBody,
-  narrowBodySyntaxSpan,
   normalizeWorkflowBody,
   originalSpanFromNormalizedOffsets,
 } from "./workflow-body-normalizer";

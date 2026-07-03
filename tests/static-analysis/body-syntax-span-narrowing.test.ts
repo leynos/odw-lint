@@ -4,58 +4,14 @@
 
 import { describe, expect, it } from "bun:test";
 import * as fc from "fast-check";
-import {
-  createOriginalSourceFile,
-  narrowBodySyntaxSpan,
-  normalizeWorkflowBody,
-  scanWorkflowEnvelope,
-  sliceSourceSpan,
-} from "odw-lint";
-import { expectScannedEnvelope } from "./workflow-envelope-support";
+import { normalizeWorkflowBody, sliceSourceSpan } from "odw-lint";
+import { narrowBodySyntaxSpan } from "../../src/static-analysis/workflow-body-normalizer";
+import { normalizedTokenRange } from "./normalized-byte-range-support";
+import { envelopeForBody } from "./workflow-envelope-support";
 
-const TEXT_ENCODER = new TextEncoder();
 const PROPERTY_RUNNER = {
   numRuns: 100,
 } as const;
-
-type NormalizedByteRange = {
-  readonly start: number;
-  readonly end: number;
-};
-
-/** Builds a scanned workflow envelope for one body snippet. */
-const envelopeForBody = (body: string) => {
-  const sourceFile = createOriginalSourceFile({
-    filePath: "workflows/example.js",
-    sourceText: `export const meta = { name: "example", description: "ok" };\n${body}`,
-  });
-
-  return expectScannedEnvelope(scanWorkflowEnvelope(sourceFile), sourceFile.filePath);
-};
-
-/** Returns the UTF-8 byte length of a text slice. */
-const byteLength = (text: string): number => {
-  return TEXT_ENCODER.encode(text).byteLength;
-};
-
-/** Builds a normalized byte range for a token inside a workflow body. */
-const normalizedTokenRange = (
-  body: string,
-  token: string,
-  normalizedPrefixByteLength: number,
-): NormalizedByteRange => {
-  const tokenStartIndex = body.indexOf(token);
-  if (tokenStartIndex < 0) {
-    throw new Error(`Expected body to contain token ${token}.`);
-  }
-
-  const tokenStart = normalizedPrefixByteLength + byteLength(body.slice(0, tokenStartIndex));
-
-  return {
-    start: tokenStart,
-    end: tokenStart + byteLength(token),
-  };
-};
 
 describe("narrowBodySyntaxSpan", () => {
   it("narrows a structured normalized range to the original token", () => {

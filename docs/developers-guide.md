@@ -54,6 +54,11 @@ syntax failures into `odw/body-syntax` diagnostics with original-source spans.
 The adapter never executes workflow source, never calls ODW runtime helpers,
 and returns a frozen discriminated result instead of letting syntax errors
 escape.
+The parser-error span-narrowing seam is intentionally internal. The pinned
+`@swc/core@1.15.43` parser exposes no structured syntax-error byte range, so
+production diagnostics currently use the conservative whole-body fallback; do
+not export the speculative narrowing helper through the package entry until a
+production parser path can exercise it.
 
 `normalizeWorkflowBody` lives in
 `src/static-analysis/workflow-body-normalizer.ts`. It wraps the original body

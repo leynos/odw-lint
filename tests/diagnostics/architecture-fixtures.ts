@@ -51,6 +51,7 @@ export const EXPECTED_STATIC_ANALYSIS_MODULE_FILES = [
   "source-scan.ts",
   "source-snippet.ts",
   "types.ts",
+  "value-guards.ts",
   "workflow-ast-bindings.ts",
   "workflow-ast-facts.ts",
   "workflow-body-normalizer.ts",

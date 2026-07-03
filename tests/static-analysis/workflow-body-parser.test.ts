@@ -18,10 +18,7 @@ import {
   type WorkflowBodyParseResult,
 } from "odw-lint";
 import { firstReviewedRuleTemplate } from "../../src/diagnostics/rule-catalogue";
-import {
-  narrowedSpanForParserError,
-  structuredNormalizedRangeFromParserError,
-} from "../../src/static-analysis/workflow-body-parser";
+import { isUnknownRecord } from "../../src/static-analysis/value-guards";
 import { readFixtureSource } from "./fixtures/corpus-support";
 import { ODW_EXAMPLE_FIXTURE_SNAPSHOTS } from "./fixtures/odw-examples";
 import { expectScannedEnvelope } from "./workflow-envelope-support";
@@ -69,7 +66,6 @@ const ODW_EXAMPLE_FIXTURE_CORPUS = {
 } as const;
 const BODY_SYNTAX_RULE_DEFINITION = ruleDefinitionFor(makeRuleId("odw/body-syntax"));
 const BODY_SYNTAX_TEMPLATE = firstReviewedRuleTemplate(BODY_SYNTAX_RULE_DEFINITION);
-const TEXT_ENCODER = new TextEncoder();
 
 type SwcSpanNode = {
   readonly span: {
@@ -81,10 +77,6 @@ type NormalizedByteSpan = {
   readonly start: number;
   readonly end: number;
 };
-type UnknownRecord = {
-  readonly [key: string]: unknown;
-};
-
 /** Builds a scanned workflow envelope for one body snippet. */
 const envelopeForBody = (body: string) => {
   return scannedEnvelopeFor({
@@ -129,11 +121,6 @@ const expectBodySyntaxDiagnostic = (
   }
 
   return result.diagnostic;
-};
-
-/** Checks whether a value can be inspected as an object record. */
-const isUnknownRecord = (value: unknown): value is UnknownRecord => {
-  return typeof value === "object" && value !== null;
 };
 
 /** Checks whether an unknown SWC span has numeric byte offsets. */
@@ -194,44 +181,6 @@ const isInNormalizedBodySpan = (
   const bodyEnd = normalized.prefixByteLength + normalized.bodyByteLength;
 
   return span.start >= bodyStart && span.end <= bodyEnd;
-};
-
-/** Returns the UTF-8 byte length of a text slice. */
-const byteLength = (text: string): number => {
-  return TEXT_ENCODER.encode(text).byteLength;
-};
-
-/** Builds a normalized byte range for a token inside the scanned body slice. */
-const normalizedTokenRange = (
-  envelope: ReturnType<typeof envelopeForBody>,
-  normalized: { readonly prefixByteLength: number },
-  token: string,
-): NormalizedByteSpan => {
-  const bodyText = sliceSourceSpan(envelope.sourceFile, envelope.bodySpan);
-  const tokenStartIndex = bodyText.indexOf(token);
-  if (tokenStartIndex < 0) {
-    throw new Error(`Expected scanned body to contain token ${token}.`);
-  }
-  const tokenStart = normalized.prefixByteLength + byteLength(bodyText.slice(0, tokenStartIndex));
-
-  return {
-    start: tokenStart,
-    end: tokenStart + byteLength(token),
-  };
-};
-
-/** Captures the thrown SWC parser error for a normalized source string. */
-const catchSwcParseError = (normalizedText: string): unknown => {
-  try {
-    parseSync(normalizedText, {
-      syntax: "ecmascript",
-      jsx: false,
-    });
-  } catch (error) {
-    return error;
-  }
-
-  throw new Error("Expected SWC to reject malformed normalized source.");
 };
 
 describe("parseWorkflowBody", () => {
@@ -308,45 +257,6 @@ describe("parseWorkflowBody", () => {
       );
 
     expect(mappedTexts).toContain("marker");
-  });
-
-  it("resolves structured parser-error ranges without reading rendered prose", () => {
-    const envelope = envelopeForBody('agent("draft"\n');
-    const realError = catchSwcParseError(normalizeWorkflowBody(envelope).normalizedText);
-    const syntheticError = {
-      span: { start: 7, end: 12 },
-      get message(): string {
-        throw new Error("Parser prose must not be inspected.");
-      },
-    };
-
-    expect(structuredNormalizedRangeFromParserError(realError)).toBeUndefined();
-    expect(structuredNormalizedRangeFromParserError(syntheticError)).toEqual({
-      start: 7,
-      end: 12,
-    });
-  });
-
-  it("narrows synthetic parser-error ranges and falls back for real SWC errors", () => {
-    const envelope = envelopeForBody('const marker = "café";\nreturn marker;\n');
-    const normalized = normalizeWorkflowBody(envelope);
-    const range = normalizedTokenRange(envelope, normalized, "café");
-    const narrowedSpan = narrowedSpanForParserError(
-      envelope.sourceFile,
-      normalized,
-      envelope.bodySpan,
-      {
-        span: range,
-      },
-    );
-    const realError = catchSwcParseError(
-      normalizeWorkflowBody(envelopeForBody('agent("draft"\n')).normalizedText,
-    );
-
-    expect(sliceSourceSpan(envelope.sourceFile, narrowedSpan)).toBe("café");
-    expect(
-      narrowedSpanForParserError(envelope.sourceFile, normalized, envelope.bodySpan, realError),
-    ).toEqual(envelope.bodySpan);
   });
 
   it("does not throw for malformed bodies", () => {

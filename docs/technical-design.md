@@ -115,6 +115,10 @@ loader path.
 The span mapper is also the path for narrowing `odw/body-syntax` diagnostics
 from structured parser-error ranges; parsers that expose no structured range
 fall back to the whole original-source body span.
+The current pinned `@swc/core@1.15.43` parser exposes rendered parse-error
+prose but no structured syntax-error byte range, so that narrowing path remains
+an internal, characterization-tested fallback seam rather than a public
+consumer contract.
 
 ### 6.2. Static source model
 
