@@ -329,6 +329,13 @@ depending on manual post-commit audits.
   - Success: branch-freshness, whitespace-hygiene, and review-evidence CLIs
     consume one documented CLI-support helper before another build gate clones
     the same reviewer-facing command boilerplate.
+- [ ] 1.5.10. Add an executable artefact check for recorded review evidence.
+  - Require the roadmap review or audit path to attach or persist the
+    `make review-evidence` report for each completed review or audit, and add
+    a build-gate check that rejects missing recorded evidence.
+  - Requires 1.5.7 and 1.5.8.
+  - Success: a completed roadmap review or audit cannot claim review-evidence
+    compliance unless the recorded report is available to the audit harness.
 
 ## 2. First vertical slice: ODW dialect validation
 
