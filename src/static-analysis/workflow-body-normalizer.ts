@@ -34,6 +34,13 @@ export type NormalizedWorkflowBody = {
   readonly bodyByteLength: number;
 };
 
+export type NormalizedByteRange = {
+  /** Inclusive byte offset in normalized source. */
+  readonly start: number;
+  /** Exclusive byte offset in normalized source. */
+  readonly end: number;
+};
+
 /**
  * Builds SWC-parseable source for one scanned workflow body.
  *
@@ -92,4 +99,40 @@ export const originalSpanFromNormalizedOffsets = (
     normalized.bodyByteOffset + relativeStart,
     normalized.bodyByteOffset + relativeEnd,
   );
+};
+
+/**
+ * Narrows a body-syntax diagnostic span from a structured normalized range.
+ *
+ * Parser offsets are useful only when they map cleanly back to the original
+ * workflow body. Wrapper-touching, reversed, or otherwise invalid ranges keep
+ * the conservative whole-body fallback.
+ *
+ * @param sourceFile - Original workflow source file.
+ * @param normalized - Normalized workflow body returned by `normalizeWorkflowBody`.
+ * @param bodySpan - Whole original-source body span used as the fallback.
+ * @param range - Optional normalized-source byte range for the syntax failure.
+ * @returns A narrowed original-source span, or `bodySpan` when mapping fails.
+ * @throws Error when an unexpected non-source-offset error occurs while
+ *   mapping the range.
+ */
+export const narrowBodySyntaxSpan = (
+  sourceFile: OriginalSourceFile,
+  normalized: NormalizedWorkflowBody,
+  bodySpan: SourceSpan,
+  range?: NormalizedByteRange,
+): SourceSpan => {
+  if (range === undefined) {
+    return bodySpan;
+  }
+
+  try {
+    return originalSpanFromNormalizedOffsets(sourceFile, normalized, range.start, range.end);
+  } catch (error) {
+    if (error instanceof SourceOffsetError) {
+      return bodySpan;
+    }
+
+    throw error;
+  }
 };

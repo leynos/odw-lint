@@ -578,7 +578,7 @@ source without losing span fidelity. It informs all later AST rules. See
   - Success: a parser-backed fixture diagnostic matches `ruleAllowsMessage`
     through a reviewed template rather than an exact-only or substring
     assertion.
-- [ ] 2.2.6. Narrow body-syntax spans when parser offsets are structured.
+- [x] 2.2.6. Narrow body-syntax spans when parser offsets are structured.
   - Requires 2.2.3.
   - Revisit the SWC parser adapter, or an equivalent parser error channel, once
     it exposes stable syntax-error byte offsets, and map
@@ -587,6 +587,7 @@ source without losing span fidelity. It informs all later AST rules. See
   - Success: parser-backed syntax diagnostics still use original-source spans,
     and a structured-offset fixture proves the span narrows to the failure
     token without weakening the fallback for parsers that expose no offset.
+  - Completed by [roadmap-2-2-6.md](execplans/roadmap-2-2-6.md).
 
 ### 2.3. Prove ODW loader parity before shipping dialect checks
 

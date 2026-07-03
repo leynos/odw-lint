@@ -30,7 +30,9 @@ export {
   STATIC_ANALYSIS_STAGES,
 } from "./types";
 export {
+  type NormalizedByteRange,
   type NormalizedWorkflowBody,
+  narrowBodySyntaxSpan,
   normalizeWorkflowBody,
   originalSpanFromNormalizedOffsets,
 } from "./workflow-body-normalizer";

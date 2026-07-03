@@ -112,6 +112,10 @@ loader path.
 | Reporter             | Emit text, JSON, and future SARIF-compatible diagnostic streams.                                                                   |
 | Fixture corpus       | Store valid and invalid workflow examples for differential tests.                                                                  |
 
+The span mapper is also the path for narrowing `odw/body-syntax` diagnostics
+from structured parser-error ranges; parsers that expose no structured range
+fall back to the whole original-source body span.
+
 ### 6.2. Static source model
 
 The analysis model has three layers:
