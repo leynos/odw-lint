@@ -592,7 +592,7 @@ source without losing span fidelity. It informs all later AST rules. See
   - Success: each body diagnostic includes a stable original-source snippet
     across LF, CRLF, Unicode, comments, regex literals, template text, and
     template interpolation.
-- [ ] 2.2.4. Implement workflow AST facts for lexical bindings and source
+- [x] 2.2.4. Implement workflow AST facts for lexical bindings and source
   masks.
   - Requires 2.1.9 and 2.2.2.
   - See [technical-design.md](technical-design.md) §§6.2 and 9.3.

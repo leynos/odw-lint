@@ -1,0 +1,13 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`buildSuppressionMasks keeps line-comment directives visible and non-inert 1`] = `""export const meta = { name:       , description:      };\\n// odw-lint-disable\\n""`;
+
+exports[`buildSuppressionMasks blanks directive-like text inside quoted string 1`] = `""const value =                   ;\\n// real directive stays visible\\n""`;
+
+exports[`buildSuppressionMasks blanks directive-like text inside template literal 1`] = `""const value =                                ;\\n// real directive stays visible\\n""`;
+
+exports[`buildSuppressionMasks blanks directive-like text inside regex literal 1`] = `""const value =                    ;\\n// real directive stays visible\\n""`;
+
+exports[`buildSuppressionMasks blanks directive-like text inside block comment 1`] = `""                      \\n// real directive stays visible\\n""`;
+
+exports[`buildSuppressionMasks preserves source length and line terminators across multi-line masks 1`] = `""const before = 1;\\n              \\n                \\n            \\n// odw-lint-disable\\nconst after = 2;""`;

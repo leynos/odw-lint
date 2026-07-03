@@ -9,7 +9,12 @@ import type {
   WorkflowEnvelope,
   WorkflowEnvelopeScanResult,
 } from "odw-lint";
-import { sliceSourceSpan } from "odw-lint";
+import { createOriginalSourceFile, scanWorkflowEnvelope, sliceSourceSpan } from "odw-lint";
+
+type EnvelopeForBodyOptions = {
+  readonly filePath?: string;
+  readonly separator?: string;
+};
 
 /**
  * Requires a scanned result and returns its envelope.
@@ -29,6 +34,27 @@ export const expectScannedEnvelope = (
   }
 
   return result.envelope;
+};
+
+/**
+ * Builds a scanned workflow envelope for one body snippet.
+ *
+ * @param body - Workflow body text to place after a valid metadata export.
+ * @param options - Optional fixture path and metadata/body separator.
+ * @returns A scanned workflow envelope for the generated source text.
+ */
+export const envelopeForBody = (
+  body: string,
+  options: EnvelopeForBodyOptions = {},
+): WorkflowEnvelope => {
+  const filePath = options.filePath ?? "workflows/example.js";
+  const separator = options.separator ?? "\n";
+  const sourceFile = createOriginalSourceFile({
+    filePath,
+    sourceText: `export const meta = { name: "example", description: "ok" };${separator}${body}`,
+  });
+
+  return expectScannedEnvelope(scanWorkflowEnvelope(sourceFile), filePath);
 };
 
 /**

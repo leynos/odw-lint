@@ -68,8 +68,31 @@ the current SWC program span base first, then pass 0-based normalized byte
 offsets to the mapper. The mapper returns validated `SourceSpan` values in
 original-source coordinates and rejects ranges that touch injected wrapper text
 or run backwards. It deliberately accepts numeric offsets rather than SWC AST
-types; exposing workflow AST facts, lexical bindings, and source masks remains
-task 2.2.4's boundary.
+types; workflow AST facts expose derived, parser-type-free data through the
+public package surface described below.
+
+### Workflow AST facts
+
+`collectWorkflowAstFacts(envelope)` produces reusable, parser-type-free facts
+for later parser-backed rules. It returns a frozen `WorkflowAstFacts` object
+with `parseSucceeded`, `lexicalBindings`, and `suppressionMasks` fields. It does
+not emit diagnostics and is not wired into `lintWorkflowSource`; consuming
+rules still own any future diagnostic behaviour.
+
+`LexicalBindingFacts` records a sorted, unique `boundNames` list. Use
+`isIdentifierBound(facts.lexicalBindings, name)` to check whether a workflow
+body declares a name such as `parallel`, `Array`, `Number`, `Object`, or
+`Math`. This model is deliberately name-based rather than scope-span-based, so
+future rules can avoid false positives when user code shadows a global helper
+without depending on SWC node types at the public boundary.
+
+`WorkflowSuppressionMasks` exposes `directiveScanText` and `inertRanges`.
+Strings, template literals, regex literals, and block comments stay blanked in
+`directiveScanText`, while line comments are visible so a future suppression
+parser can read directive comments safely. Use `isIndexInInertRegion` to test
+whether a UTF-16 source-text index falls inside a blanked region. These ranges
+stay in the source-masker's UTF-16 index space; do not mix them with UTF-8
+`SourceSpan` offsets without an explicit conversion step.
 
 ### Workflow envelope scanner
 
@@ -134,8 +157,8 @@ When extending this area, keep the roadmap sequencing intact: task 2.1.4 owns
 the forbidden-import architecture test for production code, task 2.2.1 owns the
 shipped standalone SWC parser adapter, task 2.2.2 owns body normalization,
 span mapping, and valid-example parser integration, task 2.2.4 owns reusable
-workflow AST facts, and task 3.1.1 owns Claude pure-metadata compatibility
-diagnostics.
+workflow AST facts, which now live in the package surface, and task 3.1.1 owns
+Claude pure-metadata compatibility diagnostics.
 
 ## Commit Gate
 

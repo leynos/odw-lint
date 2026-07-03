@@ -57,7 +57,11 @@ export {
 } from "./diagnostics/types";
 export {
   classifyWorkflowMetadata,
+  collectWorkflowAstFacts,
   createOriginalSourceFile,
+  isIdentifierBound,
+  isIndexInInertRegion,
+  type LexicalBindingFacts,
   lintWorkflowSource,
   type MaskedSource,
   maskNonCodeSource,
@@ -89,6 +93,7 @@ export {
   snippetForSpan,
   spanFromOffsets,
   type UnsupportedWorkflowSyntax,
+  type WorkflowAstFacts,
   type WorkflowBodyParseResult,
   type WorkflowEnvelope,
   type WorkflowEnvelopeScanResult,
@@ -99,4 +104,5 @@ export {
   type WorkflowMetadataPortability,
   type WorkflowMetaValue,
   type WorkflowSource,
+  type WorkflowSuppressionMasks,
 } from "./static-analysis";

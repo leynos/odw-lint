@@ -50,7 +50,10 @@ export const EXPECTED_STATIC_ANALYSIS_MODULE_FILES = [
   "source-scan.ts",
   "source-snippet.ts",
   "types.ts",
+  "workflow-ast-bindings.ts",
+  "workflow-ast-facts.ts",
   "workflow-body-normalizer.ts",
+  "workflow-body-parse.ts",
   "workflow-body-parser.ts",
   "workflow-body-syntax-detail.ts",
   "workflow-deterministic-time.ts",
@@ -64,6 +67,7 @@ export const EXPECTED_STATIC_ANALYSIS_MODULE_FILES = [
   "workflow-metadata-parser.ts",
   "workflow-metadata-string-scan.ts",
   "workflow-metadata.ts",
+  "workflow-suppression-mask.ts",
 ] as const;
 
 /**

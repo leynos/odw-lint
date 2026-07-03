@@ -30,6 +30,15 @@ export {
   STATIC_ANALYSIS_STAGES,
 } from "./types";
 export {
+  collectLexicalBindings,
+  isIdentifierBound,
+  type LexicalBindingFacts,
+} from "./workflow-ast-bindings";
+export {
+  collectWorkflowAstFacts,
+  type WorkflowAstFacts,
+} from "./workflow-ast-facts";
+export {
   type NormalizedByteRange,
   type NormalizedWorkflowBody,
   narrowBodySyntaxSpan,
@@ -51,3 +60,8 @@ export {
   type WorkflowMetadataParseResult,
   type WorkflowMetadataPortability,
 } from "./workflow-metadata";
+export {
+  buildSuppressionMasks,
+  isIndexInInertRegion,
+  type WorkflowSuppressionMasks,
+} from "./workflow-suppression-mask";

@@ -5,16 +5,13 @@
 import { describe, expect, it } from "bun:test";
 import * as fc from "fast-check";
 import {
-  createOriginalSourceFile,
   type NormalizedWorkflowBody,
   normalizeWorkflowBody,
   originalSpanFromNormalizedOffsets,
   SourceOffsetError,
-  scanWorkflowEnvelope,
   sliceSourceSpan,
-  type WorkflowEnvelope,
 } from "odw-lint";
-import { expectScannedEnvelope } from "./workflow-envelope-support";
+import { envelopeForBody } from "./workflow-envelope-support";
 
 const TEXT_ENCODER = new TextEncoder();
 const WORKFLOW_BODY_WRAP_PREFIX = "async function __odwLintWorkflowBody__() {";
@@ -32,14 +29,7 @@ const byteOffsetAtIndex = (text: string, index: number): number => {
 };
 
 /** Builds a scanned workflow envelope whose body is exactly the supplied text. */
-const envelopeForBody = (body: string): WorkflowEnvelope => {
-  const sourceFile = createOriginalSourceFile({
-    filePath: "workflows/example.js",
-    sourceText: `export const meta = { name: "example", description: "ok" };${body}`,
-  });
-
-  return expectScannedEnvelope(scanWorkflowEnvelope(sourceFile), "workflows/example.js");
-};
+const exactBodyEnvelope = (body: string) => envelopeForBody(body, { separator: "" });
 
 /** Converts body-relative byte offsets to normalized-source byte offsets. */
 const inBodyByteRange = (
@@ -53,7 +43,7 @@ const inBodyByteRange = (
 
 describe("normalizeWorkflowBody", () => {
   it("wraps the original body in an async function", () => {
-    const envelope = envelopeForBody("return { done: true };\n");
+    const envelope = exactBodyEnvelope("return { done: true };\n");
     const normalized = normalizeWorkflowBody(envelope);
     const bodyText = sliceSourceSpan(envelope.sourceFile, envelope.bodySpan);
 
@@ -64,7 +54,7 @@ describe("normalizeWorkflowBody", () => {
   });
 
   it("maps a normalized identifier span back to original source", () => {
-    const envelope = envelopeForBody('const snow = "雪";\nconst marker = 42;\nreturn marker;\n');
+    const envelope = exactBodyEnvelope('const snow = "雪";\nconst marker = 42;\nreturn marker;\n');
     const normalized = normalizeWorkflowBody(envelope);
     const markerIndex = normalized.normalizedText.indexOf("marker");
     const startByte = byteOffsetAtIndex(normalized.normalizedText, markerIndex);
@@ -81,7 +71,7 @@ describe("normalizeWorkflowBody", () => {
   });
 
   it("keeps the wrapper suffix outside trailing line comments", () => {
-    const envelope = envelopeForBody("const x = 1;\n// trailing");
+    const envelope = exactBodyEnvelope("const x = 1;\n// trailing");
     const normalized = normalizeWorkflowBody(envelope);
 
     expect(normalized.normalizedText.endsWith("\n}")).toBe(true);
@@ -89,7 +79,7 @@ describe("normalizeWorkflowBody", () => {
   });
 
   it("rejects normalized offsets outside the original body", () => {
-    const envelope = envelopeForBody("const marker = 42;\n");
+    const envelope = exactBodyEnvelope("const marker = 42;\n");
     const normalized = normalizeWorkflowBody(envelope);
 
     expect(() =>
@@ -111,7 +101,7 @@ describe("normalizeWorkflowBody", () => {
   });
 
   it("returns a frozen record", () => {
-    expect(Object.isFrozen(normalizeWorkflowBody(envelopeForBody("const x = 1;\n")))).toBe(true);
+    expect(Object.isFrozen(normalizeWorkflowBody(exactBodyEnvelope("const x = 1;\n")))).toBe(true);
   });
 
   it("maps arbitrary in-body byte slices to the same original text", () => {
@@ -122,7 +112,7 @@ describe("normalizeWorkflowBody", () => {
         fc.integer({ min: 0, max: 64 }),
         (bodyCharacters, firstChoice, secondChoice) => {
           const body = bodyCharacters.join("");
-          const envelope = envelopeForBody(body);
+          const envelope = exactBodyEnvelope(body);
           const normalized = normalizeWorkflowBody(envelope);
           const firstIndex = firstChoice % (bodyCharacters.length + 1);
           const secondIndex = secondChoice % (bodyCharacters.length + 1);

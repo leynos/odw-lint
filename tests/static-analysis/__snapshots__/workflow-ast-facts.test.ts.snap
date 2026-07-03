@@ -1,0 +1,3 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`collectWorkflowAstFacts combines lexical bindings and suppression masks for parseable bodies 1`] = `""export const meta = { name:          , description:      };\\nconst Math = customMath;\\nparallel(items);\\nconst decoy =                   ;\\n""`;

@@ -14,7 +14,9 @@ import type { OriginalSourceFile, WorkflowEnvelope } from "./types";
 import { SourceOffsetError } from "./types";
 
 const TEXT_ENCODER = new TextEncoder();
-const WORKFLOW_BODY_WRAP_PREFIX = "async function __odwLintWorkflowBody__() {";
+
+export const WORKFLOW_BODY_WRAP_FUNCTION_NAME = "__odwLintWorkflowBody__";
+const WORKFLOW_BODY_WRAP_PREFIX = `async function ${WORKFLOW_BODY_WRAP_FUNCTION_NAME}() {`;
 const WORKFLOW_BODY_WRAP_SUFFIX = "\n}";
 const WORKFLOW_BODY_WRAP_PREFIX_BYTE_LENGTH =
   TEXT_ENCODER.encode(WORKFLOW_BODY_WRAP_PREFIX).byteLength;

@@ -5,7 +5,6 @@
  * into project diagnostics. It never executes workflow source.
  */
 
-import { type ParseOptions, parseSync } from "@swc/core";
 import { renderMessageTemplate } from "../diagnostics/message-template";
 import {
   firstReviewedRuleMessage,
@@ -20,10 +19,9 @@ import {
   type NormalizedByteRange,
   type NormalizedWorkflowBody,
   narrowBodySyntaxSpan,
-  normalizeWorkflowBody,
 } from "./workflow-body-normalizer";
+import { parseNormalizedWorkflowBody } from "./workflow-body-parse";
 import { bodySyntaxDetail } from "./workflow-body-syntax-detail";
-
 export type WorkflowBodyParseResult =
   | { readonly ok: true }
   | { readonly ok: false; readonly diagnostic: Diagnostic };
@@ -32,10 +30,6 @@ const BODY_SYNTAX_RULE = makeRuleId("odw/body-syntax");
 const BODY_SYNTAX_RULE_DEFINITION = ruleDefinitionFor(BODY_SYNTAX_RULE);
 const BODY_SYNTAX_MESSAGE = firstReviewedRuleMessage(BODY_SYNTAX_RULE_DEFINITION);
 const BODY_SYNTAX_TEMPLATE = firstReviewedRuleTemplate(BODY_SYNTAX_RULE_DEFINITION);
-const WORKFLOW_BODY_PARSE_OPTIONS: ParseOptions = {
-  syntax: "ecmascript",
-  jsx: false,
-};
 const STRUCTURED_RANGE_FIELDS = ["span", "byteOffset", "pos", "start", "offset"] as const;
 
 type UnknownRecord = {
@@ -49,24 +43,22 @@ type UnknownRecord = {
  * @returns A frozen success result or a frozen `odw/body-syntax` diagnostic.
  */
 export const parseWorkflowBody = (envelope: WorkflowEnvelope): WorkflowBodyParseResult => {
-  const normalized = normalizeWorkflowBody(envelope);
+  const parseResult = parseNormalizedWorkflowBody(envelope);
 
-  try {
-    parseSync(normalized.normalizedText, WORKFLOW_BODY_PARSE_OPTIONS);
+  if (parseResult.ok) {
     return Object.freeze({ ok: true });
-  } catch (error) {
-    const span = narrowedSpanForParserError(
-      envelope.sourceFile,
-      normalized,
-      envelope.bodySpan,
-      error,
-    );
-
-    return Object.freeze({
-      ok: false,
-      diagnostic: bodySyntaxDiagnostic(envelope, span, error),
-    });
   }
+
+  const span = narrowedSpanForParserError(
+    parseResult.sourceFile,
+    parseResult.normalized,
+    parseResult.bodySpan,
+    parseResult.error,
+  );
+  return Object.freeze({
+    ok: false,
+    diagnostic: bodySyntaxDiagnostic(envelope, span, parseResult.error),
+  });
 };
 
 /**
