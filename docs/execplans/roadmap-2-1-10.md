@@ -371,7 +371,7 @@ reporting zero findings.
 
 ## Addenda
 
-- [ ] 2.1.10.1. Add a shared rule diagnostic builder.
+- [x] 2.1.10.1. Add a shared rule diagnostic builder.
   - Source: audit:3.1.2; severity medium.
   - Scope: add one diagnostics-layer builder that accepts a catalogued rule,
     severity, message, and span, derives the docs path from the catalogue, and

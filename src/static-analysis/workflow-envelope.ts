@@ -1,10 +1,7 @@
 /** @file Static, non-executing workflow envelope scanner for ODW source files. */
 
-import {
-  firstReviewedRuleMessage,
-  ruleDefinitionFor,
-  ruleDocsPath,
-} from "../diagnostics/rule-catalogue";
+import { firstReviewedRuleMessage, ruleDefinitionFor } from "../diagnostics/rule-catalogue";
+import { createRuleDiagnostic } from "../diagnostics/rule-diagnostic";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic, SourceSpan } from "../diagnostics/types";
 import { isIdentifierPartCharacter } from "./javascript-identifiers";
@@ -171,24 +168,22 @@ const bodyStartOffset = (
 
 /** Builds a missing-metadata diagnostic at the start of the original source. */
 const metaRequiredDiagnostic = (sourceFile: OriginalSourceFile): Diagnostic => {
-  return Object.freeze({
+  return createRuleDiagnostic({
     file: sourceFile.filePath,
-    rule: META_REQUIRED_RULE,
+    rule: META_REQUIRED_RULE_DEFINITION,
     severity: META_REQUIRED_RULE_DEFINITION.defaultSeverity,
     message: META_REQUIRED_MESSAGE,
     span: spanFromOffsets(sourceFile, 0, 0),
-    docs: ruleDocsPath(META_REQUIRED_RULE_DEFINITION),
   });
 };
 
 /** Builds an unsupported import/export diagnostic for one declaration span. */
 const noImportExportDiagnostic = (sourceFile: OriginalSourceFile, span: SourceSpan): Diagnostic => {
-  return Object.freeze({
+  return createRuleDiagnostic({
     file: sourceFile.filePath,
-    rule: NO_IMPORT_EXPORT_RULE,
+    rule: NO_IMPORT_EXPORT_RULE_DEFINITION,
     severity: NO_IMPORT_EXPORT_RULE_DEFINITION.defaultSeverity,
     message: NO_IMPORT_EXPORT_MESSAGE,
     span,
-    docs: ruleDocsPath(NO_IMPORT_EXPORT_RULE_DEFINITION),
   });
 };

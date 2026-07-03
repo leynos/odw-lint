@@ -4,6 +4,8 @@
 
 import { describe, expect, it } from "bun:test";
 import * as fc from "fast-check";
+import { RULE_CATALOGUE, ruleDocsPath } from "odw-lint";
+import type { RuleDefinition } from "../../src/diagnostics/rule-catalogue";
 import type { Diagnostic } from "../../src/diagnostics/types";
 import { createOriginalSourceFile } from "../../src/static-analysis/source-file";
 import { sliceSourceSpan } from "../../src/static-analysis/source-snippet";
@@ -55,6 +57,24 @@ const GENERATED_WORKFLOW_SOURCE = fc
 /** Returns only stable rule identifiers for compact diagnostic assertions. */
 const diagnosticRules = (diagnostics: readonly Diagnostic[]): readonly string[] => {
   return diagnostics.map((diagnostic) => diagnostic.rule);
+};
+
+/** Returns the catalogue definition for a rule diagnostic. */
+const ruleForDiagnostic = (diagnostic: Diagnostic): RuleDefinition => {
+  const rule = RULE_CATALOGUE.find((candidate) => String(candidate.id) === String(diagnostic.rule));
+
+  if (rule === undefined) {
+    throw new Error(`Diagnostic references uncatalogued rule ${String(diagnostic.rule)}.`);
+  }
+
+  return rule;
+};
+
+/** Asserts that production diagnostics carry catalogue-derived documentation. */
+const expectCatalogueDocs = (diagnostics: readonly Diagnostic[]): void => {
+  for (const diagnostic of diagnostics) {
+    expect(diagnostic.docs).toBe(ruleDocsPath(ruleForDiagnostic(diagnostic)));
+  }
 };
 
 /** Lints source text under the shared test fixture path. */
@@ -135,6 +155,28 @@ describe("lintWorkflowSource", () => {
     expect(diagnosticRules(result.bodySyntax)).toEqual(["odw/body-syntax"]);
     expect(result.claudeCompatibility).toEqual([]);
     expect(diagnosticRules(result.diagnostics)).toEqual(["odw/body-syntax"]);
+  });
+
+  it("derives documentation paths for every emitted rule diagnostic", () => {
+    const diagnosticSets = [
+      lintSource("const value = 1;\nreturn value;\n").diagnostics,
+      lintSource(
+        [
+          "import helper from './helper.js';",
+          "export const meta = { name: '', description: 'ok' };",
+          "Date.now();",
+        ].join("\n"),
+      ).diagnostics,
+      lintSource(
+        ["export const meta = { name: 'example', description: 'ok' };", "if (args.ready) {"].join(
+          "\n",
+        ),
+      ).diagnostics,
+    ];
+
+    for (const diagnostics of diagnosticSets) {
+      expectCatalogueDocs(diagnostics);
+    }
   });
 
   it("includes unsupported import or export diagnostics from the envelope scan", () => {

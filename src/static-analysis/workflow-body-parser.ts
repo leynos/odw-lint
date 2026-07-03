@@ -10,8 +10,8 @@ import {
   firstReviewedRuleMessage,
   firstReviewedRuleTemplate,
   ruleDefinitionFor,
-  ruleDocsPath,
 } from "../diagnostics/rule-catalogue";
+import { createRuleDiagnostic } from "../diagnostics/rule-diagnostic";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic, SourceSpan } from "../diagnostics/types";
 import type { OriginalSourceFile, WorkflowEnvelope } from "./types";
@@ -147,13 +147,12 @@ const bodySyntaxDiagnostic = (
       ? renderMessageTemplate(BODY_SYNTAX_TEMPLATE, { detail })
       : BODY_SYNTAX_MESSAGE;
 
-  return Object.freeze({
+  return createRuleDiagnostic({
     file: envelope.sourceFile.filePath,
-    rule: BODY_SYNTAX_RULE,
+    rule: BODY_SYNTAX_RULE_DEFINITION,
     severity: BODY_SYNTAX_RULE_DEFINITION.defaultSeverity,
     message,
     span,
-    docs: ruleDocsPath(BODY_SYNTAX_RULE_DEFINITION),
   });
 };
 

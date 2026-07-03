@@ -5,8 +5,8 @@ import {
   type RuleDefinition,
   reviewedRuleMessage,
   ruleDefinitionFor,
-  ruleDocsPath,
 } from "../diagnostics/rule-catalogue";
+import { createRuleDiagnostic } from "../diagnostics/rule-diagnostic";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic, SourceSpan } from "../diagnostics/types";
 import { textIndexAtOffset } from "./source-indexes";
@@ -235,13 +235,12 @@ const metadataDiagnostic = (
   message: string,
   span: SourceSpan,
 ): Diagnostic => {
-  return Object.freeze({
+  return createRuleDiagnostic({
     file: sourceFile.filePath,
-    rule: rule.id,
+    rule,
     severity: rule.defaultSeverity,
     message,
     span,
-    docs: ruleDocsPath(rule),
   });
 };
 

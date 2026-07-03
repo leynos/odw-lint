@@ -8,11 +8,8 @@
 
 import type { CallExpression, MemberExpression, NewExpression, Node, Span } from "@swc/core";
 import type { RuleDefinition } from "../diagnostics/rule-catalogue";
-import {
-  firstReviewedRuleMessage,
-  ruleDefinitionFor,
-  ruleDocsPath,
-} from "../diagnostics/rule-catalogue";
+import { firstReviewedRuleMessage, ruleDefinitionFor } from "../diagnostics/rule-catalogue";
+import { createRuleDiagnostic } from "../diagnostics/rule-diagnostic";
 import type { RuleId } from "../diagnostics/rule-id";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic } from "../diagnostics/types";
@@ -221,9 +218,9 @@ const diagnosticForMatch = (
 ): Diagnostic => {
   const rule = definitionFor(match.rule);
 
-  return Object.freeze({
+  return createRuleDiagnostic({
     file: envelope.sourceFile.filePath,
-    rule: match.rule,
+    rule,
     severity: rule.defaultSeverity,
     message: firstReviewedRuleMessage(rule),
     span: originalSpanFromNormalizedOffsets(
@@ -232,7 +229,6 @@ const diagnosticForMatch = (
       match.span.start - moduleBase,
       match.span.end - moduleBase,
     ),
-    docs: ruleDocsPath(rule),
   });
 };
 

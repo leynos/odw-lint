@@ -1,0 +1,28 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`rule diagnostics preserves optional suggestions while deriving catalogue docs 1`] = `
+{
+  "docs": "docs/rules/meta-required.md",
+  "file": "workflows/suggested.js",
+  "message": "Workflow source must export literal metadata.",
+  "rule": "odw/meta-required",
+  "severity": "error",
+  "span": {
+    "end": {
+      "column": 6,
+      "line": 1,
+      "offset": 5,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "suggestions": [
+    {
+      "message": "Add an \`export const meta\` declaration.",
+    },
+  ],
+}
+`;

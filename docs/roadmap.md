@@ -515,7 +515,7 @@ statically. It unlocks metadata rules and body parsing. See
     field to downstream integrations.
   - Success: diagnostic metadata exposes one tested rule-documentation reference
     format and no code or docs describe a competing URL/path shape.
-  - [ ] 2.1.10.1. Add a shared rule diagnostic builder.
+  - [x] 2.1.10.1. Add a shared rule diagnostic builder.
     - Addendum (from audit:3.1.2; medium). Add one diagnostics-layer rule
       diagnostic builder that derives docs paths from the catalogue and migrate
       hand-rolled rule diagnostics onto it. Lightweight addendum pass.
