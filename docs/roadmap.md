@@ -919,7 +919,7 @@ types" and [developers-guide.md](developers-guide.md) "Documentation Upkeep".
     - Addendum (from audit:1.5.6; low). Update the canonical layout guide so
       `tests/build-gate/` and `git-support.ts` cover generalized build gates
       and the review-evidence target. Lightweight addendum pass.
-  - [ ] 4.4.1.2. Add a documentation-index freshness gate.
+  - [x] 4.4.1.2. Add a documentation-index freshness gate.
     - Addendum (from audit:2.2.6; low). Check the canonical documentation
       index against current ExecPlans and issue audits so navigation cannot
       drift silently. Lightweight addendum pass.

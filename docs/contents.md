@@ -81,6 +81,10 @@ entry; that index enumerates every current rule page.
   workflow review gates.
 - [Audit 2.1.6](issues/audit-2.1.6.md) records review findings for the
   no-side-effect metadata execution guard.
+- [Audit 2.1.7](issues/audit-2.1.7.md) records review findings for
+  rule-catalogue parity checks for fixture diagnostics.
+- [Audit 2.1.12](issues/audit-2.1.12.md) records review findings for the
+  static workflow lint entry point.
 
 ## Execution plans
 
@@ -110,14 +114,56 @@ entry; that index enumerates every current rule page.
   build-gate freshness.
 - [Roadmap 1.5.1 ExecPlan](execplans/roadmap-1-5-1.md) plans the automated
   file-size guard for source and test code.
+- [Roadmap 1.5.2 ExecPlan](execplans/roadmap-1-5-2.md) plans the
+  branch-freshness review guard for roadmap tasks.
 - [Roadmap 1.5.3 ExecPlan](execplans/roadmap-1-5-3.md) plans roadmap workflow
   review-gate hardening.
+- [Roadmap 1.5.4 ExecPlan](execplans/roadmap-1-5-4.md) plans tracked-file
+  whitespace hygiene in the commit gate.
+- [Roadmap 1.5.5 ExecPlan](execplans/roadmap-1-5-5.md) plans consolidated
+  build-gate Git support.
+- [Roadmap 1.5.6 ExecPlan](execplans/roadmap-1-5-6.md) plans independent
+  roadmap audit review-evidence gates.
+- [Roadmap 1.5.7 ExecPlan](execplans/roadmap-1-5-7.md) plans
+  `make review-evidence` as a required roadmap review and audit step.
+- [Roadmap 2.1.1 ExecPlan](execplans/roadmap-2-1-1.md) plans source masking
+  for inert workflow syntax.
+- [Roadmap 2.1.2 ExecPlan](execplans/roadmap-2-1-2.md) plans static envelope
+  extraction.
 - [Roadmap 2.1.3 ExecPlan](execplans/roadmap-2-1-3.md) plans runtime-invalid
   and statically unprovable metadata classification.
 - [Roadmap 2.1.4 ExecPlan](execplans/roadmap-2-1-4.md) plans the forbidden
   executable-runtime import architecture guard.
+- [Roadmap 2.1.5 ExecPlan](execplans/roadmap-2-1-5.md) plans the hostile
+  metadata security regression test.
 - [Roadmap 2.1.6 ExecPlan](execplans/roadmap-2-1-6.md) plans the
   no-side-effect metadata execution guard.
+- [Roadmap 2.1.7 ExecPlan](execplans/roadmap-2-1-7.md) plans rule-catalogue
+  parity checks for fixture diagnostics.
+- [Roadmap 2.1.8 ExecPlan](execplans/roadmap-2-1-8.md) plans diagnostic
+  message templates for parser-backed rules.
+- [Roadmap 2.1.9 ExecPlan](execplans/roadmap-2-1-9.md) plans focused
+  source-mask token scanner modules.
+- [Roadmap 2.1.10 ExecPlan](execplans/roadmap-2-1-10.md) plans canonical
+  diagnostic rule documentation links.
+- [Roadmap 2.1.11 ExecPlan](execplans/roadmap-2-1-11.md) plans broader
+  hostile metadata side-effect fixtures.
+- [Roadmap 2.1.12 ExecPlan](execplans/roadmap-2-1-12.md) plans the static
+  workflow lint entry point.
+- [Roadmap 2.2.1 ExecPlan](execplans/roadmap-2-2-1.md) plans the SWC-backed
+  workflow body parser adapter.
+- [Roadmap 2.2.2 ExecPlan](execplans/roadmap-2-2-2.md) plans workflow-body
+  normalization for top-level `return` and `await`.
+- [Roadmap 2.2.3 ExecPlan](execplans/roadmap-2-2-3.md) plans span snapshot
+  assertions for parser-backed diagnostics.
+- [Roadmap 2.2.4 ExecPlan](execplans/roadmap-2-2-4.md) plans workflow AST
+  facts for lexical bindings and source masks.
+- [Roadmap 2.2.5 ExecPlan](execplans/roadmap-2-2-5.md) plans message-template
+  adoption in the first parser-backed rule.
+- [Roadmap 2.2.6 ExecPlan](execplans/roadmap-2-2-6.md) plans narrowed body
+  syntax spans for structured parser offsets.
+- [Roadmap 3.1.2 ExecPlan](execplans/roadmap-3-1-2.md) plans
+  deterministic-time and randomness warnings.
 - [Roadmap 4.4.1 ExecPlan](execplans/roadmap-4-4-1.md) plans the documentation
   contents and repository-layout scaffolding work.
 
