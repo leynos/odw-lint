@@ -43,6 +43,11 @@ await agent(`Review ${args.samples[sampleIndex]}.`);
 
 ## Limitations
 
-Detection is syntactic. A local binding named `Math` is still treated as
-`Math`, and computed access such as `Math["random"]()` is not detected. Revisit
-these limits after roadmap 2.2.4 adds lexical binding facts.
+The scanner ignores bare `Math.random()` calls when the workflow body declares
+a local `Math` binding. It detects string-key access such as
+`Math["random"]()` and `globalThis` chains such as
+`globalThis.Math.random()`.
+
+The remaining conservative limits are aliases (`const m = Math; m.random()`),
+optional chaining (`Math?.random()`), dynamic computed keys (`Math[k]()`), and
+non-`globalThis` roots such as `window`, `self`, and `global`.

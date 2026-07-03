@@ -770,7 +770,7 @@ reported clearly in one command. The result informs strict-mode policy. See
   - Requires 3.1.1 and 3.1.2.
   - See [technical-design.md](technical-design.md) §§7.3 and 9.2.
   - Success: strict mode exits non-zero for Claude compatibility warnings.
-- [ ] 3.1.4. Apply lexical-binding facts to deterministic-time compatibility
+- [x] 3.1.4. Apply lexical-binding facts to deterministic-time compatibility
   detection.
   - Requires 2.2.4 and 3.1.2.
   - Revisit `Date` and `Math` matching once workflow AST facts can distinguish

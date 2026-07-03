@@ -44,6 +44,10 @@ await agent(`Draft a review note for ${startedAt.toISOString()}.`);
 
 ## Limitations
 
-Detection is syntactic. A local binding named `Date` is still treated as
-`Date`, so a shadowed constructor can still warn. Revisit this limit after
-roadmap 2.2.4 adds lexical binding facts.
+The scanner ignores bare `new Date()` and `new Date` construction when the
+workflow body declares a local `Date` binding. It detects `globalThis` chains
+such as `new globalThis.Date()`.
+
+The remaining conservative limits are aliases (`const D = Date; new D()`),
+optional chaining around related member forms, dynamic computed keys, and
+non-`globalThis` roots such as `window`, `self`, and `global`.

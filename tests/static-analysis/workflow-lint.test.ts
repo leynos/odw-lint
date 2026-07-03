@@ -143,6 +143,25 @@ describe("lintWorkflowSource", () => {
     );
   });
 
+  it("uses lexical binding facts for deterministic-time warnings", () => {
+    const shadowedResult = lintSource(
+      [
+        "export const meta = { name: 'example', description: 'ok' };",
+        "const Date = createClock();",
+        "const timestamp = Date.now();",
+      ].join("\n"),
+    );
+    const globalResult = lintSource(
+      [
+        "export const meta = { name: 'example', description: 'ok' };",
+        "const timestamp = globalThis.Date.now();",
+      ].join("\n"),
+    );
+
+    expect(shadowedResult.claudeCompatibility).toEqual([]);
+    expect(diagnosticRules(globalResult.claudeCompatibility)).toEqual(["odw/no-date-now"]);
+  });
+
   it("reports body syntax once and silences deterministic-time warnings", () => {
     const result = lintSource(
       [

@@ -63,6 +63,7 @@ export const EXPECTED_STATIC_ANALYSIS_MODULE_FILES = [
   "workflow-envelope-statement.ts",
   "workflow-envelope-unsupported.ts",
   "workflow-envelope.ts",
+  "workflow-global-object-reference.ts",
   "workflow-lint.ts",
   "workflow-metadata-comment-scan.ts",
   "workflow-metadata-parser-scan.ts",

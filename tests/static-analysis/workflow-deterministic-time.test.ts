@@ -29,6 +29,38 @@ const SAFE_CONTEXT_FRAGMENT = fc.constantFrom(
   "\n// inert Date.now()\n",
   "\n/* inert Math.random() */\n",
 );
+const IDENTIFIER_REST_CHARACTER = fc.constantFrom(
+  "a",
+  "b",
+  "c",
+  "x",
+  "y",
+  "z",
+  "A",
+  "B",
+  "C",
+  "0",
+  "1",
+  "2",
+  "_",
+);
+const VALID_IDENTIFIER = fc.oneof(
+  fc.constant("Date"),
+  fc
+    .tuple(
+      fc.constantFrom("a", "b", "c", "x", "y", "z", "_", "$"),
+      fc.array(IDENTIFIER_REST_CHARACTER, { maxLength: 8 }),
+    )
+    .map(([first, rest]) => `${first}${rest.join("")}`),
+);
+const DATE_BINDING_STATEMENT = fc.constantFrom(
+  "const Date = createClock();",
+  "let Date = createClock();",
+  "var Date = createClock();",
+  "function Date() { return createClock(); }",
+  "const { Date } = createClock();",
+  "const [Date] = createClocks();",
+);
 
 type WarningCase = {
   readonly name: string;
@@ -45,10 +77,40 @@ const POSITIVE_CASES = Object.freeze([
     spanText: "Date.now",
   },
   {
+    name: "computed-date-now-call",
+    body: 'const timestamp = Date["now"]();',
+    rule: DATE_NOW_RULE,
+    spanText: 'Date["now"]',
+  },
+  {
+    name: "global-date-now-call",
+    body: "const timestamp = globalThis.Date.now();",
+    rule: DATE_NOW_RULE,
+    spanText: "globalThis.Date.now",
+  },
+  {
+    name: "computed-global-date-now-call",
+    body: 'const timestamp = globalThis["Date"]["now"]();',
+    rule: DATE_NOW_RULE,
+    spanText: 'globalThis["Date"]["now"]',
+  },
+  {
     name: "math-random-call",
     body: "const sample = Math.random();",
     rule: MATH_RANDOM_RULE,
     spanText: "Math.random",
+  },
+  {
+    name: "computed-math-random-call",
+    body: 'const sample = Math["random"]();',
+    rule: MATH_RANDOM_RULE,
+    spanText: 'Math["random"]',
+  },
+  {
+    name: "global-math-random-call",
+    body: "const sample = globalThis.Math.random();",
+    rule: MATH_RANDOM_RULE,
+    spanText: "globalThis.Math.random",
   },
   {
     name: "argless-new-date-call",
@@ -62,6 +124,12 @@ const POSITIVE_CASES = Object.freeze([
     rule: ARGLESS_NEW_DATE_RULE,
     spanText: "new Date",
   },
+  {
+    name: "argless-new-global-date-call",
+    body: "const started = new globalThis.Date();",
+    rule: ARGLESS_NEW_DATE_RULE,
+    spanText: "new globalThis.Date()",
+  },
 ] as const satisfies readonly WarningCase[]);
 
 const NEGATIVE_BODIES = Object.freeze([
@@ -69,12 +137,34 @@ const NEGATIVE_BODIES = Object.freeze([
   "const started = new Date(args.timestamp);",
   "const readClock = Date.now;",
   "const readRandom = Math.random;",
-  'const value = Date["now"]();',
+  "const value = window.Date.now();",
+  "const value = self.Date.now();",
+  "const value = Date?.now();",
+  'const k = "now";\nDate[k]();',
   'const text = "Date.now() Math.random() new Date()";',
   "// Date.now() Math.random() new Date()\nconst ok = true;",
   "/* Date.now() Math.random() new Date() */\nconst ok = true;",
   "const re = /Date\\.now\\(\\)|Math\\.random\\(\\)|new Date\\(\\)/;",
   "const text = `Date.now() Math.random() new Date()`;",
+] as const);
+
+const SHADOW_NEGATIVE_BODIES = Object.freeze([
+  "const Date = createClock();\nconst timestamp = Date.now();",
+  "let Date = createClock();\nconst started = new Date();",
+  "var Date = createClock();\nconst timestamp = Date.now();",
+  "function Date() { return createClock(); }\nconst started = new Date();",
+  "function readClock(Date) { return Date.now(); }",
+  "const { Date } = createClock();\nconst timestamp = Date.now();",
+  "const [Date] = createClocks();\nconst started = new Date();",
+  "try { throw createClock(); } catch (Date) { Date.now(); }",
+  "const Math = createRandom();\nconst sample = Math.random();",
+  "let Math = createRandom();\nconst sample = Math.random();",
+  "var Math = createRandom();\nconst sample = Math.random();",
+  "function Math() { return createRandom(); }\nconst sample = Math.random();",
+  "function sample(Math) { return Math.random(); }",
+  "const { Math } = createRandom();\nconst sample = Math.random();",
+  "const [Math] = createRandoms();\nconst sample = Math.random();",
+  "try { throw createRandom(); } catch (Math) { Math.random(); }",
 ] as const);
 
 /** Builds a complete workflow source from a body fragment. */
@@ -114,6 +204,11 @@ const expectCataloguedMessage = (diagnostic: Diagnostic): void => {
   expect(diagnostic.message).toBe(firstReviewedRuleMessage(ruleDefinitionFor(diagnostic.rule)));
 };
 
+/** Returns only rule identifiers from diagnostics for compact assertions. */
+const diagnosticRules = (diagnostics: readonly Diagnostic[]): readonly RuleId[] => {
+  return diagnostics.map((diagnostic) => diagnostic.rule);
+};
+
 describe("scanDeterministicTimeWarnings", () => {
   it.each(
     POSITIVE_CASES.map((testCase) => [testCase.name, testCase]),
@@ -133,6 +228,34 @@ describe("scanDeterministicTimeWarnings", () => {
     for (const body of NEGATIVE_BODIES) {
       expect(scanBody(body, "negative").diagnostics).toEqual([]);
     }
+  });
+
+  it("ignores bare deterministic-time globals when lexical bindings shadow them", () => {
+    for (const body of SHADOW_NEGATIVE_BODIES) {
+      expect(scanBody(body, "shadow-negative").diagnostics).toEqual([]);
+    }
+  });
+
+  it("ignores globalThis chains when globalThis is lexically bound", () => {
+    const { diagnostics } = scanBody(
+      "const globalThis = fakeGlobal;\nconst timestamp = globalThis.Date.now();",
+      "global-this-shadow",
+    );
+
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("reports globalThis chains when the named global is lexically bound", () => {
+    const { sourceText, sourceFile, diagnostics } = scanBody(
+      "const Date = createClock();\nconst timestamp = globalThis.Date.now();",
+      "global-this-cross-shadow",
+    );
+    const diagnostic = expectSingleDiagnostic(diagnostics);
+
+    expect(diagnostic.rule).toBe(DATE_NOW_RULE);
+    expect(decodeSpanText(sourceText, diagnostic.span)).toBe("globalThis.Date.now");
+    expectSpanToMatchSource(sourceText, diagnostic.span, "globalThis.Date.now");
+    expect(sliceSourceSpan(sourceFile, diagnostic.span)).toBe("globalThis.Date.now");
   });
 
   it("emits diagnostics in source order", () => {
@@ -174,6 +297,27 @@ describe("scanDeterministicTimeWarnings", () => {
 
         expect(diagnostic.rule).toBe(DATE_NOW_RULE);
         expect(sliceSourceSpan(sourceFile, diagnostic.span)).toBe("Date.now");
+      }),
+      SOURCE_SPAN_PROPERTY_RUNNER,
+    );
+  });
+
+  it("keeps shadow and globalThis decisions stable for generated bindings", () => {
+    fc.assert(
+      fc.property(VALID_IDENTIFIER, DATE_BINDING_STATEMENT, (name, dateBinding) => {
+        const bareMemberDiagnostics = scanBody(
+          `const ${name} = 1;\nconst value = ${name}.now();`,
+          "generated-binding",
+        ).diagnostics;
+        const dateDiagnostics = scanBody(
+          `${dateBinding}\nconst local = Date.now();\nconst global = globalThis.Date.now();`,
+          "generated-date-binding",
+        ).diagnostics;
+
+        if (name === "Date") {
+          expect(bareMemberDiagnostics).toEqual([]);
+        }
+        expect(diagnosticRules(dateDiagnostics)).toEqual([DATE_NOW_RULE]);
       }),
       SOURCE_SPAN_PROPERTY_RUNNER,
     );

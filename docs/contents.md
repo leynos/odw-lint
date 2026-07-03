@@ -168,6 +168,8 @@ entry; that index enumerates every current rule page.
   workflow-body parser dialect scope reconciliation.
 - [Roadmap 3.1.2 ExecPlan](execplans/roadmap-3-1-2.md) plans
   deterministic-time and randomness warnings.
+- [Roadmap 3.1.4 ExecPlan](execplans/roadmap-3-1-4.md) plans
+  lexical-binding compatibility for deterministic-time diagnostics.
 - [Roadmap 4.4.1 ExecPlan](execplans/roadmap-4-4-1.md) plans the documentation
   contents and repository-layout scaffolding work.
 

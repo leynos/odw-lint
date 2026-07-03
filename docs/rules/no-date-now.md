@@ -43,6 +43,10 @@ await agent(`Draft a status note for ${timestamp}.`);
 
 ## Limitations
 
-Detection is syntactic. A local binding named `Date` is still treated as
-`Date`, and computed access such as `Date["now"]()` is not detected. Revisit
-these limits after roadmap 2.2.4 adds lexical binding facts.
+The scanner ignores bare `Date.now()` calls when the workflow body declares a
+local `Date` binding. It detects string-key access such as `Date["now"]()` and
+`globalThis` chains such as `globalThis.Date.now()`.
+
+The remaining conservative limits are aliases (`const d = Date; d.now()`),
+optional chaining (`Date?.now()`), dynamic computed keys (`Date[k]()`), and
+non-`globalThis` roots such as `window`, `self`, and `global`.

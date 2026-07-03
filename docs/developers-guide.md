@@ -95,6 +95,14 @@ body declares a name such as `parallel`, `Array`, `Number`, `Object`, or
 future rules can avoid false positives when user code shadows a global helper
 without depending on SWC node types at the public boundary.
 
+The deterministic-time scanner is the first diagnostic consumer of these
+facts. It suppresses bare `Date` and `Math` compatibility warnings when the
+workflow body shadows those names, while still detecting supported
+`globalThis` chains. The orchestration rules `odw/bounded-loop` (3.2.1) and
+`odw/bounded-fanout` (3.2.2) will consume the same facts to decide whether
+`Array`, `Object`, `Number`, and `Math` helpers are JavaScript globals or
+workflow-local bindings.
+
 `WorkflowSuppressionMasks` exposes `directiveScanText` and `inertRanges`.
 Strings, template literals, regex literals, and block comments stay blanked in
 `directiveScanText`, while line comments are visible so a future suppression
