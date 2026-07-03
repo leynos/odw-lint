@@ -229,6 +229,15 @@ where required.
     diagnostics assert `docs === ruleDocsPath(rule)` across invalid fixtures.
   - Success: a missing docs field in any live pipeline diagnostic fails tests
     before reporters or fixtures can ship it.
+- [ ] 2.1.12.8. Complete low-level scanner predicate centralization.
+  - Source: audit:2.2.7; severity medium.
+  - Scope: finish the 2.1.12.5 predicate pass by promoting
+    `isStringLikeDelimiter` to a reusable type guard, replacing duplicated
+    local string-delimiter wrappers, and removing remaining low-level scanner
+    whitespace or ASCII identifier idioms that should have one named home.
+  - Success: scanner modules consume the shared predicates directly, tests pin
+    the shared narrowing contract, and the completed 2.1.12 predicate
+    centralization no longer leaves copy-prone local wrappers.
 
 ## Context and orientation
 

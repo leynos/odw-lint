@@ -568,6 +568,11 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:3.1.2; medium). Assert that `lintWorkflowSource`
       emitted diagnostics carry catalogue-derived docs paths across invalid
       fixtures and rule parity coverage. Lightweight addendum pass.
+  - [ ] 2.1.12.8. Complete low-level scanner predicate centralization.
+    - Addendum (from audit:2.2.7; medium). Finish the 2.1.12.5 predicate pass
+      by promoting string-like delimiters to one type guard and replacing
+      remaining local whitespace and ASCII identifier idioms. Lightweight
+      addendum pass.
 
 ### 2.2. Normalize and parse workflow bodies with SWC
 
@@ -644,6 +649,11 @@ source without losing span fidelity. It informs all later AST rules. See
     - Addendum (from audit:2.2.5; medium). Move duplicated low-level
       static-analysis object and number guards into one reviewed helper used
       by parser-range code and tests. Lightweight addendum pass.
+  - [ ] 2.2.6.4. Isolate body-parser span narrowing and UTF-8 byte-length
+    helpers.
+    - Addendum (from audit:2.2.7; low). Move inert span-narrowing machinery
+      behind a focused internal module and share one UTF-8 byte-length
+      primitive. Lightweight addendum pass.
 - [x] 2.2.7. Reconcile workflow-body parser dialect scope.
   - Requires 2.2.1, 2.2.5, and 2.2.6.
   - Decide whether workflow bodies are parsed as ECMAScript-only source or
@@ -653,6 +663,10 @@ source without losing span fidelity. It informs all later AST rules. See
     roadmap, design, developer, and rule documentation no longer describe a
     broader parser dialect than production accepts.
   - Completed by [roadmap-2-2-7.md](execplans/roadmap-2-2-7.md).
+  - [ ] 2.2.7.1. Add explicit SWC-bump dialect re-observation guidance.
+    - Addendum (from review:2.2.7; low). Tie intentional `@swc/core` bumps to
+      rerunning the workflow-body dialect test and preserving ADR 0002's
+      TypeScript-in-body rejection set. Lightweight addendum pass.
 
 ### 2.3. Prove ODW loader parity before shipping dialect checks
 
@@ -681,6 +695,15 @@ code. It informs whether phase 2 can ship. See
     suites.
   - Success: invalid fixture expectations remain the source of truth for
     emitted dialect diagnostics and original-source spans.
+- [ ] 2.3.4. Characterize ODW loader rejection of TypeScript-only workflow body
+  syntax.
+  - Use the loader-parity harness or a documented trusted probe to confirm
+    ODW's Function or AsyncFunction body-compilation path rejects the ADR 0002
+    TypeScript-only body examples.
+  - Requires 2.2.7 and 2.3.1.
+  - Success: loader-parity evidence proves `odw-lint`'s `odw/body-syntax`
+    outcome for TypeScript-only bodies matches the current ODW loader, or
+    records a deliberate parity divergence for design review.
 
 ### 2.4. Ship the minimal `check` command
 

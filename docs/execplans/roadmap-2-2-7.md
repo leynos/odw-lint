@@ -306,6 +306,17 @@ Validation completed with `make all`, `make markdownlint`, and `make nixie`
 green after the final documentation edit. CodeRabbit review completed with zero
 findings after one rate-limit backoff retry.
 
+## Addenda
+
+- [ ] 2.2.7.1. Add explicit SWC-bump dialect re-observation guidance.
+  - Source: review:2.2.7; severity low.
+  - Scope: add maintainer or dependency-update guidance tying intentional
+    `@swc/core` bumps to rerunning
+    `tests/static-analysis/workflow-body-dialect.test.ts` and preserving ADR
+    0002's TypeScript-in-body rejection set.
+  - Success: reviewers can see the dialect-rejection check in the dependency
+    bump path, not only in the ADR and test file.
+
 ## Context and orientation
 
 `odw-lint` is an ESM-first TypeScript package run with Bun. The static-analysis
