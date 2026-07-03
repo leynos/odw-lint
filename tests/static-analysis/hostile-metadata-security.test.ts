@@ -218,6 +218,7 @@ describe("hostile metadata security regression", () => {
           severity: diagnostic.severity,
           message: diagnostic.message,
           span: diagnostic.span,
+          docs: diagnostic.docs,
         })),
       );
       expect(hostileMarkerValue()).toBeUndefined();

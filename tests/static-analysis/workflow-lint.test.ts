@@ -79,6 +79,7 @@ describe("lintWorkflowSource", () => {
     expect(result.diagnostics).toEqual([
       ...result.scan.diagnostics,
       ...result.classification.diagnostics,
+      ...result.bodySyntax,
       ...result.claudeCompatibility,
     ]);
     expect(diagnosticRules(result.diagnostics)).toEqual(["odw/no-import-export", "odw/meta-name"]);
@@ -111,6 +112,7 @@ describe("lintWorkflowSource", () => {
     );
 
     expect(result.classification.diagnostics).toEqual([]);
+    expect(result.bodySyntax).toEqual([]);
     expect(diagnosticRules(result.claudeCompatibility)).toEqual([
       "odw/no-date-now",
       "odw/no-math-random",
@@ -119,6 +121,20 @@ describe("lintWorkflowSource", () => {
     expect(diagnosticRules(result.diagnostics)).toEqual(
       diagnosticRules(result.claudeCompatibility),
     );
+  });
+
+  it("reports body syntax once and silences deterministic-time warnings", () => {
+    const result = lintSource(
+      [
+        "export const meta = { name: 'example', description: 'ok' };",
+        "if (args.ready) {",
+        "  Date.now();",
+      ].join("\n"),
+    );
+
+    expect(diagnosticRules(result.bodySyntax)).toEqual(["odw/body-syntax"]);
+    expect(result.claudeCompatibility).toEqual([]);
+    expect(diagnosticRules(result.diagnostics)).toEqual(["odw/body-syntax"]);
   });
 
   it("includes unsupported import or export diagnostics from the envelope scan", () => {
@@ -151,6 +167,7 @@ describe("lintWorkflowSource", () => {
     expect(Object.isFrozen(result.scan.diagnostics)).toBe(true);
     expect(Object.isFrozen(result.classification)).toBe(true);
     expect(Object.isFrozen(result.classification.diagnostics)).toBe(true);
+    expect(Object.isFrozen(result.bodySyntax)).toBe(true);
     expect(Object.isFrozen(result.claudeCompatibility)).toBe(true);
     expect(Object.isFrozen(result.diagnostics)).toBe(true);
   });
@@ -170,6 +187,7 @@ describe("lintWorkflowSource", () => {
         expect(result.diagnostics).toEqual([
           ...scan.diagnostics,
           ...classification.diagnostics,
+          ...result.bodySyntax,
           ...result.claudeCompatibility,
         ]);
       }),

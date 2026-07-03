@@ -559,12 +559,12 @@ statically. It unlocks metadata rules and body parsing. See
       string-delimiter and whitespace predicates used by the workflow-metadata
       and source-mask scanner families, then remove duplicated local helpers.
       Lightweight addendum pass.
-  - [ ] 2.1.12.6. Share workflow body parsing in the lint pipeline.
+  - [x] 2.1.12.6. Share workflow body parsing in the lint pipeline.
     - Addendum (from review:3.1.2 and audit:3.1.2; medium). Wire
       `odw/body-syntax` diagnostics into `lintWorkflowSource` through one
       normalized body parse shared with Claude-compatibility detection while
       preserving each failure policy. Lightweight addendum pass.
-  - [ ] 2.1.12.7. Add live-pipeline diagnostic docs coverage.
+  - [x] 2.1.12.7. Add live-pipeline diagnostic docs coverage.
     - Addendum (from audit:3.1.2; medium). Assert that `lintWorkflowSource`
       emitted diagnostics carry catalogue-derived docs paths across invalid
       fixtures and rule parity coverage. Lightweight addendum pass.

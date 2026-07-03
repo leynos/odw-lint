@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from "bun:test";
 import type { Diagnostic, SourceSpan } from "odw-lint";
-import { lintWorkflowSource, parseWorkflowBody, sliceSourceSpan } from "odw-lint";
+import { lintWorkflowSource, ruleDefinitionFor, ruleDocsPath, sliceSourceSpan } from "odw-lint";
 import { readFixtureSource } from "./fixtures/corpus-support";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
 import type {
@@ -40,6 +40,14 @@ type TaskOwnedFixtureResult = {
   readonly status: InvalidWorkflowFixtureStatus | undefined;
 };
 
+/** Runs the live lint pipeline for one invalid fixture. */
+const lintInvalidFixture = (fixture: InvalidWorkflowFixtureSnapshot) => {
+  return lintWorkflowSource({
+    filePath: fixture.fixturePath,
+    sourceText: readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath),
+  });
+};
+
 /** Keeps only diagnostics owned by roadmap task 2.1.3. */
 const taskOwnedFixtureDiagnostics = (
   diagnostics: readonly InvalidWorkflowFixtureDiagnostic[],
@@ -51,11 +59,7 @@ const taskOwnedFixtureDiagnostics = (
 const classifyInvalidFixture = (
   fixture: InvalidWorkflowFixtureSnapshot,
 ): TaskOwnedFixtureResult => {
-  const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath);
-  const result = lintWorkflowSource({
-    filePath: fixture.fixturePath,
-    sourceText,
-  });
+  const result = lintInvalidFixture(fixture);
   const diagnostics = result.diagnostics.filter((diagnostic) =>
     TASK_2_1_3_RULES.has(String(diagnostic.rule)),
   );
@@ -94,17 +98,12 @@ const comparableFixtureDiagnostics = (
 const classifyBodySyntaxFixture = (
   fixture: InvalidWorkflowFixtureSnapshot,
 ): TaskOwnedFixtureResult => {
-  const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath);
-  const result = lintWorkflowSource({
-    filePath: fixture.fixturePath,
-    sourceText,
-  });
+  const result = lintInvalidFixture(fixture);
   if (result.scan.status !== "scanned") {
     throw new Error(`Expected ${fixture.fixturePath} to expose workflow metadata.`);
   }
 
-  const parseResult = parseWorkflowBody(result.scan.envelope);
-  const diagnostics = parseResult.ok ? [] : [parseResult.diagnostic];
+  const diagnostics = result.bodySyntax;
 
   return {
     diagnostics: diagnostics.map((diagnostic) => ({
@@ -152,6 +151,17 @@ const statusFromDiagnostics = (
 };
 
 describe("invalid workflow metadata classifier parity", () => {
+  it("derives live diagnostic docs paths from the rule catalogue", () => {
+    for (const fixture of INVALID_WORKFLOW_FIXTURE_SNAPSHOTS) {
+      const result = lintInvalidFixture(fixture);
+
+      expect(result.diagnostics.length).toBeGreaterThan(0);
+      for (const diagnostic of result.diagnostics) {
+        expect(diagnostic.docs).toBe(ruleDocsPath(ruleDefinitionFor(diagnostic.rule)));
+      }
+    }
+  });
+
   it("matches task-owned metadata and envelope diagnostics for invalid fixtures", () => {
     for (const fixture of INVALID_WORKFLOW_FIXTURE_SNAPSHOTS) {
       const expected = comparableFixtureDiagnostics(fixture.expectedDiagnostics);

@@ -5,6 +5,7 @@ import {
   type RuleDefinition,
   reviewedRuleMessage,
   ruleDefinitionFor,
+  ruleDocsPath,
 } from "../diagnostics/rule-catalogue";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic, SourceSpan } from "../diagnostics/types";
@@ -240,6 +241,7 @@ const metadataDiagnostic = (
     severity: rule.defaultSeverity,
     message,
     span,
+    docs: ruleDocsPath(rule),
   });
 };
 

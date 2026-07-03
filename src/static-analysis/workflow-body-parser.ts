@@ -20,6 +20,7 @@ import {
   type NormalizedWorkflowBody,
   narrowBodySyntaxSpan,
 } from "./workflow-body-normalizer";
+import type { NormalizedBodyParseResult } from "./workflow-body-parse";
 import { parseNormalizedWorkflowBody } from "./workflow-body-parse";
 import { bodySyntaxDetail } from "./workflow-body-syntax-detail";
 export type WorkflowBodyParseResult =
@@ -45,8 +46,29 @@ type UnknownRecord = {
 export const parseWorkflowBody = (envelope: WorkflowEnvelope): WorkflowBodyParseResult => {
   const parseResult = parseNormalizedWorkflowBody(envelope);
 
-  if (parseResult.ok) {
+  const diagnostics = bodySyntaxDiagnosticsForParse(envelope, parseResult);
+  const diagnostic = diagnostics[0];
+
+  if (diagnostic === undefined) {
     return Object.freeze({ ok: true });
+  }
+
+  return Object.freeze({ ok: false, diagnostic });
+};
+
+/**
+ * Converts a shared normalized body parse result into body-syntax diagnostics.
+ *
+ * @param envelope - Scanned workflow envelope with an original-source body span.
+ * @param parseResult - Already-normalized parse result for the same envelope.
+ * @returns A frozen empty list for valid bodies, or the frozen parser diagnostic.
+ */
+export const bodySyntaxDiagnosticsForParse = (
+  envelope: WorkflowEnvelope,
+  parseResult: NormalizedBodyParseResult,
+): readonly Diagnostic[] => {
+  if (parseResult.ok) {
+    return Object.freeze([]);
   }
 
   const span = narrowedSpanForParserError(
@@ -55,10 +77,7 @@ export const parseWorkflowBody = (envelope: WorkflowEnvelope): WorkflowBodyParse
     parseResult.bodySpan,
     parseResult.error,
   );
-  return Object.freeze({
-    ok: false,
-    diagnostic: bodySyntaxDiagnostic(envelope, span, parseResult.error),
-  });
+  return Object.freeze([bodySyntaxDiagnostic(envelope, span, parseResult.error)]);
 };
 
 /**

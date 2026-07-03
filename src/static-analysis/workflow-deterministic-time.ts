@@ -6,15 +6,7 @@
  * never executes workflow source.
  */
 
-import {
-  type CallExpression,
-  type MemberExpression,
-  type NewExpression,
-  type Node,
-  type ParseOptions,
-  parseSync,
-  type Span,
-} from "@swc/core";
+import type { CallExpression, MemberExpression, NewExpression, Node, Span } from "@swc/core";
 import type { RuleDefinition } from "../diagnostics/rule-catalogue";
 import {
   firstReviewedRuleMessage,
@@ -27,18 +19,14 @@ import type { Diagnostic } from "../diagnostics/types";
 import type { WorkflowEnvelope } from "./types";
 import {
   type NormalizedWorkflowBody,
-  normalizeWorkflowBody,
   originalSpanFromNormalizedOffsets,
 } from "./workflow-body-normalizer";
+import type { NormalizedBodyParseResult } from "./workflow-body-parse";
+import { parseNormalizedWorkflowBody } from "./workflow-body-parse";
 
 const DATE_NOW_RULE = makeRuleId("odw/no-date-now");
 const MATH_RANDOM_RULE = makeRuleId("odw/no-math-random");
 const ARGLESS_NEW_DATE_RULE = makeRuleId("odw/no-argless-new-date");
-const WORKFLOW_BODY_PARSE_OPTIONS: ParseOptions = {
-  syntax: "ecmascript",
-  jsx: false,
-};
-
 type HazardMatch = {
   readonly rule: RuleId;
   readonly span: Span;
@@ -56,23 +44,27 @@ const RULE_DEFINITIONS = Object.freeze(
  * Emits Claude-compatibility warnings for wall-clock and randomness primitives.
  *
  * @param envelope - Scanned workflow envelope with an original-source body.
+ * @param parseResult - Optional already-normalized body parse to reuse.
  * @returns Frozen diagnostics, or an empty list when the body cannot parse.
  */
 export const scanDeterministicTimeWarnings = (
   envelope: WorkflowEnvelope,
+  parseResult: NormalizedBodyParseResult = parseNormalizedWorkflowBody(envelope),
 ): readonly Diagnostic[] => {
-  const normalized = normalizeWorkflowBody(envelope);
-
-  try {
-    const module = parseSync(normalized.normalizedText, WORKFLOW_BODY_PARSE_OPTIONS);
-    const diagnostics = walkDeterministicTimeHazards(module).map((match) => {
-      return diagnosticForMatch(envelope, normalized, module.span.start, match);
-    });
-
-    return Object.freeze(diagnostics);
-  } catch {
+  if (!parseResult.ok) {
     return Object.freeze([]);
   }
+
+  const diagnostics = walkDeterministicTimeHazards(parseResult.module).map((match) => {
+    return diagnosticForMatch(
+      envelope,
+      parseResult.normalized,
+      parseResult.module.span.start,
+      match,
+    );
+  });
+
+  return Object.freeze(diagnostics);
 };
 
 /** Recursively walks a SWC AST in source order and returns hazard matches. */

@@ -214,7 +214,7 @@ where required.
 - [x] 2.1.12.3. Decide the static-analysis result freeze-depth contract.
 - [x] 2.1.12.4. Consolidate identifier-character classification.
 - [x] 2.1.12.5. Extract shared low-level scanner character predicates.
-- [ ] 2.1.12.6. Share workflow body parsing in the lint pipeline.
+- [x] 2.1.12.6. Share workflow body parsing in the lint pipeline.
   - Source: review:3.1.2 and audit:3.1.2; severity medium.
   - Scope: wire `odw/body-syntax` diagnostics into `lintWorkflowSource` through
     one normalized body parse shared with Claude-compatibility detection while
@@ -223,7 +223,7 @@ where required.
   - Success: the canonical lint pipeline emits body-syntax diagnostics and
     deterministic-time warnings from one parse result without double-parsing a
     workflow body.
-- [ ] 2.1.12.7. Add live-pipeline diagnostic docs coverage.
+- [x] 2.1.12.7. Add live-pipeline diagnostic docs coverage.
   - Source: audit:3.1.2; severity medium.
   - Scope: extend live `lintWorkflowSource` parity coverage so emitted rule
     diagnostics assert `docs === ruleDocsPath(rule)` across invalid fixtures.

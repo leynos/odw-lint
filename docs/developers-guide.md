@@ -111,15 +111,16 @@ Use `lintWorkflowSource` as the production entry point when a caller needs the
 complete static workflow diagnostic stream for one source string. It builds the
 original source file, scans the envelope, classifies metadata, and returns
 diagnostics in canonical order: envelope diagnostics first, then metadata
-diagnostics. The package entry re-exports `lintWorkflowSource` and
+diagnostics, body syntax diagnostics, and Claude compatibility diagnostics.
+The body parser runs once for this pipeline; `odw/body-syntax` owns syntax
+failures, and Claude compatibility checks consume the same successful parse
+result. The package entry re-exports `lintWorkflowSource` and
 `WorkflowLintResult` for future CLI and public-consumer work.
 
-`parseWorkflowBody` is intentionally not wired into `lintWorkflowSource` yet.
-Task 2.2.2 owns the standalone body normalization and parser-span mapping
-contract; the full loader-parity pipeline over valid examples remains a later
-integration task. Callers that need full workflow diagnostics should continue to
-use `lintWorkflowSource` for the currently integrated envelope and metadata
-checks.
+`parseWorkflowBody` remains available for standalone parser-span tests and
+callers that need only body-syntax diagnostics. Callers that need full workflow
+diagnostics should use `lintWorkflowSource` so the body-syntax and Claude
+compatibility paths share the same normalized parse result.
 
 Static-analysis result contracts freeze the returned result container and any
 array owned by that result at runtime. Nested fact trees owned by a parser, such
@@ -141,12 +142,13 @@ scheduler, metadata-evaluating, or agent-dispatch paths.
 
 The focused classifier tests live in
 `tests/static-analysis/workflow-metadata.test.ts`. Invalid fixture parity for
-the task-owned metadata and envelope rules lives in
+the task-owned metadata, envelope, and body-syntax rules lives in
 `tests/static-analysis/invalid-workflow-metadata-parity.test.ts`; that parity
-suite consumes `lintWorkflowSource` so the envelope and metadata diagnostic
-merge order has one implementation. Task 3.1.1 still owns user-visible
-`odw/claude-pure-meta` emission; do not add that diagnostic to the metadata
-classifier before the pure-literal compatibility task lands.
+suite consumes `lintWorkflowSource` so the envelope, metadata, body-syntax, and
+Claude compatibility diagnostic merge order has one implementation. Task 3.1.1
+still owns user-visible `odw/claude-pure-meta` emission; do not add that
+diagnostic to the metadata classifier before the pure-literal compatibility
+task lands.
 
 Production modules under `src/static-analysis/` use relative internal imports
 for scanner collaborators. Public-consumer tests may import
