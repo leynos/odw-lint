@@ -766,3 +766,14 @@ examples. The main implementation surprise was that SWC represents `new Date`
 with `arguments: null`; the detector treats both `null` and an empty array as
 arg-less construction. CodeRabbit review remains deferred because the external
 service returned a rate limit after deterministic gates passed.
+
+## Addenda
+
+- [ ] 3.1.2.1. Snapshot intra-expression deterministic-time ordering.
+  - Source: review:3.1.2; severity low.
+  - Scope: add deterministic-time fixtures that pin hazard ordering inside one
+    expression, including mixed `Math.random()`, `Date.now()`, and nested
+    `new Date(Date.now())` cases.
+  - Success: a future SWC traversal or matcher change cannot reorder
+    same-expression deterministic-time diagnostics without a focused snapshot
+    failure.

@@ -369,6 +369,17 @@ worktree. Those commands passed: `make all`, `make markdownlint`, `make nixie`,
 and `coderabbit review --agent` all completed successfully, with CodeRabbit
 reporting zero findings.
 
+## Addenda
+
+- [ ] 2.1.10.1. Add a shared rule diagnostic builder.
+  - Source: audit:3.1.2; severity medium.
+  - Scope: add one diagnostics-layer builder that accepts a catalogued rule,
+    severity, message, and span, derives the docs path from the catalogue, and
+    migrate hand-rolled rule diagnostics onto it.
+  - Success: rule diagnostics cannot omit `docs` without bypassing the shared
+    helper, and focused coverage proves emitted docs paths still match the
+    catalogue.
+
 ## Context and Orientation
 
 The diagnostic model lives under `src/diagnostics/`. Rule identifiers are

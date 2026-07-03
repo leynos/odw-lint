@@ -301,6 +301,10 @@ depending on manual post-commit audits.
     - Addendum (from review:1.5.6; low). Split timed-out or killed gate
       executions from spawn-unavailable evidence and map hung gates to
       reviewer-visible failure. Lightweight addendum pass.
+  - [ ] 1.5.6.3. Add deterministic CodeRabbit fallback evidence.
+    - Addendum (from review:3.1.2; low). Document and test a deterministic
+      offline fallback or retry policy when CodeRabbit review produces no
+      usable output. Lightweight addendum pass.
 - [x] 1.5.7. Invoke review evidence from the roadmap review workflow.
   - Adopt `make review-evidence` in the roadmap review or audit workflow, or
     add an equivalent scheduled smoke path, so the gate is run automatically
@@ -496,6 +500,10 @@ statically. It unlocks metadata rules and body parsing. See
     field to downstream integrations.
   - Success: diagnostic metadata exposes one tested rule-documentation reference
     format and no code or docs describe a competing URL/path shape.
+  - [ ] 2.1.10.1. Add a shared rule diagnostic builder.
+    - Addendum (from audit:3.1.2; medium). Add one diagnostics-layer rule
+      diagnostic builder that derives docs paths from the catalogue and migrate
+      hand-rolled rule diagnostics onto it. Lightweight addendum pass.
 - [x] 2.1.11. Broaden hostile metadata side-effect fixtures.
   - Requires 1.3.5 and 2.1.5.
   - Add at least one filesystem-write or environment-read hostile metadata
@@ -536,6 +544,15 @@ statically. It unlocks metadata rules and body parsing. See
       string-delimiter and whitespace predicates used by the workflow-metadata
       and source-mask scanner families, then remove duplicated local helpers.
       Lightweight addendum pass.
+  - [ ] 2.1.12.6. Share workflow body parsing in the lint pipeline.
+    - Addendum (from review:3.1.2 and audit:3.1.2; medium). Wire
+      `odw/body-syntax` diagnostics into `lintWorkflowSource` through one
+      normalized body parse shared with Claude-compatibility detection while
+      preserving each failure policy. Lightweight addendum pass.
+  - [ ] 2.1.12.7. Add live-pipeline diagnostic docs coverage.
+    - Addendum (from audit:3.1.2; medium). Assert that `lintWorkflowSource`
+      emitted diagnostics carry catalogue-derived docs paths across invalid
+      fixtures and rule parity coverage. Lightweight addendum pass.
 
 ### 2.2. Normalize and parse workflow bodies with SWC
 
@@ -677,10 +694,26 @@ reported clearly in one command. The result informs strict-mode policy. See
   - See [technical-design.md](technical-design.md) §9.2.
   - Success: warnings match ODW's `scanDualCompat` behaviour for trusted
     fixtures.
+  - [ ] 3.1.2.1. Snapshot intra-expression deterministic-time ordering.
+    - Addendum (from review:3.1.2; low). Add deterministic-time fixtures that
+      pin intra-expression hazard source order, including mixed
+      `Math.random()`, `Date.now()`, and nested `new Date(Date.now())` cases.
+      Lightweight addendum pass.
 - [ ] 3.1.3. Implement `--strict-claude` severity promotion.
   - Requires 3.1.1 and 3.1.2.
   - See [technical-design.md](technical-design.md) §§7.3 and 9.2.
   - Success: strict mode exits non-zero for Claude compatibility warnings.
+- [ ] 3.1.4. Apply lexical-binding facts to deterministic-time compatibility
+  detection.
+  - Requires 2.2.4 and 3.1.2.
+  - Revisit `Date` and `Math` matching once workflow AST facts can distinguish
+    globals, shadowed bindings, computed members, and `globalThis` member
+    chains, and document how the same facts feed later orchestration-rule
+    hardening.
+  - Success: Claude compatibility warnings ignore locally shadowed `Date` or
+    `Math` bindings while detecting supported global `Date.now`,
+    `Math.random`, arg-less `new Date`, computed `Date["now"]()`, and
+    `globalThis.Date.now()` forms with original-source spans.
 
 ### 3.2. Add first orchestration-risk rules
 
