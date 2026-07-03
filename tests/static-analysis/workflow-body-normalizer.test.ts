@@ -11,9 +11,9 @@ import {
   SourceOffsetError,
   sliceSourceSpan,
 } from "odw-lint";
+import { utf8ByteLength } from "../../src/static-analysis/utf8";
 import { envelopeForBody } from "./workflow-envelope-support";
 
-const TEXT_ENCODER = new TextEncoder();
 const WORKFLOW_BODY_WRAP_PREFIX = "async function __odwLintWorkflowBody__() {";
 const PROPERTY_RUNNER = {
   numRuns: 100,
@@ -21,7 +21,7 @@ const PROPERTY_RUNNER = {
 const SAFE_BODY_CHARACTER = fc.constantFrom("a", "b", "c", " ", "\n", ";", "(", ")", "é", "雪");
 
 /** Returns the UTF-8 byte length of a JavaScript string. */
-const byteLength = (text: string): number => TEXT_ENCODER.encode(text).byteLength;
+const byteLength = (text: string): number => utf8ByteLength(text);
 
 /** Returns the UTF-8 byte offset for a UTF-16 string index. */
 const byteOffsetAtIndex = (text: string, index: number): number => {

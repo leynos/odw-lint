@@ -688,7 +688,7 @@ source without losing span fidelity. It informs all later AST rules. See
     - Addendum (from audit:2.2.5; medium). Move duplicated low-level
       static-analysis object and number guards into one reviewed helper used
       by parser-range code and tests. Lightweight addendum pass.
-  - [ ] 2.2.6.4. Isolate body-parser span narrowing and UTF-8 byte-length
+  - [x] 2.2.6.4. Isolate body-parser span narrowing and UTF-8 byte-length
     helpers.
     - Addendum (from audit:2.2.7; low). Move inert span-narrowing machinery
       behind a focused internal module and share one UTF-8 byte-length

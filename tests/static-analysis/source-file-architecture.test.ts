@@ -24,6 +24,7 @@ const SOURCE_HELPER_MODULES = [
   "source-scan.ts",
   "source-snippet.ts",
   "types.ts",
+  "utf8.ts",
   "value-guards.ts",
 ] as const;
 
@@ -276,7 +277,6 @@ describe("source-file helper architecture", () => {
 
   it("keeps offset lookup and span validation in source-position", () => {
     expectModuleDeclarations("src/static-analysis/source-position.ts", [
-      "TEXT_ENCODER",
       "byteOffsetFromTextIndex",
       "isHighSurrogate",
       "isInsideSurrogatePair",

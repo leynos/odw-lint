@@ -348,7 +348,7 @@ be one byte out of step with the production scanner.
     static-analysis helper.
   - Success: parser offset extraction, source-position parsing, and tests use
     the shared helper without broadening accepted parser-error shapes.
-- [ ] 2.2.6.4. Isolate body-parser span narrowing and UTF-8 byte-length
+- [x] 2.2.6.4. Isolate body-parser span narrowing and UTF-8 byte-length
   helpers.
   - Source: audit:2.2.7; severity low.
   - Scope: move the currently inert body-syntax span-narrowing helpers behind a

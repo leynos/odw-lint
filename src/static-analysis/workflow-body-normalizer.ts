@@ -10,16 +10,13 @@
 import type { SourceSpan } from "../diagnostics/types";
 import { spanFromOffsets } from "./source-position";
 import { sliceSourceSpan } from "./source-snippet";
-import type { OriginalSourceFile, WorkflowEnvelope } from "./types";
-import { SourceOffsetError } from "./types";
-
-const TEXT_ENCODER = new TextEncoder();
+import { type OriginalSourceFile, SourceOffsetError, type WorkflowEnvelope } from "./types";
+import { utf8ByteLength } from "./utf8";
 
 export const WORKFLOW_BODY_WRAP_FUNCTION_NAME = "__odwLintWorkflowBody__";
 const WORKFLOW_BODY_WRAP_PREFIX = `async function ${WORKFLOW_BODY_WRAP_FUNCTION_NAME}() {`;
 const WORKFLOW_BODY_WRAP_SUFFIX = "\n}";
-const WORKFLOW_BODY_WRAP_PREFIX_BYTE_LENGTH =
-  TEXT_ENCODER.encode(WORKFLOW_BODY_WRAP_PREFIX).byteLength;
+const WORKFLOW_BODY_WRAP_PREFIX_BYTE_LENGTH = utf8ByteLength(WORKFLOW_BODY_WRAP_PREFIX);
 
 /**
  * SWC-parseable workflow body plus the offsets needed to recover original
@@ -56,7 +53,7 @@ export const normalizeWorkflowBody = (envelope: WorkflowEnvelope): NormalizedWor
     normalizedText: `${WORKFLOW_BODY_WRAP_PREFIX}${bodyText}${WORKFLOW_BODY_WRAP_SUFFIX}`,
     prefixByteLength: WORKFLOW_BODY_WRAP_PREFIX_BYTE_LENGTH,
     bodyByteOffset: envelope.bodySpan.start.offset,
-    bodyByteLength: TEXT_ENCODER.encode(bodyText).byteLength,
+    bodyByteLength: utf8ByteLength(bodyText),
   });
 };
 
@@ -101,40 +98,4 @@ export const originalSpanFromNormalizedOffsets = (
     normalized.bodyByteOffset + relativeStart,
     normalized.bodyByteOffset + relativeEnd,
   );
-};
-
-/**
- * Narrows a body-syntax diagnostic span from a structured normalized range.
- *
- * Parser offsets are useful only when they map cleanly back to the original
- * workflow body. Wrapper-touching, reversed, or otherwise invalid ranges keep
- * the conservative whole-body fallback.
- *
- * @param sourceFile - Original workflow source file.
- * @param normalized - Normalized workflow body returned by `normalizeWorkflowBody`.
- * @param bodySpan - Whole original-source body span used as the fallback.
- * @param range - Optional normalized-source byte range for the syntax failure.
- * @returns A narrowed original-source span, or `bodySpan` when mapping fails.
- * @throws Error when an unexpected non-source-offset error occurs while
- *   mapping the range.
- */
-export const narrowBodySyntaxSpan = (
-  sourceFile: OriginalSourceFile,
-  normalized: NormalizedWorkflowBody,
-  bodySpan: SourceSpan,
-  range?: NormalizedByteRange,
-): SourceSpan => {
-  if (range === undefined) {
-    return bodySpan;
-  }
-
-  try {
-    return originalSpanFromNormalizedOffsets(sourceFile, normalized, range.start, range.end);
-  } catch (error) {
-    if (error instanceof SourceOffsetError) {
-      return bodySpan;
-    }
-
-    throw error;
-  }
 };

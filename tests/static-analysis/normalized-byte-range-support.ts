@@ -2,7 +2,7 @@
  * @file Shared normalized byte-range helpers for parser-span tests.
  */
 
-const TEXT_ENCODER = new TextEncoder();
+import { utf8ByteLength } from "../../src/static-analysis/utf8";
 
 export type NormalizedByteSpan = {
   readonly start: number;
@@ -16,7 +16,7 @@ export type NormalizedByteSpan = {
  * @returns UTF-8 byte length of `text`.
  */
 export const byteLength = (text: string): number => {
-  return TEXT_ENCODER.encode(text).byteLength;
+  return utf8ByteLength(text);
 };
 
 /**

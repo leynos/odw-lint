@@ -8,7 +8,7 @@ import { normalizeWorkflowBody, sliceSourceSpan } from "odw-lint";
 import {
   narrowedSpanForParserError,
   structuredNormalizedRangeFromParserError,
-} from "../../src/static-analysis/workflow-body-parser";
+} from "../../src/static-analysis/workflow-body-parser-spans";
 import { bodyRelativeRange, normalizedTokenRange } from "./normalized-byte-range-support";
 import { envelopeForBody } from "./workflow-envelope-support";
 

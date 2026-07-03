@@ -5,7 +5,7 @@
 import { describe, expect, it } from "bun:test";
 import * as fc from "fast-check";
 import { normalizeWorkflowBody, sliceSourceSpan } from "odw-lint";
-import { narrowBodySyntaxSpan } from "../../src/static-analysis/workflow-body-normalizer";
+import { narrowBodySyntaxSpan } from "../../src/static-analysis/workflow-body-parser-spans";
 import { normalizedTokenRange } from "./normalized-byte-range-support";
 import { envelopeForBody } from "./workflow-envelope-support";
 

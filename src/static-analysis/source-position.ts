@@ -9,9 +9,8 @@
 import type { SourcePosition, SourceSpan } from "../diagnostics/types";
 import { sourceIndexes } from "./source-indexes";
 import { type OriginalSourceFile, SourceOffsetError } from "./types";
+import { utf8ByteLength } from "./utf8";
 import { isUnknownRecord } from "./value-guards";
-
-const TEXT_ENCODER = new TextEncoder();
 
 /**
  * Converts one valid UTF-8 byte offset to a display position.
@@ -98,7 +97,7 @@ export const spanFromTextIndexes = (
 const byteOffsetFromTextIndex = (file: OriginalSourceFile, index: number): number => {
   validateTextIndex(file, index);
 
-  return TEXT_ENCODER.encode(file.sourceText.slice(0, index)).byteLength;
+  return utf8ByteLength(file.sourceText.slice(0, index));
 };
 
 /** Rejects text indexes that cannot map cleanly onto source characters. */
