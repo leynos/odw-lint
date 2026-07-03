@@ -663,7 +663,7 @@ source without losing span fidelity. It informs all later AST rules. See
     roadmap, design, developer, and rule documentation no longer describe a
     broader parser dialect than production accepts.
   - Completed by [roadmap-2-2-7.md](execplans/roadmap-2-2-7.md).
-  - [ ] 2.2.7.1. Add explicit SWC-bump dialect re-observation guidance.
+  - [x] 2.2.7.1. Add explicit SWC-bump dialect re-observation guidance.
     - Addendum (from review:2.2.7; low). Tie intentional `@swc/core` bumps to
       rerunning the workflow-body dialect test and preserving ADR 0002's
       TypeScript-in-body rejection set. Lightweight addendum pass.

@@ -479,6 +479,10 @@ manifest at
 `tests/static-analysis/fixtures/invalid-workflows/manifests/syntax-error.ts`,
 and the parser snapshot at
 `tests/static-analysis/__snapshots__/workflow-body-parser.test.ts.snap`.
+Also rerun `tests/static-analysis/workflow-body-dialect.test.ts` and preserve
+the TypeScript-in-body rejection set recorded by ADR
+[0002-workflow-body-parser-dialect-scope.md](adr/0002-workflow-body-parser-dialect-scope.md)
+unless the dependency bump intentionally changes the parser dialect contract.
 Diagnostic documentation paths are derived from `ruleDocsPath(rule)` and remain
 repository-relative paths under `docs/rules/`; hosted URLs belong in later
 reporting or documentation presentation layers. For invalid diagnostic spans,
