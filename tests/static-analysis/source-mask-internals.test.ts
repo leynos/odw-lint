@@ -20,6 +20,7 @@ import {
   isWhitespaceCharacter,
   scanEscapedDelimitedEnd,
 } from "../../src/static-analysis/source-mask-delimiters";
+import { scanRegexBodyEnd } from "../../src/static-analysis/source-mask-regex";
 import { scanQuotedStringRange } from "../../src/static-analysis/source-mask-strings";
 import {
   nextTemplateIndex,
@@ -212,6 +213,8 @@ describe("source-mask template scanner", () => {
   it("skips regex literals while tracking template expression braces", () => {
     const sourceText = ["`value $", "{/}`/.test(value) ? `inner` : value} tail`"].join("");
 
+    expect(scanRegexBodyEnd(sourceText, 9, { shouldRequireBody: false })).toBe(13);
+    expect(nextTemplateIndex(sourceText, 9, 1)).toBe(13);
     expect(scanTemplateRange(sourceText, 0, "`")).toEqual({
       kind: "template",
       startIndex: 0,

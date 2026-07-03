@@ -503,7 +503,7 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:2.1.5; medium). Move duplicated string-delimiter
       predicates into `source-mask-delimiters.ts` so token scanners share the
       documented delimiter source of truth. Lightweight addendum pass.
-  - [ ] 2.1.9.2. Unify regex-literal scanning across mask modules.
+  - [x] 2.1.9.2. Unify regex-literal scanning across mask modules.
     - Addendum (from audit:2.2.6; medium). Share the regex-body scanner used
       by statement-level and template-expression masking without changing
       masking behaviour. Lightweight addendum pass.

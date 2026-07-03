@@ -94,6 +94,31 @@ export const isRegexAllowedAfter = (
  * @returns Exclusive end index, or `undefined` for unterminated candidates.
  */
 export const scanRegexEnd = (sourceText: string, startIndex: number): number | undefined => {
+  const bodyEndIndex = scanRegexBodyEnd(sourceText, startIndex, { shouldRequireBody: true });
+  if (bodyEndIndex === undefined) {
+    return undefined;
+  }
+
+  return scanRegexFlagsEnd(sourceText, bodyEndIndex);
+};
+
+export type RegexBodyScanOptions = Readonly<{
+  readonly shouldRequireBody: boolean;
+}>;
+
+/**
+ * Finds the closing slash for a regex literal body.
+ *
+ * @param sourceText - Original source text to scan.
+ * @param startIndex - UTF-16 index of the opening slash.
+ * @param options - Scanner options for caller-specific literal acceptance.
+ * @returns Exclusive closing-slash index, or `undefined` for unterminated candidates.
+ */
+export const scanRegexBodyEnd = (
+  sourceText: string,
+  startIndex: number,
+  options: RegexBodyScanOptions,
+): number | undefined => {
   let isInCharacterClass = false;
   let hasRegexBody = false;
   let index = startIndex + 1;
@@ -104,7 +129,7 @@ export const scanRegexEnd = (sourceText: string, startIndex: number): number | u
       return undefined;
     }
     if (nextStep.endIndex !== undefined) {
-      return hasRegexBody ? nextStep.endIndex : undefined;
+      return shouldAcceptRegexBodyEnd(hasRegexBody, options) ? nextStep.endIndex : undefined;
     }
     hasRegexBody = true;
     index = nextStep.nextIndex;
@@ -112,6 +137,18 @@ export const scanRegexEnd = (sourceText: string, startIndex: number): number | u
   }
 
   return undefined;
+};
+
+/** Checks whether a discovered closing slash satisfies caller body rules. */
+const shouldAcceptRegexBodyEnd = (
+  hasRegexBody: boolean,
+  options: RegexBodyScanOptions,
+): boolean => {
+  if (!options.shouldRequireBody) {
+    return true;
+  }
+
+  return hasRegexBody;
 };
 
 export type RegexScanStep = Readonly<{
@@ -146,7 +183,7 @@ export const nextRegexScanStep = (
   }
   if (isRegexBodyEndDelimiter(character, isInCharacterClass)) {
     return {
-      endIndex: scanRegexFlagsEnd(sourceText, index + 1),
+      endIndex: index + 1,
       isInCharacterClass,
       nextIndex: index + 1,
     };

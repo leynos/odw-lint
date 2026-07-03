@@ -230,16 +230,12 @@ describe("source-file helper architecture", () => {
       "isTemplateRegexAllowedAfter",
       "isTemplateClose",
       "isTemplateExpressionOpen",
-      "isLeadingTemplateRegexClassClose",
-      "isTemplateRegexClassClose",
-      "isTemplateRegexClassOpen",
       "isTemplateRegexStart",
       "nextEscapedTemplateIndex",
       "nextOrdinaryTemplateStep",
       "nextTemplateCommentIndex",
       "nextTemplateExpressionIndex",
       "nextTemplateIndex",
-      "nextTemplateRegexStep",
       "nextTemplateStep",
       "previousSignificantTemplateIndex",
       "previousSignificantTemplateCharacter",
@@ -249,12 +245,12 @@ describe("source-file helper architecture", () => {
       "scanTemplateRegexEnd",
       "scanTemplateEnd",
       "scanTemplateRange",
-      "TemplateRegexStep",
     ]);
     expectModuleDeclarations("src/static-analysis/source-mask-regex.ts", [
       "REGEX_ALLOWED_PREVIOUS_CHARACTERS",
       "REGEX_ALLOWED_PREVIOUS_KEYWORDS",
       "REGEX_DISALLOWED_PREVIOUS_TOKENS",
+      "RegexBodyScanOptions",
       "RegexScanStep",
       "isRegexAllowedAfter",
       "isRegexBodyEndDelimiter",
@@ -265,9 +261,11 @@ describe("source-file helper architecture", () => {
       "nextEscapedRegexScanStep",
       "nextRegexClassBoundaryStep",
       "nextRegexScanStep",
+      "scanRegexBodyEnd",
       "scanRegexEnd",
       "scanRegexFlagsEnd",
       "scanRegexRange",
+      "shouldAcceptRegexBodyEnd",
     ]);
 
     expect(topLevelDeclarationNames("src/static-analysis/source-file.ts")).not.toContain(

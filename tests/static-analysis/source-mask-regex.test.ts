@@ -11,6 +11,7 @@ import {
   isRegexAllowedAfter,
   isRegexBodyEndDelimiter,
   isRegexClassClose,
+  scanRegexBodyEnd,
   scanRegexEnd,
   scanRegexFlagsEnd,
   scanRegexRange,
@@ -29,6 +30,7 @@ describe("source-mask regex scanner", () => {
   });
 
   it("scans escaped slashes and flags", () => {
+    expect(scanRegexBodyEnd("/a\\/b/g", 0, { shouldRequireBody: true })).toBe(6);
     expect(scanRegexEnd("/a\\/b/g", 0)).toBe(7);
     expect(scanRegexFlagsEnd("/x/gim;", 3)).toBe(6);
   });

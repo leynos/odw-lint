@@ -14,6 +14,7 @@ import {
   isTemplateDelimiter,
   scanEscapedDelimitedEnd,
 } from "./source-mask-delimiters";
+import { scanRegexBodyEnd } from "./source-mask-regex";
 import type { SourceMaskRange } from "./source-mask-types";
 
 const TEMPLATE_REGEX_ALLOWED_PREVIOUS_CHARACTERS = new Set("([{,;:=!&|?+-*%<>~^".split(""));
@@ -251,98 +252,7 @@ const nextTemplateCommentIndex = (
 
 /** Scans a regex-like literal inside a template expression. */
 const scanTemplateRegexEnd = (sourceText: string, startIndex: number): number | undefined => {
-  let regexIndex = startIndex + 1;
-  let isInCharacterClass = false;
-
-  while (regexIndex < sourceText.length) {
-    const regexStep = nextTemplateRegexStep(sourceText, regexIndex, isInCharacterClass);
-    if (regexStep === undefined) {
-      return undefined;
-    }
-    if (regexStep.endIndex !== undefined) {
-      return regexStep.endIndex;
-    }
-    regexIndex = regexStep.nextIndex;
-    isInCharacterClass = regexStep.isInCharacterClass;
-  }
-
-  return undefined;
-};
-
-type TemplateRegexStep = Readonly<{
-  readonly nextIndex: number;
-  readonly isInCharacterClass: boolean;
-  readonly endIndex?: number;
-}>;
-
-/** Advances one regex-like scan step inside a template expression. */
-const nextTemplateRegexStep = (
-  sourceText: string,
-  regexIndex: number,
-  isInCharacterClass: boolean,
-): TemplateRegexStep | undefined => {
-  const regexCharacter = sourceText[regexIndex] ?? "";
-  if (isLineTerminatorCharacter(regexCharacter)) {
-    return undefined;
-  }
-  if (regexCharacter === "\\") {
-    return {
-      isInCharacterClass,
-      nextIndex: regexIndex + 2,
-    };
-  }
-  if (isTemplateRegexClassOpen(regexCharacter, isInCharacterClass)) {
-    return {
-      isInCharacterClass: true,
-      nextIndex: regexIndex + 1,
-    };
-  }
-  if (isTemplateRegexClassClose(sourceText, regexIndex, isInCharacterClass)) {
-    return {
-      isInCharacterClass: false,
-      nextIndex: regexIndex + 1,
-    };
-  }
-  if (isRegexDelimiter(regexCharacter) && !isInCharacterClass) {
-    return {
-      endIndex: regexIndex + 1,
-      isInCharacterClass,
-      nextIndex: regexIndex + 1,
-    };
-  }
-
-  return {
-    isInCharacterClass,
-    nextIndex: regexIndex + 1,
-  };
-};
-
-/** Checks whether a template-expression regex character opens a class. */
-const isTemplateRegexClassOpen = (regexCharacter: string, isInCharacterClass: boolean): boolean => {
-  return regexCharacter === "[" && !isInCharacterClass;
-};
-
-/** Checks whether a template-expression regex character closes a class. */
-const isTemplateRegexClassClose = (
-  sourceText: string,
-  regexIndex: number,
-  isInCharacterClass: boolean,
-): boolean => {
-  if (!isInCharacterClass || sourceText[regexIndex] !== "]") {
-    return false;
-  }
-
-  return !isLeadingTemplateRegexClassClose(sourceText, regexIndex);
-};
-
-/** Checks for `]` that is literal because it leads a regex class. */
-const isLeadingTemplateRegexClassClose = (sourceText: string, regexIndex: number): boolean => {
-  const previousCharacter = sourceText[regexIndex - 1] ?? "";
-  if (previousCharacter === "[") {
-    return true;
-  }
-
-  return previousCharacter === "^" && sourceText[regexIndex - 2] === "[";
+  return scanRegexBodyEnd(sourceText, startIndex, { shouldRequireBody: false });
 };
 
 /**
