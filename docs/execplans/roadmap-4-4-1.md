@@ -284,6 +284,13 @@ package, dependency, source or test changes.
   - Success: `docs/repository-layout.md` agrees with the developers' guide
     about shared build-gate command support and names the review-evidence
     responsibility.
+- [ ] 4.4.1.2. Add a documentation-index freshness gate.
+  - Source: audit:2.2.6; severity low.
+  - Scope: add a focused docs test or gate that compares `docs/contents.md`
+    against current execution plans and issue audits so the canonical
+    navigation entry point cannot silently drift.
+  - Success: adding, renaming, or removing a top-level ExecPlan or issue audit
+    fails the freshness check until `docs/contents.md` is updated.
 
 ## Context and orientation
 

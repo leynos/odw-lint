@@ -569,6 +569,15 @@ Validation evidence at closeout:
   - Success: the public or maintainer documentation explains how reviewed
     templates are authored, rendered, matched, and attached to rule catalogue
     entries.
+- [ ] 2.1.8.5. Own the reviewed rule message contract in production.
+  - Source: audit:2.2.5.
+  - Severity: medium.
+  - Scope: promote the exact-or-template message-contract predicate from tests
+    into the diagnostics catalogue for future report validators, strict gates,
+    and editor integrations.
+  - Success: fixture parity, report validators, and future editor integration
+    tests can import one production predicate for reviewed exact messages and
+    reviewed templates.
 
 ## Context and orientation
 

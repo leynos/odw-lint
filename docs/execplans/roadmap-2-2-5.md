@@ -352,6 +352,24 @@ reachable as the no-detail fallback. The fixture refresh generator now wraps
 long generated `message` fields so refreshed manifests remain Biome-clean and
 idempotent.
 
+## Addenda
+
+- [ ] 2.2.5.1. Harden body-syntax detail marker stripping.
+  - Source: review:2.2.5; severity low.
+  - Scope: require a real marker boundary, or restrict stripping to the
+    observed marker glyphs, so a legitimate leading `x` or `X` in future parser
+    detail is preserved.
+  - Success: regression tests prove marker stripping still cleans pinned SWC
+    detail while preserving ordinary leading `x` and `X` words.
+- [ ] 2.2.5.2. Document SWC-bump parser-detail recapture.
+  - Source: review:2.2.5; severity low.
+  - Scope: add maintainer guidance that an intentional `@swc/core` bump must
+    re-observe body-syntax details, update syntax-error manifests, and refresh
+    parser snapshots together.
+  - Success: the documented parser-upgrade path names the exact fixture,
+    manifest, and snapshot surfaces that must be recaptured for
+    `odw/body-syntax`.
+
 ## Plan of work
 
 The work is four ordered, independently committable stages. Each ends with the

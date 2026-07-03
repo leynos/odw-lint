@@ -1333,6 +1333,14 @@ locked development tooling:
     delimiter source of truth.
   - Success: source-mask string, template, regex, and facade tests pin one
     delimiter predicate without changing masking behaviour.
+- [ ] 2.1.9.2. Unify regex-literal scanning across mask modules.
+  - Source: audit:2.2.6; severity medium.
+  - Scope: replace the divergent statement-level and template-expression regex
+    body walkers with one shared scanner while preserving the existing masking
+    facade and fixture contracts.
+  - Success: boundary tests cover regex literals at statement level and inside
+    template expressions through one scanner, with no change to existing
+    masking behaviour.
 
 ## Revision note
 

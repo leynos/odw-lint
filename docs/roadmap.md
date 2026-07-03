@@ -479,6 +479,10 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:2.1.8; medium). Document the placeholder grammar,
       render requirements, and matching semantics for rule authors. Lightweight
       addendum pass.
+  - [ ] 2.1.8.5. Own the reviewed rule message contract in production.
+    - Addendum (from audit:2.2.5; medium). Promote the exact-or-template
+      message-contract predicate from tests into the diagnostics catalogue for
+      future validators and editor integrations. Lightweight addendum pass.
 - [x] 2.1.9. Split source-mask token scanners into focused modules.
   - Requires 2.1.1.
   - Addendum source: audit:2.1.7; medium.
@@ -492,6 +496,10 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:2.1.5; medium). Move duplicated string-delimiter
       predicates into `source-mask-delimiters.ts` so token scanners share the
       documented delimiter source of truth. Lightweight addendum pass.
+  - [ ] 2.1.9.2. Unify regex-literal scanning across mask modules.
+    - Addendum (from audit:2.2.6; medium). Share the regex-body scanner used
+      by statement-level and template-expression masking without changing
+      masking behaviour. Lightweight addendum pass.
 - [x] 2.1.10. Canonicalize diagnostic rule documentation link contracts.
   - Requires 2.1.6.
   - Addendum source: audit:2.1.7; medium.
@@ -599,6 +607,14 @@ source without losing span fidelity. It informs all later AST rules. See
     the reviewed `{detail}` message template while retaining the exact
     no-detail fallback, and syntax-error fixture parity exercises the template
     branch.
+  - [ ] 2.2.5.1. Harden body-syntax detail marker stripping.
+    - Addendum (from review:2.2.5; low). Prevent marker stripping from
+      removing legitimate leading `x` or `X` tokens in future parser detail.
+      Lightweight addendum pass.
+  - [ ] 2.2.5.2. Document SWC-bump parser-detail recapture.
+    - Addendum (from review:2.2.5; low). Add maintainer guidance to
+      re-observe pinned SWC syntax details, manifests, and parser snapshots on
+      parser upgrades. Lightweight addendum pass.
 - [x] 2.2.6. Narrow body-syntax spans when parser offsets are structured.
   - Requires 2.2.3.
   - Revisit the SWC parser adapter, or an equivalent parser error channel, once
@@ -609,6 +625,26 @@ source without losing span fidelity. It informs all later AST rules. See
     and a structured-offset fixture proves the span narrows to the failure
     token without weakening the fallback for parsers that expose no offset.
   - Completed by [roadmap-2-2-6.md](execplans/roadmap-2-2-6.md).
+  - [ ] 2.2.6.1. Guard parser-error offset coordinate bases.
+    - Addendum (from review:2.2.6; medium). Reject or normalize parser-error
+      offsets unless their coordinate base is explicit, including scalar caret
+      offsets that need token-end synthesis. Lightweight addendum pass.
+  - [ ] 2.2.6.2. Reconcile the span-narrowing public surface.
+    - Addendum (from audit:2.2.6; medium). Document the current pinned-parser
+      inert status, trim speculative exports, and align characterization tests
+      with production consumption. Lightweight addendum pass.
+  - [ ] 2.2.6.3. Consolidate parser-range type guards.
+    - Addendum (from audit:2.2.5; medium). Move duplicated low-level
+      static-analysis object and number guards into one reviewed helper used
+      by parser-range code and tests. Lightweight addendum pass.
+- [ ] 2.2.7. Reconcile workflow-body parser dialect scope.
+  - Requires 2.2.1, 2.2.5, and 2.2.6.
+  - Decide whether workflow bodies are parsed as ECMAScript-only source or
+    supported TypeScript syntax, then align diagnostics and documentation with
+    that decision.
+  - Success: TypeScript-in-body input has an intentional, tested outcome, and
+    roadmap, design, developer, and rule documentation no longer describe a
+    broader parser dialect than production accepts.
 
 ### 2.3. Prove ODW loader parity before shipping dialect checks
 
@@ -876,6 +912,10 @@ types" and [developers-guide.md](developers-guide.md) "Documentation Upkeep".
     - Addendum (from audit:1.5.6; low). Update the canonical layout guide so
       `tests/build-gate/` and `git-support.ts` cover generalized build gates
       and the review-evidence target. Lightweight addendum pass.
+  - [ ] 4.4.1.2. Add a documentation-index freshness gate.
+    - Addendum (from audit:2.2.6; low). Check the canonical documentation
+      index against current ExecPlans and issue audits so navigation cannot
+      drift silently. Lightweight addendum pass.
 
 ## 5. Deferred extensions
 

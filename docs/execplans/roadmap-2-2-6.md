@@ -324,6 +324,31 @@ The main lesson was that the scanned `bodySpan` slice is the only reliable
 source for synthetic normalized ranges in tests; hand-built body snippets can
 be one byte out of step with the production scanner.
 
+## Addenda
+
+- [ ] 2.2.6.1. Guard parser-error offset coordinate bases.
+  - Source: review:2.2.6; severity medium.
+  - Scope: reject or normalize future parser-error offsets unless their
+    coordinate base is explicit, including scalar caret offsets that require a
+    resolvable base and token-end synthesis.
+  - Success: structured parser-error tests cover body-relative, module-global,
+    wrapper-touching, and scalar-offset inputs without silently narrowing from
+    the wrong coordinate base.
+- [ ] 2.2.6.2. Reconcile the span-narrowing public surface.
+  - Source: audit:2.2.6; severity medium.
+  - Scope: document that the current pinned SWC parser keeps narrowing inert,
+    trim speculative exports that no production consumer can exercise, and
+    align characterization coverage with the production parser path.
+  - Success: public exports and characterization tests reflect the active
+    parser-backed span contract rather than a future parser channel.
+- [ ] 2.2.6.3. Consolidate parser-range type guards.
+  - Source: audit:2.2.5; severity medium.
+  - Scope: move duplicated low-level object-record and finite-number guards
+    from parser-range production code and tests into one reviewed
+    static-analysis helper.
+  - Success: parser offset extraction, source-position parsing, and tests use
+    the shared helper without broadening accepted parser-error shapes.
+
 ## Context and orientation
 
 `odw-lint` is a Bun/TypeScript package. Relevant files:
