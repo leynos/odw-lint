@@ -570,7 +570,7 @@ source without losing span fidelity. It informs all later AST rules. See
     `parallel`, `Array`, `Number`, `Object`, and `Math` identifiers, and
     directive-like text in strings, templates, regexes, and block comments is
     ignored.
-- [ ] 2.2.5. Adopt message templates in the first parser-backed rule.
+- [x] 2.2.5. Adopt message templates in the first parser-backed rule.
   - Requires 2.1.8 and 2.2.1.
   - Render the first dynamic parser diagnostic through a catalogue-owned
     reviewed message template, and exercise the template branch of invalid
@@ -578,6 +578,10 @@ source without losing span fidelity. It informs all later AST rules. See
   - Success: a parser-backed fixture diagnostic matches `ruleAllowsMessage`
     through a reviewed template rather than an exact-only or substring
     assertion.
+  - Completion note: `odw/body-syntax` now renders SWC syntax details through
+    the reviewed `{detail}` message template while retaining the exact
+    no-detail fallback, and syntax-error fixture parity exercises the template
+    branch.
 - [x] 2.2.6. Narrow body-syntax spans when parser offsets are structured.
   - Requires 2.2.3.
   - Revisit the SWC parser adapter, or an equivalent parser error channel, once

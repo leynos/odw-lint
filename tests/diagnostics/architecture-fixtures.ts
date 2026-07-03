@@ -52,6 +52,7 @@ export const EXPECTED_STATIC_ANALYSIS_MODULE_FILES = [
   "types.ts",
   "workflow-body-normalizer.ts",
   "workflow-body-parser.ts",
+  "workflow-body-syntax-detail.ts",
   "workflow-deterministic-time.ts",
   "workflow-envelope-meta-value.ts",
   "workflow-envelope-statement.ts",

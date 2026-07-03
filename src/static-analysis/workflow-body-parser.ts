@@ -6,8 +6,10 @@
  */
 
 import { type ParseOptions, parseSync } from "@swc/core";
+import { renderMessageTemplate } from "../diagnostics/message-template";
 import {
   firstReviewedRuleMessage,
+  firstReviewedRuleTemplate,
   ruleDefinitionFor,
   ruleDocsPath,
 } from "../diagnostics/rule-catalogue";
@@ -20,6 +22,7 @@ import {
   narrowBodySyntaxSpan,
   normalizeWorkflowBody,
 } from "./workflow-body-normalizer";
+import { bodySyntaxDetail } from "./workflow-body-syntax-detail";
 
 export type WorkflowBodyParseResult =
   | { readonly ok: true }
@@ -28,6 +31,7 @@ export type WorkflowBodyParseResult =
 const BODY_SYNTAX_RULE = makeRuleId("odw/body-syntax");
 const BODY_SYNTAX_RULE_DEFINITION = ruleDefinitionFor(BODY_SYNTAX_RULE);
 const BODY_SYNTAX_MESSAGE = firstReviewedRuleMessage(BODY_SYNTAX_RULE_DEFINITION);
+const BODY_SYNTAX_TEMPLATE = firstReviewedRuleTemplate(BODY_SYNTAX_RULE_DEFINITION);
 const WORKFLOW_BODY_PARSE_OPTIONS: ParseOptions = {
   syntax: "ecmascript",
   jsx: false,
@@ -60,7 +64,7 @@ export const parseWorkflowBody = (envelope: WorkflowEnvelope): WorkflowBodyParse
 
     return Object.freeze({
       ok: false,
-      diagnostic: bodySyntaxDiagnostic(envelope, span),
+      diagnostic: bodySyntaxDiagnostic(envelope, span, error),
     });
   }
 };
@@ -121,12 +125,22 @@ export const narrowedSpanForParserError = (
 };
 
 /** Builds the catalogued parser-failure diagnostic for a workflow body. */
-const bodySyntaxDiagnostic = (envelope: WorkflowEnvelope, span: SourceSpan): Diagnostic => {
+const bodySyntaxDiagnostic = (
+  envelope: WorkflowEnvelope,
+  span: SourceSpan,
+  error: unknown,
+): Diagnostic => {
+  const detail = bodySyntaxDetail(error);
+  const message =
+    detail.length > 0
+      ? renderMessageTemplate(BODY_SYNTAX_TEMPLATE, { detail })
+      : BODY_SYNTAX_MESSAGE;
+
   return Object.freeze({
     file: envelope.sourceFile.filePath,
     rule: BODY_SYNTAX_RULE,
     severity: BODY_SYNTAX_RULE_DEFINITION.defaultSeverity,
-    message: BODY_SYNTAX_MESSAGE,
+    message,
     span,
     docs: ruleDocsPath(BODY_SYNTAX_RULE_DEFINITION),
   });

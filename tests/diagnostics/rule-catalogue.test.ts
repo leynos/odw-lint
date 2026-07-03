@@ -4,10 +4,12 @@
 
 import { describe, expect, expectTypeOf, it } from "bun:test";
 import {
+  createMessageTemplate,
   DIAGNOSTIC_SEVERITIES,
   firstReviewedRuleMessage,
   type MessageTemplate,
   makeRuleId,
+  messageMatchesTemplate,
   PLANNED_RULE_IDS,
   RELEASED_RULE_IDS,
   RULE_CATALOGUE,
@@ -22,6 +24,7 @@ import {
   ruleDefinitionFor,
   ruleDocsPath,
 } from "odw-lint";
+import { firstReviewedRuleTemplate } from "../../src/diagnostics/rule-catalogue";
 
 const EXPECTED_RULE_ROWS = [
   [
@@ -239,11 +242,26 @@ describe("rule catalogue", () => {
     }
   });
 
-  it("records empty reviewed message templates for current rules", () => {
+  it("records reviewed message templates for parser-backed rules", () => {
+    const bodySyntaxRule = ruleDefinitionFor(makeRuleId("odw/body-syntax"));
+
     for (const rule of RULE_CATALOGUE) {
       expect(Array.isArray(rule.messageTemplates)).toBeTrue();
       expect(Object.isFrozen(rule.messageTemplates)).toBeTrue();
-      expect(rule.messageTemplates).toEqual([]);
+
+      if (rule === bodySyntaxRule) {
+        expect(rule.messageTemplates).toEqual([createMessageTemplate(BODY_SYNTAX_DETAIL_TEMPLATE)]);
+        expect(
+          rule.messageTemplates.some((template) =>
+            messageMatchesTemplate(
+              template,
+              "Workflow body must be syntactically complete after ODW normalization: Expected ';'",
+            ),
+          ),
+        ).toBeTrue();
+      } else {
+        expect(rule.messageTemplates).toEqual([]);
+      }
     }
 
     expectTypeOf<RuleDefinition["messageTemplates"]>().toEqualTypeOf<readonly MessageTemplate[]>();
@@ -291,4 +309,19 @@ describe("rule catalogue", () => {
       "Missing reviewed diagnostic message 0 for odw/bounded-loop.",
     );
   });
+
+  it("returns the first reviewed diagnostic message template", () => {
+    const bodySyntaxRule = ruleDefinitionFor(makeRuleId("odw/body-syntax"));
+    const plannedRule = ruleDefinitionFor(makeRuleId("odw/bounded-loop"));
+
+    expect(firstReviewedRuleTemplate(bodySyntaxRule)).toEqual(
+      createMessageTemplate(BODY_SYNTAX_DETAIL_TEMPLATE),
+    );
+    expect(() => firstReviewedRuleTemplate(plannedRule)).toThrow(
+      "Missing reviewed diagnostic message template 0 for odw/bounded-loop.",
+    );
+  });
 });
+
+const BODY_SYNTAX_DETAIL_TEMPLATE =
+  "Workflow body must be syntactically complete after ODW normalization: {detail}";

@@ -357,6 +357,9 @@ character, repeated placeholders must match the same text, and overlong
 candidate messages are rejected before regex matching. Rule authors attach
 reviewed templates through `RuleDefinition.messageTemplates`; fixture parity
 accepts a dynamic message only when it matches one of those reviewed templates.
+`odw/body-syntax` uses the first reviewed template in this contract: parser
+syntax detail is rendered into `{detail}` after the fixed reviewed sentence,
+while the exact message remains the no-detail fallback.
 
 ## 9. Rule taxonomy
 

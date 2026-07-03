@@ -7,13 +7,17 @@ import { parseSync } from "@swc/core";
 import * as fc from "fast-check";
 import {
   createOriginalSourceFile,
+  makeRuleId,
+  messageMatchesTemplate,
   normalizeWorkflowBody,
   originalSpanFromNormalizedOffsets,
   parseWorkflowBody,
+  ruleDefinitionFor,
   scanWorkflowEnvelope,
   sliceSourceSpan,
   type WorkflowBodyParseResult,
 } from "odw-lint";
+import { firstReviewedRuleTemplate } from "../../src/diagnostics/rule-catalogue";
 import {
   narrowedSpanForParserError,
   structuredNormalizedRangeFromParserError,
@@ -63,6 +67,8 @@ const NON_EXPECTED_SYNTAX_ERROR_BODIES = [
 const ODW_EXAMPLE_FIXTURE_CORPUS = {
   fixtureDirectory: new URL("./fixtures/odw-examples/", import.meta.url),
 } as const;
+const BODY_SYNTAX_RULE_DEFINITION = ruleDefinitionFor(makeRuleId("odw/body-syntax"));
+const BODY_SYNTAX_TEMPLATE = firstReviewedRuleTemplate(BODY_SYNTAX_RULE_DEFINITION);
 const TEXT_ENCODER = new TextEncoder();
 
 type SwcSpanNode = {
@@ -127,11 +133,7 @@ const expectBodySyntaxDiagnostic = (
 
 /** Checks whether a value can be inspected as an object record. */
 const isUnknownRecord = (value: unknown): value is UnknownRecord => {
-  if (typeof value !== "object") {
-    return false;
-  }
-
-  return value !== null;
+  return typeof value === "object" && value !== null;
 };
 
 /** Checks whether an unknown SWC span has numeric byte offsets. */
@@ -246,6 +248,8 @@ describe("parseWorkflowBody", () => {
       span: diagnostic.span,
       docs: diagnostic.docs,
     }).toMatchSnapshot();
+    expect(messageMatchesTemplate(BODY_SYNTAX_TEMPLATE, diagnostic.message)).toBeTrue();
+    expect(diagnostic.message).not.toBe(BODY_SYNTAX_RULE_DEFINITION.messages[0]);
   });
 
   it.each(

@@ -3,7 +3,7 @@
 exports[`parseWorkflowBody converts syntax-error/body-unclosed-block.js syntax errors to body diagnostics 1`] = `
 {
   "docs": "docs/rules/body-syntax.md",
-  "message": "Workflow body must be syntactically complete after ODW normalization.",
+  "message": "Workflow body must be syntactically complete after ODW normalization: Expected '}', got '<eof>'",
   "rule": "odw/body-syntax",
   "severity": "error",
   "span": {
@@ -24,7 +24,7 @@ exports[`parseWorkflowBody converts syntax-error/body-unclosed-block.js syntax e
 exports[`parseWorkflowBody converts syntax-error/body-unclosed-call.js syntax errors to body diagnostics 1`] = `
 {
   "docs": "docs/rules/body-syntax.md",
-  "message": "Workflow body must be syntactically complete after ODW normalization.",
+  "message": "Workflow body must be syntactically complete after ODW normalization: Expected ',', got '}'",
   "rule": "odw/body-syntax",
   "severity": "error",
   "span": {

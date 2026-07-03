@@ -232,7 +232,7 @@ const diagnosticSource = (
   const refreshed = refreshedDiagnosticSpan(sourceText, fixturePath, diagnostic);
   return `      diagnostic({\n        rule: ${literal(String(diagnostic.rule))},\n        severity: ${literal(
     diagnostic.severity,
-  )},\n        message: ${literal(diagnostic.message)},\n        span: ${spanSource(refreshed.span)},\n${spanTextProperty(
+  )},\n${messageProperty(diagnostic.message)}\n        span: ${spanSource(refreshed.span)},\n${spanTextProperty(
     refreshed.spanText,
   )}\n      }),`;
 };
@@ -281,6 +281,15 @@ const spanTextProperty = (spanText: string): string => {
     ? `        spanText:\n          ${value},`
     : `        spanText: ${value},`;
 };
+
+/**
+ * Generates a diagnostic message property, wrapping long literals like Biome.
+ */
+const messageProperty = (message: string): string => {
+  const value = literal(message);
+  return value.length > 92 ? `        message:\n          ${value},` : `        message: ${value},`;
+};
+
 /**
  * Generates a template-literal path expression for emitted manifests.
  */

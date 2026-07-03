@@ -17,6 +17,9 @@ diagnostic span narrows to that offending token. Parsers that expose no
 structured range keep the conservative whole-body span. In both cases, spans
 always point into original workflow source, not the normalized parser wrapper.
 
+When parser detail is available, the diagnostic message appends it after the
+fixed sentence, for example `...after ODW normalization: <parser detail>`.
+
 Fix the syntax error at the reported span, then rerun the checker to reveal any
 deeper dialect or compatibility diagnostics.
 

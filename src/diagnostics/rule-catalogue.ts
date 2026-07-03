@@ -153,6 +153,9 @@ export const RULE_CATALOGUE = Object.freeze([
     defaultSeverity: "error",
     releaseStatus: "released",
     messages: ["Workflow body must be syntactically complete after ODW normalization."],
+    messageTemplates: [
+      "Workflow body must be syntactically complete after ODW normalization: {detail}",
+    ],
   }),
   ruleDefinition({
     id: "odw/claude-pure-meta",
@@ -278,6 +281,21 @@ export const reviewedRuleMessage = (rule: RuleDefinition, messageIndex: number):
   return message;
 };
 
+/**
+ * Returns the first reviewed diagnostic message template for a catalogued rule.
+ *
+ * @param rule - Catalogued rule definition.
+ * @returns The first reviewed diagnostic message template.
+ * @throws Error when the rule has no reviewed message template at index 0.
+ */
+export const firstReviewedRuleTemplate = (rule: RuleDefinition): MessageTemplate => {
+  const template = rule.messageTemplates[0];
+  if (template === undefined) {
+    throw new Error(`Missing reviewed diagnostic message template 0 for ${rule.id}.`);
+  }
+
+  return template;
+};
 /**
  * Returns the first reviewed diagnostic message for a catalogued rule.
  *

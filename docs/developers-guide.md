@@ -322,8 +322,9 @@ when adding, renaming, releasing, or changing the reviewed messages for a rule.
 Rule authors use `messageTemplates` only when a diagnostic must include
 source-specific parser detail that cannot be reviewed as one exact string.
 Templates are authored as raw strings in the rule catalogue and are parsed by
-`createMessageTemplate` when the catalogue entry is built. Current rules keep
-`messageTemplates` empty until they emit dynamic parser-backed diagnostics.
+`createMessageTemplate` when the catalogue entry is built. `odw/body-syntax`
+now carries a reviewed template for source-specific parser detail; other rules
+remain exact-message only until they emit dynamic parser-backed diagnostics.
 
 A template placeholder is written as `{name}`. The name must begin with an
 ASCII letter and may continue with ASCII letters or digits. Literal `{` and

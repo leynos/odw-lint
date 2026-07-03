@@ -21,7 +21,8 @@ export const SYNTAX_ERROR_FIXTURES = deepFreezeFixtureManifest([
       diagnostic({
         rule: "odw/body-syntax",
         severity: "error",
-        message: "Workflow body must be syntactically complete after ODW normalization.",
+        message:
+          "Workflow body must be syntactically complete after ODW normalization: Expected '}', got '<eof>'",
         span: {
           start: { offset: 127, line: 5, column: 3 },
           end: { offset: 179, line: 9, column: 1 },
@@ -39,7 +40,8 @@ export const SYNTAX_ERROR_FIXTURES = deepFreezeFixtureManifest([
       diagnostic({
         rule: "odw/body-syntax",
         severity: "error",
-        message: "Workflow body must be syntactically complete after ODW normalization.",
+        message:
+          "Workflow body must be syntactically complete after ODW normalization: Expected ',', got '}'",
         span: {
           start: { offset: 125, line: 5, column: 3 },
           end: { offset: 147, line: 8, column: 1 },
