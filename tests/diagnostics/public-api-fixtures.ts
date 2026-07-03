@@ -84,6 +84,7 @@ export const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
   "reviewedRuleMessage",
   "ruleDefinitionFor",
   "ruleDocsPath",
+  "scanDeterministicTimeWarnings",
   "scanWorkflowEnvelope",
   "sliceSourceSpan",
   "snippetForSpan",

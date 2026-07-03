@@ -79,6 +79,7 @@ describe("lintWorkflowSource", () => {
     expect(result.diagnostics).toEqual([
       ...result.scan.diagnostics,
       ...result.classification.diagnostics,
+      ...result.claudeCompatibility,
     ]);
     expect(diagnosticRules(result.diagnostics)).toEqual(["odw/no-import-export", "odw/meta-name"]);
   });
@@ -97,6 +98,27 @@ describe("lintWorkflowSource", () => {
 
     expect(result.classification.status).toBe("runtime-invalid");
     expect(diagnosticRules(result.diagnostics)).toEqual(["odw/meta-name"]);
+  });
+
+  it("appends deterministic-time warnings after metadata diagnostics", () => {
+    const result = lintSource(
+      [
+        "export const meta = { name: 'example', description: 'ok' };",
+        "const timestamp = Date.now();",
+        "const sample = Math.random();",
+        "const started = new Date();",
+      ].join("\n"),
+    );
+
+    expect(result.classification.diagnostics).toEqual([]);
+    expect(diagnosticRules(result.claudeCompatibility)).toEqual([
+      "odw/no-date-now",
+      "odw/no-math-random",
+      "odw/no-argless-new-date",
+    ]);
+    expect(diagnosticRules(result.diagnostics)).toEqual(
+      diagnosticRules(result.claudeCompatibility),
+    );
   });
 
   it("includes unsupported import or export diagnostics from the envelope scan", () => {
@@ -129,6 +151,7 @@ describe("lintWorkflowSource", () => {
     expect(Object.isFrozen(result.scan.diagnostics)).toBe(true);
     expect(Object.isFrozen(result.classification)).toBe(true);
     expect(Object.isFrozen(result.classification.diagnostics)).toBe(true);
+    expect(Object.isFrozen(result.claudeCompatibility)).toBe(true);
     expect(Object.isFrozen(result.diagnostics)).toBe(true);
   });
 
@@ -142,10 +165,12 @@ describe("lintWorkflowSource", () => {
         const sourceFile = createOriginalSourceFile(source);
         const scan = scanWorkflowEnvelope(sourceFile);
         const classification = classifyWorkflowMetadata(scan);
+        const result = lintWorkflowSource(source);
 
-        expect(lintWorkflowSource(source).diagnostics).toEqual([
+        expect(result.diagnostics).toEqual([
           ...scan.diagnostics,
           ...classification.diagnostics,
+          ...result.claudeCompatibility,
         ]);
       }),
       SOURCE_SPAN_PROPERTY_RUNNER,

@@ -87,14 +87,34 @@ const EXPECTED_RULE_ROWS = [
     "released",
   ],
   ["odw/claude-pure-meta", "claude-compatibility", "warning", "claude-pure-meta", [], "released"],
-  ["odw/no-date-now", "claude-compatibility", "warning", "no-date-now", [], "released"],
-  ["odw/no-math-random", "claude-compatibility", "warning", "no-math-random", [], "released"],
+  [
+    "odw/no-date-now",
+    "claude-compatibility",
+    "warning",
+    "no-date-now",
+    [
+      "Workflow calls Date.now(), which Claude Code rejects because it breaks deterministic run resumption.",
+    ],
+    "released",
+  ],
+  [
+    "odw/no-math-random",
+    "claude-compatibility",
+    "warning",
+    "no-math-random",
+    [
+      "Workflow calls Math.random(), which Claude Code rejects because it breaks deterministic run resumption.",
+    ],
+    "released",
+  ],
   [
     "odw/no-argless-new-date",
     "claude-compatibility",
     "warning",
     "no-argless-new-date",
-    [],
+    [
+      "Workflow constructs new Date() without arguments, which Claude Code rejects because it breaks deterministic run resumption.",
+    ],
     "released",
   ],
   [

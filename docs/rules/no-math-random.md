@@ -8,7 +8,8 @@
 | Configuration key | `odw/no-math-random`   |
 | Release status    | `released`             |
 
-This rule reports calls to `Math.random()`. Hidden randomness makes workflow
+This rule reports direct calls to `Math.random()`. It does not report a bare
+`Math.random` reference that is not called. Hidden randomness makes workflow
 runs non-reproducible and complicates review of agent decisions.
 
 Pass seeded randomness or a chosen value into the workflow explicitly. Keep the
@@ -39,3 +40,9 @@ export const meta = {
 const sampleIndex = args.sampleIndex;
 await agent(`Review ${args.samples[sampleIndex]}.`);
 ```
+
+## Limitations
+
+Detection is syntactic. A local binding named `Math` is still treated as
+`Math`, and computed access such as `Math["random"]()` is not detected. Revisit
+these limits after roadmap 2.2.4 adds lexical binding facts.

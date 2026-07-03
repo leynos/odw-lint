@@ -60,6 +60,15 @@ const FAMILY_ORDER = [
   "unsupported-import-export",
   "syntax-error",
 ] as const;
+const RULE_IDS_COVERED_BY_INVALID_FIXTURES = [
+  "odw/meta-required",
+  "odw/meta-object",
+  "odw/meta-statically-unprovable",
+  "odw/meta-name",
+  "odw/meta-description",
+  "odw/no-import-export",
+  "odw/body-syntax",
+] as const;
 
 type FixtureDiagnostic = {
   readonly fixture: InvalidWorkflowFixtureSnapshot;
@@ -274,9 +283,11 @@ describe("invalid workflow fixture snapshots", () => {
     const families = INVALID_WORKFLOW_FIXTURE_SNAPSHOTS.map((fixture) => fixture.family);
     const statuses = INVALID_WORKFLOW_FIXTURE_SNAPSHOTS.map((fixture) => fixture.expectedStatus);
     const rules = fixtureDiagnostics().map(({ diagnostic }) => String(diagnostic.rule));
-    const rulesWithFixtureMessages = RULE_CATALOGUE.filter((rule) => rule.messages.length > 0).map(
-      (rule) => String(rule.id),
-    );
+    const rulesWithInvalidFixtureMessages = RULE_CATALOGUE.filter((rule) => {
+      return RULE_IDS_COVERED_BY_INVALID_FIXTURES.includes(
+        String(rule.id) as (typeof RULE_IDS_COVERED_BY_INVALID_FIXTURES)[number],
+      );
+    }).map((rule) => String(rule.id));
 
     expect(new Set(families)).toEqual(
       new Set([
@@ -288,7 +299,7 @@ describe("invalid workflow fixture snapshots", () => {
       ]),
     );
     expect(new Set(statuses)).toEqual(new Set(["error", "warning"]));
-    expect([...new Set(rules)].sort()).toEqual(rulesWithFixtureMessages.sort());
+    expect([...new Set(rules)].sort()).toEqual(rulesWithInvalidFixtureMessages.sort());
   });
 
   it("matches fixture diagnostics to the rule catalogue", () => {

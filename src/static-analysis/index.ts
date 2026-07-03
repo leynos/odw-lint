@@ -35,6 +35,7 @@ export {
   originalSpanFromNormalizedOffsets,
 } from "./workflow-body-normalizer";
 export { parseWorkflowBody, type WorkflowBodyParseResult } from "./workflow-body-parser";
+export { scanDeterministicTimeWarnings } from "./workflow-deterministic-time";
 export { scanWorkflowEnvelope } from "./workflow-envelope";
 export { lintWorkflowSource, type WorkflowLintResult } from "./workflow-lint";
 export {

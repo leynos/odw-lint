@@ -8,7 +8,8 @@
 | Configuration key | `odw/no-date-now`      |
 | Release status    | `released`             |
 
-This rule reports calls to `Date.now()`. Time-dependent workflows are harder to
+This rule reports direct calls to `Date.now()`. It does not report a bare
+`Date.now` reference that is not called. Time-dependent workflows are harder to
 replay, test, and compare across ODW and Claude Code environments.
 
 Inject the current time through workflow arguments or an explicit host adapter
@@ -39,3 +40,9 @@ export const meta = {
 const timestamp = args.timestamp;
 await agent(`Draft a status note for ${timestamp}.`);
 ```
+
+## Limitations
+
+Detection is syntactic. A local binding named `Date` is still treated as
+`Date`, and computed access such as `Date["now"]()` is not detected. Revisit
+these limits after roadmap 2.2.4 adds lexical binding facts.

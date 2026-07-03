@@ -666,7 +666,7 @@ reported clearly in one command. The result informs strict-mode policy. See
   - See [technical-design.md](technical-design.md) §§6.3 and 9.2.
   - Success: ODW-valid but Claude-incompatible metadata produces
     `odw/claude-pure-meta`.
-- [ ] 3.1.2. Implement deterministic-time and randomness warnings for
+- [x] 3.1.2. Implement deterministic-time and randomness warnings for
   `Date.now()`, `Math.random()`, and arg-less `new Date()`.
   - Requires 2.2.2.
   - See [technical-design.md](technical-design.md) §9.2.

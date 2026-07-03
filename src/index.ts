@@ -81,6 +81,7 @@ export {
   STATIC_ANALYSIS_STAGES,
   type StaticAnalysisComponent,
   type StaticAnalysisStage,
+  scanDeterministicTimeWarnings,
   scanWorkflowEnvelope,
   sliceSourceSpan,
   snippetForSpan,

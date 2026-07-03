@@ -165,18 +165,27 @@ export const RULE_CATALOGUE = Object.freeze([
     category: "claude-compatibility",
     defaultSeverity: "warning",
     releaseStatus: "released",
+    messages: [
+      "Workflow calls Date.now(), which Claude Code rejects because it breaks deterministic run resumption.",
+    ],
   }),
   ruleDefinition({
     id: "odw/no-math-random",
     category: "claude-compatibility",
     defaultSeverity: "warning",
     releaseStatus: "released",
+    messages: [
+      "Workflow calls Math.random(), which Claude Code rejects because it breaks deterministic run resumption.",
+    ],
   }),
   ruleDefinition({
     id: "odw/no-argless-new-date",
     category: "claude-compatibility",
     defaultSeverity: "warning",
     releaseStatus: "released",
+    messages: [
+      "Workflow constructs new Date() without arguments, which Claude Code rejects because it breaks deterministic run resumption.",
+    ],
   }),
   ruleDefinition({
     id: "odw/no-odw-only-validate",
