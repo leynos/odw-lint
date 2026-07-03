@@ -51,6 +51,10 @@ The workflow body parser adapter lives in
 the scanned `envelope.bodySpan` with `normalizeWorkflowBody`, parses the
 normalized text with `@swc/core`'s `parseSync`, and converts observed parser
 syntax failures into `odw/body-syntax` diagnostics with original-source spans.
+The adapter parses ECMAScript-only source (`syntax: "ecmascript"`), so
+TypeScript-only syntax yields `odw/body-syntax`; ADR
+[0002-workflow-body-parser-dialect-scope.md](adr/0002-workflow-body-parser-dialect-scope.md)
+records that dialect boundary.
 The adapter never executes workflow source, never calls ODW runtime helpers,
 and returns a frozen discriminated result instead of letting syntax errors
 escape.

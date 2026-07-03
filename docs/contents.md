@@ -162,6 +162,8 @@ entry; that index enumerates every current rule page.
   adoption in the first parser-backed rule.
 - [Roadmap 2.2.6 ExecPlan](execplans/roadmap-2-2-6.md) plans narrowed body
   syntax spans for structured parser offsets.
+- [Roadmap 2.2.7 ExecPlan](execplans/roadmap-2-2-7.md) plans the
+  workflow-body parser dialect scope reconciliation.
 - [Roadmap 3.1.2 ExecPlan](execplans/roadmap-3-1-2.md) plans
   deterministic-time and randomness warnings.
 - [Roadmap 4.4.1 ExecPlan](execplans/roadmap-4-4-1.md) plans the documentation

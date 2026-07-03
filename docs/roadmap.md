@@ -644,7 +644,7 @@ source without losing span fidelity. It informs all later AST rules. See
     - Addendum (from audit:2.2.5; medium). Move duplicated low-level
       static-analysis object and number guards into one reviewed helper used
       by parser-range code and tests. Lightweight addendum pass.
-- [ ] 2.2.7. Reconcile workflow-body parser dialect scope.
+- [x] 2.2.7. Reconcile workflow-body parser dialect scope.
   - Requires 2.2.1, 2.2.5, and 2.2.6.
   - Decide whether workflow bodies are parsed as ECMAScript-only source or
     supported TypeScript syntax, then align diagnostics and documentation with
@@ -652,6 +652,7 @@ source without losing span fidelity. It informs all later AST rules. See
   - Success: TypeScript-in-body input has an intentional, tested outcome, and
     roadmap, design, developer, and rule documentation no longer describe a
     broader parser dialect than production accepts.
+  - Completed by [roadmap-2-2-7.md](execplans/roadmap-2-2-7.md).
 
 ### 2.3. Prove ODW loader parity before shipping dialect checks
 

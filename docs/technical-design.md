@@ -74,7 +74,9 @@ dialect contract.
 ## 5. Static-analysis boundary
 
 The static-analysis boundary is a first-class architecture decision. See
-[0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md).
+[0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md). The
+workflow-body parser dialect is also explicit; see
+[0002-workflow-body-parser-dialect-scope.md](adr/0002-workflow-body-parser-dialect-scope.md).
 
 `odw-lint` must not import or call executable ODW runtime paths in production
 code. In particular, it must not call `loadWorkflowScript`, `createPrimitives`,
@@ -107,7 +109,7 @@ loader path.
 | Static meta parser   | Parse metadata as a pure or lenient object without executing expressions.                                                          |
 | Body normalizer      | Produce SWC-parseable source by stripping the `export` token and wrapping or replacing top-level `return` when needed for parsing. |
 | Span mapper          | Map normalized AST spans back to original source offsets, lines, and columns.                                                      |
-| SWC parser adapter   | Parse normalized JavaScript or TypeScript source and return AST plus syntax errors.                                                |
+| SWC parser adapter   | Parse normalized ECMAScript source and return AST plus syntax errors.                                                              |
 | Rule engine          | Run deterministic rules over the envelope, metadata, AST, and derived facts.                                                       |
 | Reporter             | Emit text, JSON, and future SARIF-compatible diagnostic streams.                                                                   |
 | Fixture corpus       | Store valid and invalid workflow examples for differential tests.                                                                  |

@@ -32,6 +32,7 @@ export type NormalizedBodyParseResult =
 type ModuleParseOptions = ParseOptions & { readonly isModule?: true };
 
 const WORKFLOW_BODY_PARSE_OPTIONS: ModuleParseOptions = {
+  // ADR 0002 records why workflow bodies stay ECMAScript-only for ODW parity.
   syntax: "ecmascript",
   jsx: false,
 };
