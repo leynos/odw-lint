@@ -85,7 +85,7 @@ const runCli = (
     gateCommands: options.gateCommands ?? onePassingGate,
     writeOut: output.writeOut,
     writeErr: output.writeErr,
-    ...(options.env === undefined ? {} : { env: options.env }),
+    env: options.env ?? {},
   };
   const exitCode = runReviewEvidenceCli(options.args ?? [], cliOptions);
 
@@ -107,6 +107,7 @@ describe("runReviewEvidenceCli", () => {
         ["make all", "pass-all", ["all"]],
         ["make markdownlint", "pass-markdownlint", ["markdownlint"]],
       ],
+      env: { ODW_LINT_REVIEW_SCRUTINEER: "available" },
     });
 
     expect(result.exitCode).toBe(0);
@@ -144,6 +145,7 @@ describe("runReviewEvidenceCli", () => {
           stderr: "markdownlint found an issue\n",
         }),
       },
+      env: { ODW_LINT_REVIEW_SCRUTINEER: "available" },
     });
 
     expect(result.exitCode).toBe(1);
@@ -167,6 +169,7 @@ describe("runReviewEvidenceCli", () => {
       resultsByCommand: {
         true: makeResult({ status: null, error: new Error("spawn true ENOENT") }),
       },
+      env: { ODW_LINT_REVIEW_SCRUTINEER: "available" },
     });
 
     expect(result.exitCode).toBe(3);
@@ -191,6 +194,7 @@ describe("runReviewEvidenceCli", () => {
           error: makeTimeoutError(),
         }),
       },
+      env: { ODW_LINT_REVIEW_SCRUTINEER: "available" },
     });
 
     expect(result.exitCode).toBe(1);
@@ -207,6 +211,7 @@ describe("runReviewEvidenceCli", () => {
           signal: "SIGTERM",
         }),
       },
+      env: { ODW_LINT_REVIEW_SCRUTINEER: "available" },
     });
 
     expect(result.exitCode).toBe(1);
@@ -235,7 +240,7 @@ describe("runReviewEvidenceCli", () => {
   });
 
   it("uses the documented default gate timeout", () => {
-    const result = runCli();
+    const result = runCli({ env: { ODW_LINT_REVIEW_SCRUTINEER: "available" } });
 
     expect(result.exitCode).toBe(0);
     expect(result.calls[0]?.options).toMatchObject({
@@ -244,7 +249,10 @@ describe("runReviewEvidenceCli", () => {
   });
 
   it("uses the CLI gate-timeout override for each gate command", () => {
-    const result = runCli({ args: ["--gate-timeout-ms=120000"] });
+    const result = runCli({
+      args: ["--gate-timeout-ms=120000"],
+      env: { ODW_LINT_REVIEW_SCRUTINEER: "available" },
+    });
 
     expect(result.exitCode).toBe(0);
     expect(result.calls[0]?.options).toMatchObject({
@@ -253,7 +261,12 @@ describe("runReviewEvidenceCli", () => {
   });
 
   it("uses the environment gate-timeout override", () => {
-    const result = runCli({ env: { ODW_LINT_REVIEW_GATE_TIMEOUT_MS: "450000" } });
+    const result = runCli({
+      env: {
+        ODW_LINT_REVIEW_GATE_TIMEOUT_MS: "450000",
+        ODW_LINT_REVIEW_SCRUTINEER: "available",
+      },
+    });
 
     expect(result.exitCode).toBe(0);
     expect(result.calls[0]?.options).toMatchObject({
@@ -269,7 +282,9 @@ describe("runReviewEvidenceCli", () => {
   });
 
   it("reports coderabbit as the explicit fallback when scrutineer is quota-blocked", () => {
-    const result = runCli({ args: ["--scrutineer=quota-blocked"] });
+    const result = runCli({
+      args: ["--scrutineer=quota-blocked", "--coderabbit=available"],
+    });
 
     expect(result.exitCode).toBe(0);
     expect(result.output.stdout).toContain(
@@ -321,7 +336,10 @@ describe("runReviewEvidenceCli", () => {
   });
 
   it("derives required gates from the keyed gate-command list", () => {
-    const result = runCli({ gateCommands: onePassingGate });
+    const result = runCli({
+      gateCommands: onePassingGate,
+      env: { ODW_LINT_REVIEW_SCRUTINEER: "available" },
+    });
     const gateLines = result.output.stdout.split("\n").filter((line) => line.startsWith("- gate "));
 
     expect(result.exitCode).toBe(0);
@@ -335,6 +353,7 @@ describe("runReviewEvidenceCli", () => {
       gateCommands: onePassingGate,
       writeOut: output.writeOut,
       writeErr: output.writeErr,
+      env: { ODW_LINT_REVIEW_SCRUTINEER: "available" },
     });
 
     expect(exitCode).toBe(0);
@@ -348,6 +367,7 @@ describe("runReviewEvidenceCli", () => {
       gateCommands: oneMissingGate,
       writeOut: output.writeOut,
       writeErr: output.writeErr,
+      env: {},
     });
 
     expect(exitCode).toBe(3);

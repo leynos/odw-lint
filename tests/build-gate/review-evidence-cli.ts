@@ -16,9 +16,13 @@ import {
   type GateExecution,
   type ReviewEvidenceResult,
   type ReviewGateId,
-  type ReviewPath,
-  type ReviewPathAvailability,
 } from "./review-evidence";
+import {
+  deriveHarnessPathAvailability,
+  type PathAvailabilityFacts,
+  parseAvailabilityValue,
+  setPathAvailability,
+} from "./review-evidence-availability";
 import { formatReviewEvidenceResult } from "./review-evidence-report";
 
 export type GateCommand = readonly [ReviewGateId, string, readonly string[]];
@@ -27,11 +31,15 @@ export type ReviewEvidenceExitCode = 0 | 1 | 2 | 3;
 type CliOptions = {
   readonly executionEnabled: boolean;
   readonly gateTimeoutMs: number;
-  readonly pathAvailability: Readonly<Record<ReviewPath, ReviewPathAvailability>>;
+  readonly pathAvailability: PathAvailabilityFacts;
 };
 
 type ParsedCliOptions = CliOptions | { readonly usageError: string };
 
+type AvailabilityFlag = {
+  readonly prefix: string;
+  readonly path: keyof PathAvailabilityFacts;
+};
 export type RunReviewEvidenceCliOptions = {
   readonly createRunner?: (command: string, options?: CommandRunnerOptions) => CommandRunner;
   readonly gateCommands?: readonly GateCommand[];
@@ -51,18 +59,12 @@ const defaultGateCommands: readonly GateCommand[] = [
 
 const defaultGateTimeoutMs = 5 * 60 * 1000;
 const defaultGateMaxBufferBytes = 64 * 1024 * 1024;
-const reviewerAvailabilityValues = [
-  "available",
-  "quota-blocked",
-  "unavailable",
-  "no-output",
-] as const;
-const defaultPathAvailability = {
-  scrutineer: "available",
-  coderabbit: "available",
-  "local-self-run": "available",
-} as const;
 
+const availabilityFlags = [
+  { prefix: "--scrutineer=", path: "scrutineer" },
+  { prefix: "--coderabbit=", path: "coderabbit" },
+  { prefix: "--local-self-run=", path: "local-self-run" },
+] as const satisfies readonly AvailabilityFlag[];
 /**
  * Run the review-evidence CLI and return its process exit code.
  *
@@ -198,11 +200,15 @@ const parseCliArgs = (
   if (typeof parsedEnvironmentTimeout === "string") {
     return { usageError: parsedEnvironmentTimeout };
   }
+  const parsedPathAvailability = deriveHarnessPathAvailability(env);
+  if (typeof parsedPathAvailability === "string") {
+    return { usageError: parsedPathAvailability };
+  }
 
   let options: CliOptions = {
     executionEnabled: reviewExecutionMode !== "0",
     gateTimeoutMs: parsedEnvironmentTimeout.value,
-    pathAvailability: defaultPathAvailability,
+    pathAvailability: parsedPathAvailability,
   };
 
   for (const arg of args) {
@@ -231,27 +237,38 @@ const parseCliArg = (arg: string, options: CliOptions): CliOptions | string => {
     return { ...options, gateTimeoutMs: parsedTimeout.value };
   }
 
-  const scrutineerValue = parseFlagValue(arg, "--scrutineer=");
-  if (scrutineerValue !== undefined) {
-    const parsed = parseAvailability("scrutineer", scrutineerValue);
-    if (typeof parsed === "string") {
-      return parsed;
-    }
-    return setPathAvailability(options, "scrutineer", parsed.value);
-  }
-
-  const coderabbitValue = parseFlagValue(arg, "--coderabbit=");
-  if (coderabbitValue !== undefined) {
-    const parsed = parseAvailability("coderabbit", coderabbitValue);
-    if (typeof parsed === "string") {
-      return parsed;
-    }
-    return setPathAvailability(options, "coderabbit", parsed.value);
+  const availabilityOptions = parseAvailabilityFlag(arg, options);
+  if (availabilityOptions !== undefined) {
+    return availabilityOptions;
   }
 
   return `unknown option: ${arg}`;
 };
 
+/** Parse reviewer availability flags into the accumulated options. */
+const parseAvailabilityFlag = (
+  arg: string,
+  options: CliOptions,
+): CliOptions | string | undefined => {
+  for (const flag of availabilityFlags) {
+    const value = parseFlagValue(arg, flag.prefix);
+    if (value === undefined) {
+      continue;
+    }
+
+    const parsed = parseAvailabilityValue(flag.path, value);
+    if (!parsed.ok) {
+      return parsed.usageError;
+    }
+
+    return {
+      ...options,
+      pathAvailability: setPathAvailability(options.pathAvailability, flag.path, parsed.value),
+    };
+  }
+
+  return undefined;
+};
 /** Parse the optional environment gate timeout. */
 const parseEnvironmentGateTimeoutMs = (
   value: string | undefined,
@@ -263,22 +280,6 @@ const parseEnvironmentGateTimeoutMs = (
 
   return parseGateTimeoutMs(value, "environment");
 };
-
-/** Update one review-path availability flag without dropping other paths. */
-const setPathAvailability = (
-  options: CliOptions,
-  path: "scrutineer" | "coderabbit",
-  value: ReviewPathAvailability,
-): CliOptions => {
-  return {
-    ...options,
-    pathAvailability: {
-      ...options.pathAvailability,
-      [path]: value,
-    },
-  };
-};
-
 /** Parse the per-gate timeout, rejecting values that would disable the bound. */
 const parseGateTimeoutMs = (
   value: string,
@@ -296,18 +297,6 @@ const parseGateTimeoutMs = (
 /** Parse `--name=value` flags without accepting bare values. */
 const parseFlagValue = (arg: string, prefix: string): string | undefined => {
   return arg.startsWith(prefix) ? arg.slice(prefix.length) : undefined;
-};
-
-/** Parse reviewer availability with a stable usage-error message. */
-const parseAvailability = (
-  name: "scrutineer" | "coderabbit",
-  value: string,
-): { readonly value: ReviewPathAvailability } | string => {
-  if (reviewerAvailabilityValues.includes(value as ReviewPathAvailability)) {
-    return { value: value as ReviewPathAvailability };
-  }
-
-  return `invalid ${name} availability: ${value}`;
 };
 
 /**

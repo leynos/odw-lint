@@ -231,16 +231,28 @@ step and record its report as the review evidence; see AGENTS.md
 "Roadmap Review & Audit Evidence". The target runs `make all`,
 `make markdownlint`, and `make nixie` through the shared build-gate command
 runner, then reports the selected dual-review path. The df12 review/audit
-environment provides the full toolchain, including `nixie`, so a clean tree is
-expected to report `verified`. Keep the target outside `make all` because it
-re-runs `make all` and is a reviewer-run audit gate, not a recursive
-commit-gate step.
+environment provides the full toolchain, including `nixie`, so the re-run gates
+can pass on a clean tree. Reporting `verified` additionally requires the
+harness to export observed reviewer state that selects a scrutineer or
+coderabbit dual-review path, for example
+`ODW_LINT_REVIEW_SCRUTINEER=available`. A clean tree with no exported reviewer
+state is honestly `degraded` (exit 3) on the `local-self-run` path. Keep the
+target outside `make all` because it re-runs `make all` and is a reviewer-run
+audit gate, not a recursive commit-gate step.
 
 Each review-evidence gate uses a five-minute command timeout by default. Slow
 review environments may override the per-gate timeout with
 `ODW_LINT_REVIEW_GATE_TIMEOUT_MS=<milliseconds>` or by running
 `bun run tests/build-gate/review-evidence-cli.ts --gate-timeout-ms=<milliseconds>`.
 Timeout overrides must be positive integer millisecond values.
+
+Reviewer availability is also environment-first. The harness should export
+`ODW_LINT_REVIEW_SCRUTINEER`, `ODW_LINT_REVIEW_CODERABBIT`, and
+`ODW_LINT_REVIEW_LOCAL_SELF_RUN` with values of `available`, `quota-blocked`,
+`unavailable`, or `no-output`. Explicit `--scrutineer=`, `--coderabbit=`, and
+`--local-self-run=` flags override the environment for local investigation.
+Absent either an environment value or a flag, `scrutineer` and `coderabbit`
+default to `unavailable`, while `local-self-run` defaults to `available`.
 
 `make review-evidence` exits 0 for `verified`, 1 for a failed re-run gate, 2 for
 usage errors, and 3 for `degraded` evidence. A degraded report means the review

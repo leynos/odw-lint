@@ -312,7 +312,7 @@ depending on manual post-commit audits.
   - Requires 1.5.6.
   - Success: a normal roadmap review or audit path records review-evidence
     output without a manual reviewer opting into the target.
-- [ ] 1.5.8. Derive reviewer availability from harness state.
+- [x] 1.5.8. Derive reviewer availability from harness state.
   - Wire review-evidence reviewer availability from the roadmap or df12-build
     workflow's observed reviewer state, such as scrutineer quota or
     unavailable reviewer detection, instead of defaulting an unparameterized

@@ -120,11 +120,24 @@
   commit-gate step.
 - The recorded report is the deliverable whatever its classification. In the
   fully provisioned df12 environment, which is the same toolchain used for this
-  repository's `make nixie` validation, the expected happy-path result is
-  `verified` (exit 0). A `failed` (1) or `usage-error` (2) result must block the
-  review as a real problem. Do not state or imply that any specific Mermaid
-  renderer is selected; `make nixie` runs the bare `nixie --no-sandbox` recipe,
-  and this repository provisions no renderer for the review-evidence path.
+  repository's `make nixie` validation, `verified` (exit 0) requires both
+  passing re-run gates and harness-exported reviewer state that selects an
+  independent dual-review path, for example
+  `ODW_LINT_REVIEW_SCRUTINEER=available`. A bare run with the toolchain
+  provisioned but no exported reviewer state is honestly `degraded` (exit 3) on
+  the `local-self-run` path, not `verified`. A `failed` (1) or `usage-error`
+  (2) result must block the review as a real problem. Do not state or imply
+  that any specific Mermaid renderer is selected; `make nixie` runs the bare
+  `nixie --no-sandbox` recipe, and this repository provisions no renderer for
+  the review-evidence path.
+- The roadmap / df12-build harness must export its observed reviewer state with
+  `ODW_LINT_REVIEW_SCRUTINEER`, `ODW_LINT_REVIEW_CODERABBIT`, and
+  `ODW_LINT_REVIEW_LOCAL_SELF_RUN`. Each value must be one of `available`,
+  `quota-blocked`, `unavailable`, or `no-output`. Without that harness state,
+  the CLI defaults pessimistically and reports degraded `local-self-run`
+  evidence rather than claiming a scrutineer review. Explicit `--scrutineer=`,
+  `--coderabbit=`, and `--local-self-run=` flags override the harness state for
+  operator investigation.
 - When the `coderabbit` fallback is rate-limited, unavailable, or returns no
   usable output, record that state explicitly with the review-evidence CLI
   rather than treating the fallback as completed independent review.

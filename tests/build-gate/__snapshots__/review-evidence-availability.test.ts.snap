@@ -1,0 +1,22 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`parseAvailabilityValue returns a scrutineer usage error for an invalid value 1`] = `
+{
+  "ok": false,
+  "usageError": "invalid scrutineer availability: later",
+}
+`;
+
+exports[`parseAvailabilityValue returns a coderabbit usage error for an invalid value 1`] = `
+{
+  "ok": false,
+  "usageError": "invalid coderabbit availability: later",
+}
+`;
+
+exports[`parseAvailabilityValue returns a local-self-run usage error for an invalid value 1`] = `
+{
+  "ok": false,
+  "usageError": "invalid local-self-run availability: later",
+}
+`;
