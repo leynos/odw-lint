@@ -614,11 +614,11 @@ source without losing span fidelity. It informs all later AST rules. See
     the reviewed `{detail}` message template while retaining the exact
     no-detail fallback, and syntax-error fixture parity exercises the template
     branch.
-  - [ ] 2.2.5.1. Harden body-syntax detail marker stripping.
+  - [x] 2.2.5.1. Harden body-syntax detail marker stripping.
     - Addendum (from review:2.2.5; low). Prevent marker stripping from
       removing legitimate leading `x` or `X` tokens in future parser detail.
       Lightweight addendum pass.
-  - [ ] 2.2.5.2. Document SWC-bump parser-detail recapture.
+  - [x] 2.2.5.2. Document SWC-bump parser-detail recapture.
     - Addendum (from review:2.2.5; low). Add maintainer guidance to
       re-observe pinned SWC syntax details, manifests, and parser snapshots on
       parser upgrades. Lightweight addendum pass.

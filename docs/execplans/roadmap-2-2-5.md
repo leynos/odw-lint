@@ -354,14 +354,14 @@ idempotent.
 
 ## Addenda
 
-- [ ] 2.2.5.1. Harden body-syntax detail marker stripping.
+- [x] 2.2.5.1. Harden body-syntax detail marker stripping.
   - Source: review:2.2.5; severity low.
   - Scope: require a real marker boundary, or restrict stripping to the
     observed marker glyphs, so a legitimate leading `x` or `X` in future parser
     detail is preserved.
   - Success: regression tests prove marker stripping still cleans pinned SWC
     detail while preserving ordinary leading `x` and `X` words.
-- [ ] 2.2.5.2. Document SWC-bump parser-detail recapture.
+- [x] 2.2.5.2. Document SWC-bump parser-detail recapture.
   - Source: review:2.2.5; severity low.
   - Scope: add maintainer guidance that an intentional `@swc/core` bump must
     re-observe body-syntax details, update syntax-error manifests, and refresh

@@ -10,7 +10,7 @@ export const BODY_SYNTAX_DETAIL_MAX_LENGTH = 200;
 
 const LINE_TERMINATOR_PATTERN = /\r\n|[\n\r\u2028\u2029]/u;
 const WHITESPACE_RUN_PATTERN = /\s+/gu;
-const MARKER_PREFIX_PATTERN = /^(?:[×x]\s*|Syntax Error:?\s*)/iu;
+const MARKER_PREFIX_PATTERN = /^(?:×\s*|[xX]\s+|Syntax Error:?\s*)/u;
 const LEADING_PUNCTUATION_PATTERN = /^[\s:;,.!-]+/u;
 
 /**

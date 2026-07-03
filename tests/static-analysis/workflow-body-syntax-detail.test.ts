@@ -32,9 +32,21 @@ describe("workflow body syntax detail extraction", () => {
     const cases = [
       { thrown: "× Expected ';'", expected: "Expected ';'" },
       { thrown: "x Expected ')'", expected: "Expected ')'" },
+      { thrown: "X Expected expression", expected: "Expected expression" },
       { thrown: "Syntax Error: Expected expression", expected: "Expected expression" },
       { thrown: "Syntax Error Expected statement", expected: "Expected statement" },
       { thrown: "  ! Expected declaration", expected: "Expected declaration" },
+    ] as const;
+
+    for (const { thrown, expected } of cases) {
+      expect(bodySyntaxDetail(thrown)).toBe(expected);
+    }
+  });
+
+  it("preserves ordinary words that start with x or X", () => {
+    const cases = [
+      { thrown: "xylophone is not valid syntax", expected: "xylophone is not valid syntax" },
+      { thrown: "Xylophone is not valid syntax", expected: "Xylophone is not valid syntax" },
     ] as const;
 
     for (const { thrown, expected } of cases) {

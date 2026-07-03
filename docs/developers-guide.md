@@ -428,6 +428,14 @@ parser-backed messages must match catalogue-owned templates instead of broad
 substring assertions. When an invalid fixture needs a different reviewer-facing
 `message`, extend the matching catalogue entry in the same change rather than
 treating the manifest as a separate source of truth.
+When intentionally bumping `@swc/core`, re-observe the `odw/body-syntax`
+parser detail for the `syntax-error` invalid workflow family and update these
+surfaces together: the raw fixtures under
+`tests/static-analysis/fixtures/invalid-workflows/syntax-error/`, their
+manifest at
+`tests/static-analysis/fixtures/invalid-workflows/manifests/syntax-error.ts`,
+and the parser snapshot at
+`tests/static-analysis/__snapshots__/workflow-body-parser.test.ts.snap`.
 Diagnostic documentation paths are derived from `ruleDocsPath(rule)` and remain
 repository-relative paths under `docs/rules/`; hosted URLs belong in later
 reporting or documentation presentation layers. For invalid diagnostic spans,
