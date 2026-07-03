@@ -78,9 +78,11 @@ message-template module owns the parser-backed diagnostic interpolation
 contract used to render reviewed templates and verify concrete dynamic
 messages. The rule catalogue is the source of truth for rule identifiers,
 categories, default severities, configuration keys, documentation slugs,
-diagnostic message contracts and release status. Any catalogue change must stay
-aligned with JSON Schema generation, public exports, fixture expectations, rule
-documentation and parity tests.
+diagnostic message contracts and release status; its `ruleAllowsMessage`
+predicate is the production exact-or-template message gate for validators and
+fixture parity. Any catalogue change must stay aligned with JSON Schema
+generation, public exports, fixture expectations, rule documentation and parity
+tests.
 
 `src/static-analysis/` owns source modelling and static source inspection. It
 may build indexes, spans and snippets from workflow source, but production code

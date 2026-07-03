@@ -21,6 +21,7 @@ import {
   type RuleId,
   type RuleReleaseStatus,
   reviewedRuleMessage,
+  ruleAllowsMessage,
   ruleDefinitionFor,
   ruleDocsPath,
 } from "odw-lint";
@@ -265,6 +266,28 @@ describe("rule catalogue", () => {
     }
 
     expectTypeOf<RuleDefinition["messageTemplates"]>().toEqualTypeOf<readonly MessageTemplate[]>();
+  });
+
+  it("matches concrete messages against the reviewed rule contract", () => {
+    const bodySyntaxRule = ruleDefinitionFor(makeRuleId("odw/body-syntax"));
+    const metadataRule = ruleDefinitionFor(makeRuleId("odw/meta-object"));
+
+    expect(
+      ruleAllowsMessage(
+        bodySyntaxRule,
+        "Workflow body must be syntactically complete after ODW normalization: Expected ';'",
+      ),
+    ).toBeTrue();
+    expect(
+      ruleAllowsMessage(
+        bodySyntaxRule,
+        "Workflow body must be syntactically complete after ODW normalization: ",
+      ),
+    ).toBeFalse();
+    expect(
+      ruleAllowsMessage(metadataRule, "Workflow metadata must be an object literal."),
+    ).toBeTrue();
+    expect(ruleAllowsMessage(metadataRule, "Workflow metadata must be an object")).toBeFalse();
   });
 
   it("derives public rule lists from the catalogue", () => {

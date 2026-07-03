@@ -329,6 +329,20 @@ conflict in `Decision Log`, and escalate.
   tests/static-analysis` invocation rejected the path form with a usage error,
   so no history-dependent decision used `sem`.
 
+- Observation: the 2.1.8.5 addendum pass confirmed GrepAI and `leta files`
+  were available, but the branch-local symbol query
+  failed with `Error: Connection closed unexpectedly`:
+
+  ```sh
+  leta grep "ruleAllowsMessage|messageTemplates|messageMatchesTemplate|RuleDefinition|EXPECTED_RULE_ROWS" \
+    "(src|tests)/.*" -k function,method,class,interface,type,variable,constant --head 200
+  ```
+
+  Evidence: branch-local command output on 2026-07-03.
+  Impact: the addendum used GrepAI for main-branch intent search, `sem diff`
+  for semantic change review, and bounded branch-local file inspection for the
+  affected production predicate and fixture-parity surfaces.
+
 - Observation: the requested `scrutineer` sub-agent could not run gates or
   CodeRabbit because the role failed immediately with the GPT-5.3-Codex-Spark
   quota error "You've hit your usage limit ... try again at Jul 7th, 2026
@@ -569,7 +583,7 @@ Validation evidence at closeout:
   - Success: the public or maintainer documentation explains how reviewed
     templates are authored, rendered, matched, and attached to rule catalogue
     entries.
-- [ ] 2.1.8.5. Own the reviewed rule message contract in production.
+- [x] 2.1.8.5. Own the reviewed rule message contract in production.
   - Source: audit:2.2.5.
   - Severity: medium.
   - Scope: promote the exact-or-template message-contract predicate from tests

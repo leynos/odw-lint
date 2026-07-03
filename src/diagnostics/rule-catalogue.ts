@@ -8,7 +8,11 @@
  * runtime code.
  */
 
-import { createMessageTemplate, type MessageTemplate } from "./message-template";
+import {
+  createMessageTemplate,
+  type MessageTemplate,
+  messageMatchesTemplate,
+} from "./message-template";
 import { makeRuleId, type RuleId } from "./rule-id";
 import type { DiagnosticSeverity } from "./severity";
 
@@ -279,6 +283,23 @@ export const reviewedRuleMessage = (rule: RuleDefinition, messageIndex: number):
   }
 
   return message;
+};
+
+/**
+ * Reports whether a diagnostic message satisfies a rule's reviewed contract.
+ *
+ * @param rule - Rule message contract to check.
+ * @param message - Concrete diagnostic message emitted by a rule.
+ * @returns True when `message` is reviewed exactly or matches a reviewed template.
+ */
+export const ruleAllowsMessage = (
+  rule: Pick<RuleDefinition, "messages" | "messageTemplates">,
+  message: string,
+): boolean => {
+  return (
+    rule.messages.includes(message) ||
+    rule.messageTemplates.some((template) => messageMatchesTemplate(template, message))
+  );
 };
 
 /**

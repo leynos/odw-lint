@@ -381,8 +381,9 @@ diagnostic message could have been rendered from the reviewed template. Matching
 is whole-message only: literal text is escaped, placeholders match one or more
 characters, repeated placeholders must match the same dynamic text, and
 unrelated prefixes, suffixes, empty placeholder runs, or overlong candidate
-messages fail. Fixture parity uses this helper rather than substring checks, so
-dynamic messages remain reviewable.
+messages fail. Use `ruleAllowsMessage(rule, message)` for fixture parity,
+report validators, and editor integrations that need the full reviewed
+exact-or-template message contract rather than substring checks.
 
 Behavioural tests should use `@aboviq/bun-test-cucumber` with Gherkin feature
 files. Snapshot tests should use Bun's built-in snapshot testing support.

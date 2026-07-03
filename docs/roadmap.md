@@ -486,7 +486,7 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:2.1.8; medium). Document the placeholder grammar,
       render requirements, and matching semantics for rule authors. Lightweight
       addendum pass.
-  - [ ] 2.1.8.5. Own the reviewed rule message contract in production.
+  - [x] 2.1.8.5. Own the reviewed rule message contract in production.
     - Addendum (from audit:2.2.5; medium). Promote the exact-or-template
       message-contract predicate from tests into the diagnostics catalogue for
       future validators and editor integrations. Lightweight addendum pass.

@@ -90,6 +90,7 @@ export const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
   "positionAtOffset",
   "renderMessageTemplate",
   "reviewedRuleMessage",
+  "ruleAllowsMessage",
   "ruleDefinitionFor",
   "ruleDocsPath",
   "scanDeterministicTimeWarnings",

@@ -355,8 +355,10 @@ values are invalid. Matching is anchored to the whole diagnostic message:
 literal segments are escaped, each placeholder must match at least one
 character, repeated placeholders must match the same text, and overlong
 candidate messages are rejected before regex matching. Rule authors attach
-reviewed templates through `RuleDefinition.messageTemplates`; fixture parity
-accepts a dynamic message only when it matches one of those reviewed templates.
+reviewed templates through `RuleDefinition.messageTemplates`; the production
+`ruleAllowsMessage(rule, message)` predicate accepts a dynamic message only
+when it equals a reviewed exact message or matches one of those reviewed
+templates.
 `odw/body-syntax` uses the first reviewed template in this contract: parser
 syntax detail is rendered into `{detail}` after the fixed reviewed sentence,
 while the exact message remains the no-detail fallback.

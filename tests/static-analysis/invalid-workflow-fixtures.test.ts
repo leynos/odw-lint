@@ -8,9 +8,9 @@ import { existsSync } from "node:fs";
 import type { WorkflowSource } from "odw-lint";
 import {
   createMessageTemplate,
-  messageMatchesTemplate,
   RULE_CATALOGUE,
   type RuleDefinition,
+  ruleAllowsMessage,
   ruleDocsPath,
 } from "odw-lint";
 import {
@@ -130,14 +130,6 @@ const catalogueRuleForFixtureDiagnostic = (
   }
 
   return matchingRule;
-};
-
-/** Reports whether a diagnostic message satisfies a rule's reviewed contract. */
-const ruleAllowsMessage = (rule: RuleMessageContract, message: string): boolean => {
-  return (
-    rule.messages.includes(message) ||
-    rule.messageTemplates.some((template) => messageMatchesTemplate(template, message))
-  );
 };
 
 /** Pairs every invalid fixture diagnostic with its catalogue rule. */

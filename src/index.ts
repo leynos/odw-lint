@@ -28,6 +28,7 @@ export {
   type RuleDocumentationPath,
   type RuleReleaseStatus,
   reviewedRuleMessage,
+  ruleAllowsMessage,
   ruleDefinitionFor,
   ruleDocsPath,
 } from "./diagnostics/rule-catalogue";
