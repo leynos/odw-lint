@@ -107,6 +107,25 @@
 
 - Changes that fail any of the quality gates should not be committed.
 
+## Roadmap Review & Audit Evidence
+
+- A roadmap review or audit, including the df12-build audit phase, must run
+  `make review-evidence` as a required step and record its report as the review
+  evidence. This is not optional and must not depend on a reviewer remembering
+  to opt into the target.
+- `make review-evidence` re-runs `make all`, `make markdownlint`, and
+  `make nixie` in the task worktree through the shared build-gate command
+  runner, then reports the selected dual-review path. It stays outside
+  `make all` because it is a reviewer-run audit gate, not a recursive
+  commit-gate step.
+- The recorded report is the deliverable whatever its classification. In the
+  fully provisioned df12 environment, which is the same toolchain used for this
+  repository's `make nixie` validation, the expected happy-path result is
+  `verified` (exit 0). A `failed` (1) or `usage-error` (2) result must block the
+  review as a real problem. Do not state or imply that any specific Mermaid
+  renderer is selected; `make nixie` runs the bare `nixie --no-sandbox` recipe,
+  and this repository provisions no renderer for the review-evidence path.
+
 ## Refactoring Heuristics & Workflow
 
 - **Recognizing Refactoring Needs:** The codebase should be assessed regularly

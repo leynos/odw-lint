@@ -142,9 +142,11 @@ Mermaid changes require `make nixie`. Roadmap review support lives in
 non-recursive review targets: `make branch-freshness` checks task branches
 against protected `origin/main` changes, and `make review-evidence` re-runs
 `make all`, `make markdownlint`, and `make nixie` through the shared build-gate
-command runner before reporting the selected review path. Use
-`make refresh-fixtures` when workflow fixture source or manifest metadata
-changes.
+command runner before reporting the selected review path. The roadmap
+review/audit path runs `make review-evidence` as a required recorded step, but
+the target is not added to `make all` because it is non-recursive review
+support. Use `make refresh-fixtures` when workflow fixture source or manifest
+metadata changes.
 
 Use package and configuration files for their narrow responsibilities:
 

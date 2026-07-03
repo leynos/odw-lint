@@ -180,12 +180,15 @@ main-branch work as deletions in review. It exits successfully on non-roadmap
 branches, and exits with a usage error when the worktree is dirty. Keep it
 outside `make all` because it performs a network fetch.
 
-Run `make review-evidence` when a roadmap review or audit needs independent
-evidence that the repository gates were re-executed in the task worktree. The
-target runs `make all`, `make markdownlint`, and `make nixie` through the shared
-build-gate command runner, then reports the selected dual-review path. Keep it
-outside `make all` because it re-runs `make all` and is a reviewer-run audit
-gate, not a recursive commit-gate step.
+The roadmap review or audit path must run `make review-evidence` as a required
+step and record its report as the review evidence; see AGENTS.md
+"Roadmap Review & Audit Evidence". The target runs `make all`,
+`make markdownlint`, and `make nixie` through the shared build-gate command
+runner, then reports the selected dual-review path. The df12 review/audit
+environment provides the full toolchain, including `nixie`, so a clean tree is
+expected to report `verified`. Keep the target outside `make all` because it
+re-runs `make all` and is a reviewer-run audit gate, not a recursive
+commit-gate step.
 
 Each review-evidence gate uses a five-minute command timeout by default. Slow
 review environments may override the per-gate timeout with

@@ -301,7 +301,7 @@ depending on manual post-commit audits.
     - Addendum (from review:1.5.6; low). Split timed-out or killed gate
       executions from spawn-unavailable evidence and map hung gates to
       reviewer-visible failure. Lightweight addendum pass.
-- [ ] 1.5.7. Invoke review evidence from the roadmap review workflow.
+- [x] 1.5.7. Invoke review evidence from the roadmap review workflow.
   - Adopt `make review-evidence` in the roadmap review or audit workflow, or
     add an equivalent scheduled smoke path, so the gate is run automatically
     instead of depending on reviewer memory.
