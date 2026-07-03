@@ -93,29 +93,46 @@ const visitNode = (node: Node, matches: HazardMatch[]): void => {
   }
 
   for (const child of childValues(node)) {
-    if (Array.isArray(child)) {
-      for (const item of child) {
-        visitIfNode(item, matches);
-      }
-      continue;
-    }
-
-    visitIfNode(child, matches);
+    visitChildValue(child, matches);
   }
 };
 
-/** Visits a value only when it is a SWC node-shaped object. */
-const visitIfNode = (value: unknown, matches: HazardMatch[]): void => {
+/** Visits nested SWC nodes, including wrappers such as call arguments. */
+const visitChildValue = (value: unknown, matches: HazardMatch[]): void => {
   if (isNode(value)) {
     visitNode(value, matches);
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      visitChildValue(item, matches);
+    }
+    return;
+  }
+
+  if (isObjectRecord(value)) {
+    for (const child of childRecordValues(value)) {
+      visitChildValue(child, matches);
+    }
   }
 };
 
 /** Returns child fields that may contain nested SWC nodes. */
 const childValues = (node: Node): readonly unknown[] => {
-  return Object.entries(node)
-    .filter(([key]) => key !== "span" && key !== "type" && key !== "ctxt")
+  return childRecordValues(node);
+};
+
+/** Returns object field values that can contain semantic child nodes. */
+const childRecordValues = (value: object): readonly unknown[] => {
+  return Object.entries(value)
+    .filter(([key]) => isTraversableChildKey(key))
     .map(([, value]) => value);
+};
+
+/** Excludes scalar SWC bookkeeping fields from recursive traversal. */
+const isTraversableChildKey = (key: string): boolean => {
+  return key !== "span" && key !== "type" && key !== "ctxt";
 };
 
 /** Matches one of the syntactic deterministic-time hazards on a node. */
@@ -196,6 +213,11 @@ const isIdentifierWithValue = (value: unknown, expectedValue: string): boolean =
 /** Narrows values to plain SWC node-shaped objects. */
 const isNode = (value: unknown): value is Node => {
   return typeof value === "object" && value !== null && "type" in value;
+};
+
+/** Narrows values to object records that may wrap SWC nodes. */
+const isObjectRecord = (value: unknown): value is object => {
+  return typeof value === "object" && value !== null;
 };
 
 /** Builds a project diagnostic for one matched AST span. */

@@ -769,7 +769,7 @@ service returned a rate limit after deterministic gates passed.
 
 ## Addenda
 
-- [ ] 3.1.2.1. Snapshot intra-expression deterministic-time ordering.
+- [x] 3.1.2.1. Snapshot intra-expression deterministic-time ordering.
   - Source: review:3.1.2; severity low.
   - Scope: add deterministic-time fixtures that pin hazard ordering inside one
     expression, including mixed `Math.random()`, `Date.now()`, and nested

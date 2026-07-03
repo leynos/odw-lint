@@ -737,7 +737,7 @@ reported clearly in one command. The result informs strict-mode policy. See
   - See [technical-design.md](technical-design.md) §9.2.
   - Success: warnings match ODW's `scanDualCompat` behaviour for trusted
     fixtures.
-  - [ ] 3.1.2.1. Snapshot intra-expression deterministic-time ordering.
+  - [x] 3.1.2.1. Snapshot intra-expression deterministic-time ordering.
     - Addendum (from review:3.1.2; low). Add deterministic-time fixtures that
       pin intra-expression hazard source order, including mixed
       `Math.random()`, `Date.now()`, and nested `new Date(Date.now())` cases.

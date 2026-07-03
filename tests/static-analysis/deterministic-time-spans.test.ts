@@ -43,6 +43,11 @@ type SurroundingCase = {
   readonly suffix: string;
 };
 
+type IntraExpressionOrderCase = {
+  readonly name: string;
+  readonly statement: string;
+};
+
 const RULE_SPAN_CASES = Object.freeze([
   {
     rule: DATE_NOW_RULE,
@@ -88,6 +93,23 @@ const SURROUNDING_CASES = Object.freeze([
   },
 ] as const satisfies readonly SurroundingCase[]);
 
+const INTRA_EXPRESSION_ORDER_CASES = Object.freeze([
+  {
+    name: "mixed-array-expression",
+    statement: "const hazards = [Math.random(), Date.now(), new Date(Date.now())];",
+  },
+  {
+    name: "nested-new-date-expression",
+    statement: [
+      "const hazards = `",
+      "$",
+      "{new Date(Date.now()).toISOString()}-",
+      "$",
+      "{Math.random()}`;",
+    ].join(""),
+  },
+] as const satisfies readonly IntraExpressionOrderCase[]);
+
 /** Builds a complete workflow source for one span case. */
 const sourceTextForCase = (ruleCase: RuleSpanCase, surroundingCase: SurroundingCase): string => {
   return [
@@ -97,6 +119,26 @@ const sourceTextForCase = (ruleCase: RuleSpanCase, surroundingCase: SurroundingC
     surroundingCase.suffix,
     "",
   ].join(surroundingCase.terminator);
+};
+
+/** Builds a complete workflow source from one body statement. */
+const sourceTextForStatement = (statement: string): string => {
+  return [DEFAULT_META, statement, ""].join("\n");
+};
+
+/** Returns diagnostics for one focused body statement. */
+const diagnosticsForStatement = (
+  statement: string,
+  label: string,
+): { readonly sourceText: string; readonly diagnostics: readonly Diagnostic[] } => {
+  const sourceText = sourceTextForStatement(statement);
+  const sourceFile = createOriginalSourceFile({
+    filePath: `workflows/${label}.js`,
+    sourceText,
+  });
+  const envelope = expectScannedEnvelope(scanWorkflowEnvelope(sourceFile), label);
+
+  return { sourceText, diagnostics: scanDeterministicTimeWarnings(envelope) };
 };
 
 /** Returns the only diagnostic for one focused detector span case. */
@@ -166,6 +208,22 @@ describe("deterministic-time diagnostic spans", () => {
       expect(Buffer.byteLength(prefixBeforeSpan, "utf8")).toBeGreaterThan(prefixBeforeSpan.length);
     }
     expect(snapshotForDiagnostic(diagnostic, snippet.text)).toMatchSnapshot();
+  });
+
+  it.each(
+    INTRA_EXPRESSION_ORDER_CASES.map((testCase) => [testCase.name, testCase]),
+  )("keeps intra-expression hazard order stable for %s", (_, testCase) => {
+    const { sourceText, diagnostics } = diagnosticsForStatement(testCase.statement, testCase.name);
+    const sourceFile = createOriginalSourceFile({
+      filePath: `workflows/${testCase.name}.js`,
+      sourceText,
+    });
+
+    expect(
+      diagnostics.map((diagnostic) => {
+        return snapshotForDiagnostic(diagnostic, sliceSourceSpan(sourceFile, diagnostic.span));
+      }),
+    ).toMatchSnapshot();
   });
 
   it("reports no Claude compatibility diagnostics for trusted ODW examples", () => {

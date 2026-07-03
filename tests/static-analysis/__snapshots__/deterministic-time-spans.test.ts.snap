@@ -239,3 +239,98 @@ exports[`deterministic-time diagnostic spans round-trips original-source snippet
   "spanText": ""new Date()"",
 }
 `;
+
+exports[`deterministic-time diagnostic spans keeps intra-expression hazard order stable for mixed-array-expression 1`] = `
+[
+  {
+    "rule": "odw/no-math-random",
+    "severity": "warning",
+    "span": {
+      "end": {
+        "column": 29,
+        "line": 2,
+        "offset": 91,
+      },
+      "start": {
+        "column": 18,
+        "line": 2,
+        "offset": 80,
+      },
+    },
+    "spanText": ""Math.random"",
+  },
+  {
+    "rule": "odw/no-date-now",
+    "severity": "warning",
+    "span": {
+      "end": {
+        "column": 41,
+        "line": 2,
+        "offset": 103,
+      },
+      "start": {
+        "column": 33,
+        "line": 2,
+        "offset": 95,
+      },
+    },
+    "spanText": ""Date.now"",
+  },
+  {
+    "rule": "odw/no-date-now",
+    "severity": "warning",
+    "span": {
+      "end": {
+        "column": 62,
+        "line": 2,
+        "offset": 124,
+      },
+      "start": {
+        "column": 54,
+        "line": 2,
+        "offset": 116,
+      },
+    },
+    "spanText": ""Date.now"",
+  },
+]
+`;
+
+exports[`deterministic-time diagnostic spans keeps intra-expression hazard order stable for nested-new-date-expression 1`] = `
+[
+  {
+    "rule": "odw/no-date-now",
+    "severity": "warning",
+    "span": {
+      "end": {
+        "column": 37,
+        "line": 2,
+        "offset": 99,
+      },
+      "start": {
+        "column": 29,
+        "line": 2,
+        "offset": 91,
+      },
+    },
+    "spanText": ""Date.now"",
+  },
+  {
+    "rule": "odw/no-math-random",
+    "severity": "warning",
+    "span": {
+      "end": {
+        "column": 69,
+        "line": 2,
+        "offset": 131,
+      },
+      "start": {
+        "column": 58,
+        "line": 2,
+        "offset": 120,
+      },
+    },
+    "spanText": ""Math.random"",
+  },
+]
+`;
