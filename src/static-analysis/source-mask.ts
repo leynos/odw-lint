@@ -5,8 +5,9 @@
  * ODW-recognized regex literals while preserving original UTF-16 indexes.
  */
 
+import { isAsciiIdentifierCharacter } from "./javascript-identifiers";
 import { scanCommentRange } from "./source-mask-comments";
-import { blankMaskedRange } from "./source-mask-delimiters";
+import { blankMaskedRange, isWhitespaceCharacter } from "./source-mask-delimiters";
 import { scanRegexRange } from "./source-mask-regex";
 import { scanQuotedStringRange } from "./source-mask-strings";
 import { scanTemplateRange } from "./source-mask-templates";
@@ -55,7 +56,7 @@ export const maskNonCodeSource = (sourceFile: OriginalSourceFile): MaskedSource 
     }
 
     const character = sourceText[index] ?? "";
-    if (!/\s/u.test(character)) {
+    if (!isWhitespaceCharacter(character)) {
       previousSignificantCharacter = character;
       previousSignificantToken = significantTokenEndingAt(sourceText, index);
     }
@@ -102,7 +103,7 @@ const lastSignificantCharacterInRange = (
 ): string | undefined => {
   for (let index = range.endIndex - 1; index >= range.startIndex; index -= 1) {
     const character = sourceText[index] ?? "";
-    if (!/\s/u.test(character)) {
+    if (!isWhitespaceCharacter(character)) {
       return character;
     }
   }
@@ -115,7 +116,7 @@ const lastSignificantTokenInRange = (
   range: SourceMaskRange,
 ): string | undefined => {
   for (let index = range.endIndex - 1; index >= range.startIndex; index -= 1) {
-    if (!/\s/u.test(sourceText[index] ?? "")) {
+    if (!isWhitespaceCharacter(sourceText[index] ?? "")) {
       return significantTokenEndingAt(sourceText, index);
     }
   }
@@ -125,12 +126,12 @@ const lastSignificantTokenInRange = (
 /** Finds the source token ending at a non-whitespace index. */
 const significantTokenEndingAt = (sourceText: string, index: number): string => {
   const character = sourceText[index] ?? "";
-  if (!/[A-Za-z0-9_$]/u.test(character)) {
+  if (!isAsciiIdentifierCharacter(character)) {
     return significantOperatorEndingAt(sourceText, index);
   }
 
   let cursor = index;
-  while (cursor >= 0 && /[A-Za-z0-9_$]/u.test(sourceText[cursor] ?? "")) {
+  while (cursor >= 0 && isAsciiIdentifierCharacter(sourceText[cursor])) {
     cursor -= 1;
   }
 

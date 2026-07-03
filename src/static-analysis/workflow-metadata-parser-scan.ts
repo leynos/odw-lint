@@ -72,7 +72,7 @@ export const scanExpressionEnd = (cursor: ParserCursor, terminators: readonly st
   let index = cursor.index;
   while (index < cursor.endIndex) {
     const character = cursor.text[index] ?? "";
-    if (isStringDelimiter(character)) {
+    if (isStringLikeDelimiter(character)) {
       index = scanDelimitedEnd(cursor.text, index, character, cursor.endIndex);
       continue;
     }
@@ -111,7 +111,7 @@ export const scanBalancedEnd = (
       index = commentEndIndex - 1;
       continue;
     }
-    if (isStringDelimiter(character)) {
+    if (isStringLikeDelimiter(character)) {
       index = scanDelimitedEnd(cursor.text, index, character, cursor.endIndex) - 1;
       continue;
     }
@@ -293,11 +293,6 @@ const nextExpressionDepth = (depth: ExpressionDepth, character: string): Express
     return { ...depth, bracket: Math.max(0, depth.bracket - 1) };
   }
   return depth;
-};
-
-/** Checks for any supported string delimiter. */
-const isStringDelimiter = (character: string): character is "'" | '"' | "`" => {
-  return isStringLikeDelimiter(character);
 };
 
 /** Scans a comment from the current index when present. */

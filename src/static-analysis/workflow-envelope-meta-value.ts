@@ -1,5 +1,10 @@
 /** @file Metadata value scanning for static workflow envelopes. */
 
+import {
+  isLineTerminatorCharacter,
+  isStringLikeDelimiter,
+  isWhitespaceCharacter,
+} from "./source-mask-delimiters";
 import type { SourceMaskRange } from "./source-mask-types";
 import { spanFromTextIndexes } from "./source-position";
 import type { OriginalSourceFile, WorkflowMetaValue } from "./types";
@@ -96,7 +101,7 @@ const objectMetaValue = (
 const nextMetadataValueIndex = (text: string, startIndex: number): number | undefined => {
   for (let index = startIndex; index < text.length; index += 1) {
     const character = text[index] ?? "";
-    if (/\s/u.test(character)) {
+    if (isWhitespaceCharacter(character)) {
       continue;
     }
     if (text.startsWith("//", index)) {
@@ -117,18 +122,11 @@ const nextMetadataValueIndex = (text: string, startIndex: number): number | unde
 const scanLineCommentEnd = (text: string, startIndex: number): number => {
   for (let index = startIndex; index < text.length; index += 1) {
     const character = text[index] ?? "";
-    if (isLineTerminator(character)) {
+    if (isLineTerminatorCharacter(character)) {
       return index;
     }
   }
   return text.length;
-};
-
-/** Checks for JavaScript line terminators. */
-const isLineTerminator = (character: string): boolean => {
-  return (
-    character === "\n" || character === "\r" || character === "\u2028" || character === "\u2029"
-  );
 };
 
 /** Finds the end of a block comment from the first character after `/*`. */
@@ -209,15 +207,16 @@ const endIndexForMatchedRange = (
   range: SourceMaskRange,
   endIndex: number,
 ): number => {
-  if (range.kind === "string" || range.kind === "template") {
-    return scanDelimitedEnd(
-      sourceText,
-      range.startIndex,
-      sourceText[range.startIndex] ?? "",
-      endIndex,
-    );
+  const delimiter = sourceText[range.startIndex] ?? "";
+  if (isStringLikeRange(range) && isStringLikeDelimiter(delimiter)) {
+    return scanDelimitedEnd(sourceText, range.startIndex, delimiter, endIndex);
   }
   return range.endIndex;
+};
+
+/** Checks whether a mask range uses a string-like delimiter. */
+const isStringLikeRange = (range: SourceMaskRange): boolean => {
+  return range.kind === "string" || range.kind === "template";
 };
 
 /** Applies one source character to the metadata-object brace depth. */
@@ -238,7 +237,7 @@ const trimTrailingWhitespaceIndex = (
   endIndex: number,
 ): number => {
   let trimmedEndIndex = endIndex;
-  while (trimmedEndIndex > startIndex && /\s/u.test(text[trimmedEndIndex - 1] ?? "")) {
+  while (trimmedEndIndex > startIndex && isWhitespaceCharacter(text[trimmedEndIndex - 1] ?? "")) {
     trimmedEndIndex -= 1;
   }
   return trimmedEndIndex;

@@ -205,7 +205,7 @@ const parsePropertyKey = (
 ): { readonly value: string; readonly span: SourceSpan } | undefined => {
   const startIndex = cursor.index;
   const character = currentCharacter(cursor);
-  if (isStringDelimiter(character)) {
+  if (isStringLikeDelimiter(character)) {
     const literal = scanStringLiteral(cursor, character);
     if (literal === undefined) {
       return undefined;
@@ -246,7 +246,7 @@ const parseValue = (cursor: ParserCursor): ValueParseResult => {
   if (character === "[") {
     return parseArray(cursor);
   }
-  if (isStringDelimiter(character)) {
+  if (isStringLikeDelimiter(character)) {
     const literal = scanStringLiteral(cursor, character);
     if (literal === undefined) {
       return unprovableFrom(cursor, startIndex, scanExpressionEnd(cursor, [",", "}", "]"]));
@@ -390,8 +390,4 @@ const spanForUnparsedMetaValue = (
     return metaValue.span;
   }
   return spanFromTextIndexes(sourceFile, 0, 0);
-};
-/** Checks for metadata string delimiters and narrows the delimiter type. */
-const isStringDelimiter = (character: string): character is "'" | '"' | "`" => {
-  return isStringLikeDelimiter(character);
 };

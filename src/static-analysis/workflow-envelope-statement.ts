@@ -1,5 +1,7 @@
 /** @file Top-level statement scanning helpers for workflow envelope extraction. */
 
+import { isLineTerminatorCharacter, isWhitespaceCharacter } from "./source-mask-delimiters";
+
 export type DepthState = Readonly<{
   braceDepth: number;
   bracketDepth: number;
@@ -27,7 +29,7 @@ export const topLevelStatementEndIndex = (maskedText: string, startIndex: number
       return index;
     }
     depth = nextDepthState(depth, character);
-    if (!/\s/u.test(character)) {
+    if (!isWhitespaceCharacter(character)) {
       previousSignificant = character;
     }
   }
@@ -83,18 +85,11 @@ const isLineEndFallback = (
   previousSignificant: string | undefined,
   nextSignificant: string | undefined,
 ): boolean => {
-  if (!isTopLevel(depth) || !isLineBreak(character)) {
+  if (!isTopLevel(depth) || !isLineTerminatorCharacter(character)) {
     return false;
   }
 
   return canEndBeforeLineBreak(previousSignificant) && !canContinueAfterLineBreak(nextSignificant);
-};
-
-/** Checks whether one source character is a JavaScript line break. */
-const isLineBreak = (character: string): boolean => {
-  return (
-    character === "\n" || character === "\r" || character === "\u2028" || character === "\u2029"
-  );
 };
 
 /** Precomputes the next non-whitespace character at every source index. */
@@ -104,7 +99,7 @@ const nextSignificantCharacters = (text: string): readonly (string | undefined)[
 
   for (let cursor = text.length - 1; cursor >= 0; cursor -= 1) {
     const character = text[cursor] ?? "";
-    if (!/\s/u.test(character)) {
+    if (!isWhitespaceCharacter(character)) {
       nextSignificant = character;
     }
     nextByIndex[cursor] = nextSignificant;

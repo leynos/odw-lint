@@ -1,6 +1,10 @@
 /** @file Shared delimiter and comment scanners for metadata parsing. */
 
-import { isLineTerminatorCharacter, isStringLikeDelimiter } from "./source-mask-delimiters";
+import {
+  isLineTerminatorCharacter,
+  isStringLikeDelimiter,
+  type StringLikeDelimiter,
+} from "./source-mask-delimiters";
 
 /**
  * Scans one quoted or template-delimited region.
@@ -14,7 +18,7 @@ import { isLineTerminatorCharacter, isStringLikeDelimiter } from "./source-mask-
 export const scanDelimitedEnd = (
   text: string,
   startIndex: number,
-  delimiter: string,
+  delimiter: StringLikeDelimiter,
   endIndex: number,
 ): number => {
   for (let index = startIndex + 1; index < endIndex; index += 1) {
@@ -74,7 +78,7 @@ const scanTemplateExpressionEnd = (text: string, startIndex: number, endIndex: n
   let depth = 1;
   for (let index = startIndex; index < endIndex; index += 1) {
     const character = text[index] ?? "";
-    if (isStringDelimiter(character)) {
+    if (isStringLikeDelimiter(character)) {
       index = scanDelimitedEnd(text, index, character, endIndex) - 1;
       continue;
     }
@@ -105,9 +109,4 @@ const scanCommentEnd = (text: string, startIndex: number, endIndex: number): num
     return scanBlockCommentEnd(text, startIndex + 2, endIndex);
   }
   return undefined;
-};
-
-/** Checks whether a character is a string or template delimiter. */
-const isStringDelimiter = (character: string): character is "'" | '"' | "`" => {
-  return isStringLikeDelimiter(character);
 };

@@ -5,6 +5,7 @@
  * appears after one of the static source contexts where a regex may start.
  */
 
+import { isAsciiIdentifierCharacter } from "./javascript-identifiers";
 import {
   createMaskedRange,
   isLineTerminatorCharacter,
@@ -333,7 +334,7 @@ export const isRegexBodyEndDelimiter = (
 export const scanRegexFlagsEnd = (sourceText: string, startIndex: number): number => {
   let index = startIndex;
 
-  while (index < sourceText.length && /[A-Za-z0-9_$]/u.test(sourceText[index] ?? "")) {
+  while (index < sourceText.length && isAsciiIdentifierCharacter(sourceText[index])) {
     index += 1;
   }
 

@@ -5,6 +5,10 @@
  * interpolation code, so this module owns nested template scan state.
  */
 
+import {
+  isAsciiIdentifierCharacter,
+  isAsciiIdentifierStartCharacter,
+} from "./javascript-identifiers";
 import { scanCommentRange } from "./source-mask-comments";
 import {
   createMaskedRange,
@@ -12,6 +16,7 @@ import {
   isRegexDelimiter,
   isStringLikeDelimiter,
   isTemplateDelimiter,
+  isWhitespaceCharacter,
   scanEscapedDelimitedEnd,
 } from "./source-mask-delimiters";
 import { scanRegexBodyEnd } from "./source-mask-regex";
@@ -187,12 +192,12 @@ const previousSignificantTemplateToken = (sourceText: string, index: number): st
   }
 
   const character = sourceText[cursor] ?? "";
-  if (!/[A-Za-z_$]/u.test(character)) {
+  if (!isAsciiIdentifierStartCharacter(character)) {
     return character;
   }
 
   const tokenEndIndex = cursor + 1;
-  while (cursor >= 0 && /[A-Za-z0-9_$]/u.test(sourceText[cursor] ?? "")) {
+  while (cursor >= 0 && isAsciiIdentifierCharacter(sourceText[cursor])) {
     cursor -= 1;
   }
 
@@ -202,7 +207,7 @@ const previousSignificantTemplateToken = (sourceText: string, index: number): st
 /** Finds the previous non-whitespace character index before an expression index. */
 const previousSignificantTemplateIndex = (sourceText: string, index: number): number => {
   for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
-    if (!/\s/u.test(sourceText[cursor] ?? "")) {
+    if (!isWhitespaceCharacter(sourceText[cursor] ?? "")) {
       return cursor;
     }
   }

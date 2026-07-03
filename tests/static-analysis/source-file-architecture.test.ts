@@ -202,6 +202,10 @@ describe("source-file helper architecture", () => {
       "SourceMaskRange",
     ]);
     expectModuleDeclarations("src/static-analysis/source-mask-delimiters.ts", [
+      "QuotedStringDelimiter",
+      "RegexDelimiter",
+      "StringLikeDelimiter",
+      "TemplateDelimiter",
       "WHITESPACE_PATTERN",
       "blankMaskedRange",
       "createMaskedRange",

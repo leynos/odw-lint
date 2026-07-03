@@ -7,6 +7,7 @@
  */
 
 import type { SourceSpan } from "../diagnostics/types";
+import { isAsciiIdentifierCharacter } from "./javascript-identifiers";
 import type { OriginalSourceFile } from "./types";
 import { SourceOffsetError } from "./types";
 import { utf8ByteLength } from "./utf8";
@@ -193,11 +194,6 @@ const nextCharacterIndex = (sourceText: string, index: number): number => {
   return index + String.fromCodePoint(codePoint).length;
 };
 
-/** Checks whether one ASCII byte can be part of a JavaScript identifier. */
-const isIdentifierByteCharacter = (character: string): boolean => {
-  return /^[0-9A-Za-z_$]$/.test(character);
-};
-
 /** Normalizes parser offsets from their declared coordinate base. */
 const normalizedRangeFromParserOffsets = (
   start: number,
@@ -238,7 +234,7 @@ const normalizedScalarOffsetRange = (
 /** Returns the end index of an ASCII identifier-like token. */
 const identifierEndIndex = (sourceText: string, startIndex: number): number => {
   let index = startIndex;
-  while (index < sourceText.length && isIdentifierByteCharacter(sourceText[index] ?? "")) {
+  while (index < sourceText.length && isAsciiIdentifierCharacter(sourceText[index])) {
     index += 1;
   }
 
@@ -252,8 +248,8 @@ const normalizedTokenEndByte = (sourceText: string, startByte: number): number |
     return undefined;
   }
 
-  const firstCharacter = sourceText[startIndex] ?? "";
-  const endIndex = isIdentifierByteCharacter(firstCharacter)
+  const firstCharacter = sourceText[startIndex];
+  const endIndex = isAsciiIdentifierCharacter(firstCharacter)
     ? identifierEndIndex(sourceText, startIndex)
     : nextCharacterIndex(sourceText, startIndex);
 

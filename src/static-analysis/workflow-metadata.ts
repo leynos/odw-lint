@@ -11,6 +11,7 @@ import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic, SourceSpan } from "../diagnostics/types";
 import { textIndexAtOffset } from "./source-indexes";
 import { maskNonCodeSource } from "./source-mask";
+import { isWhitespaceCharacter } from "./source-mask-delimiters";
 import type { OriginalSourceFile, WorkflowEnvelopeScanResult, WorkflowMetaValue } from "./types";
 import { parseWorkflowMetadataLiteral } from "./workflow-metadata-parser";
 
@@ -316,7 +317,7 @@ const previousNonWhitespaceIndex = (
   endIndex: number,
 ): number | undefined => {
   for (let index = endIndex - 1; index >= startIndex; index -= 1) {
-    if (!/\s/u.test(text[index] ?? "")) {
+    if (!isWhitespaceCharacter(text[index] ?? "")) {
       return index;
     }
   }

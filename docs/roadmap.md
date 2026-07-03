@@ -596,7 +596,7 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:3.1.2; medium). Assert that `lintWorkflowSource`
       emitted diagnostics carry catalogue-derived docs paths across invalid
       fixtures and rule parity coverage. Lightweight addendum pass.
-  - [ ] 2.1.12.8. Complete low-level scanner predicate centralization.
+  - [x] 2.1.12.8. Complete low-level scanner predicate centralization.
     - Addendum (from audit:2.2.7; medium). Finish the 2.1.12.5 predicate pass
       by promoting string-like delimiters to one type guard and replacing
       remaining local whitespace and ASCII identifier idioms. Lightweight

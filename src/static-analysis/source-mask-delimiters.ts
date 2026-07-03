@@ -9,6 +9,11 @@ import type { SourceMaskKind, SourceMaskRange } from "./source-mask-types";
 
 const WHITESPACE_PATTERN = /^\s$/u;
 
+export type QuotedStringDelimiter = "'" | '"';
+export type TemplateDelimiter = "`";
+export type RegexDelimiter = "/";
+export type StringLikeDelimiter = QuotedStringDelimiter | TemplateDelimiter;
+
 /**
  * Checks for JavaScript line terminators.
  *
@@ -91,7 +96,7 @@ export const scanEscapedDelimitedEnd = (
  * @param character - Source character to classify.
  * @returns Whether the character can delimit a quoted string.
  */
-export const isQuotedStringDelimiter = (character: string): boolean => {
+export const isQuotedStringDelimiter = (character: string): character is QuotedStringDelimiter => {
   return character === "'" || character === '"';
 };
 
@@ -101,7 +106,7 @@ export const isQuotedStringDelimiter = (character: string): boolean => {
  * @param character - Source character to classify.
  * @returns Whether the character can delimit a template literal.
  */
-export const isTemplateDelimiter = (character: string): boolean => {
+export const isTemplateDelimiter = (character: string): character is TemplateDelimiter => {
   return character === "`";
 };
 
@@ -111,7 +116,7 @@ export const isTemplateDelimiter = (character: string): boolean => {
  * @param character - Source character to classify.
  * @returns Whether the character can delimit a regex literal.
  */
-export const isRegexDelimiter = (character: string): boolean => {
+export const isRegexDelimiter = (character: string): character is RegexDelimiter => {
   return character === "/";
 };
 
@@ -121,7 +126,7 @@ export const isRegexDelimiter = (character: string): boolean => {
  * @param character - Source character to classify.
  * @returns Whether the character can open string-like template content.
  */
-export const isStringLikeDelimiter = (character: string): boolean => {
+export const isStringLikeDelimiter = (character: string): character is StringLikeDelimiter => {
   return isQuotedStringDelimiter(character) || isTemplateDelimiter(character);
 };
 

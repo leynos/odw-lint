@@ -1,6 +1,7 @@
 /** @file Unsupported import/export scanner for static workflow envelopes. */
 
 import { isIdentifierPartCharacter } from "./javascript-identifiers";
+import { isLineTerminatorCharacter, isWhitespaceCharacter } from "./source-mask-delimiters";
 import { spanFromTextIndexes } from "./source-position";
 import type { OriginalSourceFile, UnsupportedWorkflowSyntax } from "./types";
 import type { DepthState } from "./workflow-envelope-statement";
@@ -157,7 +158,7 @@ const nextNonWhitespaceCharacter = (text: string, index: number): string | undef
 /** Finds the next non-whitespace source-text index. */
 const nextNonWhitespaceIndex = (text: string, startIndex: number): number | undefined => {
   for (let index = startIndex; index < text.length; index += 1) {
-    if (!/\s/u.test(text[index] ?? "")) {
+    if (!isWhitespaceCharacter(text[index] ?? "")) {
       return index;
     }
   }
@@ -182,22 +183,15 @@ const previousCodeBoundary = (text: string, index: number): PreviousCodeBoundary
 
   for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
     const character = text[cursor] ?? "";
-    if (isLineBreak(character)) {
+    if (isLineTerminatorCharacter(character)) {
       hasLineBreak = true;
     }
-    if (!/\s/u.test(character)) {
+    if (!isWhitespaceCharacter(character)) {
       return { character, hasLineBreak };
     }
   }
 
   return { character: undefined, hasLineBreak };
-};
-
-/** Checks whether one source character is a JavaScript line break. */
-const isLineBreak = (character: string): boolean => {
-  return (
-    character === "\n" || character === "\r" || character === "\u2028" || character === "\u2029"
-  );
 };
 
 /** Builds one unsupported declaration fact from its keyword index. */

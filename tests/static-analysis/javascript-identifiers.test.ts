@@ -2,6 +2,8 @@
 
 import { describe, expect, it } from "bun:test";
 import {
+  isAsciiIdentifierCharacter,
+  isAsciiIdentifierStartCharacter,
   isIdentifierPartCharacter,
   isIdentifierStartCharacter,
 } from "../../src/static-analysis/javascript-identifiers";
@@ -31,5 +33,15 @@ describe("JavaScript identifier character predicates", () => {
     expect(isIdentifierPartCharacter("-")).toBeFalse();
     expect(isIdentifierPartCharacter("a1")).toBeFalse();
     expect(isIdentifierPartCharacter(undefined)).toBeFalse();
+  });
+
+  it("classifies ASCII identifier-like token characters", () => {
+    expect(["$", "_", "a", "Z", "0"].every(isAsciiIdentifierCharacter)).toBeTrue();
+    expect(["-", "𐐀", "", undefined].some(isAsciiIdentifierCharacter)).toBeFalse();
+  });
+
+  it("classifies ASCII identifier-like token starts", () => {
+    expect(["$", "_", "a", "Z"].every(isAsciiIdentifierStartCharacter)).toBeTrue();
+    expect(["0", "-", "𐐀", "", undefined].some(isAsciiIdentifierStartCharacter)).toBeFalse();
   });
 });

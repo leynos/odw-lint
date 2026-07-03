@@ -18,6 +18,7 @@ import {
   isStringLikeDelimiter,
   isTemplateDelimiter,
   isWhitespaceCharacter,
+  type StringLikeDelimiter,
   scanEscapedDelimitedEnd,
 } from "../../src/static-analysis/source-mask-delimiters";
 import { scanRegexBodyEnd } from "../../src/static-analysis/source-mask-regex";
@@ -110,7 +111,21 @@ describe("source-mask delimiter helpers", () => {
     expect(["'", '"', "`"].every(isStringLikeDelimiter)).toBeTrue();
     expect(["/", "{", "x"].some(isStringLikeDelimiter)).toBeFalse();
   });
+
+  it("narrows string-like delimiters for shared scanners", () => {
+    const delimiter = stringLikeDelimiterFrom("`");
+
+    expect(delimiter).toBe("`");
+  });
 });
+
+/** Returns a narrowed string-like delimiter when the shared predicate accepts it. */
+const stringLikeDelimiterFrom = (character: string): StringLikeDelimiter | undefined => {
+  if (isStringLikeDelimiter(character)) {
+    return character;
+  }
+  return undefined;
+};
 
 describe("source-mask comment scanner", () => {
   it("scans line and block comment ranges", () => {
