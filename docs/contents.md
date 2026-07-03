@@ -79,12 +79,20 @@ entry; that index enumerates every current rule page.
   and test file-size guard.
 - [Audit 1.5.3](issues/audit-1.5.3.md) records review findings for roadmap
   workflow review gates.
+- [Audit 1.5.8](issues/audit-1.5.8.md) records review findings for
+  harness-derived reviewer availability.
+- [Audit 1.5.9](issues/audit-1.5.9.md) records review findings for
+  consolidated build-gate command-line support.
 - [Audit 2.1.6](issues/audit-2.1.6.md) records review findings for the
   no-side-effect metadata execution guard.
 - [Audit 2.1.7](issues/audit-2.1.7.md) records review findings for
   rule-catalogue parity checks for fixture diagnostics.
 - [Audit 2.1.12](issues/audit-2.1.12.md) records review findings for the
   static workflow lint entry point.
+- [Audit 2.2.7](issues/audit-2.2.7.md) records review findings for
+  workflow-body parser dialect scope.
+- [Audit 3.1.4](issues/audit-3.1.4.md) records review findings for
+  deterministic-time lexical binding compatibility.
 
 ## Execution plans
 
