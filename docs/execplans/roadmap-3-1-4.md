@@ -763,3 +763,22 @@ Task 3.1.4 is complete. The scanner ignores shadowed bare `Date`, `Math`, and
 chains with original-source spans, and keeps trusted ODW fixtures free of
 Claude compatibility diagnostics. The rule catalogue and diagnostic schema are
 unchanged.
+
+## Addenda
+
+- [ ] 3.1.4.1. Harden deterministic-time syntactic escape handling.
+  - Source: review:3.1.4; severity low.
+  - Scope: add bounded alias and optional-chain coverage for common
+    deterministic-time forms while keeping dynamic computed keys inside
+    documented no-eval limits.
+  - Success: supported alias and optional-chain fixtures emit the expected
+    Claude compatibility warnings, and dynamic-key cases remain documented
+    conservative limits.
+- [ ] 3.1.4.2. Pin global-object resolver unit coverage.
+  - Source: audit:3.1.4; severity medium.
+  - Scope: add focused `workflow-global-object-reference` tests and trim
+    unreachable TypeScript-only wrapper branches under the ECMAScript parser
+    dialect.
+  - Success: resolver tests directly cover reachable transparent-wrapper and
+    member-resolution behaviour, and speculative wrapper branches no longer
+    remain unexercised.

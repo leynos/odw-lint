@@ -820,6 +820,24 @@ reported clearly in one command. The result informs strict-mode policy. See
     `Math` bindings while detecting supported global `Date.now`,
     `Math.random`, arg-less `new Date`, computed `Date["now"]()`, and
     `globalThis.Date.now()` forms with original-source spans.
+  - [ ] 3.1.4.1. Harden deterministic-time syntactic escape handling.
+    - Addendum (from review:3.1.4; low). Add bounded alias and optional-chain
+      coverage for common deterministic-time forms while keeping dynamic
+      computed keys inside documented no-eval limits. Lightweight addendum
+      pass.
+  - [ ] 3.1.4.2. Pin global-object resolver unit coverage.
+    - Addendum (from audit:3.1.4; medium). Add focused
+      `workflow-global-object-reference` tests and trim unreachable
+      TypeScript-only wrapper branches under the ECMAScript parser dialect.
+      Lightweight addendum pass.
+- [ ] 3.1.5. Add scope-precise deterministic-time shadowing.
+  - Requires 2.2.4 and 3.1.4.
+  - Refine lexical binding lookups for `Date`, `Math`, and `globalThis` so
+    deterministic-time rules suppress only references shadowed at the use site
+    rather than whole-body same-name matches.
+  - Success: fixtures prove same-name bindings in unrelated scopes no longer
+    hide supported Claude compatibility warnings, while local shadows remain
+    suppressed.
 
 ### 3.2. Add first orchestration-risk rules
 
@@ -856,6 +874,14 @@ See [technical-design.md](technical-design.md) §9.3.
   - See [technical-design.md](technical-design.md) §9.3.
   - Success: each heuristic has positive fixtures, negative fixtures, a
     false-positive example, a suppression/config path, and span snapshots.
+- [ ] 3.2.5. Consolidate SWC AST guard and traversal helpers.
+  - Requires 2.2.4 and 3.1.4.
+  - Extract one reviewed `isAstNode` guard, object-record guard reuse, and
+    child-traversal primitive for parser-backed rules while preserving existing
+    deterministic-time behaviour.
+  - Success: deterministic-time and AST-fact traversals consume one documented
+    SWC-shape helper seam, with tests pinning existing traversal coverage and
+    no rule output changes.
 
 ### 3.3. Add configuration and warning policy
 
