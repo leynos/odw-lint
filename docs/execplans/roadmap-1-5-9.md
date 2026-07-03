@@ -1028,6 +1028,23 @@ Use no new external libraries. The implementation depends on:
 - the existing `formatBranchFreshnessResult`, `formatReviewEvidenceResult`, and
   `formatWhitespaceViolations` formatters, which remain in their gate modules.
 
+## Addenda
+
+- [ ] 1.5.9.1. Replace literal CLI seam-ownership guards.
+  - Source: review:1.5.9; severity low.
+  - Scope: replace the string-substring "uses the shared CLI writer seam"
+    assertions with a structural, AST-backed, or lint-backed guard that fails
+    when a build-gate CLI reintroduces a local writer seam.
+  - Success: branch-freshness, review-evidence, and whitespace-hygiene CLI
+    tests still prove shared ownership of `CliWriters`, but renamed or
+    reformatted local writer declarations cannot bypass the guard.
+- [ ] 1.5.9.2. Extract default-stream test harness support.
+  - Source: review:1.5.9; severity low.
+  - Scope: centralize the stdout and stderr override-and-restore pattern used
+    by CLI support tests before more default-stream helpers clone it.
+  - Success: CLI default-stream tests share one helper that restores process
+    streams reliably and keeps stream-capture assertions local to each test.
+
 ## Revision Note
 
 Round 1 draft for roadmap task 1.5.9. It defines a five-item plan (refresh,

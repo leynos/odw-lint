@@ -321,6 +321,18 @@ depending on manual post-commit audits.
   - Success: an unparameterized automated review cannot claim a scrutineer
     review when the harness knows only coderabbit or local-self-run evidence is
     available.
+  - [ ] 1.5.8.1. Add real review-evidence CLI smoke coverage.
+    - Addendum (from review:1.5.8; low). Spawn the review-evidence CLI through
+      the real Bun command path for the documented degraded, verified, and
+      usage-error invocations. Lightweight addendum pass.
+  - [ ] 1.5.8.2. Standardize review-evidence parse result signalling.
+    - Addendum (from audit:1.5.8; low). Replace mixed string failure
+      conventions in review-evidence option parsing with one tagged result
+      shape. Lightweight addendum pass.
+  - [ ] 1.5.8.3. Harden reviewer-availability unit coverage.
+    - Addendum (from audit:1.5.8; low). Pin positive mappings, environment
+      precedence, invalid-value handling, and immutable availability updates.
+      Lightweight addendum pass.
 - [x] 1.5.9. Consolidate build-gate CLI support.
   - Extract shared CLI writer, default stream, and report-dispatch support for
     build-gate command modules while preserving each gate's policy and result
@@ -329,6 +341,14 @@ depending on manual post-commit audits.
   - Success: branch-freshness, whitespace-hygiene, and review-evidence CLIs
     consume one documented CLI-support helper before another build gate clones
     the same reviewer-facing command boilerplate.
+  - [ ] 1.5.9.1. Replace literal CLI seam-ownership guards.
+    - Addendum (from review:1.5.9; low). Replace string-substring
+      anti-duplication tests with a structural or lint-backed guard for the
+      shared CLI writer seam. Lightweight addendum pass.
+  - [ ] 1.5.9.2. Extract default-stream test harness support.
+    - Addendum (from review:1.5.9; low). Centralize stdout and stderr
+      override-and-restore support for CLI default-stream tests. Lightweight
+      addendum pass.
 - [ ] 1.5.10. Add an executable artefact check for recorded review evidence.
   - Require the roadmap review or audit path to attach or persist the
     `make review-evidence` report for each completed review or audit, and add
@@ -336,6 +356,14 @@ depending on manual post-commit audits.
   - Requires 1.5.7 and 1.5.8.
   - Success: a completed roadmap review or audit cannot claim review-evidence
     compliance unless the recorded report is available to the audit harness.
+- [ ] 1.5.11. Consolidate build-gate CLI run-and-exit orchestration.
+  - Extract a shared run-and-exit helper for build-gate CLIs and move reviewer
+    availability parsing to a table-driven shape while preserving each gate's
+    report and exit-code policy.
+  - Requires 1.5.8 and 1.5.9.
+  - Success: branch-freshness, whitespace-hygiene, and review-evidence command
+    modules share one CLI orchestration seam, and reviewer availability options
+    cannot drift by path-specific parser branches.
 
 ## 2. First vertical slice: ODW dialect validation
 
@@ -573,6 +601,17 @@ statically. It unlocks metadata rules and body parsing. See
       by promoting string-like delimiters to one type guard and replacing
       remaining local whitespace and ASCII identifier idioms. Lightweight
       addendum pass.
+- [ ] 2.1.13. Extract a shared scanner primitive layer.
+  - Consolidate the low-level source-scanning primitives shared by source-mask
+    and workflow-metadata scanners, including identifier runs, delimiter walks,
+    escapes, and token-boundary helpers, without changing emitted diagnostics or
+    mask ranges.
+  - Requires 2.1.9 and 2.1.12.8.
+  - See [technical-design.md](technical-design.md) §6.2.
+  - Success: source-mask and workflow-metadata scanner families consume one
+    documented primitive layer for their shared JavaScript token grammar, with
+    focused tests proving existing masking and metadata extraction behaviour is
+    unchanged.
 
 ### 2.2. Normalize and parse workflow bodies with SWC
 
