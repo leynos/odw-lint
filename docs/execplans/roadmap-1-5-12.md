@@ -648,7 +648,7 @@ Injectable seams added: `ReviewEvidenceRecordingOptions.readProvenance` and
 
 ## Addenda
 
-- [ ] 1.5.12.1. Document duplicate provenance-line handling.
+- [x] 1.5.12.1. Document duplicate provenance-line handling.
   - Source: review:1.5.12; severity low.
   - Scope: add a short module-documentation note to
     `tests/build-gate/review-evidence-provenance.ts` explaining that duplicate
@@ -657,14 +657,14 @@ Injectable seams added: `ReviewEvidenceRecordingOptions.readProvenance` and
   - Success: future maintainers can distinguish deliberate provenance hardening
     from incidental parser behaviour without changing existing provenance
     outcomes.
-- [ ] 1.5.12.2. Add bound-evidence matching-trailer property coverage.
+- [x] 1.5.12.2. Add bound-evidence matching-trailer property coverage.
   - Source: review:1.5.12; severity low.
   - Scope: add a fast-check property proving that any complete terminal review
     report plus a matching provenance trailer classifies as `present` under
     `classifyBoundEvidence`.
   - Success: the bound-evidence contract is pinned beyond example cases while
     existing recorded-evidence round-trip properties stay green.
-- [ ] 1.5.12.3. Couple evidence recording to a clean reviewed tree.
+- [x] 1.5.12.3. Couple evidence recording to a clean reviewed tree.
   - Source: review:1.5.12; severity low.
   - Scope: either assert a clean worktree before recording tree-bound review
     evidence or document the reviewer precondition at the provenance recording
@@ -672,14 +672,14 @@ Injectable seams added: `ReviewEvidenceRecordingOptions.readProvenance` and
   - Success: the record-time tree marker contract clearly covers, or explicitly
     rejects, dirty working-tree states without changing the review-evidence exit
     code surface.
-- [ ] 1.5.12.4. Cover readTreeProvenance symmetric failures.
+- [x] 1.5.12.4. Cover readTreeProvenance symmetric failures.
   - Source: review:1.5.12; severity low.
   - Scope: add direct tests for the failed `HEAD^{tree}` lookup path and the
     `result.error` branch, including missing-Git or timeout-style spawn
     failures.
   - Success: deterministic `readTreeProvenance` diagnostics are pinned for both
     commit and tree lookup failures before future Git-helper refactors.
-- [ ] 1.5.12.5. Restore recording-path command-query separation.
+- [x] 1.5.12.5. Restore recording-path command-query separation.
   - Source: audit:1.5.12; severity medium.
   - Scope: make report-content construction return content plus a
     provenance-error discriminator, then move stderr diagnostics to

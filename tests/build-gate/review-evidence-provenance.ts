@@ -1,5 +1,9 @@
 /**
  * @file Pure helpers for binding recorded review evidence to a Git tree.
+ *
+ * Duplicate reviewed-commit or reviewed-tree trailer lines deliberately leave
+ * recorded evidence unbound. A report with competing provenance markers cannot
+ * prove which tree state was actually reviewed.
  */
 
 import type { GitCommandResult, GitRunner } from "./git-support";

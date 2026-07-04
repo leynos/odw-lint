@@ -48,6 +48,38 @@ describe("readTreeProvenance", () => {
     });
   });
 
+  it("reports a failed tree lookup", () => {
+    const git = createFakeGitRunner([
+      makeResult({ stdout: `${commit}\n` }),
+      makeResult({ status: 128, stderr: "fatal: ambiguous argument 'HEAD^{tree}'\n" }),
+    ]);
+
+    expect(readTreeProvenance(git)).toEqual({
+      ok: false,
+      message:
+        "git rev-parse HEAD^{tree} failed with status 128: fatal: ambiguous argument 'HEAD^{tree}'",
+    });
+  });
+
+  it.each([
+    ["commit lookup", [makeResult({ error: new Error("spawn git ENOENT") })]],
+    [
+      "tree lookup",
+      [
+        makeResult({ stdout: `${commit}\n` }),
+        makeResult({ error: new Error("spawn git ETIMEDOUT\nretry later") }),
+      ],
+    ],
+  ] satisfies readonly [
+    string,
+    readonly CommandResult[],
+  ][])("reports missing Git or timeout errors during %s", (_name, results) => {
+    expect(readTreeProvenance(createFakeGitRunner(results))).toEqual({
+      ok: false,
+      message: expect.stringMatching(/^git rev-parse (?:HEAD|HEAD\^\{tree\}) failed: spawn git E/),
+    });
+  });
+
   it("reports empty commit output", () => {
     const git = createFakeGitRunner([makeResult({ stdout: "\n" })]);
 

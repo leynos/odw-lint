@@ -5,7 +5,12 @@
 import { describe, expect, it } from "bun:test";
 import * as fc from "fast-check";
 import type { GateExecution, ReviewEvidenceResult, ReviewPathSelection } from "./review-evidence";
-import { classifyRecordedEvidence, type RecordedStatus } from "./review-evidence-artefact";
+import {
+  classifyBoundEvidence,
+  classifyRecordedEvidence,
+  type RecordedStatus,
+} from "./review-evidence-artefact";
+import { formatProvenanceTrailer, type TreeProvenance } from "./review-evidence-provenance";
 import { formatReviewEvidenceResult } from "./review-evidence-report";
 
 type TerminalReviewEvidenceResult = Extract<ReviewEvidenceResult, { status: RecordedStatus }>;
@@ -41,6 +46,28 @@ describe("recorded evidence artefact properties", () => {
       { seed: 0x1510, numRuns: 60 },
     );
   });
+
+  it("classifies complete reports with matching trailers as present", () => {
+    fc.assert(
+      fc.property(terminalResult(), treeProvenance(), (result, provenance) => {
+        const content = `${formatReviewEvidenceResult(result)}${formatProvenanceTrailer(provenance)}`;
+
+        expect(
+          classifyBoundEvidence({
+            path: "recorded.txt",
+            content,
+            current: provenance,
+          }),
+        ).toEqual({
+          outcome: "present",
+          path: "recorded.txt",
+          status: result.status,
+          provenance,
+        });
+      }),
+      { seed: 0x1512, numRuns: 60 },
+    );
+  });
 });
 
 /** Generate terminal review-evidence results supported by the recorder. */
@@ -67,4 +94,19 @@ const terminalResult = (): fc.Arbitrary<TerminalReviewEvidenceResult> => {
       reasons: [reason],
     })),
   );
+};
+
+/** Generate Git object ids accepted by provenance formatting. */
+const gitObjectId = (): fc.Arbitrary<string> => {
+  return fc
+    .array(fc.constantFrom(...[..."0123456789abcdef"]), { minLength: 40, maxLength: 40 })
+    .map((characters) => characters.join(""));
+};
+
+/** Generate reviewed tree provenance values accepted by the report trailer. */
+const treeProvenance = (): fc.Arbitrary<TreeProvenance> => {
+  return fc.record({
+    commit: gitObjectId(),
+    tree: gitObjectId(),
+  });
 };

@@ -1,5 +1,10 @@
 /**
  * @file Recording helpers for reviewer-run review evidence.
+ *
+ * Callers record tree-bound evidence only after the commit gates have proved
+ * the reviewed worktree is clean. This module records the committed HEAD tree;
+ * it preserves the review-evidence exit-code surface when Git provenance is
+ * unavailable instead of re-checking worktree cleanliness here.
  */
 
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -24,6 +29,10 @@ export type ReviewEvidenceRecordingOptions = {
   readonly shouldRecord: boolean;
   readonly writeArtefact?: (path: string, content: string) => void;
 };
+
+export type RecordedReportContent =
+  | { readonly content: string; readonly provenance: "available" }
+  | { readonly content: string; readonly provenance: "unavailable"; readonly message: string };
 
 /**
  * Persist a terminal review report when the reviewer requested recording.
@@ -51,11 +60,13 @@ export function maybeRecordReviewEvidence(input: {
     report: input.report,
     readProvenance: input.options.readProvenance ?? defaultReadProvenance,
     workingDirectory,
-    writers: input.writers,
   });
+  if (content.provenance === "unavailable") {
+    input.writers.writeErr(`review evidence provenance unavailable: ${content.message}\n`);
+  }
 
   try {
-    writeArtefact(absolutePath, content);
+    writeArtefact(absolutePath, content.content);
   } catch (error) {
     input.writers.writeErr(
       `review evidence recording failed: ${artefactPath}: ${singleLine(errorMessage(error))}\n`,
@@ -94,20 +105,26 @@ const defaultReadProvenance = (workingDirectory: string): ReadTreeProvenanceResu
   return readTreeProvenance(createGitRunner(workingDirectory));
 };
 
-/** Append provenance when available and leave unbound evidence otherwise. */
-const recordedReportContent = (input: {
+/**
+ * Build recorded content without writing diagnostics.
+ *
+ * @param input Report text, provenance reader, and reviewed working directory.
+ * @returns Recorded report content plus the provenance availability result.
+ */
+export const recordedReportContent = (input: {
   readonly report: string;
   readonly readProvenance: (cwd: string) => ReadTreeProvenanceResult;
   readonly workingDirectory: string;
-  readonly writers: CliWriters;
-}): string => {
+}): RecordedReportContent => {
   const result = input.readProvenance(input.workingDirectory);
   if (result.ok) {
-    return `${input.report}${formatProvenanceTrailer(result.provenance)}`;
+    return {
+      content: `${input.report}${formatProvenanceTrailer(result.provenance)}`,
+      provenance: "available",
+    };
   }
 
-  input.writers.writeErr(`review evidence provenance unavailable: ${result.message}\n`);
-  return input.report;
+  return { content: input.report, provenance: "unavailable", message: result.message };
 };
 
 /** Convert unknown thrown values to deterministic CLI text. */

@@ -396,24 +396,24 @@ depending on manual post-commit audits.
     tree provenance, with the tree as the authoritative match key. The artefact
     CLI rejects missing, invalid, unbound, or tree-mismatched reports before a
     review can claim recorded evidence.
-  - [ ] 1.5.12.1. Document duplicate provenance-line handling.
+  - [x] 1.5.12.1. Document duplicate provenance-line handling.
     - Addendum (from review:1.5.12; low). Add a short
       `review-evidence-provenance` module-documentation note explaining that
       duplicate reviewed-commit or reviewed-tree trailer lines leave a report
       unbound. Lightweight addendum pass.
-  - [ ] 1.5.12.2. Add bound-evidence matching-trailer property coverage.
+  - [x] 1.5.12.2. Add bound-evidence matching-trailer property coverage.
     - Addendum (from review:1.5.12; low). Add fast-check coverage proving
       complete reports with matching provenance trailers classify as present.
       Lightweight addendum pass.
-  - [ ] 1.5.12.3. Couple evidence recording to a clean reviewed tree.
+  - [x] 1.5.12.3. Couple evidence recording to a clean reviewed tree.
     - Addendum (from review:1.5.12; low). Assert a clean worktree before
       recording review evidence or document the reviewer precondition beside
       provenance recording. Lightweight addendum pass.
-  - [ ] 1.5.12.4. Cover readTreeProvenance symmetric failures.
+  - [x] 1.5.12.4. Cover readTreeProvenance symmetric failures.
     - Addendum (from review:1.5.12; low). Add direct coverage for failed tree
       lookup and Git spawn-error branches in `readTreeProvenance`. Lightweight
       addendum pass.
-  - [ ] 1.5.12.5. Restore recording-path command-query separation.
+  - [x] 1.5.12.5. Restore recording-path command-query separation.
     - Addendum (from audit:1.5.12; medium). Return a provenance-error
       discriminator from report-content building and emit diagnostics from the
       recording boundary. Lightweight addendum pass.
