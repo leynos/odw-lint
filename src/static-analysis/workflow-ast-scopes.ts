@@ -3,6 +3,7 @@
  */
 
 import type { Module, Node } from "@swc/core";
+import { astChildValues } from "./swc-ast";
 import {
   type AstNode,
   arrayValue,
@@ -182,7 +183,7 @@ const collectChildOwnNames = (
   boundNames: Set<string>,
   currentScope: AstNode | undefined,
 ): void => {
-  for (const value of childValues(node)) {
+  for (const value of astChildValues(node)) {
     collectOwnNamesFromValue(value, boundNames, currentScope);
   }
 };
@@ -231,13 +232,6 @@ const syntheticWrapperBody = (
   }
 
   return asNode(wrapper.body);
-};
-
-/** Returns object field values that can contain semantic child nodes. */
-const childValues = (node: AstNode): readonly unknown[] => {
-  return Object.entries(node)
-    .filter(([key]) => key !== "span" && key !== "type" && key !== "ctxt")
-    .map(([, value]) => value);
 };
 
 /** Adds one declaration identifier by name. */

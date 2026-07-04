@@ -131,6 +131,13 @@ describe("collectLexicalBindings", () => {
     expect(isIdentifierBound(facts, "nestedProperty")).toBeTrue();
   });
 
+  it("reports bindings under fallback control-flow nodes", () => {
+    const facts = bindingsForBody("if (condition) { const fallbackName = 1; }\n");
+
+    expect(isIdentifierBound(facts, "fallbackName")).toBeTrue();
+    expect(isIdentifierBound(facts, "condition")).toBeFalse();
+  });
+
   it("falls back to top-level module statements without the synthetic wrapper", () => {
     const module = parseSync("const rawBinding = 1;", {
       syntax: "ecmascript",

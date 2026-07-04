@@ -9,8 +9,89 @@ import {
   astChildValues,
   isAstNode,
   isUnknownRecord as seamIsUnknownRecord,
+  traverseAstSubtree,
 } from "../../src/static-analysis/swc-ast";
 import { isUnknownRecord } from "../../src/static-analysis/value-guards";
+
+type TestNode = Node & {
+  readonly label: string;
+  readonly child?: TestNode;
+  readonly children?: readonly TestNode[];
+  readonly wrapper?: { readonly nested?: TestNode };
+};
+type TestNodeFields = {
+  child?: TestNode;
+  children?: readonly TestNode[];
+  wrapper?: { readonly nested?: TestNode | null | undefined };
+  span?: unknown;
+  ctxt?: unknown;
+};
+
+/** Builds a labelled node-shaped fixture for traversal assertions. */
+const testNode = (label: string, children: TestNodeFields = {}): TestNode => {
+  return { type: "TestNode", label, ...children } as TestNode;
+};
+
+/** Walks a node tree with the existing seam primitives as an oracle. */
+const referenceWalk = (node: Node): readonly Node[] => {
+  const visited: Node[] = [node];
+
+  for (const child of astChildValues(node)) {
+    collectReferenceChildNodes(child, visited);
+  }
+
+  return visited;
+};
+
+/** Adds every child node reachable from one arbitrary child value. */
+const collectReferenceChildNodes = (value: unknown, visited: Node[]): void => {
+  if (isAstNode(value)) {
+    visited.push(...referenceWalk(value));
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectReferenceChildNodes(item, visited);
+    }
+    return;
+  }
+
+  if (isUnknownRecord(value)) {
+    for (const child of astChildValues(value)) {
+      collectReferenceChildNodes(child, visited);
+    }
+  }
+};
+
+/** Generates bounded node trees that exercise node, array, and record children. */
+const generatedNodeArbitrary = (depth = 0): fc.Arbitrary<TestNode> => {
+  const childArbitrary =
+    depth >= 3 ? fc.constant(undefined) : fc.option(generatedNodeArbitrary(depth + 1));
+
+  return fc
+    .record({
+      label: fc.string({ minLength: 1, maxLength: 8 }),
+      child: childArbitrary,
+      children:
+        depth >= 3
+          ? fc.constant([])
+          : fc.array(generatedNodeArbitrary(depth + 1), { maxLength: 3 }),
+      wrapper: fc.option(fc.record({ nested: childArbitrary })),
+    })
+    .map(({ label, child, children, wrapper }) => {
+      const fields: TestNodeFields = { children };
+
+      if (child != null) {
+        fields.child = child;
+      }
+      if (wrapper !== null) {
+        fields.wrapper = wrapper;
+      }
+
+      return testNode(label, fields);
+    });
+};
 
 describe("SWC AST shape helpers", () => {
   it.each([
@@ -84,5 +165,68 @@ describe("SWC AST shape helpers", () => {
 
   it("re-exports the canonical record guard", () => {
     expect(seamIsUnknownRecord).toBe(isUnknownRecord);
+  });
+});
+
+describe("traverseAstSubtree", () => {
+  it("visits semantic child nodes exactly once in pre-order", () => {
+    const directChild = testNode("direct");
+    const arrayChild = testNode("array");
+    const nestedChild = testNode("nested");
+    const root = testNode("root", {
+      child: directChild,
+      children: [arrayChild],
+      wrapper: { nested: nestedChild },
+      span: { start: 1, end: 2, ctxt: 0 },
+      ctxt: 0,
+    });
+    const visitedLabels: string[] = [];
+
+    traverseAstSubtree(root, undefined, (node) => {
+      visitedLabels.push((node as TestNode).label);
+      return undefined;
+    });
+
+    expect(visitedLabels).toEqual(["root", "direct", "array", "nested"]);
+  });
+
+  it("threads node-returned context through array and record wrappers", () => {
+    const directChild = testNode("direct");
+    const arrayChild = testNode("array");
+    const nestedChild = testNode("nested");
+    const root = testNode("root", {
+      child: directChild,
+      children: [arrayChild],
+      wrapper: { nested: nestedChild },
+    });
+    const receivedContexts = new Map<string, number>();
+
+    traverseAstSubtree(root, 0, (node, depth) => {
+      receivedContexts.set((node as TestNode).label, depth);
+      return depth + 1;
+    });
+
+    expect(Object.fromEntries(receivedContexts)).toEqual({
+      root: 0,
+      direct: 1,
+      array: 1,
+      nested: 1,
+    });
+  });
+
+  it("matches the existing astChildValues reference traversal for generated trees", () => {
+    fc.assert(
+      fc.property(generatedNodeArbitrary(), (root) => {
+        const visited: Node[] = [];
+
+        traverseAstSubtree(root, undefined, (node) => {
+          visited.push(node);
+          return undefined;
+        });
+
+        expect(visited).toEqual([...referenceWalk(root)]);
+      }),
+      { numRuns: 100 },
+    );
   });
 });

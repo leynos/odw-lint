@@ -64,6 +64,15 @@ production diagnostics currently use the conservative whole-body fallback; do
 not export the speculative narrowing helper through the package entry until a
 production parser path can exercise it.
 
+Parser-backed collectors share SWC tree-shape primitives through
+`src/static-analysis/swc-ast.ts`. Use `traverseAstSubtree` for pre-order
+full-subtree collectors whose per-node context can be expressed as the
+callback's returned child context. Keep a distinct local recursion policy when
+a collector stops at scope boundaries, dispatches by node type, or follows a
+directed expression chain; those collectors should still consume seam
+primitives such as `astChildValues` or `isAstNode` rather than reimplementing
+SWC child-field dispatch.
+
 `normalizeWorkflowBody` lives in
 `src/static-analysis/workflow-body-normalizer.ts`. It wraps the original body
 slice verbatim in an injected async function so ODW bodies with top-level

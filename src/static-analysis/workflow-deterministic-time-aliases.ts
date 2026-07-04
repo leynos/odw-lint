@@ -13,7 +13,7 @@ import type {
   VariableDeclarator,
 } from "@swc/core";
 import type { RuleId } from "../diagnostics/rule-id";
-import { astChildValues, isAstNode, isUnknownRecord } from "./swc-ast";
+import { isAstNode, traverseAstSubtree } from "./swc-ast";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import {
   type GlobalObjectIdentity,
@@ -64,7 +64,13 @@ export const collectDeterministicTimeAliases = (
 ): DeterministicTimeAliases => {
   const aliases = new Map<string, DeterministicTimeAlias>();
 
-  collectAliasesFromNode(module, bindings, aliases, rules);
+  traverseAstSubtree(module, bindings, (node, context) => {
+    if (isVariableDeclarator(node)) {
+      collectAliasFromDeclarator(node, context, aliases, rules);
+    }
+
+    return context;
+  });
 
   return aliases;
 };
@@ -127,48 +133,6 @@ export const memberExpressionFromCall = (node: Node): MemberExpression | undefin
   }
 
   return memberExpressionFromExpression(node.callee);
-};
-
-/** Walks the parsed body looking for static, direct alias declarations. */
-const collectAliasesFromNode = (
-  node: Node,
-  bindings: LexicalBindingFacts,
-  aliases: Map<string, DeterministicTimeAlias>,
-  rules: DeterministicTimeAliasRules,
-): void => {
-  if (isVariableDeclarator(node)) {
-    collectAliasFromDeclarator(node, bindings, aliases, rules);
-  }
-
-  for (const child of astChildValues(node)) {
-    collectAliasesFromChild(child, bindings, aliases, rules);
-  }
-};
-
-/** Visits nested fields while collecting aliases. */
-const collectAliasesFromChild = (
-  value: unknown,
-  bindings: LexicalBindingFacts,
-  aliases: Map<string, DeterministicTimeAlias>,
-  rules: DeterministicTimeAliasRules,
-): void => {
-  if (isAstNode(value)) {
-    collectAliasesFromNode(value, bindings, aliases, rules);
-    return;
-  }
-
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      collectAliasesFromChild(item, bindings, aliases, rules);
-    }
-    return;
-  }
-
-  if (isUnknownRecord(value)) {
-    for (const child of astChildValues(value)) {
-      collectAliasesFromChild(child, bindings, aliases, rules);
-    }
-  }
 };
 
 /** Records one direct deterministic-time alias when the initializer is static. */

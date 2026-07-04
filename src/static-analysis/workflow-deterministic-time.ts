@@ -13,7 +13,7 @@ import { createRuleDiagnostic } from "../diagnostics/rule-diagnostic";
 import type { RuleId } from "../diagnostics/rule-id";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic } from "../diagnostics/types";
-import { astChildValues, isAstNode, isUnknownRecord } from "./swc-ast";
+import { traverseAstSubtree } from "./swc-ast";
 import type { WorkflowEnvelope } from "./types";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import { collectLexicalBindings } from "./workflow-ast-bindings";
@@ -93,54 +93,17 @@ const walkDeterministicTimeHazards = (
 ): readonly HazardMatch[] => {
   const matches: HazardMatch[] = [];
 
-  visitNode(root, bindings, aliases, matches);
+  traverseAstSubtree(root, bindings, (node, context) => {
+    const match = matchDeterministicTimeHazard(node, context, aliases);
+
+    if (match !== undefined) {
+      matches.push(match);
+    }
+
+    return enterScope(context, node);
+  });
 
   return matches;
-};
-
-/** Visits one SWC node before its children so emitted diagnostics follow source order. */
-const visitNode = (
-  node: Node,
-  bindings: LexicalBindingFacts,
-  aliases: DeterministicTimeAliases,
-  matches: HazardMatch[],
-): void => {
-  const childBindings = enterScope(bindings, node);
-  const match = matchDeterministicTimeHazard(node, bindings, aliases);
-
-  if (match !== undefined) {
-    matches.push(match);
-  }
-
-  for (const child of astChildValues(node)) {
-    visitChildValue(child, childBindings, aliases, matches);
-  }
-};
-
-/** Visits nested SWC nodes, including wrappers such as call arguments. */
-const visitChildValue = (
-  value: unknown,
-  bindings: LexicalBindingFacts,
-  aliases: DeterministicTimeAliases,
-  matches: HazardMatch[],
-): void => {
-  if (isAstNode(value)) {
-    visitNode(value, bindings, aliases, matches);
-    return;
-  }
-
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      visitChildValue(item, bindings, aliases, matches);
-    }
-    return;
-  }
-
-  if (isUnknownRecord(value)) {
-    for (const child of astChildValues(value)) {
-      visitChildValue(child, bindings, aliases, matches);
-    }
-  }
 };
 
 /** Matches one of the syntactic deterministic-time hazards on a node. */

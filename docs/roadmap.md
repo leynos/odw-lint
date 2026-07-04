@@ -946,7 +946,7 @@ See [technical-design.md](technical-design.md) §9.3.
     - Addendum (from review:3.2.5; low). Add a focused architecture or
       documentation guard so new parser-backed 3.2 rules consume `swc-ast.ts`
       instead of cloning shape helpers. Lightweight addendum pass.
-- [ ] 3.2.6. Complete SWC traversal-driver adoption for parser-backed
+- [x] 3.2.6. Complete SWC traversal-driver adoption for parser-backed
   collectors.
   - Requires 3.2.5, 3.1.5, and 3.2.5.1.
   - See [technical-design.md](technical-design.md) §§6.1 and 9.3.

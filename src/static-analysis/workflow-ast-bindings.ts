@@ -3,6 +3,7 @@
  */
 
 import type { Module } from "@swc/core";
+import { astChildValues } from "./swc-ast";
 import {
   type AstNode,
   arrayValue,
@@ -186,7 +187,7 @@ const collectPatternBindingNames = (pattern: unknown, boundNames: Set<string>): 
 };
 /** Recurses through children that may contain nested declarations. */
 const collectChildBindings = (node: AstNode, boundNames: Set<string>): void => {
-  for (const value of Object.values(node)) {
+  for (const value of astChildValues(node)) {
     if (Array.isArray(value)) {
       for (const item of value) {
         collectStatementBindings(asNode(item), boundNames);

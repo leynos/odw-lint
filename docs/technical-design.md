@@ -124,11 +124,15 @@ consumer contract.
 
 Parser-backed rule modules share SWC node-shape helpers through
 `src/static-analysis/swc-ast.ts`. That internal seam owns the strict AST node
-guard, semantic child-field traversal, and the record guard re-export consumed
-by the deterministic-time scanner, deterministic-time alias collector,
-global-object resolver, and lexical binding collector. Keeping those helpers in
-one module prevents rule-local traversal drift while leaving public package
-exports unchanged.
+guard, semantic child-field traversal, record guard re-export, and generic
+pre-order `traverseAstSubtree` driver. The deterministic-time scanner and
+deterministic-time alias collector use the driver for full-subtree walks. Scope
+views and the lexical-binding collector consume `astChildValues` while keeping
+their distinct scope-bounded and type-dispatched recursion policies. Binding
+pattern collection and global-object resolution are not generic tree walks:
+they stay directed analyses behind the same shape helpers where needed. Keeping
+these helpers in one module prevents rule-local traversal drift while leaving
+public package exports unchanged.
 
 ### 6.2. Static source model
 

@@ -24,10 +24,11 @@ const PRIVATE_SWC_HELPER_DECLARATION_NAMES = new Set([
   "isNode",
   "isTraversableChildKey",
 ]);
-// Scope views deliberately own a broader binding traversal than rule scans.
-const PRIVATE_SWC_HELPER_EXCEPTIONS = new Map([
-  [`${STATIC_ANALYSIS_SOURCE_PATH}/workflow-ast-scopes.ts`, new Set(["childValues"])],
+const PRIVATE_SWC_TRAVERSAL_DECLARATION_NAMES = new Set([
+  "traverseAstChildValue",
+  "traverseAstSubtree",
 ]);
+// Scope views consume astChildValues while owning scope-bounded recursion.
 
 /** Lists current direct TypeScript source modules below one source directory. */
 const sourceModuleFiles = (sourcePath: string): readonly string[] => {
@@ -47,10 +48,15 @@ const hasSwcCoreImport = (sourcePath: string): boolean => {
 
 /** Returns private SWC helper declarations that must live behind the seam. */
 const privateSwcHelperDeclarations = (sourcePath: string): readonly string[] => {
-  const exceptions = PRIVATE_SWC_HELPER_EXCEPTIONS.get(sourcePath) ?? new Set<string>();
-
   return topLevelDeclarationNames(parseSource(sourcePath)).filter((name) => {
-    return PRIVATE_SWC_HELPER_DECLARATION_NAMES.has(name) && !exceptions.has(name);
+    return PRIVATE_SWC_HELPER_DECLARATION_NAMES.has(name);
+  });
+};
+
+/** Returns SWC traversal driver declarations that must live behind the seam. */
+const privateSwcTraversalDeclarations = (sourcePath: string): readonly string[] => {
+  return topLevelDeclarationNames(parseSource(sourcePath)).filter((name) => {
+    return PRIVATE_SWC_TRAVERSAL_DECLARATION_NAMES.has(name);
   });
 };
 
@@ -65,15 +71,16 @@ describe("diagnostic architecture", () => {
     expect(topLevelDeclarationNames(parseSource("src/index.ts"))).toEqual([]);
   });
 
-  it("keeps SWC node-shape helpers behind the shared seam", () => {
+  it("keeps SWC node-shape helpers and traversal drivers behind the shared seam", () => {
     const violations = sourceModuleFiles(STATIC_ANALYSIS_SOURCE_PATH)
       .map((fileName) => `${STATIC_ANALYSIS_SOURCE_PATH}/${fileName}`)
       .filter((sourcePath) => sourcePath !== SWC_AST_SEAM_SOURCE)
       .filter((sourcePath) => hasSwcCoreImport(sourcePath))
       .flatMap((sourcePath) => {
-        return privateSwcHelperDeclarations(sourcePath).map((declarationName) => {
-          return `${sourcePath}:${declarationName}`;
-        });
+        return [
+          ...privateSwcHelperDeclarations(sourcePath),
+          ...privateSwcTraversalDeclarations(sourcePath),
+        ].map((declarationName) => `${sourcePath}:${declarationName}`);
       });
 
     expect(violations).toEqual([]);
