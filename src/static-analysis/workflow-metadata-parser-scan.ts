@@ -1,12 +1,14 @@
 /** @file Low-level scanners for static metadata literal parsing. */
 
 import { isIdentifierPartCharacter, isIdentifierStartCharacter } from "./javascript-identifiers";
-import { isStringLikeDelimiter, isWhitespaceCharacter } from "./source-mask-delimiters";
+import { isWhitespaceCharacter } from "./source-mask-delimiters";
 import {
-  scanBlockCommentEnd,
-  scanDelimitedEnd,
-  scanLineCommentEnd,
-} from "./workflow-metadata-comment-scan";
+  codePointStringAt,
+  commentDispatchEnd,
+  identifierRunEnd,
+  isStringLikeDelimiter,
+} from "./source-scanner-primitives";
+import { scanDelimitedEnd } from "./workflow-metadata-comment-scan";
 import type { ParserCursor } from "./workflow-metadata-parser";
 
 /** Keyword value table for primitive metadata literals. */
@@ -51,7 +53,7 @@ export const skipTrivia = (cursor: ParserCursor): void => {
       cursor.index += 1;
       continue;
     }
-    const commentEndIndex = scanCommentEnd(cursor.text, cursor.index, cursor.endIndex);
+    const commentEndIndex = commentDispatchEnd(cursor.text, cursor.index, cursor.endIndex);
     if (commentEndIndex !== undefined) {
       cursor.index = commentEndIndex;
       continue;
@@ -76,7 +78,7 @@ export const scanExpressionEnd = (cursor: ParserCursor, terminators: readonly st
       index = scanDelimitedEnd(cursor.text, index, character, cursor.endIndex);
       continue;
     }
-    const commentEndIndex = scanCommentEnd(cursor.text, index, cursor.endIndex);
+    const commentEndIndex = commentDispatchEnd(cursor.text, index, cursor.endIndex);
     if (commentEndIndex !== undefined) {
       index = commentEndIndex;
       continue;
@@ -106,7 +108,7 @@ export const scanBalancedEnd = (
   let depth = 0;
   for (let index = cursor.index; index < cursor.endIndex; index += 1) {
     const character = cursor.text[index] ?? "";
-    const commentEndIndex = scanCommentEnd(cursor.text, index, cursor.endIndex);
+    const commentEndIndex = commentDispatchEnd(cursor.text, index, cursor.endIndex);
     if (commentEndIndex !== undefined) {
       index = commentEndIndex - 1;
       continue;
@@ -152,21 +154,7 @@ export const scanNumberEnd = (text: string, startIndex: number, endIndex: number
  * @returns The exclusive identifier end index, or `undefined`.
  */
 export const scanIdentifierEnd = (cursor: ParserCursor): number | undefined => {
-  const firstCharacter = codePointAt(cursor.text, cursor.index);
-  if (!isIdentifierStart(firstCharacter)) {
-    return undefined;
-  }
-
-  let index = cursor.index + firstCharacter.length;
-  while (index < cursor.endIndex) {
-    const character = codePointAt(cursor.text, index);
-    if (!isIdentifierPart(character)) {
-      return index;
-    }
-    index += character.length;
-  }
-
-  return index;
+  return identifierRunEnd(cursor.text, cursor.index, cursor.endIndex);
 };
 
 /**
@@ -246,13 +234,7 @@ const isStandaloneKeywordAt = (
   if (!cursor.text.startsWith(keyword, cursor.index)) {
     return false;
   }
-  return !isIdentifierPart(codePointAt(cursor.text, cursor.index + keyword.length));
-};
-
-/** Returns the full source code point at `index`, or an empty EOF marker. */
-const codePointAt = (text: string, index: number): string => {
-  const codePoint = text.codePointAt(index);
-  return codePoint === undefined ? "" : String.fromCodePoint(codePoint);
+  return !isIdentifierPart(codePointStringAt(cursor.text, cursor.index + keyword.length));
 };
 
 /** Checks whether a top-level expression terminator has been reached. */
@@ -293,15 +275,4 @@ const nextExpressionDepth = (depth: ExpressionDepth, character: string): Express
     return { ...depth, bracket: Math.max(0, depth.bracket - 1) };
   }
   return depth;
-};
-
-/** Scans a comment from the current index when present. */
-const scanCommentEnd = (text: string, startIndex: number, endIndex: number): number | undefined => {
-  if (text.startsWith("//", startIndex)) {
-    return scanLineCommentEnd(text, startIndex + 2, endIndex);
-  }
-  if (text.startsWith("/*", startIndex)) {
-    return scanBlockCommentEnd(text, startIndex + 2, endIndex);
-  }
-  return undefined;
 };

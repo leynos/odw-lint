@@ -1,8 +1,9 @@
 /** @file Unsupported import/export scanner for static workflow envelopes. */
 
 import { isIdentifierPartCharacter } from "./javascript-identifiers";
-import { isLineTerminatorCharacter, isWhitespaceCharacter } from "./source-mask-delimiters";
+import { isWhitespaceCharacter } from "./source-mask-delimiters";
 import { spanFromTextIndexes } from "./source-position";
+import { isSourceLineTerminator } from "./source-scanner-primitives";
 import type { OriginalSourceFile, UnsupportedWorkflowSyntax } from "./types";
 import type { DepthState } from "./workflow-envelope-statement";
 import {
@@ -183,7 +184,7 @@ const previousCodeBoundary = (text: string, index: number): PreviousCodeBoundary
 
   for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
     const character = text[cursor] ?? "";
-    if (isLineTerminatorCharacter(character)) {
+    if (isSourceLineTerminator(character)) {
       hasLineBreak = true;
     }
     if (!isWhitespaceCharacter(character)) {

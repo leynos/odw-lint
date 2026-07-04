@@ -641,7 +641,7 @@ statically. It unlocks metadata rules and body parsing. See
       by promoting string-like delimiters to one type guard and replacing
       remaining local whitespace and ASCII identifier idioms. Lightweight
       addendum pass.
-- [ ] 2.1.13. Extract a shared scanner primitive layer.
+- [x] 2.1.13. Extract a shared scanner primitive layer.
   - Consolidate the low-level source-scanning primitives shared by source-mask
     and workflow-metadata scanners, including identifier runs, delimiter walks,
     escapes, and token-boundary helpers, without changing emitted diagnostics or

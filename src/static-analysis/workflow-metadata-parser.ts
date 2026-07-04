@@ -2,8 +2,8 @@
 
 import type { SourceSpan } from "../diagnostics/types";
 import { textIndexAtOffset } from "./source-indexes";
-import { isStringLikeDelimiter } from "./source-mask-delimiters";
 import { spanFromTextIndexes } from "./source-position";
+import { isStringLikeDelimiter } from "./source-scanner-primitives";
 import type { OriginalSourceFile, WorkflowEnvelopeScanResult, WorkflowMetaValue } from "./types";
 import type {
   ParsedMetadataProperty,

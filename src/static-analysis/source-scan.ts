@@ -7,10 +7,8 @@
  */
 
 import type { SourcePosition } from "../diagnostics/types";
+import { codePointStringAt, isCrLfAt, isSourceLineTerminator } from "./source-scanner-primitives";
 import type { SourceLine } from "./types";
-
-/** JavaScript line terminators recognised by the original-source scanner. */
-const LINE_TERMINATORS = new Set(["\n", "\r", "\u2028", "\u2029"]);
 
 /**
  * Private lookup tables derived from the original source text.
@@ -53,12 +51,12 @@ export const scanOriginalSource = (sourceText: string): SourceScan => {
   textIndexes.set(byteOffset, index);
 
   while (index < sourceText.length) {
-    const codePoint = sourceText.codePointAt(index);
+    const character = codePointStringAt(sourceText, index);
+    const codePoint = character.codePointAt(0);
     if (codePoint === undefined) {
       break;
     }
 
-    const character = String.fromCodePoint(codePoint);
     if (isLineTerminator(character)) {
       const terminatorByteLength = lineTerminatorByteLength(sourceText, index, codePoint);
       const terminatorIndexLength = lineTerminatorIndexLength(sourceText, index, character);
@@ -132,7 +130,7 @@ const utf8ByteLengthForCodePoint = (codePoint: number): number => {
  * @returns True when the character is a current source line terminator.
  */
 export const isLineTerminator = (character: string): boolean => {
-  return LINE_TERMINATORS.has(character);
+  return isSourceLineTerminator(character);
 };
 
 /**
@@ -143,7 +141,7 @@ export const isLineTerminator = (character: string): boolean => {
  * @returns True when the index starts a CRLF terminator pair.
  */
 export const isCrLfTerminator = (sourceText: string, index: number): boolean => {
-  return sourceText[index] === "\r" && sourceText[index + 1] === "\n";
+  return isCrLfAt(sourceText, index);
 };
 
 /** Returns the UTF-8 byte width of a supported line terminator. */

@@ -5,8 +5,9 @@
  * facade can compose comment handling without carrying comment-specific state.
  */
 
-import { createMaskedRange, isLineTerminatorCharacter } from "./source-mask-delimiters";
+import { createMaskedRange } from "./source-mask-delimiters";
 import type { SourceMaskRange } from "./source-mask-types";
+import { blockCommentEnd, lineCommentTerminatorEnd } from "./source-scanner-primitives";
 
 /**
  * Scans line or block comments from a slash position.
@@ -29,8 +30,7 @@ export const scanCommentRange = (
   if (nextCharacter === "/") {
     return createMaskedRange("comment", startIndex, scanLineCommentEnd(sourceText, startIndex + 2));
   }
-  const terminatorIndex = sourceText.indexOf("*/", startIndex + 2);
-  const endIndex = terminatorIndex === -1 ? sourceText.length : terminatorIndex + 2;
+  const endIndex = blockCommentEnd(sourceText, startIndex + 2, sourceText.length);
 
   return createMaskedRange("comment", startIndex, endIndex);
 };
@@ -58,18 +58,5 @@ export const isCommentStart = (character: string, nextCharacter: string): boolea
  * @returns Exclusive end index for the line comment range.
  */
 export const scanLineCommentEnd = (sourceText: string, startIndex: number): number => {
-  let index = startIndex;
-
-  while (index < sourceText.length) {
-    if (isLineTerminatorCharacter(sourceText[index] ?? "")) {
-      if (sourceText[index] === "\r" && sourceText[index + 1] === "\n") {
-        return index + 2;
-      }
-
-      return index + 1;
-    }
-    index += 1;
-  }
-
-  return sourceText.length;
+  return lineCommentTerminatorEnd(sourceText, startIndex);
 };

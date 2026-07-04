@@ -156,6 +156,14 @@ quoted strings, whole template literals, and regex literals each have focused
 internal scanner modules. Public scanner code calls `maskNonCodeSource` through
 the facade; token-family modules remain internal implementation details.
 
+Both the source-mask scanner family and workflow-metadata scanners compose
+shared token-grammar primitives from
+`src/static-analysis/source-scanner-primitives.ts`. That internal module owns
+line-terminator classification, escape advancement, comment boundaries,
+delimiter guards, template-interpolation walks, and identifier-run scanners.
+Scanner-family modules may build token-specific orchestration around those
+primitives, but they must not re-implement the shared UTF-16 grammar loops.
+
 ### 6.3. Metadata classification
 
 Metadata diagnostics must separate three cases:

@@ -22,6 +22,7 @@ const SOURCE_HELPER_MODULES = [
   "source-mask-types.ts",
   "source-position.ts",
   "source-scan.ts",
+  "source-scanner-primitives.ts",
   "source-snippet.ts",
   "types.ts",
   "utf8.ts",
@@ -161,7 +162,6 @@ describe("source-file helper architecture", () => {
     expect(existsSync("src/static-analysis/source-file.ts")).toBeTrue();
 
     expectModuleDeclarations("src/static-analysis/source-scan.ts", [
-      "LINE_TERMINATORS",
       "SourceIndexes",
       "SourceScan",
       "isCrLfTerminator",
@@ -172,6 +172,29 @@ describe("source-file helper architecture", () => {
       "sourceLine",
       "sourcePosition",
       "utf8ByteLengthForCodePoint",
+    ]);
+    expectModuleDeclarations("src/static-analysis/source-scanner-primitives.ts", [
+      "QuotedStringDelimiter",
+      "RegexDelimiter",
+      "SOURCE_LINE_TERMINATORS",
+      "StringLikeDelimiter",
+      "TemplateDelimiter",
+      "asciiIdentifierRunEnd",
+      "asciiIdentifierRunStart",
+      "blockCommentEnd",
+      "codePointStringAt",
+      "commentDispatchEnd",
+      "identifierRunEnd",
+      "indexAfterEscapedUnit",
+      "isCrLfAt",
+      "isQuotedStringDelimiter",
+      "isRegexDelimiter",
+      "isSourceLineTerminator",
+      "isStringLikeDelimiter",
+      "isTemplateDelimiter",
+      "lineCommentContentEnd",
+      "lineCommentTerminatorEnd",
+      "templateExpressionEnd",
     ]);
     expectModuleDeclarations("src/static-analysis/source-indexes.ts", [
       "SOURCE_INDEXES",
@@ -202,18 +225,9 @@ describe("source-file helper architecture", () => {
       "SourceMaskRange",
     ]);
     expectModuleDeclarations("src/static-analysis/source-mask-delimiters.ts", [
-      "QuotedStringDelimiter",
-      "RegexDelimiter",
-      "StringLikeDelimiter",
-      "TemplateDelimiter",
       "WHITESPACE_PATTERN",
       "blankMaskedRange",
       "createMaskedRange",
-      "isLineTerminatorCharacter",
-      "isQuotedStringDelimiter",
-      "isRegexDelimiter",
-      "isStringLikeDelimiter",
-      "isTemplateDelimiter",
       "isWhitespaceCharacter",
       "scanEscapedDelimitedEnd",
     ]);

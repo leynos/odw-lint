@@ -5,13 +5,13 @@
  * ODW-recognized regex literals while preserving original UTF-16 indexes.
  */
 
-import { isAsciiIdentifierCharacter } from "./javascript-identifiers";
 import { scanCommentRange } from "./source-mask-comments";
 import { blankMaskedRange, isWhitespaceCharacter } from "./source-mask-delimiters";
 import { scanRegexRange } from "./source-mask-regex";
 import { scanQuotedStringRange } from "./source-mask-strings";
 import { scanTemplateRange } from "./source-mask-templates";
 import type { MaskedSource, SourceMaskRange } from "./source-mask-types";
+import { asciiIdentifierRunStart } from "./source-scanner-primitives";
 import type { OriginalSourceFile } from "./types";
 
 export type { MaskedSource, SourceMaskKind, SourceMaskRange } from "./source-mask-types";
@@ -125,17 +125,12 @@ const lastSignificantTokenInRange = (
 
 /** Finds the source token ending at a non-whitespace index. */
 const significantTokenEndingAt = (sourceText: string, index: number): string => {
-  const character = sourceText[index] ?? "";
-  if (!isAsciiIdentifierCharacter(character)) {
+  const tokenStartIndex = asciiIdentifierRunStart(sourceText, index + 1);
+  if (tokenStartIndex === index + 1) {
     return significantOperatorEndingAt(sourceText, index);
   }
 
-  let cursor = index;
-  while (cursor >= 0 && isAsciiIdentifierCharacter(sourceText[cursor])) {
-    cursor -= 1;
-  }
-
-  return sourceText.slice(cursor + 1, index + 1);
+  return sourceText.slice(tokenStartIndex, index + 1);
 };
 
 /** Finds a compact operator token ending at a non-identifier index. */

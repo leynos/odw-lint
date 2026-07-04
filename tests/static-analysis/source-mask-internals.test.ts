@@ -12,13 +12,7 @@ import { scanCommentRange } from "../../src/static-analysis/source-mask-comments
 import {
   blankMaskedRange,
   createMaskedRange,
-  isLineTerminatorCharacter,
-  isQuotedStringDelimiter,
-  isRegexDelimiter,
-  isStringLikeDelimiter,
-  isTemplateDelimiter,
   isWhitespaceCharacter,
-  type StringLikeDelimiter,
   scanEscapedDelimitedEnd,
 } from "../../src/static-analysis/source-mask-delimiters";
 import { scanRegexBodyEnd } from "../../src/static-analysis/source-mask-regex";
@@ -32,6 +26,14 @@ import type {
   SourceMaskKind,
   SourceMaskRange,
 } from "../../src/static-analysis/source-mask-types";
+import {
+  isQuotedStringDelimiter,
+  isRegexDelimiter,
+  isSourceLineTerminator,
+  isStringLikeDelimiter,
+  isTemplateDelimiter,
+  type StringLikeDelimiter,
+} from "../../src/static-analysis/source-scanner-primitives";
 
 const SOURCE_MASK_KINDS = [
   "comment",
@@ -71,8 +73,8 @@ describe("source-mask delimiter helpers", () => {
   });
 
   it("identifies JavaScript line terminator characters", () => {
-    expect(["\n", "\r", "\u2028", "\u2029"].every(isLineTerminatorCharacter)).toBeTrue();
-    expect([" ", "x", "`"].some(isLineTerminatorCharacter)).toBeFalse();
+    expect(["\n", "\r", "\u2028", "\u2029"].every(isSourceLineTerminator)).toBeTrue();
+    expect([" ", "x", "`"].some(isSourceLineTerminator)).toBeFalse();
   });
 
   it("identifies JavaScript whitespace characters", () => {

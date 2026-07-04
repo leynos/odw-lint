@@ -1,10 +1,12 @@
 /** @file Shared delimiter and comment scanners for metadata parsing. */
 
 import {
-  isLineTerminatorCharacter,
-  isStringLikeDelimiter,
+  blockCommentEnd,
+  indexAfterEscapedUnit,
+  lineCommentContentEnd,
   type StringLikeDelimiter,
-} from "./source-mask-delimiters";
+  templateExpressionEnd,
+} from "./source-scanner-primitives";
 
 /**
  * Scans one quoted or template-delimited region.
@@ -24,11 +26,11 @@ export const scanDelimitedEnd = (
   for (let index = startIndex + 1; index < endIndex; index += 1) {
     const character = text[index] ?? "";
     if (character === "\\") {
-      index += 1;
+      index = indexAfterEscapedUnit(text, index) - 1;
       continue;
     }
     if (delimiter === "`" && text.startsWith("${", index)) {
-      index = scanTemplateExpressionEnd(text, index + 2, endIndex) - 1;
+      index = templateExpressionEnd(text, index + 2, endIndex) - 1;
       continue;
     }
     if (character === delimiter) {
@@ -47,13 +49,7 @@ export const scanDelimitedEnd = (
  * @returns The line terminator index, or `endIndex`.
  */
 export const scanLineCommentEnd = (text: string, startIndex: number, endIndex: number): number => {
-  for (let index = startIndex; index < endIndex; index += 1) {
-    const character = text[index] ?? "";
-    if (isLineTerminatorCharacter(character)) {
-      return index;
-    }
-  }
-  return endIndex;
+  return lineCommentContentEnd(text, startIndex, endIndex);
 };
 
 /**
@@ -65,48 +61,5 @@ export const scanLineCommentEnd = (text: string, startIndex: number, endIndex: n
  * @returns The index just after the closing block marker, or `endIndex`.
  */
 export const scanBlockCommentEnd = (text: string, startIndex: number, endIndex: number): number => {
-  for (let index = startIndex; index + 1 < endIndex; index += 1) {
-    if (text[index] === "*" && text[index + 1] === "/") {
-      return index + 2;
-    }
-  }
-  return endIndex;
-};
-
-/** Scans a template interpolation expression while respecting nested delimiters. */
-const scanTemplateExpressionEnd = (text: string, startIndex: number, endIndex: number): number => {
-  let depth = 1;
-  for (let index = startIndex; index < endIndex; index += 1) {
-    const character = text[index] ?? "";
-    if (isStringLikeDelimiter(character)) {
-      index = scanDelimitedEnd(text, index, character, endIndex) - 1;
-      continue;
-    }
-    const commentEndIndex = scanCommentEnd(text, index, endIndex);
-    if (commentEndIndex !== undefined) {
-      index = commentEndIndex - 1;
-      continue;
-    }
-    if (character === "{") {
-      depth += 1;
-    }
-    if (character === "}") {
-      depth -= 1;
-      if (depth === 0) {
-        return index + 1;
-      }
-    }
-  }
-  return endIndex;
-};
-
-/** Scans a comment from the current index when present. */
-const scanCommentEnd = (text: string, startIndex: number, endIndex: number): number | undefined => {
-  if (text.startsWith("//", startIndex)) {
-    return scanLineCommentEnd(text, startIndex + 2, endIndex);
-  }
-  if (text.startsWith("/*", startIndex)) {
-    return scanBlockCommentEnd(text, startIndex + 2, endIndex);
-  }
-  return undefined;
+  return blockCommentEnd(text, startIndex, endIndex);
 };

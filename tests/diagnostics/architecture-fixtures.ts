@@ -49,6 +49,7 @@ export const EXPECTED_STATIC_ANALYSIS_MODULE_FILES = [
   "source-mask.ts",
   "source-position.ts",
   "source-scan.ts",
+  "source-scanner-primitives.ts",
   "source-snippet.ts",
   "swc-ast.ts",
   "types.ts",

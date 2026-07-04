@@ -6,25 +6,9 @@
  */
 
 import type { SourceMaskKind, SourceMaskRange } from "./source-mask-types";
+import { indexAfterEscapedUnit, isSourceLineTerminator } from "./source-scanner-primitives";
 
 const WHITESPACE_PATTERN = /^\s$/u;
-
-export type QuotedStringDelimiter = "'" | '"';
-export type TemplateDelimiter = "`";
-export type RegexDelimiter = "/";
-export type StringLikeDelimiter = QuotedStringDelimiter | TemplateDelimiter;
-
-/**
- * Checks for JavaScript line terminators.
- *
- * @param character - Source character to classify.
- * @returns Whether the character is a JavaScript line terminator.
- */
-export const isLineTerminatorCharacter = (character: string): boolean => {
-  return (
-    character === "\n" || character === "\r" || character === "\u2028" || character === "\u2029"
-  );
-};
 
 /**
  * Blanks one range while preserving every line terminator character.
@@ -40,7 +24,7 @@ export const blankMaskedRange = (
 ): void => {
   for (let index = range.startIndex; index < range.endIndex; index += 1) {
     const character = sourceText[index] ?? "";
-    characters[index] = isLineTerminatorCharacter(character) ? character : " ";
+    characters[index] = isSourceLineTerminator(character) ? character : " ";
   }
 };
 
@@ -78,7 +62,7 @@ export const scanEscapedDelimitedEnd = (
   while (index < sourceText.length) {
     const character = sourceText[index] ?? "";
     if (character === "\\") {
-      index += 2;
+      index = indexAfterEscapedUnit(sourceText, index);
       continue;
     }
     if (character === delimiter) {
@@ -88,46 +72,6 @@ export const scanEscapedDelimitedEnd = (
   }
 
   return sourceText.length;
-};
-
-/**
- * Checks for a single-quoted or double-quoted string start.
- *
- * @param character - Source character to classify.
- * @returns Whether the character can delimit a quoted string.
- */
-export const isQuotedStringDelimiter = (character: string): character is QuotedStringDelimiter => {
-  return character === "'" || character === '"';
-};
-
-/**
- * Checks for a template-literal delimiter.
- *
- * @param character - Source character to classify.
- * @returns Whether the character can delimit a template literal.
- */
-export const isTemplateDelimiter = (character: string): character is TemplateDelimiter => {
-  return character === "`";
-};
-
-/**
- * Checks for a regex-literal delimiter.
- *
- * @param character - Source character to classify.
- * @returns Whether the character can delimit a regex literal.
- */
-export const isRegexDelimiter = (character: string): character is RegexDelimiter => {
-  return character === "/";
-};
-
-/**
- * Checks for a nested string-like token start.
- *
- * @param character - Source character to classify.
- * @returns Whether the character can open string-like template content.
- */
-export const isStringLikeDelimiter = (character: string): character is StringLikeDelimiter => {
-  return isQuotedStringDelimiter(character) || isTemplateDelimiter(character);
 };
 
 /**

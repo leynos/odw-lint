@@ -5,13 +5,14 @@
  * appears after one of the static source contexts where a regex may start.
  */
 
-import { isAsciiIdentifierCharacter } from "./javascript-identifiers";
-import {
-  createMaskedRange,
-  isLineTerminatorCharacter,
-  isRegexDelimiter,
-} from "./source-mask-delimiters";
+import { createMaskedRange } from "./source-mask-delimiters";
 import type { SourceMaskRange } from "./source-mask-types";
+import {
+  asciiIdentifierRunEnd,
+  indexAfterEscapedUnit,
+  isRegexDelimiter,
+  isSourceLineTerminator,
+} from "./source-scanner-primitives";
 
 export const REGEX_ALLOWED_PREVIOUS_CHARACTERS = new Set("([{,;:=!&|?+-*%<>~^".split(""));
 export const REGEX_ALLOWED_PREVIOUS_KEYWORDS = new Set([
@@ -172,7 +173,7 @@ export const nextRegexScanStep = (
   isInCharacterClass: boolean,
 ): RegexScanStep | undefined => {
   const character = sourceText[index] ?? "";
-  if (isLineTerminatorCharacter(character)) {
+  if (isSourceLineTerminator(character)) {
     return undefined;
   }
   if (character === "\\") {
@@ -239,13 +240,13 @@ export const nextEscapedRegexScanStep = (
   index: number,
   isInCharacterClass: boolean,
 ): RegexScanStep | undefined => {
-  if (isLineTerminatorCharacter(sourceText[index + 1] ?? "")) {
+  if (isSourceLineTerminator(sourceText[index + 1] ?? "")) {
     return undefined;
   }
 
   return {
     isInCharacterClass,
-    nextIndex: index + 2,
+    nextIndex: indexAfterEscapedUnit(sourceText, index),
   };
 };
 
@@ -332,11 +333,5 @@ export const isRegexBodyEndDelimiter = (
  * @returns Exclusive end index after zero or more flag characters.
  */
 export const scanRegexFlagsEnd = (sourceText: string, startIndex: number): number => {
-  let index = startIndex;
-
-  while (index < sourceText.length && isAsciiIdentifierCharacter(sourceText[index])) {
-    index += 1;
-  }
-
-  return index;
+  return asciiIdentifierRunEnd(sourceText, startIndex);
 };

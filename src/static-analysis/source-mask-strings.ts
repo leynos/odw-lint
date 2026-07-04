@@ -5,12 +5,14 @@
  * terminator, while this module owns the string-token start rules.
  */
 
-import {
-  createMaskedRange,
-  isLineTerminatorCharacter,
-  isQuotedStringDelimiter,
-} from "./source-mask-delimiters";
+import { createMaskedRange } from "./source-mask-delimiters";
 import type { SourceMaskRange } from "./source-mask-types";
+import {
+  indexAfterEscapedUnit,
+  isCrLfAt,
+  isQuotedStringDelimiter,
+  isSourceLineTerminator,
+} from "./source-scanner-primitives";
 
 /**
  * Scans a single-quoted or double-quoted string from an opening delimiter.
@@ -60,7 +62,7 @@ export const scanQuotedStringEnd = (
     if (currentCharacter === delimiter) {
       return index + 1;
     }
-    if (isLineTerminatorCharacter(currentCharacter)) {
+    if (isSourceLineTerminator(currentCharacter)) {
       return index;
     }
     index += 1;
@@ -71,14 +73,11 @@ export const scanQuotedStringEnd = (
 
 /** Finds the next index after an escaped quoted-string character. */
 const nextEscapedQuotedStringIndex = (sourceText: string, index: number): number => {
-  return isEscapedCrLfLineContinuation(sourceText, index) ? index + 3 : index + 2;
+  const escapedEndIndex = indexAfterEscapedUnit(sourceText, index);
+  return isEscapedCrLfLineContinuation(sourceText, index) ? escapedEndIndex + 1 : escapedEndIndex;
 };
 
 /** Checks whether a quoted-string escape consumes a CRLF line continuation. */
 const isEscapedCrLfLineContinuation = (sourceText: string, index: number): boolean => {
-  if (sourceText[index + 1] !== "\r") {
-    return false;
-  }
-
-  return sourceText[index + 2] === "\n";
+  return isCrLfAt(sourceText, index + 1);
 };

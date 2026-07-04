@@ -1,12 +1,9 @@
 /** @file Metadata value scanning for static workflow envelopes. */
 
-import {
-  isLineTerminatorCharacter,
-  isStringLikeDelimiter,
-  isWhitespaceCharacter,
-} from "./source-mask-delimiters";
+import { isWhitespaceCharacter } from "./source-mask-delimiters";
 import type { SourceMaskRange } from "./source-mask-types";
 import { spanFromTextIndexes } from "./source-position";
+import { commentDispatchEnd, isStringLikeDelimiter } from "./source-scanner-primitives";
 import type { OriginalSourceFile, WorkflowMetaValue } from "./types";
 import { topLevelStatementEndIndex } from "./workflow-envelope-statement";
 import { scanDelimitedEnd } from "./workflow-metadata-comment-scan";
@@ -104,35 +101,15 @@ const nextMetadataValueIndex = (text: string, startIndex: number): number | unde
     if (isWhitespaceCharacter(character)) {
       continue;
     }
-    if (text.startsWith("//", index)) {
-      index = scanLineCommentEnd(text, index + 2) - 1;
-      continue;
-    }
-    if (text.startsWith("/*", index)) {
-      index = scanBlockCommentEnd(text, index + 2) - 1;
+    const commentEndIndex = commentDispatchEnd(text, index, text.length);
+    if (commentEndIndex !== undefined) {
+      index = commentEndIndex - 1;
       continue;
     }
     return index;
   }
 
   return undefined;
-};
-
-/** Finds the end of a line comment from the first character after `//`. */
-const scanLineCommentEnd = (text: string, startIndex: number): number => {
-  for (let index = startIndex; index < text.length; index += 1) {
-    const character = text[index] ?? "";
-    if (isLineTerminatorCharacter(character)) {
-      return index;
-    }
-  }
-  return text.length;
-};
-
-/** Finds the end of a block comment from the first character after `/*`. */
-const scanBlockCommentEnd = (text: string, startIndex: number): number => {
-  const terminatorIndex = text.indexOf("*/", startIndex);
-  return terminatorIndex === -1 ? text.length : terminatorIndex + 2;
 };
 
 /** Finds a matching `}` for an object that starts at `startIndex`. */

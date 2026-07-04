@@ -593,6 +593,14 @@ Internal source-helper ownership is split by responsibility:
 - `src/static-analysis/source-scan.ts` performs the single production scan over
   original source text, building line metadata, display positions, UTF-8 byte
   offsets, and UTF-16 text indexes.
+- `src/static-analysis/source-scanner-primitives.ts` owns pure JavaScript
+  token-grammar primitives shared by the source-mask and workflow-metadata
+  scanner families. It is internal-only and may be imported by static-analysis
+  scanner-family modules for line terminators, escape advancement, comment
+  boundaries, delimiter guards, template-interpolation walks, and identifier
+  runs. Keep it free of mask-range, parser-cursor, diagnostic, and public
+  package types; compose primitives there, then keep token-specific range or
+  metadata decisions in the owning scanner family.
 - `src/static-analysis/source-indexes.ts` owns private index storage and
   guarded lookup for factory-created source records.
 - `src/static-analysis/source-mask.ts` is the inert-region masking facade and
@@ -601,8 +609,9 @@ Internal source-helper ownership is split by responsibility:
   terminators.
 - `src/static-analysis/source-mask-types.ts` owns mask data types used by the
   facade and internal scanner modules.
-- `src/static-analysis/source-mask-delimiters.ts` owns shared delimiter and
-  range helpers, including line-terminator classification and range blanking.
+- `src/static-analysis/source-mask-delimiters.ts` owns source-mask range
+  helpers, including range creation, range blanking, whitespace classification,
+  and the source-mask-specific escaped-delimiter orchestrator.
 - `src/static-analysis/source-mask-comments.ts`,
   `src/static-analysis/source-mask-strings.ts`,
   `src/static-analysis/source-mask-templates.ts`, and

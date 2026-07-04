@@ -1,6 +1,7 @@
 /** @file Top-level statement scanning helpers for workflow envelope extraction. */
 
-import { isLineTerminatorCharacter, isWhitespaceCharacter } from "./source-mask-delimiters";
+import { isWhitespaceCharacter } from "./source-mask-delimiters";
+import { isSourceLineTerminator } from "./source-scanner-primitives";
 
 export type DepthState = Readonly<{
   braceDepth: number;
@@ -85,7 +86,7 @@ const isLineEndFallback = (
   previousSignificant: string | undefined,
   nextSignificant: string | undefined,
 ): boolean => {
-  if (!isTopLevel(depth) || !isLineTerminatorCharacter(character)) {
+  if (!isTopLevel(depth) || !isSourceLineTerminator(character)) {
     return false;
   }
 

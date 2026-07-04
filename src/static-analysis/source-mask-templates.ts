@@ -5,22 +5,23 @@
  * interpolation code, so this module owns nested template scan state.
  */
 
-import {
-  isAsciiIdentifierCharacter,
-  isAsciiIdentifierStartCharacter,
-} from "./javascript-identifiers";
+import { isAsciiIdentifierStartCharacter } from "./javascript-identifiers";
 import { scanCommentRange } from "./source-mask-comments";
 import {
   createMaskedRange,
-  isLineTerminatorCharacter,
-  isRegexDelimiter,
-  isStringLikeDelimiter,
-  isTemplateDelimiter,
   isWhitespaceCharacter,
   scanEscapedDelimitedEnd,
 } from "./source-mask-delimiters";
 import { scanRegexBodyEnd } from "./source-mask-regex";
 import type { SourceMaskRange } from "./source-mask-types";
+import {
+  asciiIdentifierRunStart,
+  indexAfterEscapedUnit,
+  isRegexDelimiter,
+  isSourceLineTerminator,
+  isStringLikeDelimiter,
+  isTemplateDelimiter,
+} from "./source-scanner-primitives";
 
 const TEMPLATE_REGEX_ALLOWED_PREVIOUS_CHARACTERS = new Set("([{,;:=!&|?+-*%<>~^".split(""));
 const TEMPLATE_REGEX_ALLOWED_PREVIOUS_KEYWORDS = new Set(["await", "return", "throw", "yield"]);
@@ -124,7 +125,7 @@ export const nextTemplateIndex = (
 /** Skips an escaped character in template text. */
 const nextEscapedTemplateIndex = (sourceText: string, index: number): number | undefined => {
   if (sourceText[index] === "\\") {
-    return index + 2;
+    return indexAfterEscapedUnit(sourceText, index);
   }
 
   return undefined;
@@ -197,11 +198,9 @@ const previousSignificantTemplateToken = (sourceText: string, index: number): st
   }
 
   const tokenEndIndex = cursor + 1;
-  while (cursor >= 0 && isAsciiIdentifierCharacter(sourceText[cursor])) {
-    cursor -= 1;
-  }
+  const tokenStartIndex = asciiIdentifierRunStart(sourceText, tokenEndIndex);
 
-  return sourceText.slice(cursor + 1, tokenEndIndex);
+  return sourceText.slice(tokenStartIndex, tokenEndIndex);
 };
 
 /** Finds the previous non-whitespace character index before an expression index. */
@@ -237,7 +236,7 @@ const previousTemplateCommentStartIndex = (
 /** Finds the text index immediately after the previous line terminator. */
 const previousTemplateLineStartIndex = (sourceText: string, cursor: number): number => {
   for (let index = cursor; index >= 0; index -= 1) {
-    if (isLineTerminatorCharacter(sourceText[index] ?? "")) {
+    if (isSourceLineTerminator(sourceText[index] ?? "")) {
       return index + 1;
     }
   }

@@ -1,6 +1,10 @@
 /** @file String literal scanner for static metadata parsing. */
 
-import { isLineTerminatorCharacter } from "./source-mask-delimiters";
+import {
+  indexAfterEscapedUnit,
+  isCrLfAt,
+  isSourceLineTerminator,
+} from "./source-scanner-primitives";
 import { scanDelimitedEnd } from "./workflow-metadata-comment-scan";
 import type { ParserCursor } from "./workflow-metadata-parser";
 
@@ -64,7 +68,7 @@ const isUnprovableStringBoundary = (
   if (delimiter === "`") {
     return character === "$" && cursor.text[cursor.index + 1] === "{";
   }
-  return isLineTerminatorCharacter(character);
+  return isSourceLineTerminator(character);
 };
 
 /** Scans one string escape or line continuation. */
@@ -90,7 +94,7 @@ const scanStringEscape = (
     cursor.index = scanDelimitedEnd(cursor.text, literalStartIndex, delimiter, cursor.endIndex);
     return undefined;
   }
-  cursor.index += 2;
+  cursor.index = indexAfterEscapedUnit(cursor.text, cursor.index);
   return escaped;
 };
 
@@ -104,7 +108,7 @@ const scanLineContinuationEnd = (
   if (isCrLfContinuation(text, startIndex, endIndex)) {
     return startIndex + 2;
   }
-  if (character !== undefined && isLineTerminatorCharacter(character)) {
+  if (character !== undefined && isSourceLineTerminator(character)) {
     return startIndex + 1;
   }
   return undefined;
@@ -112,13 +116,10 @@ const scanLineContinuationEnd = (
 
 /** Checks for a CRLF string line continuation. */
 const isCrLfContinuation = (text: string, startIndex: number, endIndex: number): boolean => {
-  if (text[startIndex] !== "\r") {
-    return false;
-  }
   if (startIndex + 1 >= endIndex) {
     return false;
   }
-  return text[startIndex + 1] === "\n";
+  return isCrLfAt(text, startIndex);
 };
 
 /** Decodes supported simple string escapes and rejects computed escape forms. */
