@@ -27,6 +27,13 @@ const FUNCTION_LIKE_SCOPE_TYPES: ReadonlySet<string> = new Set([
   "SetterProperty",
 ]);
 const NAMED_CLASS_EXPRESSION_SCOPE_TYPES: ReadonlySet<string> = new Set(["ClassExpression"]);
+const BLOCK_LIKE_SCOPE_TYPES: ReadonlySet<string> = new Set([
+  "BlockStatement",
+  "CatchClause",
+  "ForInStatement",
+  "ForOfStatement",
+  "ForStatement",
+]);
 
 /**
  * Builds the scope binding view for the top level of a parsed module.
@@ -69,7 +76,15 @@ const collectOwnNamesForScope = (scopeNode: AstNode, boundNames: Set<string>): v
   if (isFunctionLikeScope(scopeNode)) {
     collectScopeParameters(scopeNode, boundNames);
     collectOwnNamesFromNode(scopeBodyNode(scopeNode), boundNames, scopeNode);
+    return;
   }
+
+  if (scopeNode.type === "CatchClause") {
+    collectPatternBindingNames(scopeNode.param, boundNames);
+    return;
+  }
+
+  collectDirectOwnNames(scopeNode, boundNames, scopeNode);
 };
 
 /** Collects parameters for the supported function-like scope node shapes. */
@@ -253,7 +268,7 @@ const compareIdentifierNames = (left: string, right: string): number => {
 };
 
 /** Checks whether a node opens a function-like scope for this analysis. */
-const isFunctionLikeScope = (node: AstNode | undefined): node is AstNode => {
+const isFunctionLikeScope = (node: AstNode | undefined): boolean => {
   return node?.type !== undefined && FUNCTION_LIKE_SCOPE_TYPES.has(node.type);
 };
 
@@ -262,6 +277,8 @@ const isScopeOpeningNode = (node: AstNode | undefined): node is AstNode => {
   const nodeType = node?.type;
   return (
     nodeType !== undefined &&
-    (FUNCTION_LIKE_SCOPE_TYPES.has(nodeType) || NAMED_CLASS_EXPRESSION_SCOPE_TYPES.has(nodeType))
+    (FUNCTION_LIKE_SCOPE_TYPES.has(nodeType) ||
+      NAMED_CLASS_EXPRESSION_SCOPE_TYPES.has(nodeType) ||
+      BLOCK_LIKE_SCOPE_TYPES.has(nodeType))
   );
 };

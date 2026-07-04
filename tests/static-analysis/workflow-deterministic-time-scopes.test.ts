@@ -127,6 +127,10 @@ describe("deterministic-time scope precision", () => {
   it("keeps nested shadows suppressed when they enclose the use", () => {
     for (const body of [
       "function f(Date) { const timestamp = Date.now(); return timestamp; }",
+      "{ const Date = createClock(); const timestamp = Date.now(); }",
+      "for (let Date = createClock(); shouldContinue(); advance()) { Date.now(); }",
+      "for (const Date of clocks) { Date.now(); }",
+      "try { risky(); } catch (Math) { Math.random(); }",
       "const f = (Math) => Math.random();",
       "const object = { m(Date) { return Date.now(); } };",
       "const C = class Date { m() { return Date.now(); } };",
@@ -174,10 +178,30 @@ describe("deterministic-time scope precision", () => {
     );
   });
 
-  it("documents block shadows as an enclosing-function conservative limit", () => {
-    expect(
-      scanBody("{ const Date = createClock(); }\nconst timestamp = Date.now();", "block-shadow")
-        .diagnostics,
-    ).toEqual([]);
+  it("reports sibling uses outside block, for, and catch shadows", () => {
+    for (const testCase of [
+      {
+        body: "{ const Date = createClock(); }\nconst timestamp = Date.now();",
+        rule: DATE_NOW_RULE,
+        spanText: "Date.now",
+      },
+      {
+        body: "for (let Date = createClock(); shouldContinue(); advance()) { Date.now(); }\nconst timestamp = Date.now();",
+        rule: DATE_NOW_RULE,
+        spanText: "Date.now",
+      },
+      {
+        body: "for (const Math of randomizers) { Math.random(); }\nconst sample = Math.random();",
+        rule: MATH_RANDOM_RULE,
+        spanText: "Math.random",
+      },
+      {
+        body: "try { risky(); } catch (Date) { Date.now(); }\nconst timestamp = Date.now();",
+        rule: DATE_NOW_RULE,
+        spanText: "Date.now",
+      },
+    ] as const) {
+      expectSingleSpan(testCase);
+    }
   });
 });

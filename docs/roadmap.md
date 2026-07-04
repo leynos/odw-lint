@@ -853,12 +853,12 @@ reported clearly in one command. The result informs strict-mode policy. See
   - Success: fixtures prove same-name bindings in unrelated scopes no longer
     hide supported Claude compatibility warnings, while local shadows remain
     suppressed.
-  - [ ] 3.1.5.1. Add block/for/catch-precise deterministic-time shadowing.
+  - [x] 3.1.5.1. Add block/for/catch-precise deterministic-time shadowing.
     - Addendum (from review:3.1.5; low). Narrow block, `for`, and `catch`
       shadow attribution for deterministic-time rules so sibling-block global
       uses no longer disappear behind conservative function-scope suppression.
       Lightweight addendum pass.
-  - [ ] 3.1.5.2. Add direct scope-view unit coverage.
+  - [x] 3.1.5.2. Add direct scope-view unit coverage.
     - Addendum (from audit:3.1.5; low). Add focused `workflow-ast-scopes`
       coverage for nested parameters, setter params, named class-expression
       member scope, and documented block-to-function attribution. Lightweight
