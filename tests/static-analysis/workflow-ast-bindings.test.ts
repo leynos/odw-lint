@@ -107,6 +107,14 @@ describe("collectLexicalBindings", () => {
     expect(isIdentifierBound(facts, "secret")).toBeTrue();
   });
 
+  it("keeps bindings from array-valued patterns and class bodies", () => {
+    const facts = bindingsForBody(
+      "const [arrayName] = source;\nconst { value: objectName } = source;\nclass C { constructor({ ctor }) {} method([method]) {} }\n",
+    );
+
+    expect(facts.boundNames).toEqual(["C", "arrayName", "ctor", "method", "objectName"]);
+  });
+
   it("reports nested function locals in the conservative name set", () => {
     const facts = bindingsForBody("function outer() { const inner = 1; }\n");
 

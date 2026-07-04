@@ -874,7 +874,7 @@ See [technical-design.md](technical-design.md) §9.3.
   - See [technical-design.md](technical-design.md) §9.3.
   - Success: each heuristic has positive fixtures, negative fixtures, a
     false-positive example, a suppression/config path, and span snapshots.
-- [ ] 3.2.5. Consolidate SWC AST guard and traversal helpers.
+- [x] 3.2.5. Consolidate SWC AST guard and traversal helpers.
   - Requires 2.2.4 and 3.1.4.
   - Extract one reviewed `isAstNode` guard, object-record guard reuse, and
     child-traversal primitive for parser-backed rules while preserving existing

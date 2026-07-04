@@ -279,6 +279,32 @@ describe("scanDeterministicTimeWarnings", () => {
     }
   });
 
+  it("collects deterministic-time aliases from nested blocks", () => {
+    const { sourceText, sourceFile, diagnostics } = scanBody(
+      "if (args.ready) {\n  const now = Date.now;\n  const timestamp = now();\n}",
+      "nested-alias",
+    );
+    const diagnostic = expectSingleDiagnostic(diagnostics);
+
+    expect(diagnostic.rule).toBe(DATE_NOW_RULE);
+    expect(decodeSpanText(sourceText, diagnostic.span)).toBe("now");
+    expectSpanToMatchSource(sourceText, diagnostic.span, "now");
+    expect(sliceSourceSpan(sourceFile, diagnostic.span)).toBe("now");
+  });
+
+  it("visits hazards nested inside argument wrapper records and arrays", () => {
+    const { sourceText, sourceFile, diagnostics } = scanBody(
+      "const timestamp = consume(Date.now());",
+      "argument-wrapper",
+    );
+    const diagnostic = expectSingleDiagnostic(diagnostics);
+
+    expect(diagnostic.rule).toBe(DATE_NOW_RULE);
+    expect(decodeSpanText(sourceText, diagnostic.span)).toBe("Date.now");
+    expectSpanToMatchSource(sourceText, diagnostic.span, "Date.now");
+    expect(sliceSourceSpan(sourceFile, diagnostic.span)).toBe("Date.now");
+  });
+
   it("ignores bare deterministic-time globals when lexical bindings shadow them", () => {
     for (const body of SHADOW_NEGATIVE_BODIES) {
       expect(scanBody(body, "shadow-negative").diagnostics).toEqual([]);

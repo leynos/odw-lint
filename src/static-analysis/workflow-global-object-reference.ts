@@ -3,6 +3,7 @@
  */
 
 import type { Expression, Identifier, MemberExpression, Node } from "@swc/core";
+import { isAstNode } from "./swc-ast";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import { isIdentifierBound } from "./workflow-ast-bindings";
 
@@ -138,5 +139,5 @@ const isMemberExpression = (node: Expression | Node): node is MemberExpression =
 
 /** Narrows unknown wrapper contents back to a SWC expression. */
 const isExpression = (value: unknown): value is Expression => {
-  return typeof value === "object" && value !== null && "type" in value;
+  return isAstNode(value);
 };

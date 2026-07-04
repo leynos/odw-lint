@@ -122,6 +122,14 @@ prose but no structured syntax-error byte range, so that narrowing path remains
 an internal, characterization-tested fallback seam rather than a public
 consumer contract.
 
+Parser-backed rule modules share SWC node-shape helpers through
+`src/static-analysis/swc-ast.ts`. That internal seam owns the strict AST node
+guard, semantic child-field traversal, and the record guard re-export consumed
+by the deterministic-time scanner, deterministic-time alias collector,
+global-object resolver, and lexical binding collector. Keeping those helpers in
+one module prevents rule-local traversal drift while leaving public package
+exports unchanged.
+
 ### 6.2. Static source model
 
 The analysis model has three layers:

@@ -13,6 +13,7 @@ import { createRuleDiagnostic } from "../diagnostics/rule-diagnostic";
 import type { RuleId } from "../diagnostics/rule-id";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic } from "../diagnostics/types";
+import { astChildValues, isAstNode, isUnknownRecord } from "./swc-ast";
 import type { WorkflowEnvelope } from "./types";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import { collectLexicalBindings } from "./workflow-ast-bindings";
@@ -107,7 +108,7 @@ const visitNode = (
     matches.push(match);
   }
 
-  for (const child of childValues(node)) {
+  for (const child of astChildValues(node)) {
     visitChildValue(child, bindings, aliases, matches);
   }
 };
@@ -119,7 +120,7 @@ const visitChildValue = (
   aliases: DeterministicTimeAliases,
   matches: HazardMatch[],
 ): void => {
-  if (isNode(value)) {
+  if (isAstNode(value)) {
     visitNode(value, bindings, aliases, matches);
     return;
   }
@@ -131,28 +132,11 @@ const visitChildValue = (
     return;
   }
 
-  if (isObjectRecord(value)) {
-    for (const child of childRecordValues(value)) {
+  if (isUnknownRecord(value)) {
+    for (const child of astChildValues(value)) {
       visitChildValue(child, bindings, aliases, matches);
     }
   }
-};
-
-/** Returns child fields that may contain nested SWC nodes. */
-const childValues = (node: Node): readonly unknown[] => {
-  return childRecordValues(node);
-};
-
-/** Returns object field values that can contain semantic child nodes. */
-const childRecordValues = (value: object): readonly unknown[] => {
-  return Object.entries(value)
-    .filter(([key]) => isTraversableChildKey(key))
-    .map(([, value]) => value);
-};
-
-/** Excludes scalar SWC bookkeeping fields from recursive traversal. */
-const isTraversableChildKey = (key: string): boolean => {
-  return key !== "span" && key !== "type" && key !== "ctxt";
 };
 
 /** Matches one of the syntactic deterministic-time hazards on a node. */
@@ -232,21 +216,6 @@ const isGlobalMemberCall = (
 /** Narrows nodes to SWC constructor expressions. */
 const isNewExpression = (node: Node): node is NewExpression => {
   return node.type === "NewExpression";
-};
-
-/** Narrows values to SWC member expressions. */
-const isMemberExpression = (value: unknown): value is MemberExpression => {
-  return isNode(value) && value.type === "MemberExpression";
-};
-
-/** Narrows values to plain SWC node-shaped objects. */
-const isNode = (value: unknown): value is Node => {
-  return typeof value === "object" && value !== null && "type" in value;
-};
-
-/** Narrows values to object records that may wrap SWC nodes. */
-const isObjectRecord = (value: unknown): value is object => {
-  return typeof value === "object" && value !== null;
 };
 
 /** Builds a project diagnostic for one matched AST span. */

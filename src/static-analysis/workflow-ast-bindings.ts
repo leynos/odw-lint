@@ -3,6 +3,7 @@
  */
 
 import type { Module } from "@swc/core";
+import { isUnknownRecord } from "./swc-ast";
 import { WORKFLOW_BODY_WRAP_FUNCTION_NAME } from "./workflow-body-normalizer";
 
 export type LexicalBindingFacts = {
@@ -324,14 +325,7 @@ const compareIdentifierNames = (left: string, right: string): number => {
 
 /** Narrows unknown AST values to object-like nodes. */
 const asNode = (value: unknown): AstNode | undefined => {
-  if (typeof value !== "object") {
-    return undefined;
-  }
-  if (value === null) {
-    return undefined;
-  }
-
-  return value as AstNode;
+  return isUnknownRecord(value) ? (value as AstNode) : undefined;
 };
 
 /** Narrows unknown AST arrays without widening call sites to `any`. */

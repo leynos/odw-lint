@@ -13,6 +13,7 @@ import type {
   VariableDeclarator,
 } from "@swc/core";
 import type { RuleId } from "../diagnostics/rule-id";
+import { astChildValues, isAstNode } from "./swc-ast";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import {
   type GlobalObjectIdentity,
@@ -139,7 +140,7 @@ const collectAliasesFromNode = (
     collectAliasFromDeclarator(node, bindings, aliases, rules);
   }
 
-  for (const child of childValues(node)) {
+  for (const child of astChildValues(node)) {
     collectAliasesFromChild(child, bindings, aliases, rules);
   }
 };
@@ -151,7 +152,7 @@ const collectAliasesFromChild = (
   aliases: Map<string, DeterministicTimeAlias>,
   rules: DeterministicTimeAliasRules,
 ): void => {
-  if (isNode(value)) {
+  if (isAstNode(value)) {
     collectAliasesFromNode(value, bindings, aliases, rules);
     return;
   }
@@ -228,13 +229,6 @@ const memberExpressionFromExpression = (expression: Expression): MemberExpressio
   return undefined;
 };
 
-/** Returns object field values that can contain semantic child nodes. */
-const childValues = (node: Node): readonly unknown[] => {
-  return Object.entries(node)
-    .filter(([key]) => key !== "span" && key !== "type" && key !== "ctxt")
-    .map(([, value]) => value);
-};
-
 /** Narrows nodes to SWC call expressions. */
 const isCallExpression = (node: Node): node is CallExpression => {
   return node.type === "CallExpression";
@@ -247,20 +241,15 @@ const isVariableDeclarator = (node: Node): node is VariableDeclarator => {
 
 /** Narrows values to SWC identifier expressions and patterns. */
 const isIdentifier = (value: unknown): value is Identifier => {
-  return isNode(value) && value.type === "Identifier";
+  return isAstNode(value) && value.type === "Identifier";
 };
 
 /** Narrows values to SWC member expressions. */
 const isMemberExpression = (value: unknown): value is MemberExpression => {
-  return isNode(value) && value.type === "MemberExpression";
+  return isAstNode(value) && value.type === "MemberExpression";
 };
 
 /** Narrows unknown values to SWC expression-shaped objects. */
 const isExpression = (value: unknown): value is Expression => {
-  return isNode(value);
-};
-
-/** Narrows values to plain SWC node-shaped objects. */
-const isNode = (value: unknown): value is Node => {
-  return typeof value === "object" && value !== null && "type" in value;
+  return isAstNode(value);
 };
