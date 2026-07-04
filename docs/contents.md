@@ -83,6 +83,8 @@ entry; that index enumerates every current rule page.
   harness-derived reviewer availability.
 - [Audit 1.5.9](issues/audit-1.5.9.md) records review findings for
   consolidated build-gate command-line support.
+- [Audit 1.5.10](issues/audit-1.5.10.md) records review findings for recorded
+  review-evidence artefact checks.
 - [Audit 2.1.6](issues/audit-2.1.6.md) records review findings for the
   no-side-effect metadata execution guard.
 - [Audit 2.1.7](issues/audit-2.1.7.md) records review findings for
@@ -93,6 +95,10 @@ entry; that index enumerates every current rule page.
   workflow-body parser dialect scope.
 - [Audit 3.1.4](issues/audit-3.1.4.md) records review findings for
   deterministic-time lexical binding compatibility.
+- [Audit 3.1.5](issues/audit-3.1.5.md) records review findings for
+  scope-precise deterministic-time shadowing.
+- [Audit 3.2.5](issues/audit-3.2.5.md) records review findings for shared SWC
+  AST guard and traversal helpers.
 
 ## Execution plans
 
