@@ -124,14 +124,19 @@
 - Recording is additive on `make review-evidence`: enabling recording never
   changes its existing exit codes. Exit 0 remains `verified`, exit 1 remains
   `failed`, exit 2 remains only `usage-error`, and exit 3 remains `degraded`.
-  A failed recording write is surfaced on stderr and caught by
-  `make review-evidence-artefact` as a missing or unusable artefact rather than
-  by changing the review-evidence exit code.
+  A failed recording write, or a failure to read Git provenance while recording,
+  is surfaced on stderr and caught by `make review-evidence-artefact` as a
+  missing, unusable, or unbound artefact rather than by changing the
+  review-evidence exit code.
 - `make review-evidence-artefact` reads the recorded report and rejects missing
-  or unusable recorded evidence. Its underlying CLI exits 0 when a completed
-  review report is present, exits 1 when the artefact is missing or invalid,
-  and exits 2 for malformed artefact-check invocation. The Makefile target
-  fails non-zero when the CLI rejects the artefact.
+  or unusable recorded evidence. The recorded artefact carries a reviewed
+  commit and reviewed tree provenance trailer; the artefact check recomputes
+  the current reviewed tree and rejects unbound or mismatched recordings. Its
+  underlying CLI exits 0 when a completed review report is present and bound to
+  the current tree, exits 1 when the artefact is missing, invalid, unbound, or
+  bound to a different tree, and exits 2 for malformed artefact-check
+  invocation or an unreadable current tree state. The Makefile target fails
+  non-zero when the CLI rejects the artefact.
 - The recorded report is the deliverable whatever its classification. In the
   fully provisioned df12 environment, which is the same toolchain used for this
   repository's `make nixie` validation, `verified` (exit 0) requires both

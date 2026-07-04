@@ -54,7 +54,10 @@ describe("review-evidence CLI recording process smoke", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stderr.toString()).toBe("");
-      expect(readFileSync(artefactPath, "utf8")).toBe(result.stdout.toString());
+      const recorded = readFileSync(artefactPath, "utf8");
+      expect(recorded).toStartWith(result.stdout.toString());
+      expect(recorded).toContain("- reviewed commit: ");
+      expect(recorded).toContain("- reviewed tree: ");
 
       const checkResult = Bun.spawnSync({
         cmd: [

@@ -385,13 +385,17 @@ depending on manual post-commit audits.
     - Addendum (from audit:1.5.11; medium). Extract shared import-inspection
       helpers for CLI seam tests and fix call-expression recursion so nested
       calls are discovered. Lightweight addendum pass.
-- [ ] 1.5.12. Bind recorded review evidence to the reviewed tree state.
+- [x] 1.5.12. Bind recorded review evidence to the reviewed tree state.
   - Extend the recorded review-evidence artefact contract so the audit harness
     can reject stale or mismatched reports from a previous run.
   - Requires 1.5.10.
   - Success: `make review-evidence-artefact` or its CLI rejects a recorded
     report when its embedded commit, tree, or equivalent provenance marker does
     not match the current reviewed state.
+  - Completed: recorded review-evidence artefacts now carry reviewed commit and
+    tree provenance, with the tree as the authoritative match key. The artefact
+    CLI rejects missing, invalid, unbound, or tree-mismatched reports before a
+    review can claim recorded evidence.
 - [ ] 1.5.13. Finish build-gate CLI helper consolidation.
   - Lift repeated flag parsing and unknown-error formatting into shared
     build-gate CLI helpers while preserving each gate's report policy and

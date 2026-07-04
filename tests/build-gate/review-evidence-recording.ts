@@ -6,13 +6,20 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { cwd } from "node:process";
 import type { CliWriters } from "./cli-support";
+import { createGitRunner } from "./git-support";
 import { singleLine } from "./report-format-helpers";
 import type { ReviewEvidenceResult } from "./review-evidence";
 import { resolveEvidenceArtefactPath } from "./review-evidence-artefact";
+import {
+  formatProvenanceTrailer,
+  type ReadTreeProvenanceResult,
+  readTreeProvenance,
+} from "./review-evidence-provenance";
 
 export type ReviewEvidenceRecordingOptions = {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv;
+  readonly readProvenance?: (cwd: string) => ReadTreeProvenanceResult;
   readonly recordPath?: string;
   readonly shouldRecord: boolean;
   readonly writeArtefact?: (path: string, content: string) => void;
@@ -37,11 +44,18 @@ export function maybeRecordReviewEvidence(input: {
   }
 
   const artefactPath = resolveRecordPath(input.options);
-  const absolutePath = resolve(input.options.cwd ?? cwd(), artefactPath);
+  const workingDirectory = input.options.cwd ?? cwd();
+  const absolutePath = resolve(workingDirectory, artefactPath);
   const writeArtefact = input.options.writeArtefact ?? writeEvidenceArtefact;
+  const content = recordedReportContent({
+    report: input.report,
+    readProvenance: input.options.readProvenance ?? defaultReadProvenance,
+    workingDirectory,
+    writers: input.writers,
+  });
 
   try {
-    writeArtefact(absolutePath, input.report);
+    writeArtefact(absolutePath, content);
   } catch (error) {
     input.writers.writeErr(
       `review evidence recording failed: ${artefactPath}: ${singleLine(errorMessage(error))}\n`,
@@ -73,6 +87,27 @@ const resolveRecordPath = (options: ReviewEvidenceRecordingOptions): string => {
 const writeEvidenceArtefact = (path: string, content: string): void => {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, content, "utf8");
+};
+
+/** Read current provenance through the shared Git command seam. */
+const defaultReadProvenance = (workingDirectory: string): ReadTreeProvenanceResult => {
+  return readTreeProvenance(createGitRunner(workingDirectory));
+};
+
+/** Append provenance when available and leave unbound evidence otherwise. */
+const recordedReportContent = (input: {
+  readonly report: string;
+  readonly readProvenance: (cwd: string) => ReadTreeProvenanceResult;
+  readonly workingDirectory: string;
+  readonly writers: CliWriters;
+}): string => {
+  const result = input.readProvenance(input.workingDirectory);
+  if (result.ok) {
+    return `${input.report}${formatProvenanceTrailer(result.provenance)}`;
+  }
+
+  input.writers.writeErr(`review evidence provenance unavailable: ${result.message}\n`);
+  return input.report;
 };
 
 /** Convert unknown thrown values to deterministic CLI text. */

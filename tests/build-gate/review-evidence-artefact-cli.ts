@@ -6,12 +6,14 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { cwd } from "node:process";
 import { type CliWriters, emitCliReport, resolveCliWriters, runCliEntrypoint } from "./cli-support";
+import { createGitRunner } from "./git-support";
 import {
-  classifyRecordedEvidence,
+  classifyBoundEvidence,
   type RecordedEvidenceResult,
   resolveEvidenceArtefactPath,
 } from "./review-evidence-artefact";
 import { formatRecordedEvidenceResult } from "./review-evidence-artefact-report";
+import { type ReadTreeProvenanceResult, readTreeProvenance } from "./review-evidence-provenance";
 
 export type ReviewEvidenceArtefactExitCode = 0 | 1 | 2;
 
@@ -21,6 +23,7 @@ export type RunReviewEvidenceArtefactCliOptions = {
   readonly writeErr?: CliWriters["writeErr"];
   readonly env?: NodeJS.ProcessEnv;
   readonly cwd?: string;
+  readonly readProvenance?: (cwd: string) => ReadTreeProvenanceResult;
 };
 
 type ParsedCliOptions =
@@ -83,13 +86,20 @@ const classifyEvidenceFromOptions = (
       ? { env: options.env ?? process.env }
       : { flagValue: parsedOptions.evidencePath, env: options.env ?? process.env },
   );
-  const absolutePath = resolve(options.cwd ?? cwd(), artefactPath);
-  const readFile = options.readFile ?? readEvidenceFile;
+  const workingDirectory = options.cwd ?? cwd();
+  const current = currentProvenanceFor(options, workingDirectory);
+  if (!current.ok) {
+    return {
+      outcome: "usage-error",
+      message: `could not determine current reviewed tree state: ${current.message}`,
+    };
+  }
 
   try {
-    return classifyRecordedEvidence({
+    return classifyBoundEvidence({
       path: artefactPath,
-      content: readFile(absolutePath),
+      content: readSelectedEvidence({ artefactPath, options, workingDirectory }),
+      current: current.provenance,
     });
   } catch (error) {
     return {
@@ -98,6 +108,26 @@ const classifyEvidenceFromOptions = (
       reason: `could not read recorded evidence file: ${errorMessage(error)}`,
     };
   }
+};
+
+/** Read the current tree state through the injected or default provenance seam. */
+const currentProvenanceFor = (
+  options: RunReviewEvidenceArtefactCliOptions,
+  workingDirectory: string,
+): ReadTreeProvenanceResult => {
+  return (options.readProvenance ?? defaultReadProvenance)(workingDirectory);
+};
+
+/** Read the selected artefact after resolving it relative to the reviewed tree. */
+const readSelectedEvidence = (input: {
+  readonly artefactPath: string;
+  readonly options: RunReviewEvidenceArtefactCliOptions;
+  readonly workingDirectory: string;
+}): string | undefined => {
+  const absolutePath = resolve(input.workingDirectory, input.artefactPath);
+  const readFile = input.options.readFile ?? readEvidenceFile;
+
+  return readFile(absolutePath);
 };
 
 /** Read one evidence file, mapping absence to the missing-evidence path. */
@@ -120,10 +150,16 @@ const exitCodeFor = (result: RecordedEvidenceResult): ReviewEvidenceArtefactExit
       return 0;
     case "missing":
     case "invalid":
+    case "mismatched":
       return 1;
     case "usage-error":
       return 2;
   }
+};
+
+/** Read current tree provenance through the shared Git command seam. */
+const defaultReadProvenance = (workingDirectory: string): ReadTreeProvenanceResult => {
+  return readTreeProvenance(createGitRunner(workingDirectory));
 };
 
 /** Detect filesystem absence errors from Node and Bun file reads. */

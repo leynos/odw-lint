@@ -2,14 +2,31 @@
  * @file Pure helpers for recorded review-evidence artefacts.
  */
 
+import {
+  compareTreeProvenance,
+  parseTreeProvenance,
+  type TreeProvenance,
+} from "./review-evidence-provenance";
 import { REVIEW_EVIDENCE_REPORT_PREFIX } from "./review-evidence-report";
 
 export type RecordedStatus = "verified" | "failed" | "degraded";
 
 export type RecordedEvidenceResult =
-  | { readonly outcome: "present"; readonly path: string; readonly status: RecordedStatus }
+  | {
+      readonly outcome: "present";
+      readonly path: string;
+      readonly provenance?: TreeProvenance;
+      readonly status: RecordedStatus;
+    }
   | { readonly outcome: "missing"; readonly path: string }
   | { readonly outcome: "invalid"; readonly path: string; readonly reason: string }
+  | {
+      readonly outcome: "mismatched";
+      readonly path: string;
+      readonly actual: TreeProvenance;
+      readonly expected: TreeProvenance;
+      readonly status: RecordedStatus;
+    }
   | { readonly outcome: "usage-error"; readonly message: string };
 
 export const DEFAULT_EVIDENCE_ARTEFACT_PATH = ".review-evidence/report.txt";
@@ -85,6 +102,48 @@ export function classifyRecordedEvidence(input: {
   }
 
   return { outcome: "present", path: input.path, status };
+}
+
+/**
+ * Classify a recorded artefact and prove it belongs to the current tree state.
+ *
+ * @param input - Artefact path, optional content, and current tree provenance.
+ * @returns Present when the artefact is complete and bound to the current tree.
+ * @example
+ * classifyBoundEvidence({ path: "report.txt", content, current })
+ * // => { outcome: "present", path: "report.txt", status: "verified", provenance: current }
+ */
+export function classifyBoundEvidence(input: {
+  readonly path: string;
+  readonly content: string | undefined;
+  readonly current: TreeProvenance;
+}): RecordedEvidenceResult {
+  const result = classifyRecordedEvidence(input);
+
+  if (result.outcome !== "present") {
+    return result;
+  }
+
+  const provenance = parseTreeProvenance(input.content ?? "");
+  if (provenance === undefined) {
+    return {
+      outcome: "invalid",
+      path: input.path,
+      reason: "recorded evidence is not bound to a reviewed tree state",
+    };
+  }
+
+  if (compareTreeProvenance(provenance, input.current) === "mismatch") {
+    return {
+      outcome: "mismatched",
+      path: input.path,
+      actual: input.current,
+      expected: provenance,
+      status: result.status,
+    };
+  }
+
+  return { ...result, provenance };
 }
 
 /** Check for the report body lines that prove recording reached completion. */

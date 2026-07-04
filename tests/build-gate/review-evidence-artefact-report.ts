@@ -33,6 +33,16 @@ export function formatRecordedEvidenceResult(result: RecordedEvidenceResult): st
         `- artefact path: ${result.path}`,
         `- reason: ${singleLine(result.reason)}`,
       ]);
+    case "mismatched":
+      return formatReportLines([
+        "Review evidence artefact: mismatched",
+        `- recorded status: ${result.status}`,
+        `- artefact path: ${result.path}`,
+        `- recorded commit: ${result.expected.commit}`,
+        `- recorded tree: ${result.expected.tree}`,
+        `- current commit: ${result.actual.commit}`,
+        `- current tree: ${result.actual.tree}`,
+      ]);
     case "usage-error":
       return formatReportLines([
         "Review evidence artefact: usage-error",

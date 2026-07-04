@@ -8,6 +8,11 @@ import type { CommandResult, CommandRunner, CommandRunnerOptions } from "./git-s
 import { createCapturedCliOutput } from "./git-support";
 import type { GateCommand } from "./review-evidence-cli";
 import { runReviewEvidenceCli } from "./review-evidence-cli";
+import {
+  formatProvenanceTrailer,
+  type ReadTreeProvenanceResult,
+  type TreeProvenance,
+} from "./review-evidence-provenance";
 
 type RunnerCall = {
   readonly command: string;
@@ -21,6 +26,10 @@ type ArtefactWrite = {
 };
 
 const onePassingGate = [["make all", "true", []]] satisfies readonly GateCommand[];
+const fixedProvenance = {
+  commit: "0123456789abcdef0123456789abcdef01234567",
+  tree: "fedcba9876543210fedcba9876543210fedcba98",
+} satisfies TreeProvenance;
 
 /** Build a shared command-result fixture with focused overrides. */
 const makeResult = (overrides: Partial<CommandResult> = {}): CommandResult => ({
@@ -51,6 +60,7 @@ const runCli = (
     readonly resultsByCommand?: Readonly<Record<string, CommandResult>>;
     readonly env?: NodeJS.ProcessEnv;
     readonly cwd?: string;
+    readonly readProvenance?: (cwd: string) => ReadTreeProvenanceResult;
     readonly writeArtefact?: (path: string, content: string) => void;
   } = {},
 ) => {
@@ -64,6 +74,12 @@ const runCli = (
     writeErr: output.writeErr,
     env: options.env ?? {},
     cwd: options.cwd ?? "/worktree",
+    readProvenance:
+      options.readProvenance ??
+      (() => ({
+        ok: true,
+        provenance: fixedProvenance,
+      })),
     writeArtefact:
       options.writeArtefact ??
       ((path, content) => {
@@ -91,13 +107,16 @@ describe("review-evidence CLI recording", () => {
     expect(result.writes).toEqual([
       {
         path: "/worktree/reports/review.txt",
-        content: result.output.stdout,
+        content: `${result.output.stdout}${formatProvenanceTrailer(fixedProvenance)}`,
       },
     ]);
+    expect(result.output.stdout).not.toContain("- reviewed tree:");
     expect(result.writes[0]?.content).toMatchInlineSnapshot(`
       "Review evidence: verified
       - gate make all: passed
       - dual-review path: scrutineer (primary; scrutineer available)
+      - reviewed commit: 0123456789abcdef0123456789abcdef01234567
+      - reviewed tree: fedcba9876543210fedcba9876543210fedcba98
       "
     `);
   });
@@ -112,14 +131,35 @@ describe("review-evidence CLI recording", () => {
     expect(result.writes).toEqual([
       {
         path: "/worktree/.review-evidence/report.txt",
-        content: result.output.stdout,
+        content: `${result.output.stdout}${formatProvenanceTrailer(fixedProvenance)}`,
       },
     ]);
     expect(result.writes[0]?.content).toBe(`Review evidence: degraded
 - dual-review path: local-self-run (degraded fallback; scrutineer unavailable; coderabbit unavailable; local-self-run available)
 - degraded reason: command execution unavailable; gates were not independently executed
 - degraded reason: no independent dual-review path available
+- reviewed commit: 0123456789abcdef0123456789abcdef01234567
+- reviewed tree: fedcba9876543210fedcba9876543210fedcba98
 `);
+  });
+
+  it("records unbound evidence when provenance is unavailable", () => {
+    const result = runCli({
+      args: ["--record=report.txt"],
+      env: { ODW_LINT_REVIEW_SCRUTINEER: "available" },
+      readProvenance: () => ({ ok: false, message: "git rev-parse HEAD failed" }),
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.writes).toEqual([
+      {
+        path: "/worktree/report.txt",
+        content: result.output.stdout,
+      },
+    ]);
+    expect(result.output.stderr).toBe(
+      "review evidence provenance unavailable: git rev-parse HEAD failed\n",
+    );
   });
 
   it("prefers the record flag over the environment path", () => {

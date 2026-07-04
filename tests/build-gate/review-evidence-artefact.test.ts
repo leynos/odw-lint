@@ -4,12 +4,24 @@
 
 import { describe, expect, it } from "bun:test";
 import {
+  classifyBoundEvidence,
   classifyRecordedEvidence,
   DEFAULT_EVIDENCE_ARTEFACT_PATH,
   parseRecordedStatus,
   type RecordedStatus,
   resolveEvidenceArtefactPath,
 } from "./review-evidence-artefact";
+import { formatProvenanceTrailer, type TreeProvenance } from "./review-evidence-provenance";
+
+const currentProvenance = {
+  commit: "0123456789abcdef0123456789abcdef01234567",
+  tree: "fedcba9876543210fedcba9876543210fedcba98",
+} satisfies TreeProvenance;
+
+const staleProvenance = {
+  commit: "1111111111111111111111111111111111111111",
+  tree: "2222222222222222222222222222222222222222",
+} satisfies TreeProvenance;
 
 const completeReports = {
   verified:
@@ -18,6 +30,12 @@ const completeReports = {
     "Review evidence: failed\n- gate make all: failed (exit 1; failed)\n- dual-review path: scrutineer (primary; scrutineer available)\n- failed gate: make all\n",
   degraded:
     "Review evidence: degraded\n- gate make all: passed\n- dual-review path: local-self-run (degraded fallback; reviewers unavailable)\n- degraded reason: local self-run selected\n",
+} satisfies Readonly<Record<RecordedStatus, string>>;
+
+const boundReports = {
+  verified: `${completeReports.verified}${formatProvenanceTrailer(currentProvenance)}`,
+  failed: `${completeReports.failed}${formatProvenanceTrailer(currentProvenance)}`,
+  degraded: `${completeReports.degraded}${formatProvenanceTrailer(currentProvenance)}`,
 } satisfies Readonly<Record<RecordedStatus, string>>;
 
 describe("parseRecordedStatus", () => {
@@ -103,6 +121,74 @@ describe("classifyRecordedEvidence", () => {
     expect(classifyRecordedEvidence({ path: "partial.txt", content })).toEqual({
       outcome: "invalid",
       path: "partial.txt",
+      reason: "recorded evidence is not a completed review report",
+    });
+  });
+});
+
+describe("classifyBoundEvidence", () => {
+  it("classifies current tree-bound evidence as present", () => {
+    expect(
+      classifyBoundEvidence({
+        path: "evidence.txt",
+        content: boundReports.verified,
+        current: currentProvenance,
+      }),
+    ).toEqual({
+      outcome: "present",
+      path: "evidence.txt",
+      status: "verified",
+      provenance: currentProvenance,
+    });
+  });
+
+  it("rejects complete reports without tree provenance", () => {
+    expect(
+      classifyBoundEvidence({
+        path: "unbound.txt",
+        content: completeReports.verified,
+        current: currentProvenance,
+      }),
+    ).toEqual({
+      outcome: "invalid",
+      path: "unbound.txt",
+      reason: "recorded evidence is not bound to a reviewed tree state",
+    });
+  });
+
+  it("reports stale tree-bound evidence as mismatched", () => {
+    expect(
+      classifyBoundEvidence({
+        path: "stale.txt",
+        content: `${completeReports.verified}${formatProvenanceTrailer(staleProvenance)}`,
+        current: currentProvenance,
+      }),
+    ).toEqual({
+      outcome: "mismatched",
+      path: "stale.txt",
+      status: "verified",
+      expected: staleProvenance,
+      actual: currentProvenance,
+    });
+  });
+
+  it("preserves missing and malformed classifications before provenance checks", () => {
+    expect(
+      classifyBoundEvidence({
+        path: "missing.txt",
+        content: undefined,
+        current: currentProvenance,
+      }),
+    ).toEqual({ outcome: "missing", path: "missing.txt" });
+    expect(
+      classifyBoundEvidence({
+        path: "bad.txt",
+        content: "hello\n",
+        current: currentProvenance,
+      }),
+    ).toEqual({
+      outcome: "invalid",
+      path: "bad.txt",
       reason: "recorded evidence is not a completed review report",
     });
   });

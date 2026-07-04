@@ -23,6 +23,7 @@ import {
   reviewerAvailabilityFlags,
   setPathAvailability,
 } from "./review-evidence-availability";
+import type { ReadTreeProvenanceResult } from "./review-evidence-provenance";
 import { maybeRecordReviewEvidence } from "./review-evidence-recording";
 import { formatReviewEvidenceResult } from "./review-evidence-report";
 
@@ -52,6 +53,7 @@ export type RunReviewEvidenceCliOptions = {
   readonly cwd?: string;
   readonly timeoutMs?: number;
   readonly maxBufferBytes?: number;
+  readonly readProvenance?: (cwd: string) => ReadTreeProvenanceResult;
   readonly writeArtefact?: (path: string, content: string) => void;
 };
 

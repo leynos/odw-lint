@@ -75,6 +75,33 @@ describe("formatRecordedEvidenceResult", () => {
     `);
   });
 
+  it("formats mismatched evidence with both tree states", () => {
+    const report = formatRecordedEvidenceResult({
+      outcome: "mismatched",
+      path: "report.txt",
+      status: "verified",
+      expected: {
+        commit: "1111111111111111111111111111111111111111",
+        tree: "2222222222222222222222222222222222222222",
+      },
+      actual: {
+        commit: "0123456789abcdef0123456789abcdef01234567",
+        tree: "fedcba9876543210fedcba9876543210fedcba98",
+      },
+    });
+
+    expect(report).toMatchInlineSnapshot(`
+      "Review evidence artefact: mismatched
+      - recorded status: verified
+      - artefact path: report.txt
+      - recorded commit: 1111111111111111111111111111111111111111
+      - recorded tree: 2222222222222222222222222222222222222222
+      - current commit: 0123456789abcdef0123456789abcdef01234567
+      - current tree: fedcba9876543210fedcba9876543210fedcba98
+      "
+    `);
+  });
+
   it("formats usage errors without an artefact path", () => {
     const report = formatRecordedEvidenceResult({
       outcome: "usage-error",
