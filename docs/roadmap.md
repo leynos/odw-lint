@@ -396,6 +396,27 @@ depending on manual post-commit audits.
     tree provenance, with the tree as the authoritative match key. The artefact
     CLI rejects missing, invalid, unbound, or tree-mismatched reports before a
     review can claim recorded evidence.
+  - [ ] 1.5.12.1. Document duplicate provenance-line handling.
+    - Addendum (from review:1.5.12; low). Add a short
+      `review-evidence-provenance` module-documentation note explaining that
+      duplicate reviewed-commit or reviewed-tree trailer lines leave a report
+      unbound. Lightweight addendum pass.
+  - [ ] 1.5.12.2. Add bound-evidence matching-trailer property coverage.
+    - Addendum (from review:1.5.12; low). Add fast-check coverage proving
+      complete reports with matching provenance trailers classify as present.
+      Lightweight addendum pass.
+  - [ ] 1.5.12.3. Couple evidence recording to a clean reviewed tree.
+    - Addendum (from review:1.5.12; low). Assert a clean worktree before
+      recording review evidence or document the reviewer precondition beside
+      provenance recording. Lightweight addendum pass.
+  - [ ] 1.5.12.4. Cover readTreeProvenance symmetric failures.
+    - Addendum (from review:1.5.12; low). Add direct coverage for failed tree
+      lookup and Git spawn-error branches in `readTreeProvenance`. Lightweight
+      addendum pass.
+  - [ ] 1.5.12.5. Restore recording-path command-query separation.
+    - Addendum (from audit:1.5.12; medium). Return a provenance-error
+      discriminator from report-content building and emit diagnostics from the
+      recording boundary. Lightweight addendum pass.
 - [ ] 1.5.13. Finish build-gate CLI helper consolidation.
   - Lift repeated flag parsing and unknown-error formatting into shared
     build-gate CLI helpers while preserving each gate's report policy and
@@ -404,6 +425,15 @@ depending on manual post-commit audits.
   - Success: build-gate CLIs share one `parseFlagValue` and one unknown-error
     formatter where their contracts match, and the shared run-and-exit path
     preserves full review-evidence output without truncation.
+- [ ] 1.5.14. Unify build-gate Git command failure helpers.
+  - Requires 1.5.12 and 1.5.13.
+  - Share the Git command renderer and Git failure-message formatter used by
+    `git-support.ts` and review-evidence provenance while leaving
+    feature-specific policy at each gate.
+  - Success: build-gate Git callers use one documented command and
+    failure-formatting helper where their contracts match, and existing
+    branch-freshness, whitespace, and review-evidence diagnostics stay
+    complete.
 
 ## 2. First vertical slice: ODW dialect validation
 
@@ -652,6 +682,10 @@ statically. It unlocks metadata rules and body parsing. See
     documented primitive layer for their shared JavaScript token grammar, with
     focused tests proving existing masking and metadata extraction behaviour is
     unchanged.
+  - [ ] 2.1.13.1. Complete scanner delimiter-depth primitive consolidation.
+    - Addendum (from audit:1.5.12; low). Unify delimiter-depth folding so
+      scanner families clamp unbalanced delimiters consistently. Lightweight
+      addendum pass.
 
 ### 2.2. Normalize and parse workflow bodies with SWC
 

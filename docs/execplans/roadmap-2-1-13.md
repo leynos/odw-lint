@@ -1067,3 +1067,14 @@ Round 2 (2026-07-04) — resolves the two round-1 design-review blocking points.
   2 through 6 remain. The round-2 planning update changed only the test-file
   names, the WI1 guard slot, the Risk analysis, the Concrete-steps focused-test
   mapping, and the Decision Log.
+
+## Addenda
+
+- [ ] 2.1.13.1. Complete scanner delimiter-depth primitive consolidation.
+  - Source: audit:1.5.12; severity low.
+  - Scope: move the remaining delimiter-depth folding logic behind one
+    primitive so unbalanced delimiters are clamped consistently across scanner
+    families.
+  - Success: workflow-metadata and envelope scanners share the same
+    delimiter-depth primitive where their contracts match, with existing
+    scanner behaviour unchanged.
