@@ -6,20 +6,20 @@ import type { Module } from "@swc/core";
 import { astChildValues } from "./swc-ast";
 import {
   type AstNode,
+  addIdentifierBinding,
   arrayValue,
   asNode,
   collectFunctionParamBindings,
   collectPatternBindings,
-  identifierName,
+  compareIdentifierNames,
+  EXCLUDED_BINDING_NAMES,
+  userBodyStatements,
 } from "./workflow-ast-binding-patterns";
-import { WORKFLOW_BODY_WRAP_FUNCTION_NAME } from "./workflow-body-normalizer";
 
 export type LexicalBindingFacts = {
   readonly boundNames: readonly string[];
 };
 type BindingCollector = (node: AstNode, boundNames: Set<string>) => void;
-
-const EXCLUDED_BINDING_NAMES = new Set([WORKFLOW_BODY_WRAP_FUNCTION_NAME]);
 
 const STATEMENT_BINDING_COLLECTORS: Readonly<Record<string, BindingCollector>> = {
   VariableDeclaration: collectVariableDeclarationBindings,
@@ -65,36 +65,6 @@ export const collectLexicalBindings = (module: Module): LexicalBindingFacts => {
  */
 export const isIdentifierBound = (facts: LexicalBindingFacts, name: string): boolean => {
   return facts.boundNames.includes(name);
-};
-
-/** Returns user-written statements from the normalized wrapper body. */
-const userBodyStatements = (module: Module): readonly unknown[] => {
-  const [statement] = module.body;
-  const wrapperBody = syntheticWrapperBody(module, asNode(statement));
-
-  if (wrapperBody !== undefined) {
-    return arrayValue(wrapperBody.stmts);
-  }
-
-  return module.body;
-};
-
-/** Returns the expected synthetic wrapper body when present. */
-const syntheticWrapperBody = (
-  module: Module,
-  wrapper: AstNode | undefined,
-): AstNode | undefined => {
-  if (module.body.length !== 1) {
-    return undefined;
-  }
-  if (wrapper?.type !== "FunctionDeclaration") {
-    return undefined;
-  }
-  if (identifierName(asNode(wrapper.identifier)) !== WORKFLOW_BODY_WRAP_FUNCTION_NAME) {
-    return undefined;
-  }
-
-  return asNode(wrapper.body);
 };
 
 /** Collects bindings introduced by a statement or expression subtree. */
@@ -196,22 +166,4 @@ const collectChildBindings = (node: AstNode, boundNames: Set<string>): void => {
     }
     collectStatementBindings(asNode(value), boundNames);
   }
-};
-/** Adds one declaration identifier by name. */
-const addIdentifierBinding = (node: AstNode | undefined, boundNames: Set<string>): void => {
-  const name = identifierName(node);
-  if (name !== undefined && !EXCLUDED_BINDING_NAMES.has(name)) {
-    boundNames.add(name);
-  }
-};
-/** Sorts identifier names by code-unit order for runtime-stable output. */
-const compareIdentifierNames = (left: string, right: string): number => {
-  if (left < right) {
-    return -1;
-  }
-  if (left > right) {
-    return 1;
-  }
-
-  return 0;
 };

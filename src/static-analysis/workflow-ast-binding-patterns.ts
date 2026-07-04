@@ -1,8 +1,10 @@
 /**
- * @file Reusable binding-pattern collectors for workflow AST analysis.
+ * @file Reusable binding collectors and helpers for workflow AST analysis.
  */
 
+import type { Module } from "@swc/core";
 import { isUnknownRecord } from "./swc-ast";
+import { WORKFLOW_BODY_WRAP_FUNCTION_NAME } from "./workflow-body-normalizer";
 
 export type AstNode = {
   readonly type?: string;
@@ -49,6 +51,7 @@ const OBJECT_PROPERTY_BINDING_COLLECTORS: Readonly<Record<string, BindingCollect
   KeyValuePatternProperty: collectKeyValuePatternPropertyBindings,
   RestElement: collectRestElementBindings,
 };
+export const EXCLUDED_BINDING_NAMES = new Set([WORKFLOW_BODY_WRAP_FUNCTION_NAME]);
 
 /**
  * Narrows unknown AST values to object-like nodes.
@@ -82,6 +85,23 @@ export const identifierName = (node: AstNode | undefined): string | undefined =>
   }
 
   return typeof node.value === "string" ? node.value : undefined;
+};
+
+/**
+ * Returns user-written statements from the normalized workflow wrapper body.
+ *
+ * @param module - Parsed SWC module for a normalized workflow body.
+ * @returns The wrapper body statements, or module statements when no wrapper is present.
+ */
+export const userBodyStatements = (module: Module): readonly unknown[] => {
+  const [statement] = module.body;
+  const wrapperBody = syntheticWrapperBody(module, asNode(statement));
+
+  if (wrapperBody !== undefined) {
+    return arrayValue(wrapperBody.stmts);
+  }
+
+  return module.body;
 };
 
 /**
@@ -132,6 +152,60 @@ export const collectFunctionParamBindings = (
       excluded,
     );
   }
+};
+
+/**
+ * Adds one identifier binding by name.
+ *
+ * @param node - Candidate identifier node.
+ * @param boundNames - Mutable set receiving discovered names.
+ * @param excluded - Binding names ignored by the caller.
+ */
+export const addIdentifierBinding = (
+  node: AstNode | undefined,
+  boundNames: Set<string>,
+  excluded: ReadonlySet<string> = EXCLUDED_BINDING_NAMES,
+): void => {
+  const name = identifierName(node);
+  if (isCollectableBindingName(name, excluded)) {
+    boundNames.add(name);
+  }
+};
+
+/**
+ * Sorts identifier names by code-unit order for runtime-stable output.
+ *
+ * @param left - First identifier name.
+ * @param right - Second identifier name.
+ * @returns Negative, positive, or zero according to code-unit order.
+ */
+export const compareIdentifierNames = (left: string, right: string): number => {
+  if (left < right) {
+    return -1;
+  }
+  if (left > right) {
+    return 1;
+  }
+
+  return 0;
+};
+
+/** Returns the expected synthetic workflow wrapper body when present. */
+const syntheticWrapperBody = (
+  module: Module,
+  wrapper: AstNode | undefined,
+): AstNode | undefined => {
+  if (module.body.length !== 1) {
+    return undefined;
+  }
+  if (wrapper?.type !== "FunctionDeclaration") {
+    return undefined;
+  }
+  if (identifierName(asNode(wrapper.identifier)) !== WORKFLOW_BODY_WRAP_FUNCTION_NAME) {
+    return undefined;
+  }
+
+  return asNode(wrapper.body);
 };
 
 /** Collects one identifier pattern binding. */
@@ -224,18 +298,6 @@ function collectKeyValuePatternPropertyBindings(
   recurse(asNode(asNode(node.key)?.expr));
   collectPatternBindings(node.value, boundNames, recurse, excluded);
 }
-
-/** Adds one identifier binding by name. */
-const addIdentifierBinding = (
-  node: AstNode | undefined,
-  boundNames: Set<string>,
-  excluded: ReadonlySet<string>,
-): void => {
-  const name = identifierName(node);
-  if (isCollectableBindingName(name, excluded)) {
-    boundNames.add(name);
-  }
-};
 
 /** Checks whether a binding name is user-visible. */
 const isCollectableBindingName = (

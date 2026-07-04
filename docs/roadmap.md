@@ -1025,12 +1025,12 @@ See [technical-design.md](technical-design.md) §9.3.
   - Success: every parser-backed collector either consumes the documented SWC
     traversal seam or has a tested rationale for a distinct traversal policy,
     with no deterministic-time or AST-fact output changes.
-  - [ ] 3.2.6.1. Harden the traversal-seam architecture guard.
+  - [x] 3.2.6.1. Harden the traversal-seam architecture guard.
     - Addendum (from review:3.2.6; low). Pin `traverseAstSubtree` to
       `swc-ast.ts` with a positive assertion and broaden the guard so
       renamed, non-importing, or structurally cloned traversal drivers cannot
       bypass the seam. Lightweight addendum pass.
-  - [ ] 3.2.6.2. Centralize shared AST binding collector helpers.
+  - [x] 3.2.6.2. Centralize shared AST binding collector helpers.
     - Addendum (from audit:3.2.6; medium). Move duplicated body-extraction and
       identifier helper logic from the binding and scope collectors into the
       shared binding-pattern support where ownership fits. Lightweight addendum

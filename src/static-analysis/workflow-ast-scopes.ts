@@ -6,16 +6,17 @@ import type { Module, Node } from "@swc/core";
 import { astChildValues } from "./swc-ast";
 import {
   type AstNode,
+  addIdentifierBinding,
   arrayValue,
   asNode,
   collectFunctionParamBindings,
   collectPatternBindings,
-  identifierName,
+  compareIdentifierNames,
+  EXCLUDED_BINDING_NAMES,
+  userBodyStatements,
 } from "./workflow-ast-binding-patterns";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
-import { WORKFLOW_BODY_WRAP_FUNCTION_NAME } from "./workflow-body-normalizer";
 
-const EXCLUDED_BINDING_NAMES = new Set([WORKFLOW_BODY_WRAP_FUNCTION_NAME]);
 const FUNCTION_LIKE_SCOPE_TYPES: ReadonlySet<string> = new Set([
   "FunctionDeclaration",
   "FunctionExpression",
@@ -204,61 +205,11 @@ const collectOwnNamesFromValue = (
   collectOwnNamesFromNode(asNode(value), boundNames, currentScope);
 };
 
-/** Returns user-written statements from the normalized wrapper body. */
-const userBodyStatements = (module: Module): readonly unknown[] => {
-  const [statement] = module.body;
-  const wrapperBody = syntheticWrapperBody(module, asNode(statement));
-
-  if (wrapperBody !== undefined) {
-    return arrayValue(wrapperBody.stmts);
-  }
-
-  return module.body;
-};
-
-/** Returns the expected synthetic wrapper body when present. */
-const syntheticWrapperBody = (
-  module: Module,
-  wrapper: AstNode | undefined,
-): AstNode | undefined => {
-  if (module.body.length !== 1) {
-    return undefined;
-  }
-  if (wrapper?.type !== "FunctionDeclaration") {
-    return undefined;
-  }
-  if (identifierName(asNode(wrapper.identifier)) !== WORKFLOW_BODY_WRAP_FUNCTION_NAME) {
-    return undefined;
-  }
-
-  return asNode(wrapper.body);
-};
-
-/** Adds one declaration identifier by name. */
-const addIdentifierBinding = (node: AstNode | undefined, boundNames: Set<string>): void => {
-  const name = identifierName(node);
-  if (name !== undefined && !EXCLUDED_BINDING_NAMES.has(name)) {
-    boundNames.add(name);
-  }
-};
-
 /** Builds runtime-stable frozen binding facts. */
 const bindingFacts = (names: ReadonlySet<string>): LexicalBindingFacts => {
   return Object.freeze({
     boundNames: Object.freeze([...names].sort(compareIdentifierNames)),
   });
-};
-
-/** Sorts identifier names by code-unit order for runtime-stable output. */
-const compareIdentifierNames = (left: string, right: string): number => {
-  if (left < right) {
-    return -1;
-  }
-  if (left > right) {
-    return 1;
-  }
-
-  return 0;
 };
 
 /** Checks whether a node opens a function-like scope for this analysis. */
