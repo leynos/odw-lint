@@ -284,7 +284,7 @@ and the public package entry points remained unchanged.
 
 ## Addenda
 
-- [ ] 3.2.5.1. Fix deterministic-time alias detection inside call and `new`
+- [x] 3.2.5.1. Fix deterministic-time alias detection inside call and `new`
   arguments.
   - Source: audit:3.2.5; severity medium.
   - Scope: add the missing non-node argument-wrapper record traversal branch to
@@ -294,7 +294,7 @@ and the public package entry points remained unchanged.
   - Success: `odw/no-date-now` and `odw/no-math-random` warn for static aliases
     declared inside argument-scoped immediately invoked function expressions,
     and existing deterministic-time spans stay unchanged.
-- [ ] 3.2.5.2. Guard parser-backed rules against bypassing the SWC seam.
+- [x] 3.2.5.2. Guard parser-backed rules against bypassing the SWC seam.
   - Source: review:3.2.5; severity low.
   - Scope: add a focused architecture, lint, or maintainer-documentation guard
     that makes new parser-backed 3.2 rules consume

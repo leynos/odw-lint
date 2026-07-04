@@ -13,7 +13,7 @@ import type {
   VariableDeclarator,
 } from "@swc/core";
 import type { RuleId } from "../diagnostics/rule-id";
-import { astChildValues, isAstNode } from "./swc-ast";
+import { astChildValues, isAstNode, isUnknownRecord } from "./swc-ast";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import {
   type GlobalObjectIdentity,
@@ -160,6 +160,13 @@ const collectAliasesFromChild = (
   if (Array.isArray(value)) {
     for (const item of value) {
       collectAliasesFromChild(item, bindings, aliases, rules);
+    }
+    return;
+  }
+
+  if (isUnknownRecord(value)) {
+    for (const child of astChildValues(value)) {
+      collectAliasesFromChild(child, bindings, aliases, rules);
     }
   }
 };

@@ -916,12 +916,12 @@ See [technical-design.md](technical-design.md) §9.3.
   - Success: deterministic-time and AST-fact traversals consume one documented
     SWC-shape helper seam, with tests pinning existing traversal coverage and
     no rule output changes.
-  - [ ] 3.2.5.1. Fix deterministic-time alias detection inside call and `new`
+  - [x] 3.2.5.1. Fix deterministic-time alias detection inside call and `new`
     arguments.
     - Addendum (from audit:3.2.5; medium). Add the missing non-node
       argument-wrapper record branch to alias collection and cover call or
       `new` argument-scoped IIFE alias regressions. Lightweight addendum pass.
-  - [ ] 3.2.5.2. Guard parser-backed rules against bypassing the SWC seam.
+  - [x] 3.2.5.2. Guard parser-backed rules against bypassing the SWC seam.
     - Addendum (from review:3.2.5; low). Add a focused architecture or
       documentation guard so new parser-backed 3.2 rules consume `swc-ast.ts`
       instead of cloning shape helpers. Lightweight addendum pass.

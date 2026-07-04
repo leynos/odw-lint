@@ -7,13 +7,27 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import {
   EXPECTED_DIAGNOSTIC_MODULE_FILES,
   EXPECTED_PARSEABLE_SOURCE_FILES,
   EXPECTED_STATIC_ANALYSIS_MODULE_FILES,
 } from "./architecture-fixtures";
 import { parseSource, topLevelDeclarationNames } from "./import-architecture";
+
+const STATIC_ANALYSIS_SOURCE_PATH = "src/static-analysis";
+const SWC_AST_SEAM_SOURCE = `${STATIC_ANALYSIS_SOURCE_PATH}/swc-ast.ts`;
+const PRIVATE_SWC_HELPER_DECLARATION_NAMES = new Set([
+  "childRecordValues",
+  "childValues",
+  "isAstNode",
+  "isNode",
+  "isTraversableChildKey",
+]);
+// Scope views deliberately own a broader binding traversal than rule scans.
+const PRIVATE_SWC_HELPER_EXCEPTIONS = new Map([
+  [`${STATIC_ANALYSIS_SOURCE_PATH}/workflow-ast-scopes.ts`, new Set(["childValues"])],
+]);
 
 /** Lists current direct TypeScript source modules below one source directory. */
 const sourceModuleFiles = (sourcePath: string): readonly string[] => {
@@ -26,6 +40,20 @@ const sourceModuleFiles = (sourcePath: string): readonly string[] => {
     .sort();
 };
 
+/** Checks whether one source file consumes the SWC parser type surface. */
+const hasSwcCoreImport = (sourcePath: string): boolean => {
+  return readFileSync(sourcePath, "utf8").includes('"@swc/core"');
+};
+
+/** Returns private SWC helper declarations that must live behind the seam. */
+const privateSwcHelperDeclarations = (sourcePath: string): readonly string[] => {
+  const exceptions = PRIVATE_SWC_HELPER_EXCEPTIONS.get(sourcePath) ?? new Set<string>();
+
+  return topLevelDeclarationNames(parseSource(sourcePath)).filter((name) => {
+    return PRIVATE_SWC_HELPER_DECLARATION_NAMES.has(name) && !exceptions.has(name);
+  });
+};
+
 describe("diagnostic architecture", () => {
   it("pins module inventories and parseable sources", () => {
     expect(sourceModuleFiles("src/diagnostics")).toEqual(EXPECTED_DIAGNOSTIC_MODULE_FILES);
@@ -35,5 +63,19 @@ describe("diagnostic architecture", () => {
       expect(parseSource(sourcePath).fileName).toBe(sourcePath);
     }
     expect(topLevelDeclarationNames(parseSource("src/index.ts"))).toEqual([]);
+  });
+
+  it("keeps SWC node-shape helpers behind the shared seam", () => {
+    const violations = sourceModuleFiles(STATIC_ANALYSIS_SOURCE_PATH)
+      .map((fileName) => `${STATIC_ANALYSIS_SOURCE_PATH}/${fileName}`)
+      .filter((sourcePath) => sourcePath !== SWC_AST_SEAM_SOURCE)
+      .filter((sourcePath) => hasSwcCoreImport(sourcePath))
+      .flatMap((sourcePath) => {
+        return privateSwcHelperDeclarations(sourcePath).map((declarationName) => {
+          return `${sourcePath}:${declarationName}`;
+        });
+      });
+
+    expect(violations).toEqual([]);
   });
 });
