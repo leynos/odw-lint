@@ -43,13 +43,15 @@ await agent(`Review ${args.samples[sampleIndex]}.`);
 
 ## Limitations
 
-The scanner ignores bare `Math.random()` calls when the workflow body declares
-a local `Math` binding. It detects string-key access such as
-`Math["random"]()` and `globalThis` chains such as
+The scanner ignores a bare `Math.random()` call only when a local `Math`
+binding is in scope at that reference. A same-named binding in an unrelated
+function, method, getter, or setter no longer hides the warning. It detects
+string-key access such as `Math["random"]()` and `globalThis` chains such as
 `globalThis.Math.random()`. It also detects optional member calls such as
 `Math?.random()` and direct aliases such as
 `const random = Math.random; random()`.
 
-The remaining conservative limits are dynamic computed keys (`Math[k]()`), alias
-chains beyond one direct declaration, and non-`globalThis` roots such as
-`window`, `self`, and `global`.
+The remaining conservative limits are dynamic computed keys (`Math[k]()`),
+block, `for`, and `catch` shadows attributed to the enclosing function scope,
+whole-body alias suppression beyond one direct declaration, and non-`globalThis`
+roots such as `window`, `self`, and `global`.

@@ -44,12 +44,14 @@ await agent(`Draft a review note for ${startedAt.toISOString()}.`);
 
 ## Limitations
 
-The scanner ignores bare `new Date()` and `new Date` construction when the
-workflow body declares a local `Date` binding. It detects `globalThis` chains
-such as `new globalThis.Date()` and direct constructor aliases such as
-`const Clock = Date; new Clock()`.
+The scanner ignores bare `new Date()` and `new Date` construction only when a
+local `Date` binding is in scope at that reference. A same-named binding in an
+unrelated function, method, getter, or setter no longer hides the warning. It
+detects `globalThis` chains such as `new globalThis.Date()` and direct
+constructor aliases such as `const Clock = Date; new Clock()`.
 
-The remaining conservative limits are dynamic computed keys, alias chains beyond
-one direct declaration, optional chaining around constructor forms that
-ECMAScript does not permit with `new`, and non-`globalThis` roots such as
-`window`, `self`, and `global`.
+The remaining conservative limits are dynamic computed keys, block, `for`, and
+`catch` shadows attributed to the enclosing function scope, whole-body alias
+suppression beyond one direct declaration, optional chaining around constructor
+forms that ECMAScript does not permit with `new`, and non-`globalThis` roots
+such as `window`, `self`, and `global`.

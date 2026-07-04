@@ -266,6 +266,28 @@ describe("deterministic-time diagnostic spans", () => {
     ).toMatchSnapshot();
   });
 
+  it("maps unrelated-scope shadows to the global use span", () => {
+    const { sourceText, diagnostics } = diagnosticsForStatement(
+      "function helper(Date) { return Date.now(); }\nconst timestamp = Date.now();",
+      "unrelated-scope-shadow",
+    );
+    const sourceFile = createOriginalSourceFile({
+      filePath: "workflows/unrelated-scope-shadow.js",
+      sourceText,
+    });
+
+    expect(diagnostics).toHaveLength(1);
+    const diagnostic = diagnostics[0];
+    if (diagnostic === undefined) {
+      throw new Error("Expected one unrelated-scope deterministic-time diagnostic.");
+    }
+
+    expect(diagnostic.rule).toBe(DATE_NOW_RULE);
+    expect(decodeSpanText(sourceText, diagnostic.span)).toBe("Date.now");
+    expectSpanToMatchSource(sourceText, diagnostic.span, "Date.now");
+    expect(sliceSourceSpan(sourceFile, diagnostic.span)).toBe("Date.now");
+  });
+
   it("reports no Claude compatibility diagnostics for trusted ODW examples", () => {
     for (const fixture of ODW_EXAMPLE_FIXTURE_SNAPSHOTS) {
       const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fileName);

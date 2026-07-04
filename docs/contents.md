@@ -182,6 +182,8 @@ entry; that index enumerates every current rule page.
   deterministic-time and randomness warnings.
 - [Roadmap 3.1.4 ExecPlan](execplans/roadmap-3-1-4.md) plans
   lexical-binding compatibility for deterministic-time diagnostics.
+- [Roadmap 3.1.5 ExecPlan](execplans/roadmap-3-1-5.md) plans scope-precise
+  deterministic-time shadowing.
 - [Roadmap 3.2.5 ExecPlan](execplans/roadmap-3-2-5.md) plans shared SWC AST
   guard and traversal helpers for parser-backed rules.
 - [Roadmap 4.4.1 ExecPlan](execplans/roadmap-4-4-1.md) plans the documentation

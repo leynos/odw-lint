@@ -162,6 +162,26 @@ describe("lintWorkflowSource", () => {
     expect(diagnosticRules(globalResult.claudeCompatibility)).toEqual(["odw/no-date-now"]);
   });
 
+  it("uses scope-precise deterministic-time shadowing in the merged pipeline", () => {
+    const unrelatedResult = lintSource(
+      [
+        "export const meta = { name: 'example', description: 'ok' };",
+        "function helper(Date) { return Date.now(); }",
+        "const timestamp = Date.now();",
+      ].join("\n"),
+    );
+    const enclosedResult = lintSource(
+      [
+        "export const meta = { name: 'example', description: 'ok' };",
+        "function helper(Date) { return Date.now(); }",
+      ].join("\n"),
+    );
+
+    expect(diagnosticRules(unrelatedResult.claudeCompatibility)).toEqual(["odw/no-date-now"]);
+    expect(diagnosticRules(unrelatedResult.diagnostics)).toEqual(["odw/no-date-now"]);
+    expect(enclosedResult.claudeCompatibility).toEqual([]);
+  });
+
   it("reports body syntax once and silences deterministic-time warnings", () => {
     const result = lintSource(
       [

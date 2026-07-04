@@ -3,33 +3,18 @@
  */
 
 import type { Module } from "@swc/core";
-import { isUnknownRecord } from "./swc-ast";
+import {
+  type AstNode,
+  arrayValue,
+  asNode,
+  collectFunctionParamBindings,
+  collectPatternBindings,
+  identifierName,
+} from "./workflow-ast-binding-patterns";
 import { WORKFLOW_BODY_WRAP_FUNCTION_NAME } from "./workflow-body-normalizer";
 
 export type LexicalBindingFacts = {
   readonly boundNames: readonly string[];
-};
-
-type AstNode = {
-  readonly type?: string;
-  readonly argument?: unknown;
-  readonly body?: unknown;
-  readonly declarations?: unknown;
-  readonly elements?: unknown;
-  readonly id?: unknown;
-  readonly identifier?: unknown;
-  readonly init?: unknown;
-  readonly key?: unknown;
-  readonly left?: unknown;
-  readonly param?: unknown;
-  readonly params?: unknown;
-  readonly pat?: unknown;
-  readonly properties?: unknown;
-  readonly right?: unknown;
-  readonly stmts?: unknown;
-  readonly value?: unknown;
-  readonly function?: unknown;
-  readonly [key: string]: unknown;
 };
 type BindingCollector = (node: AstNode, boundNames: Set<string>) => void;
 
@@ -48,21 +33,6 @@ const STATEMENT_BINDING_COLLECTORS: Readonly<Record<string, BindingCollector>> =
   BlockStatement: collectBlockStatementBindings,
   CatchClause: collectCatchClauseBindings,
 };
-
-const PATTERN_BINDING_COLLECTORS: Readonly<Record<string, BindingCollector>> = {
-  Identifier: collectIdentifierPatternBindings,
-  ArrayPattern: collectArrayPatternBindings,
-  ObjectPattern: collectObjectPatternBindings,
-  AssignmentPattern: collectAssignmentPatternBindings,
-  RestElement: collectRestElementBindings,
-};
-
-const OBJECT_PROPERTY_BINDING_COLLECTORS: Readonly<Record<string, BindingCollector>> = {
-  AssignmentPatternProperty: collectAssignmentPatternPropertyBindings,
-  KeyValuePatternProperty: collectKeyValuePatternPropertyBindings,
-  RestElement: collectRestElementBindings,
-};
-
 /**
  * Collects names declared by the original workflow body.
  *
@@ -145,7 +115,7 @@ const collectStatementBindings = (node: AstNode | undefined, boundNames: Set<str
 function collectVariableDeclarationBindings(node: AstNode, boundNames: Set<string>): void {
   for (const declarator of arrayValue(node.declarations)) {
     const declaratorNode = asNode(declarator);
-    collectPatternBindings(declaratorNode?.id, boundNames);
+    collectPatternBindingNames(declaratorNode?.id, boundNames);
     collectStatementBindings(asNode(declaratorNode?.init), boundNames);
   }
 }
@@ -191,87 +161,29 @@ function collectBlockStatementBindings(node: AstNode, boundNames: Set<string>): 
 
 /** Collects bindings from a catch clause. */
 function collectCatchClauseBindings(node: AstNode, boundNames: Set<string>): void {
-  collectPatternBindings(node.param, boundNames);
+  collectPatternBindingNames(node.param, boundNames);
   collectStatementBindings(asNode(node.body), boundNames);
 }
 
 /** Collects parameters for function-like AST nodes. */
 const collectFunctionLikeBindings = (node: AstNode, boundNames: Set<string>): void => {
-  for (const parameter of arrayValue(node.params)) {
-    const parameterNode = asNode(parameter);
-    collectPatternBindings(
-      parameterNode?.type === "Parameter" ? parameterNode.pat : parameter,
-      boundNames,
-    );
-  }
+  collectFunctionParamBindings(
+    node,
+    boundNames,
+    (child) => collectStatementBindings(child, boundNames),
+    EXCLUDED_BINDING_NAMES,
+  );
 };
 
-/** Collects names from binding-pattern positions only. */
-const collectPatternBindings = (pattern: unknown, boundNames: Set<string>): void => {
-  const node = asNode(pattern);
-  if (node === undefined) {
-    return;
-  }
-
-  const collector = node.type === undefined ? undefined : PATTERN_BINDING_COLLECTORS[node.type];
-  if (collector !== undefined) {
-    collector(node, boundNames);
-  }
+/** Collects one binding pattern using the flat collector's recursion policy. */
+const collectPatternBindingNames = (pattern: unknown, boundNames: Set<string>): void => {
+  collectPatternBindings(
+    pattern,
+    boundNames,
+    (child) => collectStatementBindings(child, boundNames),
+    EXCLUDED_BINDING_NAMES,
+  );
 };
-
-/** Collects one identifier pattern binding. */
-function collectIdentifierPatternBindings(node: AstNode, boundNames: Set<string>): void {
-  addIdentifierBinding(node, boundNames);
-}
-
-/** Collects bindings from an array pattern. */
-function collectArrayPatternBindings(node: AstNode, boundNames: Set<string>): void {
-  for (const element of arrayValue(node.elements)) {
-    collectPatternBindings(element, boundNames);
-  }
-}
-
-/** Collects bindings from an object pattern. */
-function collectObjectPatternBindings(node: AstNode, boundNames: Set<string>): void {
-  for (const property of arrayValue(node.properties)) {
-    collectObjectPatternPropertyBindings(asNode(property), boundNames);
-  }
-}
-
-/** Collects bindings from an assignment pattern's left side. */
-function collectAssignmentPatternBindings(node: AstNode, boundNames: Set<string>): void {
-  collectPatternBindings(node.left, boundNames);
-  collectStatementBindings(asNode(node.right), boundNames);
-}
-
-/** Collects bindings from a rest element argument. */
-function collectRestElementBindings(node: AstNode, boundNames: Set<string>): void {
-  collectPatternBindings(node.argument, boundNames);
-}
-
-/** Collects bindings from one object-pattern property. */
-function collectObjectPatternPropertyBindings(
-  property: AstNode | undefined,
-  boundNames: Set<string>,
-): void {
-  if (property?.type === undefined) {
-    return;
-  }
-
-  OBJECT_PROPERTY_BINDING_COLLECTORS[property.type]?.(property, boundNames);
-}
-
-/** Collects a shorthand or default object pattern binding. */
-function collectAssignmentPatternPropertyBindings(node: AstNode, boundNames: Set<string>): void {
-  collectPatternBindings(node.key, boundNames);
-  collectStatementBindings(asNode(node.value), boundNames);
-}
-
-/** Collects a renamed object pattern binding. */
-function collectKeyValuePatternPropertyBindings(node: AstNode, boundNames: Set<string>): void {
-  collectPatternBindings(node.value, boundNames);
-}
-
 /** Recurses through children that may contain nested declarations. */
 const collectChildBindings = (node: AstNode, boundNames: Set<string>): void => {
   for (const value of Object.values(node)) {
@@ -284,33 +196,13 @@ const collectChildBindings = (node: AstNode, boundNames: Set<string>): void => {
     collectStatementBindings(asNode(value), boundNames);
   }
 };
-
-/** Adds one identifier binding by name. */
+/** Adds one declaration identifier by name. */
 const addIdentifierBinding = (node: AstNode | undefined, boundNames: Set<string>): void => {
   const name = identifierName(node);
-  if (isCollectableBindingName(name)) {
+  if (name !== undefined && !EXCLUDED_BINDING_NAMES.has(name)) {
     boundNames.add(name);
   }
 };
-
-/** Checks whether a binding name is user-visible. */
-const isCollectableBindingName = (name: string | undefined): name is string => {
-  if (name === undefined) {
-    return false;
-  }
-
-  return !EXCLUDED_BINDING_NAMES.has(name);
-};
-
-/** Reads a SWC identifier's string value. */
-const identifierName = (node: AstNode | undefined): string | undefined => {
-  if (node?.type !== "Identifier") {
-    return undefined;
-  }
-
-  return typeof node.value === "string" ? node.value : undefined;
-};
-
 /** Sorts identifier names by code-unit order for runtime-stable output. */
 const compareIdentifierNames = (left: string, right: string): number => {
   if (left < right) {
@@ -321,14 +213,4 @@ const compareIdentifierNames = (left: string, right: string): number => {
   }
 
   return 0;
-};
-
-/** Narrows unknown AST values to object-like nodes. */
-const asNode = (value: unknown): AstNode | undefined => {
-  return isUnknownRecord(value) ? (value as AstNode) : undefined;
-};
-
-/** Narrows unknown AST arrays without widening call sites to `any`. */
-const arrayValue = (value: unknown): readonly unknown[] => {
-  return Array.isArray(value) ? value : [];
 };

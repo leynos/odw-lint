@@ -43,12 +43,14 @@ await agent(`Draft a status note for ${timestamp}.`);
 
 ## Limitations
 
-The scanner ignores bare `Date.now()` calls when the workflow body declares a
-local `Date` binding. It detects string-key access such as `Date["now"]()` and
-`globalThis` chains such as `globalThis.Date.now()`. It also detects optional
-member calls such as `Date?.now()` and direct aliases such as
-`const now = Date.now; now()`.
+The scanner ignores a bare `Date.now()` call only when a local `Date` binding
+is in scope at that reference. A same-named binding in an unrelated function,
+method, getter, or setter no longer hides the warning. It detects string-key
+access such as `Date["now"]()` and `globalThis` chains such as
+`globalThis.Date.now()`. It also detects optional member calls such as
+`Date?.now()` and direct aliases such as `const now = Date.now; now()`.
 
-The remaining conservative limits are dynamic computed keys (`Date[k]()`), alias
-chains beyond one direct declaration, and non-`globalThis` roots such as
-`window`, `self`, and `global`.
+The remaining conservative limits are dynamic computed keys (`Date[k]()`),
+block, `for`, and `catch` shadows attributed to the enclosing function scope,
+whole-body alias suppression beyond one direct declaration, and non-`globalThis`
+roots such as `window`, `self`, and `global`.

@@ -830,7 +830,7 @@ reported clearly in one command. The result informs strict-mode policy. See
       `workflow-global-object-reference` tests and trim unreachable
       TypeScript-only wrapper branches under the ECMAScript parser dialect.
       Lightweight addendum pass.
-- [ ] 3.1.5. Add scope-precise deterministic-time shadowing.
+- [x] 3.1.5. Add scope-precise deterministic-time shadowing.
   - Requires 2.2.4 and 3.1.4.
   - Refine lexical binding lookups for `Date`, `Math`, and `globalThis` so
     deterministic-time rules suppress only references shadowed at the use site

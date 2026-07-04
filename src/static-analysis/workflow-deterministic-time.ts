@@ -17,6 +17,7 @@ import { astChildValues, isAstNode, isUnknownRecord } from "./swc-ast";
 import type { WorkflowEnvelope } from "./types";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import { collectLexicalBindings } from "./workflow-ast-bindings";
+import { enterScope, rootScopeView } from "./workflow-ast-scopes";
 import {
   type NormalizedWorkflowBody,
   originalSpanFromNormalizedOffsets,
@@ -68,16 +69,18 @@ export const scanDeterministicTimeWarnings = (
     dateNowRule: DATE_NOW_RULE,
     mathRandomRule: MATH_RANDOM_RULE,
   });
-  const diagnostics = walkDeterministicTimeHazards(parseResult.module, bindings, aliases).map(
-    (match) => {
-      return diagnosticForMatch(
-        envelope,
-        parseResult.normalized,
-        parseResult.module.span.start,
-        match,
-      );
-    },
-  );
+  const diagnostics = walkDeterministicTimeHazards(
+    parseResult.module,
+    rootScopeView(parseResult.module),
+    aliases,
+  ).map((match) => {
+    return diagnosticForMatch(
+      envelope,
+      parseResult.normalized,
+      parseResult.module.span.start,
+      match,
+    );
+  });
 
   return Object.freeze(diagnostics);
 };
@@ -102,6 +105,7 @@ const visitNode = (
   aliases: DeterministicTimeAliases,
   matches: HazardMatch[],
 ): void => {
+  const childBindings = enterScope(bindings, node);
   const match = matchDeterministicTimeHazard(node, bindings, aliases);
 
   if (match !== undefined) {
@@ -109,7 +113,7 @@ const visitNode = (
   }
 
   for (const child of astChildValues(node)) {
-    visitChildValue(child, bindings, aliases, matches);
+    visitChildValue(child, childBindings, aliases, matches);
   }
 };
 
