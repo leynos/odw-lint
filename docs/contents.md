@@ -85,6 +85,8 @@ entry; that index enumerates every current rule page.
   consolidated build-gate command-line support.
 - [Audit 1.5.10](issues/audit-1.5.10.md) records review findings for recorded
   review-evidence artefact checks.
+- [Audit 1.5.11](issues/audit-1.5.11.md) records review findings for
+  consolidated build-gate CLI orchestration.
 - [Audit 2.1.6](issues/audit-2.1.6.md) records review findings for the
   no-side-effect metadata execution guard.
 - [Audit 2.1.7](issues/audit-2.1.7.md) records review findings for
