@@ -478,6 +478,15 @@ documentation change was made for that future fixture-refresh item.
   - Success: a future roadmap agent can tell which review was deferred, which
     fix-round review completed, and which findings were intentionally skipped
     without cross-reading unrelated notes.
+- [ ] 1.2.4.3. Add source-position validator coverage.
+  - Source: audit:1.5.10.
+  - Severity: low.
+  - Scope: add focused behavioural tests for `validateSourceSpan` rejection
+    branches and direct `spanFromTextIndexes` conversion cases without changing
+    the source-position API.
+  - Success: malformed span shape, reversed offsets, mismatched start
+    positions, mismatched end positions, and representative text-index spans
+    are covered directly rather than only through downstream callers.
 
 ## Context and orientation
 
@@ -1154,3 +1163,8 @@ Addendum clarification: the deferred CodeRabbit review belongs only to the work
 item 5 closure commit. The later fix-round review completed, and its sole
 finding was intentionally skipped as future fixture-refresh work outside task
 1.2.4.
+
+GIST triage update: added addendum 1.2.4.3 for direct source-position validator
+coverage from the 1.5.10 audit batch. This does not reopen task 1.2.4's
+completed implementation; it records a lightweight follow-up against the
+source-position helper split.

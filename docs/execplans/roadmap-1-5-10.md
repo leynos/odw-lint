@@ -759,3 +759,21 @@ Reused, unchanged: `cli-support.ts` (`resolveCliWriters`, `emitCliReport`,
 `CliWriters`), `review-evidence-report.ts` (`formatReviewEvidenceResult`),
 `review-evidence.ts` (`ReviewEvidenceResult`), `git-support.ts`
 (`createCapturedCliOutput` for tests).
+
+## Addenda
+
+- [ ] 1.5.10.1. Add recorded-evidence report integrity checks.
+  - Source: review:1.5.10.
+  - Severity: low.
+  - Scope: extend the recorded-evidence artefact classifier with lightweight
+    structural validation so a truncated or corrupted report whose first
+    `Review evidence: <status>` line survives no longer classifies as present.
+  - Success: fixture or unit coverage proves partial reports fail closed while
+    complete `verified`, `failed`, and `degraded` reports still classify as
+    present recorded evidence.
+
+## Revision note
+
+GIST triage update: added addendum 1.5.10.1 for recorded-evidence report
+integrity after the 1.5.10 review batch. Staleness and provenance remain
+outside this completed task and are now tracked as their own roadmap task.

@@ -136,6 +136,10 @@ shape. The result informs every parser, rule, and reporter task. See
     - Addendum (from review:1.2.4; low). Reconcile the task 1.2.4 ExecPlan
       outcomes and revision notes so review status is unambiguous. Lightweight
       addendum pass.
+  - [ ] 1.2.4.3. Add source-position validator coverage.
+    - Addendum (from audit:1.5.10; low). Add direct behavioural coverage for
+      `validateSourceSpan` rejection branches and `spanFromTextIndexes`
+      production use. Lightweight addendum pass.
 
 ### 1.3. Establish the workflow fixture corpus
 
@@ -356,6 +360,10 @@ depending on manual post-commit audits.
   - Requires 1.5.7 and 1.5.8.
   - Success: a completed roadmap review or audit cannot claim review-evidence
     compliance unless the recorded report is available to the audit harness.
+  - [ ] 1.5.10.1. Add recorded-evidence report integrity checks.
+    - Addendum (from review:1.5.10; low). Reject truncated or structurally
+      incomplete recorded review-evidence reports instead of accepting a
+      surviving status header alone. Lightweight addendum pass.
 - [ ] 1.5.11. Consolidate build-gate CLI run-and-exit orchestration.
   - Extract a shared run-and-exit helper for build-gate CLIs and move reviewer
     availability parsing to a table-driven shape while preserving each gate's
@@ -364,6 +372,13 @@ depending on manual post-commit audits.
   - Success: branch-freshness, whitespace-hygiene, and review-evidence command
     modules share one CLI orchestration seam, and reviewer availability options
     cannot drift by path-specific parser branches.
+- [ ] 1.5.12. Bind recorded review evidence to the reviewed tree state.
+  - Extend the recorded review-evidence artefact contract so the audit harness
+    can reject stale or mismatched reports from a previous run.
+  - Requires 1.5.10.
+  - Success: `make review-evidence-artefact` or its CLI rejects a recorded
+    report when its embedded commit, tree, or equivalent provenance marker does
+    not match the current reviewed state.
 
 ## 2. First vertical slice: ODW dialect validation
 
