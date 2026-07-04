@@ -43,8 +43,20 @@ describe("roadmap review evidence audit contract", () => {
         pattern: /`make review-evidence`/,
       },
       {
+        name: "names the review-evidence artefact target",
+        pattern: /`make review-evidence-artefact`/,
+      },
+      {
+        name: "names the default recorded artefact path",
+        pattern: /`\.review-evidence\/report\.txt`/,
+      },
+      {
         name: "makes the target normative",
         pattern: /\b(?:required|must)\b/i,
+      },
+      {
+        name: "documents recording without changing review exit codes",
+        pattern: /recording[\s\S]*never\s+changes[\s\S]*exit codes/i,
       },
       {
         name: "requires recorded evidence",

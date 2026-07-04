@@ -27,6 +27,7 @@ type MakeTarget =
   | "build"
   | "refresh-fixtures"
   | "review-evidence"
+  | "review-evidence-artefact"
   | "whitespace-hygiene";
 
 const olderThanMarker = new Date("2026-01-01T00:00:00.000Z");
@@ -156,6 +157,20 @@ describe("Makefile build gate", () => {
     }
   });
 
+  it("documents the review-evidence artefact target and wires it through Bun", () => {
+    const projectPath = createTemporaryProject([]);
+
+    try {
+      const result = runMakeDryRun(projectPath, "review-evidence-artefact");
+
+      expect(result.status).toBe(0);
+      expect(result.output).toContain("bun run tests/build-gate/review-evidence-artefact-cli.ts");
+      expect(result.output).not.toContain("bun install");
+    } finally {
+      rmSync(projectPath, { recursive: true, force: true });
+    }
+  });
+
   it("documents the whitespace hygiene target and wires it through Bun", () => {
     const projectPath = createTemporaryProject([]);
 
@@ -178,6 +193,9 @@ describe("Makefile build gate", () => {
 
       expect(result.status).toBe(0);
       expect(result.output).not.toContain("bun run tests/build-gate/review-evidence-cli.ts");
+      expect(result.output).not.toContain(
+        "bun run tests/build-gate/review-evidence-artefact-cli.ts",
+      );
     } finally {
       rmSync(projectPath, { recursive: true, force: true });
     }

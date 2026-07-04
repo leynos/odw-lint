@@ -240,6 +240,26 @@ state is honestly `degraded` (exit 3) on the `local-self-run` path. Keep the
 target outside `make all` because it re-runs `make all` and is a reviewer-run
 audit gate, not a recursive commit-gate step.
 
+Recording is explicit. Run
+`bun run tests/build-gate/review-evidence-cli.ts --record=<path>` or set
+`ODW_LINT_REVIEW_EVIDENCE_PATH=<path>` before `make review-evidence` to persist
+the exact report text. If neither is provided, review evidence is reported to
+stdout only. A blank record path falls back to the default
+`.review-evidence/report.txt`. Recording never changes the `make
+review-evidence` exit-code contract: 0 remains `verified`, 1 remains `failed`,
+2 remains `usage-error`, and 3 remains `degraded`. A recording write failure is
+reported on stderr and is enforced by the artefact check, not by changing the
+review-evidence exit code.
+
+Run `make review-evidence-artefact` after recording. The target reads the
+resolved artefact path, verifies that it is a completed review-evidence report,
+and prints the recorded status. The underlying CLI exits 0 when a completed
+report is present, 1 when the artefact is missing, unreadable, empty, or not a
+completed report, and 2 for malformed artefact-check flags. The Makefile target
+fails non-zero when the CLI rejects the artefact. The target stays outside
+`make all` for the same reason as `make review-evidence`: it is a reviewer-run
+audit gate, not a recursive commit gate.
+
 Each review-evidence gate uses a five-minute command timeout by default. Slow
 review environments may override the per-gate timeout with
 `ODW_LINT_REVIEW_GATE_TIMEOUT_MS=<milliseconds>` or by running

@@ -349,7 +349,7 @@ depending on manual post-commit audits.
     - Addendum (from review:1.5.9; low). Centralize stdout and stderr
       override-and-restore support for CLI default-stream tests. Lightweight
       addendum pass.
-- [ ] 1.5.10. Add an executable artefact check for recorded review evidence.
+- [x] 1.5.10. Add an executable artefact check for recorded review evidence.
   - Require the roadmap review or audit path to attach or persist the
     `make review-evidence` report for each completed review or audit, and add
     a build-gate check that rejects missing recorded evidence.

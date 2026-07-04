@@ -2,7 +2,11 @@
  * @file Reviewer-facing report formatting for review evidence.
  */
 
+import { assertNever, singleLine } from "./report-format-helpers";
 import type { GateExecution, ReviewEvidenceResult, ReviewPathSelection } from "./review-evidence";
+
+/** Prefix every review-evidence report status line with the stable grep key. */
+export const REVIEW_EVIDENCE_REPORT_PREFIX = "Review evidence: ";
 
 /**
  * Format review evidence as stable, greppable CLI output.
@@ -29,9 +33,9 @@ export function formatReviewEvidenceResult(result: ReviewEvidenceResult): string
         result.reasons.map((reason) => `degraded reason: ${singleLine(reason)}`),
       );
     case "usage-error":
-      return `Review evidence: usage-error\n- usage error: ${singleLine(result.message)}\n`;
+      return `${REVIEW_EVIDENCE_REPORT_PREFIX}usage-error\n- usage error: ${singleLine(result.message)}\n`;
     default: {
-      return assertNever(result);
+      return assertNever(result, "review evidence variant");
     }
   }
 }
@@ -44,7 +48,7 @@ const formatResultLines = (
   extraLines: readonly string[] = [],
 ): string => {
   const lines = executions.map((execution) => `- gate ${formatExecution(execution)}`);
-  lines.unshift(`Review evidence: ${status}`);
+  lines.unshift(`${REVIEW_EVIDENCE_REPORT_PREFIX}${status}`);
   lines.push(`- dual-review path: ${formatReviewPath(reviewPath)}`);
   lines.push(...extraLines.map((line) => `- ${line}`));
 
@@ -63,7 +67,7 @@ const formatExecution = (execution: GateExecution): string => {
     case "unavailable":
       return `${execution.gate}: unavailable (${singleLine(execution.detail)})`;
     default: {
-      return assertNever(execution);
+      return assertNever(execution, "gate execution variant");
     }
   }
 };
@@ -80,14 +84,4 @@ const reviewPathKind = (reviewPath: ReviewPathSelection): string => {
   }
 
   return reviewPath.isFallback ? "fallback" : "primary";
-};
-
-/** Preserve one report fact per line even when caller-owned text is multiline. */
-const singleLine = (value: string): string => {
-  return value.replaceAll(/\s+/g, " ").trim();
-};
-
-/** Preserve compile-time exhaustiveness checks for discriminated unions. */
-const assertNever = (value: never): never => {
-  throw new Error(`unhandled review evidence variant: ${JSON.stringify(value)}`);
 };

@@ -23,6 +23,7 @@ import {
   parseAvailabilityValue,
   setPathAvailability,
 } from "./review-evidence-availability";
+import { maybeRecordReviewEvidence } from "./review-evidence-recording";
 import { formatReviewEvidenceResult } from "./review-evidence-report";
 
 export type GateCommand = readonly [ReviewGateId, string, readonly string[]];
@@ -32,6 +33,8 @@ type CliOptions = {
   readonly executionEnabled: boolean;
   readonly gateTimeoutMs: number;
   readonly pathAvailability: PathAvailabilityFacts;
+  readonly recordPath?: string;
+  readonly shouldRecord: boolean;
 };
 
 type ParsedCliOption<T> =
@@ -53,6 +56,7 @@ export type RunReviewEvidenceCliOptions = {
   readonly cwd?: string;
   readonly timeoutMs?: number;
   readonly maxBufferBytes?: number;
+  readonly writeArtefact?: (path: string, content: string) => void;
 };
 
 const defaultGateCommands: readonly GateCommand[] = [
@@ -95,6 +99,14 @@ export function runReviewEvidenceCli(
   });
 
   emitCliReport({ report, toErr: result.status === "usage-error", writers });
+  if (parsedOptions.ok) {
+    maybeRecordReviewEvidence({
+      options: { ...options, ...parsedOptions.value },
+      result,
+      report,
+      writers,
+    });
+  }
   return exitCodeFor(result);
 }
 
@@ -194,6 +206,7 @@ const parseCliArgs = (
 ): ParsedCliOptions => {
   const {
     ODW_LINT_REVIEW_EXEC: reviewExecutionMode,
+    ODW_LINT_REVIEW_EVIDENCE_PATH: recordEnvironmentPath,
     ODW_LINT_REVIEW_GATE_TIMEOUT_MS: environmentGateTimeoutMs,
   } = env;
   const parsedEnvironmentTimeout = parseEnvironmentGateTimeoutMs(
@@ -212,6 +225,7 @@ const parseCliArgs = (
     executionEnabled: reviewExecutionMode !== "0",
     gateTimeoutMs: parsedEnvironmentTimeout.value,
     pathAvailability: parsedPathAvailability.value,
+    shouldRecord: recordEnvironmentPath !== undefined,
   };
 
   for (const arg of args) {
@@ -243,6 +257,11 @@ const parseCliArg = (arg: string, options: CliOptions): ParsedCliOptions => {
   const availabilityOptions = parseAvailabilityFlag(arg, options);
   if (availabilityOptions !== undefined) {
     return availabilityOptions;
+  }
+
+  const recordPath = parseFlagValue(arg, "--record=");
+  if (recordPath !== undefined) {
+    return { ok: true, value: { ...options, recordPath, shouldRecord: true } };
   }
 
   return { ok: false, usageError: `unknown option: ${arg}` };

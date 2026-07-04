@@ -111,13 +111,27 @@
 
 - A roadmap review or audit, including the df12-build audit phase, must run
   `make review-evidence` as a required step and record its report as the review
-  evidence. This is not optional and must not depend on a reviewer remembering
-  to opt into the target.
+  evidence. The harness must persist that report with the `--record=` flag or
+  the `ODW_LINT_REVIEW_EVIDENCE_PATH` environment variable, then run
+  `make review-evidence-artefact` to verify the recorded artefact. The default
+  artefact path is `.review-evidence/report.txt`. This is not optional and must
+  not depend on a reviewer remembering to opt into either target.
 - `make review-evidence` re-runs `make all`, `make markdownlint`, and
   `make nixie` in the task worktree through the shared build-gate command
   runner, then reports the selected dual-review path. It stays outside
   `make all` because it is a reviewer-run audit gate, not a recursive
   commit-gate step.
+- Recording is additive on `make review-evidence`: enabling recording never
+  changes its existing exit codes. Exit 0 remains `verified`, exit 1 remains
+  `failed`, exit 2 remains only `usage-error`, and exit 3 remains `degraded`.
+  A failed recording write is surfaced on stderr and caught by
+  `make review-evidence-artefact` as a missing or unusable artefact rather than
+  by changing the review-evidence exit code.
+- `make review-evidence-artefact` reads the recorded report and rejects missing
+  or unusable recorded evidence. Its underlying CLI exits 0 when a completed
+  review report is present, exits 1 when the artefact is missing or invalid,
+  and exits 2 for malformed artefact-check invocation. The Makefile target
+  fails non-zero when the CLI rejects the artefact.
 - The recorded report is the deliverable whatever its classification. In the
   fully provisioned df12 environment, which is the same toolchain used for this
   repository's `make nixie` validation, `verified` (exit 0) requires both
