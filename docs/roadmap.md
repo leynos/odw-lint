@@ -686,6 +686,32 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:1.5.12; low). Unify delimiter-depth folding so
       scanner families clamp unbalanced delimiters consistently. Lightweight
       addendum pass.
+  - [ ] 2.1.13.2. Reconcile primitive interface notes.
+    - Addendum (from review:2.1.13; low). Align the ExecPlan interface notes
+      with the shipped `identifierRunEnd` return contract. Lightweight
+      addendum pass.
+  - [ ] 2.1.13.3. Add delimited-oracle provenance checks.
+    - Addendum (from review:2.1.13; low). Pin parity-oracle provenance or fold
+      faithfulness into behaviour fixtures so hand-frozen delimited-end oracles
+      cannot drift. Lightweight addendum pass.
+  - [ ] 2.1.13.4. Enrich scanner primitive boundary coverage.
+    - Addendum (from review:2.1.13; low). Add table-driven primitive boundary
+      cases for line-comment terminators, bounded block comments, and nested
+      template-expression paths. Lightweight addendum pass.
+  - [ ] 2.1.13.5. Reconcile comment scanner wrapper naming.
+    - Addendum (from audit:2.1.13; low). Standardize `scanLineCommentEnd`
+      wrapper ownership or direct primitive imports so scanner families cannot
+      expose divergent same-name semantics. Lightweight addendum pass.
+- [ ] 2.1.14. Consolidate delimited and balanced scanner loops.
+  - Share one parametrized delimited-region primitive, and where contracts
+    match one balanced-expression primitive, across escaped-delimited scanners,
+    template-expression scans, metadata parsing, and parity oracles without
+    changing emitted diagnostics or mask ranges.
+  - Requires 2.1.13.
+  - Success: source-mask and workflow-metadata scanners no longer carry forked
+    escaped-delimited or balanced-expression loops, parity or provenance tests
+    prove behaviour unchanged, and `source-scanner-primitives.ts` remains the
+    documented scanner seam.
 
 ### 2.2. Normalize and parse workflow bodies with SWC
 
@@ -1139,6 +1165,11 @@ types" and [developers-guide.md](developers-guide.md) "Documentation Upkeep".
     - Addendum (from audit:2.2.6; low). Check the canonical documentation
       index against current ExecPlans and issue audits so navigation cannot
       drift silently. Lightweight addendum pass.
+  - [ ] 4.4.1.3. Document source-scanner primitives in the layout guide.
+    - Addendum (from audit:2.1.13; low). Add
+      `source-scanner-primitives.ts`, its scanner-family consumers, and its
+      no-domain-import rule to `docs/repository-layout.md`. Lightweight
+      addendum pass.
 
 ## 5. Deferred extensions
 

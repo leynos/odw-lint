@@ -1078,3 +1078,33 @@ Round 2 (2026-07-04) — resolves the two round-1 design-review blocking points.
   - Success: workflow-metadata and envelope scanners share the same
     delimiter-depth primitive where their contracts match, with existing
     scanner behaviour unchanged.
+- [ ] 2.1.13.2. Reconcile primitive interface notes.
+  - Source: review:2.1.13; severity low.
+  - Scope: align this ExecPlan's interface-signature notes with the shipped
+    `source-scanner-primitives.ts` API, including the `identifierRunEnd`
+    `number | undefined` return contract already documented in module JSDoc.
+  - Success: the plan no longer describes a narrower primitive return type
+    than the implementation actually exposes.
+- [ ] 2.1.13.3. Add delimited-oracle provenance checks.
+  - Source: review:2.1.13; severity low.
+  - Scope: make the hand-frozen delimited-end parity oracles self-checking or
+    clearly provenance-anchored, either through a build-time guard or by folding
+    the faithfulness check into standing scanner behaviour fixtures.
+  - Success: future scanner grammar changes cannot leave the parity oracle
+    relationship implicit or dependent on reviewer memory alone.
+- [ ] 2.1.13.4. Enrich scanner primitive boundary coverage.
+  - Source: review:2.1.13; severity low.
+  - Scope: add direct table-driven primitive tests for line-comment terminator
+    variants, bounded block-comment endings, and nested
+    `templateExpressionEnd` comment or string paths.
+  - Success: boundary failures localize to the primitive suites before they
+    surface only through downstream masking or metadata behaviour tests.
+- [ ] 2.1.13.5. Reconcile comment scanner wrapper naming.
+  - Source: audit:2.1.13; severity low.
+  - Scope: standardize `scanLineCommentEnd` wrapper ownership, or remove thin
+    wrappers in favour of direct primitive imports, so source-mask and
+    workflow-metadata comment scanners do not expose same-name functions with
+    divergent semantics.
+  - Success: scanner comment-boundary call sites have one documented naming and
+    indirection policy, with existing source-mask and metadata behaviour
+    unchanged.
