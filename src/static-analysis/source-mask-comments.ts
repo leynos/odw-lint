@@ -28,7 +28,11 @@ export const scanCommentRange = (
     return undefined;
   }
   if (nextCharacter === "/") {
-    return createMaskedRange("comment", startIndex, scanLineCommentEnd(sourceText, startIndex + 2));
+    return createMaskedRange(
+      "comment",
+      startIndex,
+      lineCommentTerminatorEnd(sourceText, startIndex + 2),
+    );
   }
   const endIndex = blockCommentEnd(sourceText, startIndex + 2, sourceText.length);
 
@@ -48,15 +52,4 @@ export const isCommentStart = (character: string, nextCharacter: string): boolea
   }
 
   return nextCharacter === "/" || nextCharacter === "*";
-};
-
-/**
- * Finds a line comment end.
- *
- * @param sourceText - Original source text to scan.
- * @param startIndex - UTF-16 index immediately after the `//` marker.
- * @returns Exclusive end index for the line comment range.
- */
-export const scanLineCommentEnd = (sourceText: string, startIndex: number): number => {
-  return lineCommentTerminatorEnd(sourceText, startIndex);
 };

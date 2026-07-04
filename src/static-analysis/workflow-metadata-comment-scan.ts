@@ -3,7 +3,6 @@
 import {
   blockCommentEnd,
   indexAfterEscapedUnit,
-  lineCommentContentEnd,
   type StringLikeDelimiter,
   templateExpressionEnd,
 } from "./source-scanner-primitives";
@@ -38,18 +37,6 @@ export const scanDelimitedEnd = (
     }
   }
   return endIndex;
-};
-
-/**
- * Scans a line comment body and preserves line terminator ownership.
- *
- * @param text - Source text to scan.
- * @param startIndex - Inclusive text index after the opening `//`.
- * @param endIndex - Exclusive maximum scan index.
- * @returns The line terminator index, or `endIndex`.
- */
-export const scanLineCommentEnd = (text: string, startIndex: number, endIndex: number): number => {
-  return lineCommentContentEnd(text, startIndex, endIndex);
 };
 
 /**

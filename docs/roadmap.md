@@ -682,23 +682,23 @@ statically. It unlocks metadata rules and body parsing. See
     documented primitive layer for their shared JavaScript token grammar, with
     focused tests proving existing masking and metadata extraction behaviour is
     unchanged.
-  - [ ] 2.1.13.1. Complete scanner delimiter-depth primitive consolidation.
+  - [x] 2.1.13.1. Complete scanner delimiter-depth primitive consolidation.
     - Addendum (from audit:1.5.12; low). Unify delimiter-depth folding so
       scanner families clamp unbalanced delimiters consistently. Lightweight
       addendum pass.
-  - [ ] 2.1.13.2. Reconcile primitive interface notes.
+  - [x] 2.1.13.2. Reconcile primitive interface notes.
     - Addendum (from review:2.1.13; low). Align the ExecPlan interface notes
       with the shipped `identifierRunEnd` return contract. Lightweight
       addendum pass.
-  - [ ] 2.1.13.3. Add delimited-oracle provenance checks.
+  - [x] 2.1.13.3. Add delimited-oracle provenance checks.
     - Addendum (from review:2.1.13; low). Pin parity-oracle provenance or fold
       faithfulness into behaviour fixtures so hand-frozen delimited-end oracles
       cannot drift. Lightweight addendum pass.
-  - [ ] 2.1.13.4. Enrich scanner primitive boundary coverage.
+  - [x] 2.1.13.4. Enrich scanner primitive boundary coverage.
     - Addendum (from review:2.1.13; low). Add table-driven primitive boundary
       cases for line-comment terminators, bounded block comments, and nested
       template-expression paths. Lightweight addendum pass.
-  - [ ] 2.1.13.5. Reconcile comment scanner wrapper naming.
+  - [x] 2.1.13.5. Reconcile comment scanner wrapper naming.
     - Addendum (from audit:2.1.13; low). Standardize `scanLineCommentEnd`
       wrapper ownership or direct primitive imports so scanner families cannot
       expose divergent same-name semantics. Lightweight addendum pass.

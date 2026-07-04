@@ -174,6 +174,7 @@ describe("source-file helper architecture", () => {
       "utf8ByteLengthForCodePoint",
     ]);
     expectModuleDeclarations("src/static-analysis/source-scanner-primitives.ts", [
+      "DelimiterDepthState",
       "QuotedStringDelimiter",
       "RegexDelimiter",
       "SOURCE_LINE_TERMINATORS",
@@ -187,6 +188,7 @@ describe("source-file helper architecture", () => {
       "identifierRunEnd",
       "indexAfterEscapedUnit",
       "isCrLfAt",
+      "isDelimiterDepthTopLevel",
       "isQuotedStringDelimiter",
       "isRegexDelimiter",
       "isSourceLineTerminator",
@@ -194,6 +196,7 @@ describe("source-file helper architecture", () => {
       "isTemplateDelimiter",
       "lineCommentContentEnd",
       "lineCommentTerminatorEnd",
+      "nextDelimiterDepthState",
       "templateExpressionEnd",
     ]);
     expectModuleDeclarations("src/static-analysis/source-indexes.ts", [
@@ -234,7 +237,6 @@ describe("source-file helper architecture", () => {
     expectModuleDeclarations("src/static-analysis/source-mask-comments.ts", [
       "isCommentStart",
       "scanCommentRange",
-      "scanLineCommentEnd",
     ]);
     expectModuleDeclarations("src/static-analysis/source-mask-strings.ts", [
       "isEscapedCrLfLineContinuation",

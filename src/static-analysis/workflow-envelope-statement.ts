@@ -1,13 +1,14 @@
 /** @file Top-level statement scanning helpers for workflow envelope extraction. */
 
 import { isWhitespaceCharacter } from "./source-mask-delimiters";
-import { isSourceLineTerminator } from "./source-scanner-primitives";
+import {
+  type DelimiterDepthState,
+  isDelimiterDepthTopLevel,
+  isSourceLineTerminator,
+  nextDelimiterDepthState,
+} from "./source-scanner-primitives";
 
-export type DepthState = Readonly<{
-  braceDepth: number;
-  bracketDepth: number;
-  parenDepth: number;
-}>;
+export type DepthState = DelimiterDepthState;
 
 /**
  * Finds the exclusive end of a top-level statement or declaration.
@@ -46,22 +47,7 @@ export const topLevelStatementEndIndex = (maskedText: string, startIndex: number
  * @returns Updated delimiter depth.
  */
 export const nextDepthState = (depth: DepthState, character: string): DepthState => {
-  switch (character) {
-    case "{":
-      return { ...depth, braceDepth: depth.braceDepth + 1 };
-    case "}":
-      return { ...depth, braceDepth: Math.max(0, depth.braceDepth - 1) };
-    case "[":
-      return { ...depth, bracketDepth: depth.bracketDepth + 1 };
-    case "]":
-      return { ...depth, bracketDepth: Math.max(0, depth.bracketDepth - 1) };
-    case "(":
-      return { ...depth, parenDepth: depth.parenDepth + 1 };
-    case ")":
-      return { ...depth, parenDepth: Math.max(0, depth.parenDepth - 1) };
-    default:
-      return depth;
-  }
+  return nextDelimiterDepthState(depth, character);
 };
 
 /**
@@ -71,7 +57,7 @@ export const nextDepthState = (depth: DepthState, character: string): DepthState
  * @returns True when no brace, bracket, or parenthesis is open.
  */
 export const isTopLevel = (depth: DepthState): boolean => {
-  return depth.braceDepth === 0 && depth.bracketDepth === 0 && depth.parenDepth === 0;
+  return isDelimiterDepthTopLevel(depth);
 };
 
 /** Checks for a semicolon that ends the current top-level statement. */

@@ -3,10 +3,10 @@
  */
 
 import { describe, expect, it } from "bun:test";
+import { lineCommentContentEnd } from "../../src/static-analysis/source-scanner-primitives";
 import {
   scanBlockCommentEnd,
   scanDelimitedEnd,
-  scanLineCommentEnd,
 } from "../../src/static-analysis/workflow-metadata-comment-scan";
 
 describe("workflow metadata comment scanners", () => {
@@ -36,7 +36,7 @@ describe("workflow metadata comment scanners", () => {
     ["paragraph separator", "// line\u2029next", 7],
   ] as const) {
     it(`stops line comments at ${description}`, () => {
-      expect(scanLineCommentEnd(text, 2, text.length)).toBe(expectedIndex);
+      expect(lineCommentContentEnd(text, 2, text.length)).toBe(expectedIndex);
     });
   }
 });

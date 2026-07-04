@@ -33,6 +33,29 @@ const SOURCE_FRAGMENT = fc.constantFrom(
 const GENERATED_BODY = fc.array(SOURCE_FRAGMENT, { maxLength: 24 }).map((parts) => parts.join(""));
 
 describe("delimited scanner parity", () => {
+  it("anchors the frozen source-mask oracle to explicit boundary cases", () => {
+    for (const [sourceText, delimiter, expectedEnd] of [
+      [`"closed" tail`, '"', 8],
+      [`"escaped \\" delimiter" tail`, '"', 22],
+      [`/unterminated`, "/", 13],
+    ] as const) {
+      expect(expectedEscapedDelimitedEnd(sourceText, 0, delimiter)).toBe(expectedEnd);
+      expect(scanEscapedDelimitedEnd(sourceText, 0, delimiter)).toBe(expectedEnd);
+    }
+  });
+
+  it("anchors the frozen metadata oracle to explicit interpolation cases", () => {
+    for (const [sourceText, delimiter, expectedEnd] of [
+      [`"closed" tail`, '"', 8],
+      ["`outer $" + "{call(`inner $" + "{value}`)} end` tail", "`", 37],
+      ["`outer $" + "{/* } */ value} end` tail", "`", 28],
+      ["`unterminated $" + "{value", "`", 21],
+    ] as const) {
+      expect(expectedDelimitedEnd(sourceText, 0, delimiter, sourceText.length)).toBe(expectedEnd);
+      expect(scanDelimitedEnd(sourceText, 0, delimiter, sourceText.length)).toBe(expectedEnd);
+    }
+  });
+
   it("keeps source-mask escaped-delimited scanning equivalent to the oracle", () => {
     fc.assert(
       fc.property(

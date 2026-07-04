@@ -618,6 +618,10 @@ Internal source-helper ownership is split by responsibility:
   `src/static-analysis/source-mask-regex.ts` own the comment, quoted-string,
   template-literal, and regex-literal token scanners. External scanner code
   still calls `maskNonCodeSource` rather than importing these internal modules.
+  Comment scanners import the named boundary primitives directly
+  (`lineCommentContentEnd` for comment bodies and
+  `lineCommentTerminatorEnd` for mask ranges) instead of adding
+  same-name wrappers with different terminator semantics.
 - `src/static-analysis/source-position.ts` owns offset lookup, span
   construction, and caller-supplied span validation.
 - `src/static-analysis/source-snippet.ts` owns validated source slicing and

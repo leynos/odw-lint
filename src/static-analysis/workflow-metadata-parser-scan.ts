@@ -5,8 +5,11 @@ import { isWhitespaceCharacter } from "./source-mask-delimiters";
 import {
   codePointStringAt,
   commentDispatchEnd,
+  type DelimiterDepthState,
   identifierRunEnd,
+  isDelimiterDepthTopLevel,
   isStringLikeDelimiter,
+  nextDelimiterDepthState,
 } from "./source-scanner-primitives";
 import { scanDelimitedEnd } from "./workflow-metadata-comment-scan";
 import type { ParserCursor } from "./workflow-metadata-parser";
@@ -20,11 +23,7 @@ const KEYWORD_VALUES = {
 const NUMBER_LITERAL_PATTERN =
   /^-?(?:0[xX][\da-fA-F](?:_?[\da-fA-F])*|0[bB][01](?:_?[01])*|0[oO][0-7](?:_?[0-7])*|\d(?:_?\d)*(?:\.\d(?:_?\d)*)?(?:[eE][+-]?\d(?:_?\d)*)?)/u;
 
-type ExpressionDepth = {
-  readonly brace: number;
-  readonly bracket: number;
-  readonly paren: number;
-};
+type ExpressionDepth = DelimiterDepthState;
 
 /**
  * Scans a primitive keyword value from the current cursor.
@@ -70,7 +69,7 @@ export const skipTrivia = (cursor: ParserCursor): void => {
  * @returns The exclusive text index for the scanned expression.
  */
 export const scanExpressionEnd = (cursor: ParserCursor, terminators: readonly string[]): number => {
-  let depth: ExpressionDepth = { brace: 0, bracket: 0, paren: 0 };
+  let depth: ExpressionDepth = { braceDepth: 0, bracketDepth: 0, parenDepth: 0 };
   let index = cursor.index;
   while (index < cursor.endIndex) {
     const character = cursor.text[index] ?? "";
@@ -251,28 +250,10 @@ const isExpressionTerminator = (
 
 /** Checks whether any nested expression depth is still open. */
 const hasOpenExpressionDepth = (depth: ExpressionDepth): boolean => {
-  return depth.paren !== 0 || depth.brace !== 0 || depth.bracket !== 0;
+  return !isDelimiterDepthTopLevel(depth);
 };
 
 /** Updates nested expression depth for one source character. */
 const nextExpressionDepth = (depth: ExpressionDepth, character: string): ExpressionDepth => {
-  if (character === "(") {
-    return { ...depth, paren: depth.paren + 1 };
-  }
-  if (character === "{") {
-    return { ...depth, brace: depth.brace + 1 };
-  }
-  if (character === "[") {
-    return { ...depth, bracket: depth.bracket + 1 };
-  }
-  if (character === ")") {
-    return { ...depth, paren: Math.max(0, depth.paren - 1) };
-  }
-  if (character === "}") {
-    return { ...depth, brace: Math.max(0, depth.brace - 1) };
-  }
-  if (character === "]") {
-    return { ...depth, bracket: Math.max(0, depth.bracket - 1) };
-  }
-  return depth;
+  return nextDelimiterDepthState(depth, character);
 };

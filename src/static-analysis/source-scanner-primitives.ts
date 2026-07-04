@@ -21,6 +21,11 @@ export type QuotedStringDelimiter = "'" | '"';
 export type TemplateDelimiter = "`";
 export type RegexDelimiter = "/";
 export type StringLikeDelimiter = QuotedStringDelimiter | TemplateDelimiter;
+export type DelimiterDepthState = Readonly<{
+  braceDepth: number;
+  bracketDepth: number;
+  parenDepth: number;
+}>;
 
 /**
  * Checks whether a character is a JavaScript source line terminator.
@@ -65,6 +70,45 @@ export const codePointStringAt = (text: string, index: number): string => {
  */
 export const indexAfterEscapedUnit = (_text: string, backslashIndex: number): number => {
   return backslashIndex + 2;
+};
+
+/**
+ * Updates nested delimiter depth for one source character.
+ *
+ * @param depth - Delimiter depth before reading the character.
+ * @param character - Current source character.
+ * @returns Updated delimiter depth, clamped at zero for unmatched closers.
+ */
+export const nextDelimiterDepthState = (
+  depth: DelimiterDepthState,
+  character: string,
+): DelimiterDepthState => {
+  switch (character) {
+    case "{":
+      return { ...depth, braceDepth: depth.braceDepth + 1 };
+    case "}":
+      return { ...depth, braceDepth: Math.max(0, depth.braceDepth - 1) };
+    case "[":
+      return { ...depth, bracketDepth: depth.bracketDepth + 1 };
+    case "]":
+      return { ...depth, bracketDepth: Math.max(0, depth.bracketDepth - 1) };
+    case "(":
+      return { ...depth, parenDepth: depth.parenDepth + 1 };
+    case ")":
+      return { ...depth, parenDepth: Math.max(0, depth.parenDepth - 1) };
+    default:
+      return depth;
+  }
+};
+
+/**
+ * Checks whether delimiter depth is at top level.
+ *
+ * @param depth - Current delimiter depth.
+ * @returns True when no brace, bracket, or parenthesis is open.
+ */
+export const isDelimiterDepthTopLevel = (depth: DelimiterDepthState): boolean => {
+  return depth.braceDepth === 0 && depth.bracketDepth === 0 && depth.parenDepth === 0;
 };
 
 /**

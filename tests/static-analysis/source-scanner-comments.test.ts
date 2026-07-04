@@ -10,9 +10,16 @@ import {
 
 describe("source scanner comment primitives", () => {
   it("finds line-comment content ends without consuming terminators", () => {
-    expect(lineCommentContentEnd("// value\nnext", 2, 13)).toBe(8);
-    expect(lineCommentContentEnd("// value\r\nnext", 2, 14)).toBe(8);
-    expect(lineCommentContentEnd("// value", 2, 8)).toBe(8);
+    for (const [sourceText, expectedEnd] of [
+      ["// value\nnext", 8],
+      ["// value\r\nnext", 8],
+      ["// value\rnext", 8],
+      ["// value\u2028next", 8],
+      ["// value\u2029next", 8],
+      ["// value", 8],
+    ] as const) {
+      expect(lineCommentContentEnd(sourceText, 2, sourceText.length)).toBe(expectedEnd);
+    }
   });
 
   it("finds line-comment ends while consuming terminators", () => {
@@ -24,9 +31,15 @@ describe("source scanner comment primitives", () => {
   });
 
   it("finds block-comment ends inside bounded scan ranges", () => {
-    expect(blockCommentEnd("/* value */next", 2, 14)).toBe(11);
-    expect(blockCommentEnd("/* value", 2, 8)).toBe(8);
-    expect(blockCommentEnd("/* value */next", 2, 8)).toBe(8);
+    for (const [sourceText, scanEnd, expectedEnd] of [
+      ["/* value */next", 14, 11],
+      ["/* value", 8, 8],
+      ["/* value */next", 8, 8],
+      ["/* * / */next", 13, 9],
+      ["/* value **/next", 15, 12],
+    ] as const) {
+      expect(blockCommentEnd(sourceText, 2, scanEnd)).toBe(expectedEnd);
+    }
   });
 
   it("dispatches comment starts to their bounded comment ends", () => {
