@@ -282,6 +282,28 @@ This completes the planned consolidation: parser-backed rules and the binding
 collector now import the shared seam, protected snapshots were never changed,
 and the public package entry points remained unchanged.
 
+## Addenda
+
+- [ ] 3.2.5.1. Fix deterministic-time alias detection inside call and `new`
+  arguments.
+  - Source: audit:3.2.5; severity medium.
+  - Scope: add the missing non-node argument-wrapper record traversal branch to
+    deterministic-time alias collection and cover call or `new` argument-scoped
+    immediately invoked function expression aliases for `Date.now` and
+    `Math.random`.
+  - Success: `odw/no-date-now` and `odw/no-math-random` warn for static aliases
+    declared inside argument-scoped immediately invoked function expressions,
+    and existing deterministic-time spans stay unchanged.
+- [ ] 3.2.5.2. Guard parser-backed rules against bypassing the SWC seam.
+  - Source: review:3.2.5; severity low.
+  - Scope: add a focused architecture, lint, or maintainer-documentation guard
+    that makes new parser-backed 3.2 rules consume
+    `src/static-analysis/swc-ast.ts` for SWC node-shape and child-traversal
+    helpers instead of cloning local shape helpers.
+  - Success: a future parser-backed rule cannot reintroduce private
+    `isAstNode` or semantic child-field helper logic without tripping the
+    reviewed guard or updating the documented exception.
+
 ## Context and orientation
 
 `odw-lint` is a Bun + TypeScript project. Relevant commands come from the
