@@ -3,8 +3,7 @@
  */
 
 import { cwd } from "node:process";
-import { fileURLToPath } from "node:url";
-import { type CliWriters, emitCliReport, resolveCliWriters } from "./cli-support";
+import { type CliWriters, emitCliReport, resolveCliWriters, runCliEntrypoint } from "./cli-support";
 import {
   type CommandResult,
   type CommandRunner,
@@ -21,6 +20,7 @@ import {
   deriveHarnessPathAvailability,
   type PathAvailabilityFacts,
   parseAvailabilityValue,
+  reviewerAvailabilityFlags,
   setPathAvailability,
 } from "./review-evidence-availability";
 import { maybeRecordReviewEvidence } from "./review-evidence-recording";
@@ -43,10 +43,6 @@ type ParsedCliOption<T> =
 
 type ParsedCliOptions = ParsedCliOption<CliOptions>;
 
-type AvailabilityFlag = {
-  readonly prefix: string;
-  readonly path: keyof PathAvailabilityFacts;
-};
 export type RunReviewEvidenceCliOptions = {
   readonly createRunner?: (command: string, options?: CommandRunnerOptions) => CommandRunner;
   readonly gateCommands?: readonly GateCommand[];
@@ -68,11 +64,6 @@ const defaultGateCommands: readonly GateCommand[] = [
 const defaultGateTimeoutMs = 5 * 60 * 1000;
 const defaultGateMaxBufferBytes = 64 * 1024 * 1024;
 
-const availabilityFlags = [
-  { prefix: "--scrutineer=", path: "scrutineer" },
-  { prefix: "--coderabbit=", path: "coderabbit" },
-  { prefix: "--local-self-run=", path: "local-self-run" },
-] as const satisfies readonly AvailabilityFlag[];
 /**
  * Run the review-evidence CLI and return its process exit code.
  *
@@ -269,7 +260,7 @@ const parseCliArg = (arg: string, options: CliOptions): ParsedCliOptions => {
 
 /** Parse reviewer availability flags into the accumulated options. */
 const parseAvailabilityFlag = (arg: string, options: CliOptions): ParsedCliOptions | undefined => {
-  for (const flag of availabilityFlags) {
+  for (const flag of reviewerAvailabilityFlags) {
     const value = parseFlagValue(arg, flag.prefix);
     if (value === undefined) {
       continue;
@@ -348,6 +339,8 @@ const assertNever = (value: never): never => {
   throw new Error(`unhandled review evidence result: ${JSON.stringify(value)}`);
 };
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  process.exitCode = runReviewEvidenceCli(process.argv.slice(2));
-}
+runCliEntrypoint({
+  mode: "exitCode",
+  moduleUrl: import.meta.url,
+  run: () => runReviewEvidenceCli(process.argv.slice(2)),
+});

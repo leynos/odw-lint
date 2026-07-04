@@ -364,7 +364,7 @@ depending on manual post-commit audits.
     - Addendum (from review:1.5.10; low). Reject truncated or structurally
       incomplete recorded review-evidence reports instead of accepting a
       surviving status header alone. Lightweight addendum pass.
-- [ ] 1.5.11. Consolidate build-gate CLI run-and-exit orchestration.
+- [x] 1.5.11. Consolidate build-gate CLI run-and-exit orchestration.
   - Extract a shared run-and-exit helper for build-gate CLIs and move reviewer
     availability parsing to a table-driven shape while preserving each gate's
     report and exit-code policy.

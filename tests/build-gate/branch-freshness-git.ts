@@ -2,8 +2,7 @@
  * @file Git-backed roadmap branch-freshness review guard.
  */
 
-import { cwd, exit } from "node:process";
-import { fileURLToPath } from "node:url";
+import { cwd } from "node:process";
 import {
   type BranchFreshnessResult,
   classifyBranchFreshness,
@@ -14,7 +13,7 @@ import {
 } from "./branch-freshness";
 import { parseNameStatusZ, parseRoadmapDiffHunks } from "./branch-freshness-git-parsing";
 import { formatBranchFreshnessResult } from "./branch-freshness-report";
-import { type CliWriters, emitCliReport, resolveCliWriters } from "./cli-support";
+import { type CliWriters, emitCliReport, resolveCliWriters, runCliEntrypoint } from "./cli-support";
 import { createGitRunner, type GitCommandResult, type GitRunner, runGit } from "./git-support";
 
 /** Process exit status used by the command-line guard. */
@@ -364,6 +363,7 @@ const usageErrorResult = (description: string, result: GitCommandResult): Branch
   };
 };
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  exit(runBranchFreshnessCli(process.argv.slice(2)));
-}
+runCliEntrypoint({
+  moduleUrl: import.meta.url,
+  run: () => runBranchFreshnessCli(process.argv.slice(2)),
+});

@@ -14,6 +14,16 @@ export type ParsedPathAvailabilityFacts =
   | { readonly ok: true; readonly value: PathAvailabilityFacts }
   | { readonly ok: false; readonly usageError: string };
 
+export type ReviewPathDescriptor = {
+  readonly flagPrefix: string;
+  readonly envVar: string;
+};
+
+export type ReviewerAvailabilityFlag = {
+  readonly prefix: string;
+  readonly path: ReviewPath;
+};
+
 const reviewerAvailabilityValueCoverage = {
   available: "available",
   "quota-blocked": "quota-blocked",
@@ -29,11 +39,27 @@ export const pessimisticPathAvailability = {
   "local-self-run": "available",
 } as const satisfies PathAvailabilityFacts;
 
-const harnessAvailabilityEnvByPath = {
-  scrutineer: "ODW_LINT_REVIEW_SCRUTINEER",
-  coderabbit: "ODW_LINT_REVIEW_CODERABBIT",
-  "local-self-run": "ODW_LINT_REVIEW_LOCAL_SELF_RUN",
-} as const satisfies Readonly<Record<ReviewPath, string>>;
+export const reviewPathDescriptors = {
+  scrutineer: {
+    flagPrefix: "--scrutineer=",
+    envVar: "ODW_LINT_REVIEW_SCRUTINEER",
+  },
+  coderabbit: {
+    flagPrefix: "--coderabbit=",
+    envVar: "ODW_LINT_REVIEW_CODERABBIT",
+  },
+  "local-self-run": {
+    flagPrefix: "--local-self-run=",
+    envVar: "ODW_LINT_REVIEW_LOCAL_SELF_RUN",
+  },
+} as const satisfies Readonly<Record<ReviewPath, ReviewPathDescriptor>>;
+
+const orderedReviewPaths = Object.keys(reviewPathDescriptors) as readonly ReviewPath[];
+
+export const reviewerAvailabilityFlags = orderedReviewPaths.map((path) => ({
+  prefix: reviewPathDescriptors[path].flagPrefix,
+  path,
+})) satisfies readonly ReviewerAvailabilityFlag[];
 
 /** Narrow a raw string after checking it against the exhaustive value list. */
 const isReviewPathAvailability = (value: string): value is ReviewPathAvailability =>
@@ -63,8 +89,8 @@ export function parseAvailabilityValue(name: ReviewPath, value: string): ParsedA
 export function deriveHarnessPathAvailability(env: NodeJS.ProcessEnv): ParsedPathAvailabilityFacts {
   let pathAvailability: PathAvailabilityFacts = pessimisticPathAvailability;
 
-  for (const path of Object.keys(harnessAvailabilityEnvByPath) as readonly ReviewPath[]) {
-    const rawAvailability = env[harnessAvailabilityEnvByPath[path]];
+  for (const path of orderedReviewPaths) {
+    const rawAvailability = env[reviewPathDescriptors[path].envVar];
 
     if (rawAvailability === undefined) {
       continue;

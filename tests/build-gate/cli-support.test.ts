@@ -3,8 +3,9 @@
  */
 
 import { describe, expect, it } from "bun:test";
+import { fileURLToPath } from "node:url";
 import { withProcessStreamWriteHarness } from "./cli-stream-test-support";
-import { emitCliReport, resolveCliWriters } from "./cli-support";
+import { emitCliReport, resolveCliWriters, runCliEntrypoint } from "./cli-support";
 
 describe("resolveCliWriters", () => {
   it("uses process streams when no writers are provided", () => {
@@ -83,5 +84,71 @@ describe("emitCliReport", () => {
     });
 
     expect(writes).toEqual(["err:failed\n"]);
+  });
+});
+
+describe("runCliEntrypoint", () => {
+  const moduleUrl = import.meta.url;
+  const modulePath = fileURLToPath(moduleUrl);
+
+  it("hard-exits with the runner exit code when the module path matches", () => {
+    const calls: string[] = [];
+
+    runCliEntrypoint({
+      host: {
+        invokedPath: modulePath,
+        exit: (code) => calls.push(`exit:${code}`),
+        setExitCode: (code) => calls.push(`exitCode:${code}`),
+      },
+      moduleUrl,
+      run: () => {
+        calls.push("run");
+        return 7;
+      },
+    });
+
+    expect(calls).toEqual(["run", "exit:7"]);
+  });
+
+  it("sets the process exit code in exitCode mode when the module path matches", () => {
+    const calls: string[] = [];
+
+    runCliEntrypoint({
+      host: {
+        invokedPath: modulePath,
+        exit: (code) => calls.push(`exit:${code}`),
+        setExitCode: (code) => calls.push(`exitCode:${code}`),
+      },
+      mode: "exitCode",
+      moduleUrl,
+      run: () => {
+        calls.push("run");
+        return 3;
+      },
+    });
+
+    expect(calls).toEqual(["run", "exitCode:3"]);
+  });
+
+  it.each([
+    ["a different module path", "/tmp/other-cli.ts"],
+    ["no invoked path", undefined],
+  ] as const)("does not run the CLI for %s", (_description, invokedPath) => {
+    const calls: string[] = [];
+
+    runCliEntrypoint({
+      host: {
+        invokedPath,
+        exit: (code) => calls.push(`exit:${code}`),
+        setExitCode: (code) => calls.push(`exitCode:${code}`),
+      },
+      moduleUrl,
+      run: () => {
+        calls.push("run");
+        return 1;
+      },
+    });
+
+    expect(calls).toEqual([]);
   });
 });

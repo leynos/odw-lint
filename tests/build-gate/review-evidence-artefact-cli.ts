@@ -4,9 +4,8 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { cwd, exit } from "node:process";
-import { fileURLToPath } from "node:url";
-import { type CliWriters, emitCliReport, resolveCliWriters } from "./cli-support";
+import { cwd } from "node:process";
+import { type CliWriters, emitCliReport, resolveCliWriters, runCliEntrypoint } from "./cli-support";
 import {
   classifyRecordedEvidence,
   type RecordedEvidenceResult,
@@ -142,6 +141,7 @@ const parseFlagValue = (arg: string, prefix: string): string | undefined => {
   return arg.startsWith(prefix) ? arg.slice(prefix.length) : undefined;
 };
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  exit(runReviewEvidenceArtefactCli(process.argv.slice(2)));
-}
+runCliEntrypoint({
+  moduleUrl: import.meta.url,
+  run: () => runReviewEvidenceArtefactCli(process.argv.slice(2)),
+});

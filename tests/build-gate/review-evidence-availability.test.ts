@@ -10,11 +10,18 @@ import {
   type PathAvailabilityFacts,
   parseAvailabilityValue,
   pessimisticPathAvailability,
+  reviewerAvailabilityFlags,
   reviewerAvailabilityValues,
+  reviewPathDescriptors,
   setPathAvailability,
 } from "./review-evidence-availability";
 
 const reviewPaths = Object.keys(pessimisticPathAvailability) as readonly ReviewPath[];
+
+type ReviewPathDescriptor = {
+  readonly flagPrefix: string;
+  readonly envVar: string;
+};
 
 describe("availability contract types", () => {
   it("keeps availability values and path facts exhaustive", () => {
@@ -28,6 +35,37 @@ describe("availability contract types", () => {
       Exclude<keyof typeof pessimisticPathAvailability, ReviewPath>
     >().toEqualTypeOf<never>();
     expectTypeOf<typeof pessimisticPathAvailability>().toMatchTypeOf<PathAvailabilityFacts>();
+    expectTypeOf<typeof reviewPathDescriptors>().toMatchTypeOf<
+      Readonly<Record<ReviewPath, ReviewPathDescriptor>>
+    >();
+  });
+});
+
+describe("reviewPathDescriptors", () => {
+  const expectedDescriptors = [
+    ["scrutineer", "--scrutineer=", "ODW_LINT_REVIEW_SCRUTINEER"],
+    ["coderabbit", "--coderabbit=", "ODW_LINT_REVIEW_CODERABBIT"],
+    ["local-self-run", "--local-self-run=", "ODW_LINT_REVIEW_LOCAL_SELF_RUN"],
+  ] as const satisfies readonly (readonly [ReviewPath, string, string])[];
+
+  it("pins reviewer availability flags and harness environment names", () => {
+    for (const [path, flagPrefix, envVar] of expectedDescriptors) {
+      expect(reviewPathDescriptors[path].flagPrefix).toBe(flagPrefix);
+      expect(reviewPathDescriptors[path].envVar).toBe(envVar);
+    }
+  });
+
+  it("keeps the reviewer path order aligned across derived views", () => {
+    const expectedPaths = expectedDescriptors.map(([path]) => path);
+
+    expect(Object.keys(reviewPathDescriptors)).toEqual(expectedPaths);
+    expect(reviewerAvailabilityFlags.map(({ path }) => path)).toEqual(expectedPaths);
+  });
+
+  it("derives CLI flag prefixes from the descriptor table", () => {
+    for (const flag of reviewerAvailabilityFlags) {
+      expect(flag.prefix).toBe(reviewPathDescriptors[flag.path].flagPrefix);
+    }
   });
 });
 

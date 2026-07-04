@@ -4,9 +4,8 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { cwd, exit } from "node:process";
-import { fileURLToPath } from "node:url";
-import { type CliWriters, emitCliReport, resolveCliWriters } from "./cli-support";
+import { cwd } from "node:process";
+import { type CliWriters, emitCliReport, resolveCliWriters, runCliEntrypoint } from "./cli-support";
 import { lsTrackedFiles } from "./git-support";
 import {
   findTrailingWhitespaceViolations,
@@ -93,6 +92,7 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  exit(runWhitespaceHygieneCli());
-}
+runCliEntrypoint({
+  moduleUrl: import.meta.url,
+  run: () => runWhitespaceHygieneCli(),
+});

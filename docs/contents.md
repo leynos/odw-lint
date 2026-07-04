@@ -146,6 +146,8 @@ entry; that index enumerates every current rule page.
   build-gate CLI writer and report-dispatch support.
 - [Roadmap 1.5.10 ExecPlan](execplans/roadmap-1-5-10.md) plans recorded
   review-evidence artefact checks.
+- [Roadmap 1.5.11 ExecPlan](execplans/roadmap-1-5-11.md) plans consolidated
+  build-gate CLI run-and-exit orchestration.
 - [Roadmap 2.1.1 ExecPlan](execplans/roadmap-2-1-1.md) plans source masking
   for inert workflow syntax.
 - [Roadmap 2.1.2 ExecPlan](execplans/roadmap-2-1-2.md) plans static envelope
