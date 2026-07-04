@@ -762,7 +762,7 @@ Reused, unchanged: `cli-support.ts` (`resolveCliWriters`, `emitCliReport`,
 
 ## Addenda
 
-- [ ] 1.5.10.1. Add recorded-evidence report integrity checks.
+- [x] 1.5.10.1. Add recorded-evidence report integrity checks.
   - Source: review:1.5.10.
   - Severity: low.
   - Scope: extend the recorded-evidence artefact classifier with lightweight

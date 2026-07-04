@@ -360,7 +360,7 @@ depending on manual post-commit audits.
   - Requires 1.5.7 and 1.5.8.
   - Success: a completed roadmap review or audit cannot claim review-evidence
     compliance unless the recorded report is available to the audit harness.
-  - [ ] 1.5.10.1. Add recorded-evidence report integrity checks.
+  - [x] 1.5.10.1. Add recorded-evidence report integrity checks.
     - Addendum (from review:1.5.10; low). Reject truncated or structurally
       incomplete recorded review-evidence reports instead of accepting a
       surviving status header alone. Lightweight addendum pass.

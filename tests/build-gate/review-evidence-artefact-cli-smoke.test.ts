@@ -9,6 +9,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
+const completeVerifiedReport =
+  "Review evidence: verified\n- gate make all: passed\n- dual-review path: scrutineer (primary; scrutineer available)\n";
 
 /** Run the artefact CLI entrypoint as a real Bun child process. */
 const runCliProcess = (cwd: string) => {
@@ -62,7 +64,7 @@ describe("review-evidence artefact CLI process smoke", () => {
 
     try {
       mkdirSync(dirname(artefactPath), { recursive: true });
-      writeFileSync(artefactPath, "Review evidence: verified\n- gate make all: passed\n");
+      writeFileSync(artefactPath, completeVerifiedReport);
 
       const result = runCliProcess(tempDir);
 

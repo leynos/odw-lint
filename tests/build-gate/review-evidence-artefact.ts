@@ -15,6 +15,12 @@ export type RecordedEvidenceResult =
 export const DEFAULT_EVIDENCE_ARTEFACT_PATH = ".review-evidence/report.txt";
 
 const terminalStatuses = new Set<RecordedStatus>(["verified", "failed", "degraded"]);
+const REQUIRED_COMMON_REPORT_LINES = ["- gate ", "- dual-review path: "] as const;
+const REQUIRED_STATUS_REPORT_LINES = {
+  verified: [],
+  failed: ["- failed gate: "],
+  degraded: ["- degraded reason: "],
+} satisfies Readonly<Record<RecordedStatus, readonly string[]>>;
 
 /**
  * Read the terminal status from a formatted review-evidence report.
@@ -70,8 +76,29 @@ export function classifyRecordedEvidence(input: {
     };
   }
 
+  if (!hasCompletedReportStructure(input.content, status)) {
+    return {
+      outcome: "invalid",
+      path: input.path,
+      reason: "recorded evidence is not a completed review report",
+    };
+  }
+
   return { outcome: "present", path: input.path, status };
 }
+
+/** Check for the report body lines that prove recording reached completion. */
+const hasCompletedReportStructure = (content: string, status: RecordedStatus): boolean => {
+  const lines = content.split(/\r?\n/);
+  const requiredPrefixes = [
+    ...REQUIRED_COMMON_REPORT_LINES,
+    ...REQUIRED_STATUS_REPORT_LINES[status],
+  ];
+
+  return requiredPrefixes.every((requiredPrefix) =>
+    lines.some((line) => line.startsWith(requiredPrefix)),
+  );
+};
 
 /**
  * Resolve the review-evidence artefact path from flag, environment, or default.

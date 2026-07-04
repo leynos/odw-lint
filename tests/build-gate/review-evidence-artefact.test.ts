@@ -11,6 +11,15 @@ import {
   resolveEvidenceArtefactPath,
 } from "./review-evidence-artefact";
 
+const completeReports = {
+  verified:
+    "Review evidence: verified\n- gate make all: passed\n- dual-review path: scrutineer (primary; scrutineer available)\n",
+  failed:
+    "Review evidence: failed\n- gate make all: failed (exit 1; failed)\n- dual-review path: scrutineer (primary; scrutineer available)\n- failed gate: make all\n",
+  degraded:
+    "Review evidence: degraded\n- gate make all: passed\n- dual-review path: local-self-run (degraded fallback; reviewers unavailable)\n- degraded reason: local self-run selected\n",
+} satisfies Readonly<Record<RecordedStatus, string>>;
+
 describe("parseRecordedStatus", () => {
   it.each([
     "verified",
@@ -38,7 +47,7 @@ describe("classifyRecordedEvidence", () => {
     expect(
       classifyRecordedEvidence({
         path: "evidence.txt",
-        content: `Review evidence: ${status}\n- detail: recorded\n`,
+        content: completeReports[status],
       }),
     ).toEqual({ outcome: "present", path: "evidence.txt", status });
   });
@@ -75,6 +84,25 @@ describe("classifyRecordedEvidence", () => {
     ).toEqual({
       outcome: "invalid",
       path: "usage-error.txt",
+      reason: "recorded evidence is not a completed review report",
+    });
+  });
+
+  it.each([
+    ["header only", "Review evidence: verified\n"],
+    ["missing review path", "Review evidence: verified\n- gate make all: passed\n"],
+    [
+      "failed report missing failed gate",
+      "Review evidence: failed\n- gate make all: failed (exit 1; failed)\n- dual-review path: scrutineer (primary; scrutineer available)\n",
+    ],
+    [
+      "degraded report missing degraded reason",
+      "Review evidence: degraded\n- gate make all: passed\n- dual-review path: local-self-run (degraded fallback; reviewers unavailable)\n",
+    ],
+  ])("rejects a structurally incomplete report: %s", (_name, content) => {
+    expect(classifyRecordedEvidence({ path: "partial.txt", content })).toEqual({
+      outcome: "invalid",
+      path: "partial.txt",
       reason: "recorded evidence is not a completed review report",
     });
   });

@@ -6,6 +6,13 @@ import { describe, expect, it } from "bun:test";
 import { createCapturedCliOutput } from "./git-support";
 import { runReviewEvidenceArtefactCli } from "./review-evidence-artefact-cli";
 
+const completeVerifiedReport =
+  "Review evidence: verified\n- gate make all: passed\n- dual-review path: scrutineer (primary; scrutineer available)\n";
+const completeFailedReport =
+  "Review evidence: failed\n- gate make all: failed (exit 1; failed)\n- dual-review path: scrutineer (primary; scrutineer available)\n- failed gate: make all\n";
+const completeDegradedReport =
+  "Review evidence: degraded\n- gate make all: passed\n- dual-review path: local-self-run (degraded fallback; reviewers unavailable)\n- degraded reason: local self-run selected\n";
+
 /** Run the artefact CLI with captured writers and an injected file reader. */
 const runCli = (
   options: {
@@ -38,7 +45,7 @@ const runCli = (
 describe("runReviewEvidenceArtefactCli", () => {
   it("returns present evidence on stdout with exit 0", () => {
     const result = runCli({
-      content: "Review evidence: verified\n- gate make all: passed\n",
+      content: completeVerifiedReport,
     });
 
     expect(result.exitCode).toBe(0);
@@ -85,13 +92,13 @@ describe("runReviewEvidenceArtefactCli", () => {
       runCli({
         args: ["--evidence-path=flag-report.txt"],
         env: { ODW_LINT_REVIEW_EVIDENCE_PATH: "env-report.txt" },
-        content: "Review evidence: failed\n",
+        content: completeFailedReport,
       }).readPaths,
     ).toEqual(["/repo/flag-report.txt"]);
     expect(
       runCli({
         env: { ODW_LINT_REVIEW_EVIDENCE_PATH: "env-report.txt" },
-        content: "Review evidence: degraded\n",
+        content: completeDegradedReport,
       }).readPaths,
     ).toEqual(["/repo/env-report.txt"]);
   });
