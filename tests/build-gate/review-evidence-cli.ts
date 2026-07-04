@@ -34,7 +34,11 @@ type CliOptions = {
   readonly pathAvailability: PathAvailabilityFacts;
 };
 
-type ParsedCliOptions = CliOptions | { readonly usageError: string };
+type ParsedCliOption<T> =
+  | { readonly ok: true; readonly value: T }
+  | { readonly ok: false; readonly usageError: string };
+
+type ParsedCliOptions = ParsedCliOption<CliOptions>;
 
 type AvailabilityFlag = {
   readonly prefix: string;
@@ -78,13 +82,12 @@ export function runReviewEvidenceCli(
 ): ReviewEvidenceExitCode {
   const env = options.env ?? process.env;
   const parsedOptions = parseCliArgs(args, env, options.timeoutMs ?? defaultGateTimeoutMs);
-  const result =
-    "usageError" in parsedOptions
-      ? ({
-          status: "usage-error",
-          message: parsedOptions.usageError,
-        } satisfies ReviewEvidenceResult)
-      : collectReviewEvidence(parsedOptions, options);
+  const result = !parsedOptions.ok
+    ? ({
+        status: "usage-error",
+        message: parsedOptions.usageError,
+      } satisfies ReviewEvidenceResult)
+    : collectReviewEvidence(parsedOptions.value, options);
   const report = formatReviewEvidenceResult(result);
   const writers = resolveCliWriters({
     writeOut: options.writeOut,
@@ -197,44 +200,44 @@ const parseCliArgs = (
     environmentGateTimeoutMs,
     defaultTimeoutMs,
   );
-  if (typeof parsedEnvironmentTimeout === "string") {
-    return { usageError: parsedEnvironmentTimeout };
+  if (!parsedEnvironmentTimeout.ok) {
+    return parsedEnvironmentTimeout;
   }
   const parsedPathAvailability = deriveHarnessPathAvailability(env);
-  if (typeof parsedPathAvailability === "string") {
-    return { usageError: parsedPathAvailability };
+  if (!parsedPathAvailability.ok) {
+    return parsedPathAvailability;
   }
 
   let options: CliOptions = {
     executionEnabled: reviewExecutionMode !== "0",
     gateTimeoutMs: parsedEnvironmentTimeout.value,
-    pathAvailability: parsedPathAvailability,
+    pathAvailability: parsedPathAvailability.value,
   };
 
   for (const arg of args) {
     const parsedArg = parseCliArg(arg, options);
-    if (typeof parsedArg === "string") {
-      return { usageError: parsedArg };
+    if (!parsedArg.ok) {
+      return parsedArg;
     }
-    options = parsedArg;
+    options = parsedArg.value;
   }
 
-  return options;
+  return { ok: true, value: options };
 };
 
 /** Parse one CLI flag into the accumulated options. */
-const parseCliArg = (arg: string, options: CliOptions): CliOptions | string => {
+const parseCliArg = (arg: string, options: CliOptions): ParsedCliOptions => {
   if (arg === "--no-exec") {
-    return { ...options, executionEnabled: false };
+    return { ok: true, value: { ...options, executionEnabled: false } };
   }
 
   const gateTimeoutMsValue = parseFlagValue(arg, "--gate-timeout-ms=");
   if (gateTimeoutMsValue !== undefined) {
     const parsedTimeout = parseGateTimeoutMs(gateTimeoutMsValue, "--gate-timeout-ms");
-    if (typeof parsedTimeout === "string") {
+    if (!parsedTimeout.ok) {
       return parsedTimeout;
     }
-    return { ...options, gateTimeoutMs: parsedTimeout.value };
+    return { ok: true, value: { ...options, gateTimeoutMs: parsedTimeout.value } };
   }
 
   const availabilityOptions = parseAvailabilityFlag(arg, options);
@@ -242,14 +245,11 @@ const parseCliArg = (arg: string, options: CliOptions): CliOptions | string => {
     return availabilityOptions;
   }
 
-  return `unknown option: ${arg}`;
+  return { ok: false, usageError: `unknown option: ${arg}` };
 };
 
 /** Parse reviewer availability flags into the accumulated options. */
-const parseAvailabilityFlag = (
-  arg: string,
-  options: CliOptions,
-): CliOptions | string | undefined => {
+const parseAvailabilityFlag = (arg: string, options: CliOptions): ParsedCliOptions | undefined => {
   for (const flag of availabilityFlags) {
     const value = parseFlagValue(arg, flag.prefix);
     if (value === undefined) {
@@ -258,12 +258,15 @@ const parseAvailabilityFlag = (
 
     const parsed = parseAvailabilityValue(flag.path, value);
     if (!parsed.ok) {
-      return parsed.usageError;
+      return parsed;
     }
 
     return {
-      ...options,
-      pathAvailability: setPathAvailability(options.pathAvailability, flag.path, parsed.value),
+      ok: true,
+      value: {
+        ...options,
+        pathAvailability: setPathAvailability(options.pathAvailability, flag.path, parsed.value),
+      },
     };
   }
 
@@ -273,9 +276,9 @@ const parseAvailabilityFlag = (
 const parseEnvironmentGateTimeoutMs = (
   value: string | undefined,
   defaultTimeoutMs: number,
-): { readonly value: number } | string => {
+): ParsedCliOption<number> => {
   if (value === undefined) {
-    return { value: defaultTimeoutMs };
+    return { ok: true, value: defaultTimeoutMs };
   }
 
   return parseGateTimeoutMs(value, "environment");
@@ -284,14 +287,14 @@ const parseEnvironmentGateTimeoutMs = (
 const parseGateTimeoutMs = (
   value: string,
   source: "--gate-timeout-ms" | "environment",
-): { readonly value: number } | string => {
+): ParsedCliOption<number> => {
   const timeoutMs = Number(value);
 
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
-    return `invalid gate timeout from ${source}: ${value}`;
+    return { ok: false, usageError: `invalid gate timeout from ${source}: ${value}` };
   }
 
-  return { value: timeoutMs };
+  return { ok: true, value: timeoutMs };
 };
 
 /** Parse `--name=value` flags without accepting bare values. */

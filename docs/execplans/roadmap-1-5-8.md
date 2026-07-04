@@ -826,7 +826,7 @@ dev-dependencies used by the existing property test.
 
 ## Addenda
 
-- [ ] 1.5.8.1. Add real review-evidence CLI smoke coverage.
+- [x] 1.5.8.1. Add real review-evidence CLI smoke coverage.
   - Source: review:1.5.8; severity low.
   - Scope: spawn `bun run tests/build-gate/review-evidence-cli.ts` for the
     documented bare degraded exit 3,
@@ -835,14 +835,14 @@ dev-dependencies used by the existing property test.
   - Success: the smoke test proves process-level environment wiring and exit
     codes match the documented CLI behaviour instead of only exercising
     injected-env unit helpers.
-- [ ] 1.5.8.2. Standardize review-evidence parse result signalling.
+- [x] 1.5.8.2. Standardize review-evidence parse result signalling.
   - Source: audit:1.5.8; severity low.
   - Scope: replace mixed tagged and string-failure parse conventions in
     review-evidence CLI option parsing with one tagged result type.
   - Success: availability and timeout parsing return one discriminated result
     shape, and callers no longer branch on `typeof value === "string"` for
     usage errors.
-- [ ] 1.5.8.3. Harden reviewer-availability unit coverage.
+- [x] 1.5.8.3. Harden reviewer-availability unit coverage.
   - Source: audit:1.5.8; severity low.
   - Scope: expand `deriveHarnessPathAvailability` and `setPathAvailability`
     tests for positive mappings, environment precedence, invalid values, and

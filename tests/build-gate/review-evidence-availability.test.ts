@@ -71,22 +71,105 @@ describe("setPathAvailability", () => {
       }
     }
   });
+
+  it("returns a new fact set without mutating the original facts", () => {
+    const original = {
+      ...pessimisticPathAvailability,
+      coderabbit: "available",
+    } satisfies PathAvailabilityFacts;
+
+    const updated = setPathAvailability(original, "coderabbit", "no-output");
+
+    expect(updated).not.toBe(original);
+    expect(original).toEqual({
+      ...pessimisticPathAvailability,
+      coderabbit: "available",
+    });
+    expect(updated).toEqual({
+      ...pessimisticPathAvailability,
+      coderabbit: "no-output",
+    });
+  });
 });
 
 describe("deriveHarnessPathAvailability", () => {
+  const mappingCases = [
+    [
+      "scrutineer",
+      { ODW_LINT_REVIEW_SCRUTINEER: "available" },
+      { ...pessimisticPathAvailability, scrutineer: "available" },
+    ],
+    [
+      "coderabbit",
+      { ODW_LINT_REVIEW_CODERABBIT: "no-output" },
+      { ...pessimisticPathAvailability, coderabbit: "no-output" },
+    ],
+    [
+      "local-self-run",
+      { ODW_LINT_REVIEW_LOCAL_SELF_RUN: "unavailable" },
+      { ...pessimisticPathAvailability, "local-self-run": "unavailable" },
+    ],
+  ] as const satisfies readonly (readonly [ReviewPath, NodeJS.ProcessEnv, PathAvailabilityFacts])[];
+
+  it.each(
+    mappingCases,
+  )("maps %s harness environment state to path availability", (_path, env, expected) => {
+    expect(deriveHarnessPathAvailability(env)).toEqual({ ok: true, value: expected });
+  });
+
+  it("lets harness environment values override every pessimistic default", () => {
+    expect(
+      deriveHarnessPathAvailability({
+        ODW_LINT_REVIEW_SCRUTINEER: "available",
+        ODW_LINT_REVIEW_CODERABBIT: "quota-blocked",
+        ODW_LINT_REVIEW_LOCAL_SELF_RUN: "unavailable",
+      }),
+    ).toEqual({
+      ok: true,
+      value: {
+        scrutineer: "available",
+        coderabbit: "quota-blocked",
+        "local-self-run": "unavailable",
+      },
+    });
+  });
+
+  const invalidEnvironmentCases = [
+    ["scrutineer", { ODW_LINT_REVIEW_SCRUTINEER: "busy" }, "invalid scrutineer availability: busy"],
+    [
+      "coderabbit",
+      { ODW_LINT_REVIEW_CODERABBIT: "later" },
+      "invalid coderabbit availability: later",
+    ],
+    [
+      "local-self-run",
+      { ODW_LINT_REVIEW_LOCAL_SELF_RUN: "missing" },
+      "invalid local-self-run availability: missing",
+    ],
+  ] as const satisfies readonly (readonly [ReviewPath, NodeJS.ProcessEnv, string])[];
+
+  it.each(
+    invalidEnvironmentCases,
+  )("rejects invalid %s harness availability", (_path, env, usageError) => {
+    expect(deriveHarnessPathAvailability(env)).toEqual({ ok: false, usageError });
+  });
+
   it("never selects a scrutineer primary unless the harness says scrutineer is available", () => {
     fc.assert(
       fc.property(harnessAvailabilityEnv(), (env) => {
         const derived = deriveHarnessPathAvailability(env);
 
-        expect(typeof derived).not.toBe("string");
-        if (typeof derived === "string") {
+        expect(derived.ok).toBe(true);
+        if (!derived.ok) {
           return;
         }
 
-        const selection = selectReviewPath(derived);
+        const selection = selectReviewPath(derived.value);
+        const harnessEnv = env as NodeJS.ProcessEnv & {
+          readonly ODW_LINT_REVIEW_SCRUTINEER?: string;
+        };
 
-        if (env["ODW_LINT_REVIEW_SCRUTINEER"] !== "available") {
+        if (harnessEnv.ODW_LINT_REVIEW_SCRUTINEER !== "available") {
           expect(selection).not.toMatchObject({
             selected: "scrutineer",
             isFallback: false,

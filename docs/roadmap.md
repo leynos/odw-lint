@@ -321,15 +321,15 @@ depending on manual post-commit audits.
   - Success: an unparameterized automated review cannot claim a scrutineer
     review when the harness knows only coderabbit or local-self-run evidence is
     available.
-  - [ ] 1.5.8.1. Add real review-evidence CLI smoke coverage.
+  - [x] 1.5.8.1. Add real review-evidence CLI smoke coverage.
     - Addendum (from review:1.5.8; low). Spawn the review-evidence CLI through
       the real Bun command path for the documented degraded, verified, and
       usage-error invocations. Lightweight addendum pass.
-  - [ ] 1.5.8.2. Standardize review-evidence parse result signalling.
+  - [x] 1.5.8.2. Standardize review-evidence parse result signalling.
     - Addendum (from audit:1.5.8; low). Replace mixed string failure
       conventions in review-evidence option parsing with one tagged result
       shape. Lightweight addendum pass.
-  - [ ] 1.5.8.3. Harden reviewer-availability unit coverage.
+  - [x] 1.5.8.3. Harden reviewer-availability unit coverage.
     - Addendum (from audit:1.5.8; low). Pin positive mappings, environment
       precedence, invalid-value handling, and immutable availability updates.
       Lightweight addendum pass.

@@ -10,6 +10,10 @@ export type ParsedAvailabilityValue =
   | { readonly ok: true; readonly value: ReviewPathAvailability }
   | { readonly ok: false; readonly usageError: string };
 
+export type ParsedPathAvailabilityFacts =
+  | { readonly ok: true; readonly value: PathAvailabilityFacts }
+  | { readonly ok: false; readonly usageError: string };
+
 const reviewerAvailabilityValueCoverage = {
   available: "available",
   "quota-blocked": "quota-blocked",
@@ -54,11 +58,9 @@ export function parseAvailabilityValue(name: ReviewPath, value: string): ParsedA
  * Derive reviewer availability from harness-provided environment state.
  *
  * @param env Process environment supplied by the harness or test.
- * @returns Complete availability facts or a usage-error string.
+ * @returns Parsed availability facts or a usage-error.
  */
-export function deriveHarnessPathAvailability(
-  env: NodeJS.ProcessEnv,
-): PathAvailabilityFacts | string {
+export function deriveHarnessPathAvailability(env: NodeJS.ProcessEnv): ParsedPathAvailabilityFacts {
   let pathAvailability: PathAvailabilityFacts = pessimisticPathAvailability;
 
   for (const path of Object.keys(harnessAvailabilityEnvByPath) as readonly ReviewPath[]) {
@@ -70,13 +72,13 @@ export function deriveHarnessPathAvailability(
 
     const parsed = parseAvailabilityValue(path, rawAvailability);
     if (!parsed.ok) {
-      return parsed.usageError;
+      return { ok: false, usageError: parsed.usageError };
     }
 
     pathAvailability = setPathAvailability(pathAvailability, path, parsed.value);
   }
 
-  return pathAvailability;
+  return { ok: true, value: pathAvailability };
 }
 
 /**
