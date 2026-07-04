@@ -5,6 +5,7 @@ dist/
 .bun-install/
 .bun-cache/
 .grepai/
+.claude/
 .review-evidence/
 tmp/
 .tmp/
