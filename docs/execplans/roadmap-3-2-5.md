@@ -303,6 +303,15 @@ and the public package entry points remained unchanged.
   - Success: a future parser-backed rule cannot reintroduce private
     `isAstNode` or semantic child-field helper logic without tripping the
     reviewed guard or updating the documented exception.
+- [ ] 3.2.5.3. Unify single-type SWC node narrowers.
+  - Source: audit:3.2.6; severity low.
+  - Scope: move duplicated single-type `isExpression`, `isMemberExpression`,
+    and `isIdentifier` narrowers from deterministic-time alias and
+    global-object resolver modules behind the `swc-ast.ts` seam where their
+    runtime and TypeScript narrowing contracts match.
+  - Success: parser-backed collectors consume one documented narrower contract
+    for matching SWC node types, and existing deterministic-time and
+    global-object resolver tests pass without output changes.
 
 ## Context and orientation
 

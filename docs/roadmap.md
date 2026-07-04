@@ -950,6 +950,11 @@ See [technical-design.md](technical-design.md) §9.3.
     - Addendum (from review:3.2.5; low). Add a focused architecture or
       documentation guard so new parser-backed 3.2 rules consume `swc-ast.ts`
       instead of cloning shape helpers. Lightweight addendum pass.
+  - [ ] 3.2.5.3. Unify single-type SWC node narrowers.
+    - Addendum (from audit:3.2.6; low). Move duplicated single-type
+      `isExpression`, `isMemberExpression`, and `isIdentifier` narrowers behind
+      the `swc-ast.ts` seam where their contracts match. Lightweight addendum
+      pass.
 - [x] 3.2.6. Complete SWC traversal-driver adoption for parser-backed
   collectors.
   - Requires 3.2.5, 3.1.5, and 3.2.5.1.
@@ -960,6 +965,16 @@ See [technical-design.md](technical-design.md) §9.3.
   - Success: every parser-backed collector either consumes the documented SWC
     traversal seam or has a tested rationale for a distinct traversal policy,
     with no deterministic-time or AST-fact output changes.
+  - [ ] 3.2.6.1. Harden the traversal-seam architecture guard.
+    - Addendum (from review:3.2.6; low). Pin `traverseAstSubtree` to
+      `swc-ast.ts` with a positive assertion and broaden the guard so
+      renamed, non-importing, or structurally cloned traversal drivers cannot
+      bypass the seam. Lightweight addendum pass.
+  - [ ] 3.2.6.2. Centralize shared AST binding collector helpers.
+    - Addendum (from audit:3.2.6; medium). Move duplicated body-extraction and
+      identifier helper logic from the binding and scope collectors into the
+      shared binding-pattern support where ownership fits. Lightweight addendum
+      pass.
 
 ### 3.3. Add configuration and warning policy
 

@@ -747,3 +747,24 @@ keeps `traverseAstSubtree` private to `swc-ast.ts`, adopts it in the two
 full-subtree deterministic-time collectors, aligns the scope and binding
 collectors on `astChildValues`, and records the distinct-policy exceptions in
 the technical design, developer guide, roadmap, and architecture guard.
+
+## Addenda
+
+- [ ] 3.2.6.1. Harden the traversal-seam architecture guard.
+  - Source: review:3.2.6; severity low.
+  - Scope: make the architecture guard self-contained by positively asserting
+    that `traverseAstSubtree` is declared in `src/static-analysis/swc-ast.ts`,
+    then broaden the guard so renamed, non-importing, or structurally cloned
+    generic traversal drivers cannot bypass the reviewed seam.
+  - Success: the guard fails when the shared traversal driver disappears from
+    the seam or when another parser-backed module reintroduces the same
+    generic SWC child-dispatch shape.
+- [ ] 3.2.6.2. Centralize shared AST binding collector helpers.
+  - Source: audit:3.2.6; severity medium.
+  - Scope: move duplicated body-extraction and identifier helper logic shared
+    by `workflow-ast-bindings.ts` and `workflow-ast-scopes.ts` into the shared
+    binding-pattern support where ownership fits, preserving each collector's
+    distinct recursion policy.
+  - Success: the binding and scope collectors consume one helper home for
+    shared body and identifier operations, and existing AST-fact and scope
+    tests pass without behaviour changes.
