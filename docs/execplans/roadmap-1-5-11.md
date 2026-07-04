@@ -754,6 +754,33 @@ At completion the following must exist:
 No new package dependency is added; the guard reuses the existing `typescript`
 dependency used by the support-helper tests.
 
+## Addenda
+
+- [ ] 1.5.11.1. Document the shared build-gate run-and-exit seam.
+  - Source: review:1.5.11 and audit:1.5.11; severity low.
+  - Scope: refresh the developers-guide `cli-support.ts` and
+    review-evidence artefact guidance for `runCliEntrypoint`, exit modes,
+    entrypoint ownership, and the `--evidence-path=` flag.
+  - Success: maintainer-facing documentation names `cli-support.ts` as the
+    owner of run-and-exit orchestration and documents the artefact-check flag
+    without describing a competing gate-local exit-code contract.
+- [ ] 1.5.11.2. Harden entrypoint-seam process detection.
+  - Source: review:1.5.11; severity low.
+  - Scope: extend the AST seam guard and directory discovery filter to catch
+    named `node:process` imports, aliased named imports, and aliased default
+    `process` imports that clone direct-execution orchestration.
+  - Success: support tests reject entrypoint clones written with
+    `import { argv, exit } from "node:process"` or an aliased `process`
+    default import, while legitimate `runCliEntrypoint` users still pass.
+- [ ] 1.5.11.3. Share entrypoint-seam AST test primitives.
+  - Source: audit:1.5.11; severity medium.
+  - Scope: extract shared import-inspection helpers for CLI seam tests and fix
+    call-expression recursion so nested calls are discovered instead of being
+    pruned by the first non-matching call expression.
+  - Success: `cli-entrypoint-test-support.ts` and
+    `cli-support-test-support.ts` use one import-inspection helper, and tests
+    cover nested `runCliEntrypoint` calls that previously escaped detection.
+
 ## Revision notes
 
 - 2026-07-04 09:59Z: Marked WI1 complete, recorded the documentation index
@@ -767,3 +794,6 @@ dependency used by the support-helper tests.
   detection requested by CodeRabbit. Remaining work starts at WI4.
 - 2026-07-04 14:01Z: Marked WI4 and the ExecPlan complete, checked off
   roadmap item 1.5.11, and recorded the CodeRabbit rate-limit retry.
+- 2026-07-04 12:31Z: Added post-completion addenda for the settled 1.5.11
+  review and audit remediation proposals. These entries record follow-up work
+  only; implementation remains for the lightweight addendum passes.
