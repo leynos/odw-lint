@@ -853,6 +853,25 @@ reported clearly in one command. The result informs strict-mode policy. See
   - Success: fixtures prove same-name bindings in unrelated scopes no longer
     hide supported Claude compatibility warnings, while local shadows remain
     suppressed.
+  - [ ] 3.1.5.1. Add block/for/catch-precise deterministic-time shadowing.
+    - Addendum (from review:3.1.5; low). Narrow block, `for`, and `catch`
+      shadow attribution for deterministic-time rules so sibling-block global
+      uses no longer disappear behind conservative function-scope suppression.
+      Lightweight addendum pass.
+  - [ ] 3.1.5.2. Add direct scope-view unit coverage.
+    - Addendum (from audit:3.1.5; low). Add focused `workflow-ast-scopes`
+      coverage for nested parameters, setter params, named class-expression
+      member scope, and documented block-to-function attribution. Lightweight
+      addendum pass.
+- [ ] 3.1.6. Extend deterministic-time alias resolution to lexical scopes.
+  - Requires 3.1.5.
+  - Make deterministic-time alias declaration and alias-use resolution use the
+    same lexical scope model as bare `Date`, `Math`, and `globalThis` roots for
+    aliases such as `const now = Date.now; now()` and
+    `const D = Date; D.now()`.
+  - Success: same-named aliases or global roots in unrelated scopes no longer
+    suppress supported Claude compatibility warnings, while aliases shadowed at
+    the use site remain suppressed and rule-doc limitations are updated.
 
 ### 3.2. Add first orchestration-risk rules
 

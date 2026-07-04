@@ -1206,3 +1206,21 @@ members now inherit the class expression's own binding view, so member-local
 `Date.now()`, `Math.random()`, and `globalThis.Date.now()` references stay
 suppressed when those recognised global names resolve to the class expression
 name rather than the JavaScript global.
+
+## Addenda
+
+- [ ] 3.1.5.1. Add block/for/catch-precise deterministic-time shadowing.
+  - Source: review:3.1.5; severity low.
+  - Scope: narrow block, `for`, and `catch` shadow attribution for
+    deterministic-time rules so sibling-block global uses no longer disappear
+    behind conservative function-scope suppression.
+  - Success: block-, `for`-, and `catch`-local shadows suppress only uses they
+    lexically enclose, while existing local-shadow and unrelated-scope fixtures
+    keep their current deterministic-time diagnostics.
+- [ ] 3.1.5.2. Add direct scope-view unit coverage.
+  - Source: audit:3.1.5; severity low.
+  - Scope: add focused `workflow-ast-scopes` coverage for nested parameters,
+    setter params, named class-expression member scope, and documented
+    block-to-function attribution.
+  - Success: the scope-view unit suite pins the internal `rootScopeView` and
+    `enterScope` behaviour needed before later collector-unification work.
