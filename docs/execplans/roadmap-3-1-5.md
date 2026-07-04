@@ -273,6 +273,14 @@ with the bounded local fallback used instead:
   `/data/leynos/Projects/odw-lint/node_modules/@swc/types/index.d.ts` (function
   and parameter shapes cited under "Interfaces and dependencies"). The worktree
   itself may need `make build` before `bun test`.
+- During the step 3.1 remediation-triage pass, `leta files src/static-analysis`
+  failed in the git-donkey worktree with `Error: No workspace found for
+  /data/leynos/Projects/odw-lint.worktrees/df12-triage-step-3-1-remediation-groom-20260704/src/static-analysis`;
+  `leta grep "workflow.*(scope|binding|deterministic|ast|alias)"
+  src/static-analysis --docs` failed with `Error: No workspace found for
+  current directory`. Fallback: GrepAI was available for the canonical
+  `main`-branch index, and every branch-local claim was verified by direct
+  file inspection inside this worktree.
 
 ## Context and orientation
 
