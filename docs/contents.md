@@ -87,12 +87,16 @@ entry; that index enumerates every current rule page.
   review-evidence artefact checks.
 - [Audit 1.5.11](issues/audit-1.5.11.md) records review findings for
   consolidated build-gate CLI orchestration.
+- [Audit 1.5.12](issues/audit-1.5.12.md) records review findings for recorded
+  review evidence tree-state binding.
 - [Audit 2.1.6](issues/audit-2.1.6.md) records review findings for the
   no-side-effect metadata execution guard.
 - [Audit 2.1.7](issues/audit-2.1.7.md) records review findings for
   rule-catalogue parity checks for fixture diagnostics.
 - [Audit 2.1.12](issues/audit-2.1.12.md) records review findings for the
   static workflow lint entry point.
+- [Audit 2.1.13](issues/audit-2.1.13.md) records review findings for the
+  shared scanner primitive layer.
 - [Audit 2.2.7](issues/audit-2.2.7.md) records review findings for
   workflow-body parser dialect scope.
 - [Audit 3.1.4](issues/audit-3.1.4.md) records review findings for
@@ -101,6 +105,8 @@ entry; that index enumerates every current rule page.
   scope-precise deterministic-time shadowing.
 - [Audit 3.2.5](issues/audit-3.2.5.md) records review findings for shared SWC
   AST guard and traversal helpers.
+- [Audit 3.2.6](issues/audit-3.2.6.md) records review findings for complete
+  SWC traversal-driver adoption.
 
 ## Execution plans
 
