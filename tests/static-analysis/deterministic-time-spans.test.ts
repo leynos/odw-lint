@@ -65,9 +65,29 @@ const RULE_SPAN_CASES = Object.freeze([
     spanText: "globalThis.Date.now",
   },
   {
+    rule: DATE_NOW_RULE,
+    statement: "const timestamp = Date?.now();",
+    spanText: "Date?.now",
+  },
+  {
+    rule: DATE_NOW_RULE,
+    statement: "const now = Date.now;\nconst timestamp = now();",
+    spanText: "now",
+  },
+  {
     rule: MATH_RANDOM_RULE,
     statement: "const sample = Math.random();",
     spanText: "Math.random",
+  },
+  {
+    rule: MATH_RANDOM_RULE,
+    statement: "const sample = Math?.random();",
+    spanText: "Math?.random",
+  },
+  {
+    rule: MATH_RANDOM_RULE,
+    statement: "const random = Math.random;\nconst sample = random();",
+    spanText: "random",
   },
   {
     rule: ARGLESS_NEW_DATE_RULE,
@@ -78,6 +98,11 @@ const RULE_SPAN_CASES = Object.freeze([
     rule: ARGLESS_NEW_DATE_RULE,
     statement: "const started = new globalThis.Date();",
     spanText: "new globalThis.Date()",
+  },
+  {
+    rule: ARGLESS_NEW_DATE_RULE,
+    statement: "const Clock = Date;\nconst started = new Clock();",
+    spanText: "new Clock()",
   },
 ] as const satisfies readonly RuleSpanCase[]);
 

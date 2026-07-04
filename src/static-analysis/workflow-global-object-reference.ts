@@ -12,14 +12,9 @@ type TransparentWrapperExpression = Expression & {
   readonly expression: Expression;
 };
 
-const TRANSPARENT_WRAPPER_TYPES = Object.freeze([
-  "ParenthesisExpression",
-  "TsAsExpression",
-  "TsConstAssertion",
-  "TsNonNullExpression",
-  "TsSatisfiesExpression",
-  "TsTypeAssertion",
-] as const);
+// ADR 0002 keeps workflow bodies in the ECMAScript parser dialect, so
+// TypeScript-only wrappers are intentionally not part of this resolver.
+const TRANSPARENT_WRAPPER_TYPE = "ParenthesisExpression";
 
 /**
  * Resolves a static member key from a direct or string-literal computed access.
@@ -53,6 +48,11 @@ export const resolveGlobalObjectIdentity = (
   node: Expression | Node,
   bindings: LexicalBindingFacts,
 ): GlobalObjectIdentity | undefined => {
+  const optionalBaseExpression = innerOptionalBaseExpression(node);
+  if (optionalBaseExpression !== undefined) {
+    return resolveGlobalObjectIdentity(optionalBaseExpression, bindings);
+  }
+
   const transparentExpression = innerTransparentExpression(node);
   if (transparentExpression !== undefined) {
     return resolveGlobalObjectIdentity(transparentExpression, bindings);
@@ -108,14 +108,21 @@ const innerTransparentExpression = (node: Expression | Node): Expression | undef
   return node.expression;
 };
 
+/** Returns the base expression for optional chains that preserve object identity. */
+const innerOptionalBaseExpression = (node: Expression | Node): Expression | undefined => {
+  if (node.type !== "OptionalChainingExpression" || !("base" in node)) {
+    return undefined;
+  }
+
+  return isExpression(node.base) ? node.base : undefined;
+};
+
 /** Narrows parenthesized and TypeScript wrapper expressions. */
 const isTransparentWrapperExpression = (
   node: Expression | Node,
 ): node is TransparentWrapperExpression => {
   return (
-    TRANSPARENT_WRAPPER_TYPES.some((type) => type === node.type) &&
-    "expression" in node &&
-    isExpression(node.expression)
+    node.type === TRANSPARENT_WRAPPER_TYPE && "expression" in node && isExpression(node.expression)
   );
 };
 

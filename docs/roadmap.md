@@ -820,12 +820,12 @@ reported clearly in one command. The result informs strict-mode policy. See
     `Math` bindings while detecting supported global `Date.now`,
     `Math.random`, arg-less `new Date`, computed `Date["now"]()`, and
     `globalThis.Date.now()` forms with original-source spans.
-  - [ ] 3.1.4.1. Harden deterministic-time syntactic escape handling.
+  - [x] 3.1.4.1. Harden deterministic-time syntactic escape handling.
     - Addendum (from review:3.1.4; low). Add bounded alias and optional-chain
       coverage for common deterministic-time forms while keeping dynamic
       computed keys inside documented no-eval limits. Lightweight addendum
       pass.
-  - [ ] 3.1.4.2. Pin global-object resolver unit coverage.
+  - [x] 3.1.4.2. Pin global-object resolver unit coverage.
     - Addendum (from audit:3.1.4; medium). Add focused
       `workflow-global-object-reference` tests and trim unreachable
       TypeScript-only wrapper branches under the ECMAScript parser dialect.

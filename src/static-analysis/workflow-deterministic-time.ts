@@ -23,9 +23,13 @@ import {
 import type { NormalizedBodyParseResult } from "./workflow-body-parse";
 import { parseNormalizedWorkflowBody } from "./workflow-body-parse";
 import {
-  resolveGlobalObjectIdentity,
-  resolveStaticMemberName,
-} from "./workflow-global-object-reference";
+  aliasCallMatch,
+  collectDeterministicTimeAliases,
+  type DeterministicTimeAliases,
+  memberExpressionFromCall,
+  objectIdentityForExpression,
+} from "./workflow-deterministic-time-aliases";
+import { resolveStaticMemberName } from "./workflow-global-object-reference";
 
 const DATE_NOW_RULE = makeRuleId("odw/no-date-now");
 const MATH_RANDOM_RULE = makeRuleId("odw/no-math-random");
@@ -59,14 +63,20 @@ export const scanDeterministicTimeWarnings = (
   }
 
   const bindings = collectLexicalBindings(parseResult.module);
-  const diagnostics = walkDeterministicTimeHazards(parseResult.module, bindings).map((match) => {
-    return diagnosticForMatch(
-      envelope,
-      parseResult.normalized,
-      parseResult.module.span.start,
-      match,
-    );
+  const aliases = collectDeterministicTimeAliases(parseResult.module, bindings, {
+    dateNowRule: DATE_NOW_RULE,
+    mathRandomRule: MATH_RANDOM_RULE,
   });
+  const diagnostics = walkDeterministicTimeHazards(parseResult.module, bindings, aliases).map(
+    (match) => {
+      return diagnosticForMatch(
+        envelope,
+        parseResult.normalized,
+        parseResult.module.span.start,
+        match,
+      );
+    },
+  );
 
   return Object.freeze(diagnostics);
 };
@@ -75,24 +85,30 @@ export const scanDeterministicTimeWarnings = (
 const walkDeterministicTimeHazards = (
   root: Node,
   bindings: LexicalBindingFacts,
+  aliases: DeterministicTimeAliases,
 ): readonly HazardMatch[] => {
   const matches: HazardMatch[] = [];
 
-  visitNode(root, bindings, matches);
+  visitNode(root, bindings, aliases, matches);
 
   return matches;
 };
 
 /** Visits one SWC node before its children so emitted diagnostics follow source order. */
-const visitNode = (node: Node, bindings: LexicalBindingFacts, matches: HazardMatch[]): void => {
-  const match = matchDeterministicTimeHazard(node, bindings);
+const visitNode = (
+  node: Node,
+  bindings: LexicalBindingFacts,
+  aliases: DeterministicTimeAliases,
+  matches: HazardMatch[],
+): void => {
+  const match = matchDeterministicTimeHazard(node, bindings, aliases);
 
   if (match !== undefined) {
     matches.push(match);
   }
 
   for (const child of childValues(node)) {
-    visitChildValue(child, bindings, matches);
+    visitChildValue(child, bindings, aliases, matches);
   }
 };
 
@@ -100,23 +116,24 @@ const visitNode = (node: Node, bindings: LexicalBindingFacts, matches: HazardMat
 const visitChildValue = (
   value: unknown,
   bindings: LexicalBindingFacts,
+  aliases: DeterministicTimeAliases,
   matches: HazardMatch[],
 ): void => {
   if (isNode(value)) {
-    visitNode(value, bindings, matches);
+    visitNode(value, bindings, aliases, matches);
     return;
   }
 
   if (Array.isArray(value)) {
     for (const item of value) {
-      visitChildValue(item, bindings, matches);
+      visitChildValue(item, bindings, aliases, matches);
     }
     return;
   }
 
   if (isObjectRecord(value)) {
     for (const child of childRecordValues(value)) {
-      visitChildValue(child, bindings, matches);
+      visitChildValue(child, bindings, aliases, matches);
     }
   }
 };
@@ -142,16 +159,22 @@ const isTraversableChildKey = (key: string): boolean => {
 const matchDeterministicTimeHazard = (
   node: Node,
   bindings: LexicalBindingFacts,
+  aliases: DeterministicTimeAliases,
 ): HazardMatch | undefined => {
-  if (isDateNowCall(node, bindings)) {
+  const aliasCall = aliasCallMatch(node, aliases);
+  if (aliasCall !== undefined) {
+    return aliasCall;
+  }
+
+  if (isDateNowCall(node, bindings, aliases)) {
     return { rule: DATE_NOW_RULE, span: node.callee.span };
   }
 
-  if (isMathRandomCall(node, bindings)) {
+  if (isMathRandomCall(node, bindings, aliases)) {
     return { rule: MATH_RANDOM_RULE, span: node.callee.span };
   }
 
-  if (isArglessNewDate(node, bindings)) {
+  if (isArglessNewDate(node, bindings, aliases)) {
     return { rule: ARGLESS_NEW_DATE_RULE, span: node.span };
   }
 
@@ -162,23 +185,29 @@ const matchDeterministicTimeHazard = (
 const isDateNowCall = (
   node: Node,
   bindings: LexicalBindingFacts,
+  aliases: DeterministicTimeAliases,
 ): node is CallExpression & { callee: MemberExpression } => {
-  return isGlobalMemberCall(node, bindings, "Date", "now");
+  return isGlobalMemberCall(node, bindings, aliases, "Date", "now");
 };
 
 /** Reports global `Math.random(...)` calls, including string-key and `globalThis` forms. */
 const isMathRandomCall = (
   node: Node,
   bindings: LexicalBindingFacts,
+  aliases: DeterministicTimeAliases,
 ): node is CallExpression & { callee: MemberExpression } => {
-  return isGlobalMemberCall(node, bindings, "Math", "random");
+  return isGlobalMemberCall(node, bindings, aliases, "Math", "random");
 };
 
 /** Reports global `new Date` and `new Date()`, but not `new Date(value)`. */
-const isArglessNewDate = (node: Node, bindings: LexicalBindingFacts): node is NewExpression => {
+const isArglessNewDate = (
+  node: Node,
+  bindings: LexicalBindingFacts,
+  aliases: DeterministicTimeAliases,
+): node is NewExpression => {
   return (
     isNewExpression(node) &&
-    resolveGlobalObjectIdentity(node.callee, bindings) === "Date" &&
+    objectIdentityForExpression(node.callee, bindings, aliases) === "Date" &&
     (node.arguments === undefined || node.arguments === null || node.arguments.length === 0)
   );
 };
@@ -187,20 +216,17 @@ const isArglessNewDate = (node: Node, bindings: LexicalBindingFacts): node is Ne
 const isGlobalMemberCall = (
   node: Node,
   bindings: LexicalBindingFacts,
+  aliases: DeterministicTimeAliases,
   objectName: string,
   propertyName: string,
 ): node is CallExpression & { callee: MemberExpression } => {
-  return (
-    isCallExpression(node) &&
-    isMemberExpression(node.callee) &&
-    resolveGlobalObjectIdentity(node.callee.object, bindings) === objectName &&
-    resolveStaticMemberName(node.callee.property) === propertyName
-  );
-};
+  const member = memberExpressionFromCall(node);
 
-/** Narrows nodes to SWC call expressions. */
-const isCallExpression = (node: Node): node is CallExpression => {
-  return node.type === "CallExpression";
+  return (
+    member !== undefined &&
+    objectIdentityForExpression(member.object, bindings, aliases) === objectName &&
+    resolveStaticMemberName(member.property) === propertyName
+  );
 };
 
 /** Narrows nodes to SWC constructor expressions. */

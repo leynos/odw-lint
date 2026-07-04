@@ -574,3 +574,403 @@ exports[`deterministic-time diagnostic spans keeps intra-expression hazard order
   },
 ]
 `;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-date-now lf-baseline 4`] = `
+{
+  "rule": "odw/no-date-now",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 28,
+      "line": 3,
+      "offset": 108,
+    },
+    "start": {
+      "column": 19,
+      "line": 3,
+      "offset": 99,
+    },
+  },
+  "spanText": ""Date?.now"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-date-now crlf-terminators 4`] = `
+{
+  "rule": "odw/no-date-now",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 28,
+      "line": 3,
+      "offset": 110,
+    },
+    "start": {
+      "column": 19,
+      "line": 3,
+      "offset": 101,
+    },
+  },
+  "spanText": ""Date?.now"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-date-now unicode-bmp 4`] = `
+{
+  "rule": "odw/no-date-now",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 28,
+      "line": 3,
+      "offset": 107,
+    },
+    "start": {
+      "column": 19,
+      "line": 3,
+      "offset": 98,
+    },
+  },
+  "spanText": ""Date?.now"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-date-now unicode-astral 4`] = `
+{
+  "rule": "odw/no-date-now",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 28,
+      "line": 3,
+      "offset": 111,
+    },
+    "start": {
+      "column": 19,
+      "line": 3,
+      "offset": 102,
+    },
+  },
+  "spanText": ""Date?.now"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-date-now lf-baseline 5`] = `
+{
+  "rule": "odw/no-date-now",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 22,
+      "line": 4,
+      "offset": 124,
+    },
+    "start": {
+      "column": 19,
+      "line": 4,
+      "offset": 121,
+    },
+  },
+  "spanText": ""now"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-date-now crlf-terminators 5`] = `
+{
+  "rule": "odw/no-date-now",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 22,
+      "line": 4,
+      "offset": 126,
+    },
+    "start": {
+      "column": 19,
+      "line": 4,
+      "offset": 123,
+    },
+  },
+  "spanText": ""now"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-date-now unicode-bmp 5`] = `
+{
+  "rule": "odw/no-date-now",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 22,
+      "line": 4,
+      "offset": 123,
+    },
+    "start": {
+      "column": 19,
+      "line": 4,
+      "offset": 120,
+    },
+  },
+  "spanText": ""now"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-date-now unicode-astral 5`] = `
+{
+  "rule": "odw/no-date-now",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 22,
+      "line": 4,
+      "offset": 127,
+    },
+    "start": {
+      "column": 19,
+      "line": 4,
+      "offset": 124,
+    },
+  },
+  "spanText": ""now"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-math-random lf-baseline 2`] = `
+{
+  "rule": "odw/no-math-random",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 28,
+      "line": 3,
+      "offset": 108,
+    },
+    "start": {
+      "column": 16,
+      "line": 3,
+      "offset": 96,
+    },
+  },
+  "spanText": ""Math?.random"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-math-random crlf-terminators 2`] = `
+{
+  "rule": "odw/no-math-random",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 28,
+      "line": 3,
+      "offset": 110,
+    },
+    "start": {
+      "column": 16,
+      "line": 3,
+      "offset": 98,
+    },
+  },
+  "spanText": ""Math?.random"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-math-random unicode-bmp 2`] = `
+{
+  "rule": "odw/no-math-random",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 28,
+      "line": 3,
+      "offset": 107,
+    },
+    "start": {
+      "column": 16,
+      "line": 3,
+      "offset": 95,
+    },
+  },
+  "spanText": ""Math?.random"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-math-random unicode-astral 2`] = `
+{
+  "rule": "odw/no-math-random",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 28,
+      "line": 3,
+      "offset": 111,
+    },
+    "start": {
+      "column": 16,
+      "line": 3,
+      "offset": 99,
+    },
+  },
+  "spanText": ""Math?.random"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-math-random lf-baseline 3`] = `
+{
+  "rule": "odw/no-math-random",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 22,
+      "line": 4,
+      "offset": 130,
+    },
+    "start": {
+      "column": 16,
+      "line": 4,
+      "offset": 124,
+    },
+  },
+  "spanText": ""random"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-math-random crlf-terminators 3`] = `
+{
+  "rule": "odw/no-math-random",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 22,
+      "line": 4,
+      "offset": 132,
+    },
+    "start": {
+      "column": 16,
+      "line": 4,
+      "offset": 126,
+    },
+  },
+  "spanText": ""random"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-math-random unicode-bmp 3`] = `
+{
+  "rule": "odw/no-math-random",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 22,
+      "line": 4,
+      "offset": 129,
+    },
+    "start": {
+      "column": 16,
+      "line": 4,
+      "offset": 123,
+    },
+  },
+  "spanText": ""random"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-math-random unicode-astral 3`] = `
+{
+  "rule": "odw/no-math-random",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 22,
+      "line": 4,
+      "offset": 133,
+    },
+    "start": {
+      "column": 16,
+      "line": 4,
+      "offset": 127,
+    },
+  },
+  "spanText": ""random"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-argless-new-date lf-baseline 3`] = `
+{
+  "rule": "odw/no-argless-new-date",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 28,
+      "line": 4,
+      "offset": 128,
+    },
+    "start": {
+      "column": 17,
+      "line": 4,
+      "offset": 117,
+    },
+  },
+  "spanText": ""new Clock()"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-argless-new-date crlf-terminators 3`] = `
+{
+  "rule": "odw/no-argless-new-date",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 28,
+      "line": 4,
+      "offset": 130,
+    },
+    "start": {
+      "column": 17,
+      "line": 4,
+      "offset": 119,
+    },
+  },
+  "spanText": ""new Clock()"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-argless-new-date unicode-bmp 3`] = `
+{
+  "rule": "odw/no-argless-new-date",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 28,
+      "line": 4,
+      "offset": 127,
+    },
+    "start": {
+      "column": 17,
+      "line": 4,
+      "offset": 116,
+    },
+  },
+  "spanText": ""new Clock()"",
+}
+`;
+
+exports[`deterministic-time diagnostic spans round-trips original-source snippets for odw/no-argless-new-date unicode-astral 3`] = `
+{
+  "rule": "odw/no-argless-new-date",
+  "severity": "warning",
+  "span": {
+    "end": {
+      "column": 28,
+      "line": 4,
+      "offset": 131,
+    },
+    "start": {
+      "column": 17,
+      "line": 4,
+      "offset": 120,
+    },
+  },
+  "spanText": ""new Clock()"",
+}
+`;

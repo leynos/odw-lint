@@ -45,8 +45,10 @@ await agent(`Draft a status note for ${timestamp}.`);
 
 The scanner ignores bare `Date.now()` calls when the workflow body declares a
 local `Date` binding. It detects string-key access such as `Date["now"]()` and
-`globalThis` chains such as `globalThis.Date.now()`.
+`globalThis` chains such as `globalThis.Date.now()`. It also detects optional
+member calls such as `Date?.now()` and direct aliases such as
+`const now = Date.now; now()`.
 
-The remaining conservative limits are aliases (`const d = Date; d.now()`),
-optional chaining (`Date?.now()`), dynamic computed keys (`Date[k]()`), and
-non-`globalThis` roots such as `window`, `self`, and `global`.
+The remaining conservative limits are dynamic computed keys (`Date[k]()`), alias
+chains beyond one direct declaration, and non-`globalThis` roots such as
+`window`, `self`, and `global`.

@@ -766,7 +766,7 @@ unchanged.
 
 ## Addenda
 
-- [ ] 3.1.4.1. Harden deterministic-time syntactic escape handling.
+- [x] 3.1.4.1. Harden deterministic-time syntactic escape handling.
   - Source: review:3.1.4; severity low.
   - Scope: add bounded alias and optional-chain coverage for common
     deterministic-time forms while keeping dynamic computed keys inside
@@ -774,7 +774,7 @@ unchanged.
   - Success: supported alias and optional-chain fixtures emit the expected
     Claude compatibility warnings, and dynamic-key cases remain documented
     conservative limits.
-- [ ] 3.1.4.2. Pin global-object resolver unit coverage.
+- [x] 3.1.4.2. Pin global-object resolver unit coverage.
   - Source: audit:3.1.4; severity medium.
   - Scope: add focused `workflow-global-object-reference` tests and trim
     unreachable TypeScript-only wrapper branches under the ECMAScript parser

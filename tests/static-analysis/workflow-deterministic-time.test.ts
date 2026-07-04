@@ -89,6 +89,30 @@ const POSITIVE_CASES = Object.freeze([
     spanText: "globalThis.Date.now",
   },
   {
+    name: "optional-date-now-call",
+    body: "const timestamp = Date?.now();",
+    rule: DATE_NOW_RULE,
+    spanText: "Date?.now",
+  },
+  {
+    name: "global-optional-date-now-call",
+    body: "const timestamp = globalThis.Date?.now();",
+    rule: DATE_NOW_RULE,
+    spanText: "globalThis.Date?.now",
+  },
+  {
+    name: "date-now-alias-call",
+    body: "const now = Date.now;\nconst timestamp = now();",
+    rule: DATE_NOW_RULE,
+    spanText: "now",
+  },
+  {
+    name: "date-object-alias-call",
+    body: "const Clock = Date;\nconst timestamp = Clock.now();",
+    rule: DATE_NOW_RULE,
+    spanText: "Clock.now",
+  },
+  {
     name: "computed-global-date-now-call",
     body: 'const timestamp = globalThis["Date"]["now"]();',
     rule: DATE_NOW_RULE,
@@ -113,6 +137,24 @@ const POSITIVE_CASES = Object.freeze([
     spanText: "globalThis.Math.random",
   },
   {
+    name: "optional-math-random-call",
+    body: "const sample = Math?.random();",
+    rule: MATH_RANDOM_RULE,
+    spanText: "Math?.random",
+  },
+  {
+    name: "math-random-alias-call",
+    body: "const random = Math.random;\nconst sample = random();",
+    rule: MATH_RANDOM_RULE,
+    spanText: "random",
+  },
+  {
+    name: "math-object-alias-call",
+    body: "const Random = Math;\nconst sample = Random.random();",
+    rule: MATH_RANDOM_RULE,
+    spanText: "Random.random",
+  },
+  {
     name: "argless-new-date-call",
     body: "const started = new Date();",
     rule: ARGLESS_NEW_DATE_RULE,
@@ -130,6 +172,12 @@ const POSITIVE_CASES = Object.freeze([
     rule: ARGLESS_NEW_DATE_RULE,
     spanText: "new globalThis.Date()",
   },
+  {
+    name: "argless-new-date-alias-call",
+    body: "const Clock = Date;\nconst started = new Clock();",
+    rule: ARGLESS_NEW_DATE_RULE,
+    spanText: "new Clock()",
+  },
 ] as const satisfies readonly WarningCase[]);
 
 const NEGATIVE_BODIES = Object.freeze([
@@ -139,8 +187,9 @@ const NEGATIVE_BODIES = Object.freeze([
   "const readRandom = Math.random;",
   "const value = window.Date.now();",
   "const value = self.Date.now();",
-  "const value = Date?.now();",
   'const k = "now";\nDate[k]();',
+  'const now = "now";\nDate[now]();',
+  'const random = "random";\nMath[random]();',
   'const text = "Date.now() Math.random() new Date()";',
   "// Date.now() Math.random() new Date()\nconst ok = true;",
   "/* Date.now() Math.random() new Date() */\nconst ok = true;",
