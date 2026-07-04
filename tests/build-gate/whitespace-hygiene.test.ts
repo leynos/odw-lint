@@ -6,6 +6,7 @@ import { describe, expect, it } from "bun:test";
 import { readFileSync, rmSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import type { CliWriters } from "./cli-support";
+import { expectSharedCliWriterSeam } from "./cli-support-test-support";
 import {
   commitAll,
   createCapturedCliOutput,
@@ -20,10 +21,10 @@ const whitespaceHygieneCliSource = () =>
 
 describe("runWhitespaceHygieneCli", () => {
   it("uses the shared CLI writer seam", () => {
-    const source = whitespaceHygieneCliSource();
-
-    expect(source).toContain('from "./cli-support"');
-    expect(source).not.toContain("type CliWriters =");
+    expectSharedCliWriterSeam({
+      source: whitespaceHygieneCliSource(),
+      importPath: "./cli-support",
+    });
   });
 
   it("exits successfully for clean tracked text", () => {

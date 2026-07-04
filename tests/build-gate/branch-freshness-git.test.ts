@@ -23,6 +23,7 @@ import {
 } from "./branch-freshness-git-fixtures";
 import { parseNameStatusZ, parseRoadmapDiffHunks } from "./branch-freshness-git-parsing";
 import type { CliWriters } from "./cli-support";
+import { expectSharedCliWriterSeam } from "./cli-support-test-support";
 
 /** Read the CLI module source for seam-ownership regression checks. */
 const branchFreshnessCliSource = () =>
@@ -282,10 +283,10 @@ describe("Git-backed branch-freshness guard", () => {
   });
 
   it("uses the shared CLI writer seam", () => {
-    const source = branchFreshnessCliSource();
-
-    expect(source).toContain('from "./cli-support"');
-    expect(source).not.toContain("type CliWriters =");
+    expectSharedCliWriterSeam({
+      source: branchFreshnessCliSource(),
+      importPath: "./cli-support",
+    });
   });
 });
 

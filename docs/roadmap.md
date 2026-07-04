@@ -345,11 +345,11 @@ depending on manual post-commit audits.
   - Success: branch-freshness, whitespace-hygiene, and review-evidence CLIs
     consume one documented CLI-support helper before another build gate clones
     the same reviewer-facing command boilerplate.
-  - [ ] 1.5.9.1. Replace literal CLI seam-ownership guards.
+  - [x] 1.5.9.1. Replace literal CLI seam-ownership guards.
     - Addendum (from review:1.5.9; low). Replace string-substring
       anti-duplication tests with a structural or lint-backed guard for the
       shared CLI writer seam. Lightweight addendum pass.
-  - [ ] 1.5.9.2. Extract default-stream test harness support.
+  - [x] 1.5.9.2. Extract default-stream test harness support.
     - Addendum (from review:1.5.9; low). Centralize stdout and stderr
       override-and-restore support for CLI default-stream tests. Lightweight
       addendum pass.

@@ -1030,7 +1030,7 @@ Use no new external libraries. The implementation depends on:
 
 ## Addenda
 
-- [ ] 1.5.9.1. Replace literal CLI seam-ownership guards.
+- [x] 1.5.9.1. Replace literal CLI seam-ownership guards.
   - Source: review:1.5.9; severity low.
   - Scope: replace the string-substring "uses the shared CLI writer seam"
     assertions with a structural, AST-backed, or lint-backed guard that fails
@@ -1038,7 +1038,7 @@ Use no new external libraries. The implementation depends on:
   - Success: branch-freshness, review-evidence, and whitespace-hygiene CLI
     tests still prove shared ownership of `CliWriters`, but renamed or
     reformatted local writer declarations cannot bypass the guard.
-- [ ] 1.5.9.2. Extract default-stream test harness support.
+- [x] 1.5.9.2. Extract default-stream test harness support.
   - Source: review:1.5.9; severity low.
   - Scope: centralize the stdout and stderr override-and-restore pattern used
     by CLI support tests before more default-stream helpers clone it.
@@ -1080,3 +1080,9 @@ stdout/stderr snapshots unchanged.
 Work item 4 update: documented `cli-support.ts` in maintainer-facing docs,
 ticked roadmap task 1.5.9 complete, and closed this ExecPlan as COMPLETE. The
 final gate run at HEAD remains the acceptance proof.
+
+Addendum recovery update: after workflow recovery, the branch was rebased onto
+`origin/main` as commits `29bb8da` and `2493ce9`. `make all`, `make
+markdownlint`, and `make nixie` passed after the rebase, and `coderabbit review
+--agent` completed with zero findings. The roadmap addenda 1.5.9.1 and
+1.5.9.2 are now ticked to match the completed ExecPlan addenda.

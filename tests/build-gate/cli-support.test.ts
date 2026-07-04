@@ -2,77 +2,55 @@
  * @file Tests for shared build-gate command-line writer support.
  */
 
-import { afterEach, describe, expect, it } from "bun:test";
-import { stderr, stdout } from "node:process";
+import { describe, expect, it } from "bun:test";
+import { withProcessStreamWriteHarness } from "./cli-stream-test-support";
 import { emitCliReport, resolveCliWriters } from "./cli-support";
-
-type StreamWrite = typeof stdout.write;
-
-const originalStdoutWrite = stdout.write.bind(stdout) as StreamWrite;
-const originalStderrWrite = stderr.write.bind(stderr) as StreamWrite;
-
-afterEach(() => {
-  stdout.write = originalStdoutWrite;
-  stderr.write = originalStderrWrite;
-});
 
 describe("resolveCliWriters", () => {
   it("uses process streams when no writers are provided", () => {
-    const writes: string[] = [];
-    stdout.write = ((message: string) => {
-      writes.push(`stdout:${message}`);
-      return true;
-    }) as StreamWrite;
-    stderr.write = ((message: string) => {
-      writes.push(`stderr:${message}`);
-      return true;
-    }) as StreamWrite;
+    withProcessStreamWriteHarness((streamWrites) => {
+      streamWrites.useCapturedStdout();
+      streamWrites.useCapturedStderr();
 
-    const writers = resolveCliWriters();
+      const writers = resolveCliWriters();
 
-    writers.writeOut("ready\n");
-    writers.writeErr("failed\n");
+      writers.writeOut("ready\n");
+      writers.writeErr("failed\n");
 
-    expect(writes).toEqual(["stdout:ready\n", "stderr:failed\n"]);
+      expect(streamWrites.writes).toEqual(["stdout:ready\n", "stderr:failed\n"]);
+    });
   });
 
   it("mixes explicit writer overrides with default process streams", () => {
-    const writes: string[] = [];
-    stderr.write = ((message: string) => {
-      writes.push(`stderr:${message}`);
-      return true;
-    }) as StreamWrite;
+    withProcessStreamWriteHarness((streamWrites) => {
+      streamWrites.useCapturedStderr();
 
-    const writers = resolveCliWriters({
-      writeOut: (message) => writes.push(`out:${message}`),
+      const writers = resolveCliWriters({
+        writeOut: (message) => streamWrites.recordWrite("custom", message),
+      });
+
+      writers.writeOut("custom\n");
+      writers.writeErr("default\n");
+
+      expect(streamWrites.writes).toEqual(["custom:custom\n", "stderr:default\n"]);
     });
-
-    writers.writeOut("custom\n");
-    writers.writeErr("default\n");
-
-    expect(writes).toEqual(["out:custom\n", "stderr:default\n"]);
   });
 
   it("falls back to defaults for explicitly undefined overrides", () => {
-    const writes: string[] = [];
-    stdout.write = ((message: string) => {
-      writes.push(`stdout:${message}`);
-      return true;
-    }) as StreamWrite;
-    stderr.write = ((message: string) => {
-      writes.push(`stderr:${message}`);
-      return true;
-    }) as StreamWrite;
+    withProcessStreamWriteHarness((streamWrites) => {
+      streamWrites.useCapturedStdout();
+      streamWrites.useCapturedStderr();
 
-    const writers = resolveCliWriters({
-      writeOut: undefined,
-      writeErr: undefined,
+      const writers = resolveCliWriters({
+        writeOut: undefined,
+        writeErr: undefined,
+      });
+
+      writers.writeOut("default out\n");
+      writers.writeErr("default err\n");
+
+      expect(streamWrites.writes).toEqual(["stdout:default out\n", "stderr:default err\n"]);
     });
-
-    writers.writeOut("default out\n");
-    writers.writeErr("default err\n");
-
-    expect(writes).toEqual(["stdout:default out\n", "stderr:default err\n"]);
   });
 });
 

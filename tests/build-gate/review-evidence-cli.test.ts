@@ -5,6 +5,7 @@
 import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import type { CliWriters } from "./cli-support";
+import { expectSharedCliWriterSeam } from "./cli-support-test-support";
 import type { CommandResult, CommandRunner, CommandRunnerOptions } from "./git-support";
 import { createCapturedCliOutput } from "./git-support";
 import type { ReviewEvidenceResult, ReviewGateId } from "./review-evidence";
@@ -94,11 +95,10 @@ const runCli = (
 
 describe("runReviewEvidenceCli", () => {
   it("uses the shared CLI writer seam", () => {
-    const source = reviewEvidenceCliSource();
-
-    expect(source).toContain('from "./cli-support"');
-    expect(source).not.toContain("type CliWriters =");
-    expect(source).not.toContain("const cliWriters =");
+    expectSharedCliWriterSeam({
+      source: reviewEvidenceCliSource(),
+      importPath: "./cli-support",
+    });
   });
 
   it("returns verified evidence when every keyed gate passes", () => {
