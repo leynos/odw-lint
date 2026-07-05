@@ -1226,12 +1226,12 @@ types" and [developers-guide.md](developers-guide.md) "Documentation Upkeep".
     - Addendum (from audit:2.2.6; low). Check the canonical documentation
       index against current ExecPlans and issue audits so navigation cannot
       drift silently. Lightweight addendum pass.
-  - [ ] 4.4.1.3. Document source-scanner primitives in the layout guide.
+  - [x] 4.4.1.3. Document source-scanner primitives in the layout guide.
     - Addendum (from audit:2.1.13; low). Add
       `source-scanner-primitives.ts`, its scanner-family consumers, and its
       no-domain-import rule to `docs/repository-layout.md`. Lightweight
       addendum pass.
-  - [ ] 4.4.1.4. Document scanner regions and wrapper conventions.
+  - [x] 4.4.1.4. Document scanner regions and wrapper conventions.
     - Addendum (from audit:2.1.14; low). Add
       `source-scanner-regions.ts` and primitive wrapper-versus-direct-import
       guidance to `docs/repository-layout.md`. Lightweight addendum pass.

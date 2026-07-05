@@ -291,7 +291,7 @@ package, dependency, source or test changes.
     navigation entry point cannot silently drift.
   - Success: adding, renaming, or removing a top-level ExecPlan or issue audit
     fails the freshness check until `docs/contents.md` is updated.
-- [ ] 4.4.1.3. Document source-scanner primitives in the layout guide.
+- [x] 4.4.1.3. Document source-scanner primitives in the layout guide.
   - Source: audit:2.1.13; severity low.
   - Scope: add the shared `source-scanner-primitives.ts` seam, its
     source-mask and workflow-metadata scanner consumers, and its
@@ -299,7 +299,7 @@ package, dependency, source or test changes.
   - Success: `docs/repository-layout.md` agrees with the technical design and
     developers' guide about the source-scanner primitive layer and its
     ownership boundary.
-- [ ] 4.4.1.4. Document scanner regions and wrapper conventions.
+- [x] 4.4.1.4. Document scanner regions and wrapper conventions.
   - Source: audit:2.1.14; severity low.
   - Scope: add the `source-scanner-regions.ts` sibling module and the
     primitive wrapper-versus-direct-import convention to the canonical

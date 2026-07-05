@@ -96,6 +96,27 @@ internal mask helpers. Keep comment, quoted-string, template-literal, regex,
 type, delimiter, and range helper changes inside the corresponding
 `source-mask-*` module instead of growing the facade.
 
+`src/static-analysis/source-scanner-primitives.ts` is the internal seam for
+pure JavaScript token-grammar primitives shared by the source-mask and
+workflow-metadata scanner families. It owns line terminator classification,
+escape advancement, comment boundaries, delimiter guards, identifier runs, and
+the shared delimited, balanced, and inert-region walkers that are re-exported
+through the primitive layer. Keep this module free of source-mask range,
+metadata-domain, parser-cursor, diagnostic, and public package types; scanner
+families may compose the primitives, but domain-specific range creation,
+metadata parsing and diagnostic decisions stay in their owning modules.
+
+`src/static-analysis/source-scanner-regions.ts` is the sibling home for the
+shared region-level loop bodies that would make the primitive seam too large.
+It is re-exported through `source-scanner-primitives.ts`; permitted callers use
+that seam, except for module-local wrappers that preserve scanner-family names
+and contracts such as escaped-delimiter, quoted-string, metadata-delimiter, and
+balanced metadata scans. Keep new direct imports from the regions module out of
+unrelated static-analysis code. Use an owning wrapper when a scanner family has
+terminator, range, or trailing-trivia conventions that differ from the shared
+primitive, and import the primitive directly only when the contract already
+matches.
+
 ## Test and fixture boundaries
 
 `tests/diagnostics/` protects the diagnostic surface. It includes tests for
