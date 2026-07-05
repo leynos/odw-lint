@@ -299,6 +299,15 @@ package, dependency, source or test changes.
   - Success: `docs/repository-layout.md` agrees with the technical design and
     developers' guide about the source-scanner primitive layer and its
     ownership boundary.
+- [ ] 4.4.1.4. Document scanner regions and wrapper conventions.
+  - Source: audit:2.1.14; severity low.
+  - Scope: add the `source-scanner-regions.ts` sibling module and the
+    primitive wrapper-versus-direct-import convention to the canonical
+    repository layout guide, without duplicating the existing primitive-seam
+    addendum.
+  - Success: `docs/repository-layout.md` agrees with the technical design,
+    developers' guide, and scanner ExecPlan about region-loop ownership,
+    permitted callers, and wrapper usage.
 
 ## Context and orientation
 

@@ -712,6 +712,18 @@ statically. It unlocks metadata rules and body parsing. See
     escaped-delimited or balanced-expression loops, parity or provenance tests
     prove behaviour unchanged, and `source-scanner-primitives.ts` remains the
     documented scanner seam.
+  - [ ] 2.1.14.1. Broaden scanner parity generators.
+    - Addendum (from review:2.1.14; low). Broaden scanner parity generators
+      with paragraph separators, exotic whitespace, delimiter interplay, and
+      deeper nested-template fragments. Lightweight addendum pass.
+  - [ ] 2.1.14.2. Fold template-literal scanning onto shared walkers.
+    - Addendum (from audit:2.1.14; medium). Let template-literal masking
+      delegate matched region-walk backbones while preserving regex handling.
+      Lightweight addendum pass.
+  - [ ] 2.1.14.3. Unify scanner regex-start heuristics.
+    - Addendum (from audit:2.1.14; medium). Share one preceding-token
+      regex-start predicate across top-level and template scanners with parity
+      coverage. Lightweight addendum pass.
 
 ### 2.2. Normalize and parse workflow bodies with SWC
 
@@ -1200,6 +1212,10 @@ types" and [developers-guide.md](developers-guide.md) "Documentation Upkeep".
       `source-scanner-primitives.ts`, its scanner-family consumers, and its
       no-domain-import rule to `docs/repository-layout.md`. Lightweight
       addendum pass.
+  - [ ] 4.4.1.4. Document scanner regions and wrapper conventions.
+    - Addendum (from audit:2.1.14; low). Add
+      `source-scanner-regions.ts` and primitive wrapper-versus-direct-import
+      guidance to `docs/repository-layout.md`. Lightweight addendum pass.
 
 ## 5. Deferred extensions
 
