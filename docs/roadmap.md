@@ -177,7 +177,7 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
     - Addendum (from review:1.3.3; low). Extend masking fixtures with escaped
       quotes, escaped regex delimiters, template interpolation boundaries,
       CRLF, and Unicode variants. Lightweight addendum pass.
-  - [ ] 1.3.3.3. Own masking fixture corpus locations.
+  - [x] 1.3.3.3. Own masking fixture corpus locations.
     - Addendum (from review:2.3.5; low). Add a masking corpus owner module and
       broaden the corpus-ownership guard so masking fixture locations cannot
       fork. Lightweight addendum pass.

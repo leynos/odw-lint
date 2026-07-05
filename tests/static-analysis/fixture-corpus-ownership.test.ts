@@ -8,12 +8,19 @@ import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 import { INVALID_WORKFLOW_FIXTURE_CORPUS } from "./fixtures/invalid-workflows/corpus";
+import { MASKING_FIXTURE_CORPUS } from "./fixtures/masking/corpus";
 import { ODW_EXAMPLE_FIXTURE_CORPUS } from "./fixtures/odw-examples/corpus";
 
 const STATIC_ANALYSIS_ROOT = "tests/static-analysis";
 const GUARD_FILE_PATH = relative(process.cwd(), fileURLToPath(import.meta.url))
   .split(sep)
   .join("/");
+const OWNER_MODULE_PATHS = new Set([
+  "tests/static-analysis/fixtures/dual-compat/corpus.ts",
+  "tests/static-analysis/fixtures/invalid-workflows/corpus.ts",
+  "tests/static-analysis/fixtures/masking/corpus.ts",
+  "tests/static-analysis/fixtures/odw-examples/corpus.ts",
+]);
 
 type InlineCorpusLocation = {
   readonly filePath: string;
@@ -44,6 +51,7 @@ const ownedCorpusSegment = (label: string, manifestRoot: string | undefined): st
 const OWNED_CORPUS_SEGMENTS = [
   ownedCorpusSegment("ODW example", ODW_EXAMPLE_FIXTURE_CORPUS.manifestRoot),
   ownedCorpusSegment("invalid workflow", INVALID_WORKFLOW_FIXTURE_CORPUS.manifestRoot),
+  ownedCorpusSegment("masking", MASKING_FIXTURE_CORPUS.manifestRoot),
 ] as const;
 
 /** Returns TypeScript source files beneath one repository-relative directory. */
@@ -124,6 +132,29 @@ const ownedCorpusUrlLiteral = (node: ts.Node): string | undefined => {
   return urlText;
 };
 
+/** Reports whether a property assignment carries an owned manifest root. */
+const ownedManifestRootLiteral = (node: ts.Node): string | undefined => {
+  if (!ts.isPropertyAssignment(node)) {
+    return undefined;
+  }
+
+  if (!ts.isIdentifier(node.name) || node.name.text !== "manifestRoot") {
+    return undefined;
+  }
+
+  const manifestRootText = literalText(node.initializer);
+  if (manifestRootText === undefined || !isOwnedCorpusUrlLiteral(manifestRootText)) {
+    return undefined;
+  }
+
+  return manifestRootText;
+};
+
+/** Reports whether a node reconstructs an owned corpus location outside the owner. */
+const ownedCorpusLocationLiteral = (node: ts.Node): string | undefined => {
+  return ownedCorpusUrlLiteral(node) ?? ownedManifestRootLiteral(node);
+};
+
 /** Finds inline fixture-corpus location literals in one source string. */
 const inlineCorpusLocationsInSource = (
   filePath: string,
@@ -133,7 +164,7 @@ const inlineCorpusLocationsInSource = (
   const locations: InlineCorpusLocation[] = [];
 
   const visit = (node: ts.Node): void => {
-    if (ownedCorpusUrlLiteral(node) !== undefined) {
+    if (ownedCorpusLocationLiteral(node) !== undefined) {
       locations.push({
         filePath,
         ...nodeLocation(sourceFile, node),
@@ -154,7 +185,7 @@ const inlineCorpusLocationsInFile = (filePath: string): readonly InlineCorpusLoc
 };
 
 describe("fixture corpus ownership", () => {
-  it("detects only inline ODW parity corpus URL literals", () => {
+  it("detects inline owned fixture corpus location literals", () => {
     const inlineLiteral = inlineCorpusLocationsInSource(
       "sample.ts",
       'const corpus = { fixtureDirectory: new URL("./fixtures/odw-examples/", import.meta.url) };',
@@ -172,11 +203,22 @@ describe("fixture corpus ownership", () => {
       "masking.ts",
       'const corpus = { fixtureDirectory: new URL("./fixtures/masking/", import.meta.url) };',
     );
+    const reconstructedMaskingLocation = inlineCorpusLocationsInSource(
+      "reconstructed.ts",
+      "const corpus = {\n" +
+        '  fixtureDirectory: new URL("./fixtures/", import.meta.url),\n' +
+        '  manifestRoot: "tests/static-analysis/fixtures/masking/",\n' +
+        "};\n",
+    );
 
     expect(inlineLiteral).toHaveLength(1);
     expect(inlineLiteral[0]?.text).toContain("fixtures/odw-examples/");
     expect(invalidInlineLiteral).toHaveLength(1);
     expect(invalidInlineLiteral[0]?.text).toContain("fixtures/invalid-workflows/");
+    expect(maskingLiteral).toHaveLength(1);
+    expect(maskingLiteral[0]?.text).toContain("fixtures/masking/");
+    expect(reconstructedMaskingLocation).toHaveLength(1);
+    expect(reconstructedMaskingLocation[0]?.text).toContain("fixtures/masking/");
     expect(inlineLiteral).toMatchInlineSnapshot(`
       [
         {
@@ -188,12 +230,11 @@ describe("fixture corpus ownership", () => {
       ]
     `);
     expect(ownerStyleLiteral).toEqual([]);
-    expect(maskingLiteral).toEqual([]);
   });
 
-  it("keeps hand-written tests free of inline ODW parity corpus locations", () => {
+  it("keeps hand-written tests free of inline owned corpus locations", () => {
     const inlineLocations = sourceFilesUnder(STATIC_ANALYSIS_ROOT)
-      .filter((filePath) => filePath !== GUARD_FILE_PATH)
+      .filter((filePath) => filePath !== GUARD_FILE_PATH && !OWNER_MODULE_PATHS.has(filePath))
       .flatMap((filePath) => inlineCorpusLocationsInFile(filePath));
 
     expect(inlineLocations).toEqual([]);
