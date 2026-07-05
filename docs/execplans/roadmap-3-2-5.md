@@ -312,7 +312,7 @@ and the public package entry points remained unchanged.
   - Success: parser-backed collectors consume one documented narrower contract
     for matching SWC node types, and existing deterministic-time and
     global-object resolver tests pass without output changes.
-- [ ] 3.2.5.4. Harden single-type SWC narrower seam guards.
+- [x] 3.2.5.4. Harden single-type SWC narrower seam guards.
   - Source: audit:3.2.7; severity medium.
   - Scope: replace the architecture guard's hard-coded single-type narrower
     allowlist with shape-based cloned-narrower detection, then import the

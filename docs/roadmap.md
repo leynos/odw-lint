@@ -1048,7 +1048,7 @@ See [technical-design.md](technical-design.md) §9.3.
       `isExpression`, `isMemberExpression`, and `isIdentifier` narrowers behind
       the `swc-ast.ts` seam where their contracts match. Lightweight addendum
       pass.
-  - [ ] 3.2.5.4. Harden single-type SWC narrower seam guards.
+  - [x] 3.2.5.4. Harden single-type SWC narrower seam guards.
     - Addendum (from audit:3.2.7; medium). Replace the narrow architecture
       allowlist with shape-based cloned-narrower detection and fold the
       scope-own-facts `isExpression` copy back onto `swc-ast.ts`. Lightweight

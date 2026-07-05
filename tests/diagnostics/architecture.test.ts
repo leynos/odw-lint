@@ -80,6 +80,36 @@ const genericSwcTraversalDeclarations = (sourcePath: string): readonly string[] 
   return declarations.sort();
 };
 
+/** Finds top-level declarations that clone single-type SWC node narrowers. */
+const clonedSwcSingleTypeNarrowerDeclarations = (sourcePath: string): readonly string[] => {
+  return clonedSwcSingleTypeNarrowerDeclarationsFromSourceFile(parseSource(sourcePath));
+};
+
+/** Finds top-level cloned single-type SWC narrowers in one parsed source. */
+const clonedSwcSingleTypeNarrowerDeclarationsFromSourceFile = (
+  sourceFile: ts.SourceFile,
+): readonly string[] => {
+  const declarations: string[] = [];
+
+  ts.forEachChild(sourceFile, (node) => {
+    const declarationName = topLevelDeclarationName(node);
+    if (declarationName === undefined) {
+      return;
+    }
+
+    if (hasClonedSwcSingleTypeNarrowerShape(node)) {
+      declarations.push(declarationName);
+    }
+  });
+
+  return declarations.sort();
+};
+
+/** Parses in-memory architecture fixture source. */
+const parseFixtureSource = (source: string): ts.SourceFile => {
+  return ts.createSourceFile("architecture-fixture.ts", source, ts.ScriptTarget.Latest, true);
+};
+
 /** Finds one top-level declaration by name. */
 const topLevelDeclarationByName = (
   sourceFile: ts.SourceFile,
@@ -146,6 +176,116 @@ const hasGenericSwcTraversalShape = (node: ts.Node): boolean => {
   return [...GENERIC_SWC_TRAVERSAL_CALLS].every((callName) => calls.has(callName));
 };
 
+/** Checks whether one declaration clones a single-type SWC seam narrower. */
+const hasClonedSwcSingleTypeNarrowerShape = (node: ts.Node): boolean => {
+  const expression = singleReturnExpression(node);
+
+  if (expression === undefined) {
+    return false;
+  }
+
+  return isAstNodeCall(expression) || isAstNodeAndTypeDiscriminantCheck(expression);
+};
+
+/** Returns a declaration's single return expression when it has one. */
+const singleReturnExpression = (node: ts.Node): ts.Expression | undefined => {
+  if (ts.isVariableStatement(node)) {
+    return singleVariableReturnExpression(node);
+  }
+
+  if (ts.isFunctionDeclaration(node)) {
+    return singleFunctionReturnExpression(node);
+  }
+
+  return undefined;
+};
+
+/** Returns a variable arrow function's single return expression. */
+const singleVariableReturnExpression = (node: ts.VariableStatement): ts.Expression | undefined => {
+  const [declaration] = node.declarationList.declarations;
+  const initializer = declaration?.initializer;
+  if (initializer === undefined || !ts.isArrowFunction(initializer)) {
+    return undefined;
+  }
+
+  return expressionFromFunctionBody(initializer.body);
+};
+
+/** Returns a function declaration's single return expression. */
+const singleFunctionReturnExpression = (
+  node: ts.FunctionDeclaration,
+): ts.Expression | undefined => {
+  if (node.body === undefined) {
+    return undefined;
+  }
+
+  return singleBlockReturnExpression(node.body);
+};
+
+/** Normalizes arrow-expression and block-return function bodies. */
+const expressionFromFunctionBody = (body: ts.ConciseBody): ts.Expression | undefined => {
+  if (!ts.isBlock(body)) {
+    return body;
+  }
+
+  return singleBlockReturnExpression(body);
+};
+
+/** Returns a block body's only returned expression. */
+const singleBlockReturnExpression = (body: ts.Block): ts.Expression | undefined => {
+  const [statement] = body.statements;
+  if (body.statements.length !== 1 || statement === undefined) {
+    return undefined;
+  }
+
+  return ts.isReturnStatement(statement) ? statement.expression : undefined;
+};
+
+/** Checks for `isAstNode(value)` style expression narrower clones. */
+const isAstNodeCall = (expression: ts.Expression): boolean => {
+  return (
+    ts.isCallExpression(expression) &&
+    ts.isIdentifier(expression.expression) &&
+    expression.expression.text === "isAstNode" &&
+    expression.arguments.length === 1
+  );
+};
+
+/** Checks for `isAstNode(value) && value.type === "X"` narrower clones. */
+const isAstNodeAndTypeDiscriminantCheck = (expression: ts.Expression): boolean => {
+  if (
+    !ts.isBinaryExpression(expression) ||
+    expression.operatorToken.kind !== ts.SyntaxKind.AmpersandAmpersandToken
+  ) {
+    return false;
+  }
+
+  return (
+    (isAstNodeCall(expression.left) && isTypeDiscriminantCheck(expression.right)) ||
+    (isTypeDiscriminantCheck(expression.left) && isAstNodeCall(expression.right))
+  );
+};
+
+/** Checks for `candidate.type === "NodeType"` discriminant comparisons. */
+const isTypeDiscriminantCheck = (expression: ts.Expression): boolean => {
+  if (
+    !ts.isBinaryExpression(expression) ||
+    expression.operatorToken.kind !== ts.SyntaxKind.EqualsEqualsEqualsToken
+  ) {
+    return false;
+  }
+
+  return (
+    (isTypePropertyAccess(expression.left) && ts.isStringLiteral(expression.right)) ||
+    (ts.isStringLiteral(expression.left) && isTypePropertyAccess(expression.right))
+  );
+};
+
+/** Checks for access to an SWC node `type` discriminant. */
+const isTypePropertyAccess = (expression: ts.Expression): boolean => {
+  return ts.isPropertyAccessExpression(expression) && expression.name.text === "type";
+};
+
 /** Returns the called expression name for supported direct call shapes. */
 const calledExpressionName = (node: ts.Node): string | undefined => {
   if (!ts.isCallExpression(node)) {
@@ -197,10 +337,32 @@ describe("diagnostic architecture", () => {
           ...privateSwcHelperDeclarations(sourcePath),
           ...privateSwcTraversalDeclarations(sourcePath),
           ...genericSwcTraversalDeclarations(sourcePath),
+          ...clonedSwcSingleTypeNarrowerDeclarations(sourcePath),
         ].map((declarationName) => `${sourcePath}:${declarationName}`);
       });
 
     expect(violations).toEqual([]);
+  });
+
+  it("detects cloned single-type SWC narrower shapes", () => {
+    const sourceFile = parseFixtureSource(`
+      const isExpression = (value: unknown): value is Expression => isAstNode(value);
+      const isIdentifier = (value: unknown): value is Identifier => {
+        return isAstNode(value) && value.type === "Identifier";
+      };
+      function isMemberExpression(value: unknown): value is MemberExpression {
+        return "MemberExpression" === value.type && isAstNode(value);
+      }
+      const unrelatedPredicate = (value: unknown): boolean => {
+        return Boolean(value);
+      };
+    `);
+
+    expect(clonedSwcSingleTypeNarrowerDeclarationsFromSourceFile(sourceFile)).toEqual([
+      "isExpression",
+      "isIdentifier",
+      "isMemberExpression",
+    ]);
   });
 
   it("computes deterministic-time scope-owned facts once per scanner node", () => {

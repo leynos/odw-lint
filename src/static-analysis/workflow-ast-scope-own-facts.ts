@@ -7,7 +7,7 @@
  */
 
 import type { Expression, Module, Node } from "@swc/core";
-import { astChildValues, isAstNode } from "./swc-ast";
+import { astChildValues, isExpression } from "./swc-ast";
 import {
   type AstNode,
   addIdentifierBinding,
@@ -177,11 +177,6 @@ const isScopeOpeningNode = (node: AstNode | undefined): node is AstNode => {
       NAMED_CLASS_EXPRESSION_SCOPE_TYPES.has(nodeType) ||
       BLOCK_LIKE_SCOPE_TYPES.has(nodeType))
   );
-};
-
-/** Narrows unknown values to SWC expression-shaped objects. */
-const isExpression = (value: unknown): value is Expression => {
-  return isAstNode(value);
 };
 
 type MutableScopeOwnFacts = {
