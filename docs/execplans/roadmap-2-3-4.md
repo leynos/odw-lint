@@ -750,3 +750,22 @@ added the trusted constructor probe with Red/Green evidence. WI-3 asserted the
 `odw-lint` to loader parity relation with Red/Green evidence. WI-4 documented
 the delivered probe in the developer guide, flipped roadmap task 2.3.4 to
 complete, and finalized this ExecPlan.
+
+## Addenda
+
+- [ ] 2.3.4.1. Strengthen loader-parity assertions and diagnostics.
+  - Source: review:2.3.4.
+  - Severity: low.
+  - Scope: assert the expected absolute reject or accept outcome for each
+    loader-parity body set, and enrich parity failures with the divergence
+    direction and offending `odw-lint` diagnostic.
+  - Success: a mutual false-accept or future divergence reports which side
+    broke the parity contract without relying on sibling test blocks.
+- [ ] 2.3.4.2. Pin one real ODW loader characterization case.
+  - Source: review:2.3.4.
+  - Severity: medium.
+  - Scope: when the ODW sibling checkout is readable, pin at least one
+    TypeScript-only body case against the actual loader call site to confirm
+    the constructor proxy remains faithful.
+  - Success: the proxy assumption is backed by one live-loader characterization
+    or an explicit recorded divergence for design review.

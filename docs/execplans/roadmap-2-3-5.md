@@ -884,3 +884,25 @@ in the worktree.
   support/owner/generated/refresh module carries a matching `new URL` string
   literal, and recorded the change as Decision Log 2026-07-05-D. Updated the
   Constraints masking bullet and the "too broad" Risk accordingly.
+
+## Addenda
+
+- [ ] 2.3.5.1. Complete diagnostic-projection consolidation.
+  - Source: audit:2.3.2, review:2.3.5, and audit:2.3.5.
+  - Severity: medium.
+  - Scope: migrate the dual-compat and remaining valid-branch parity
+    comparisons onto `diagnostic-projection.ts`, make the ownership guard
+    enforce that projection contract, and generalize the developer-guide suite
+    enumeration.
+  - Success: parity comparisons use one manifest-to-comparison shape for rule,
+    severity, message, docs path, span, and `spanText`, and guard coverage
+    catches local comparable-diagnostic forks.
+- [ ] 2.3.5.2. Harden fixture corpus-support ergonomics.
+  - Source: audit:2.3.5.
+  - Severity: low.
+  - Scope: anchor corpus root stripping in `corpus-support.ts` with an explicit
+    dual-mode path contract and extract the duplicated owner-module
+    find-or-throw lookup helper where contracts match.
+  - Success: corpus source-path derivation cannot silently strip the wrong
+    prefix, and ODW-example plus invalid-workflow owner modules share one
+    reviewed lookup helper.

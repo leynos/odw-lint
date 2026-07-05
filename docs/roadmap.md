@@ -177,6 +177,10 @@ future ODW integration. See [technical-design.md](technical-design.md) §11.1.
     - Addendum (from review:1.3.3; low). Extend masking fixtures with escaped
       quotes, escaped regex delimiters, template interpolation boundaries,
       CRLF, and Unicode variants. Lightweight addendum pass.
+  - [ ] 1.3.3.3. Own masking fixture corpus locations.
+    - Addendum (from review:2.3.5; low). Add a masking corpus owner module and
+      broaden the corpus-ownership guard so masking fixture locations cannot
+      fork. Lightweight addendum pass.
 - [x] 1.3.4. Add hostile metadata fixtures that would leave an observable side
   effect if evaluated.
   - See [technical-design.md](technical-design.md) §§11.1 and 11.3.
@@ -855,6 +859,17 @@ code. It informs whether phase 2 can ship. See
     manifest, pure-metadata and deterministic-time corpora, parity assertions,
     manifest freshness guards, and import-inertness checks without touching
     production static-analysis code.
+  - [ ] 2.3.2.1. Broaden deterministic-time parity fixtures.
+    - Addendum (from review:2.3.2; low). Add alias, `globalThis`, computed-member,
+      and lint-clean shadowed-binding dual-compat fixtures. Lightweight addendum
+      pass.
+  - [ ] 2.3.2.2. Add a real freshness-guard negative control.
+    - Addendum (from review:2.3.2; low). Prove a mutated dual-compat fixture byte
+      changes `deriveSha256` output. Lightweight addendum pass.
+  - [ ] 2.3.2.3. Derive the dual-compat manifest during fixture refresh.
+    - Addendum (from audit:2.3.2; medium). Fold dual-compat fixture hashes and
+      spans into the shared `make refresh-fixtures` derivation path. Lightweight
+      addendum pass.
 - [x] 2.3.3. Consume invalid fixture manifests in dialect diagnostic tests.
   - Requires steps 2.1-2.2.
   - Drive parser, envelope, and metadata-rule assertions from the invalid
@@ -881,6 +896,14 @@ code. It informs whether phase 2 can ship. See
   - Success: loader-parity evidence proves `odw-lint`'s `odw/body-syntax`
     outcome for TypeScript-only bodies matches the current ODW loader, or
     records a deliberate parity divergence for design review.
+  - [ ] 2.3.4.1. Strengthen loader-parity assertions and diagnostics.
+    - Addendum (from review:2.3.4; low). Assert expected absolute accept or
+      reject outcomes and report divergence direction with offending diagnostics.
+      Lightweight addendum pass.
+  - [ ] 2.3.4.2. Pin one real ODW loader characterization case.
+    - Addendum (from review:2.3.4; medium). Cross-check the constructor proxy
+      against the reachable ODW loader call site when that checkout can be read.
+      Lightweight addendum pass.
 - [x] 2.3.5. Consolidate fixture corpus and parity projection ownership.
   - Requires 2.3.1 and 2.3.3.
   - Single-source the ODW-example fixture corpus location, route valid and
@@ -894,6 +917,13 @@ code. It informs whether phase 2 can ship. See
     example and invalid workflow corpora now have owner modules, parity suites
     share one diagnostic projection helper, and a static-analysis guard blocks
     new inline corpus-location literals.
+  - [ ] 2.3.5.1. Complete diagnostic-projection consolidation.
+    - Addendum (from audit:2.3.2, review:2.3.5, and audit:2.3.5; medium).
+      Route remaining parity comparisons through the shared projection, enforce
+      it with the guard, and update docs. Lightweight addendum pass.
+  - [ ] 2.3.5.2. Harden fixture corpus-support ergonomics.
+    - Addendum (from audit:2.3.5; low). Anchor corpus root stripping and share
+      the owner-module fixture lookup helper. Lightweight addendum pass.
 
 ### 2.4. Ship the minimal `check` command
 
@@ -1323,3 +1353,32 @@ Node-free analyser. See [technical-design.md](technical-design.md) §§13 and 14
   - See [technical-design.md](technical-design.md) §§13 and 14.
   - Success: the ADR includes measurements or distribution constraints rather
     than a preference for Rust as an implementation language.
+
+### 5.4. Consolidate static-analysis helper seams
+
+This step answers whether deferred static-analysis refactors can reduce drift
+without changing the validated v1 diagnostic contract. It informs future rule
+work by keeping shared helpers documented, tested, and owned once.
+
+- [ ] 5.4.1. Consolidate duplicated static-analysis helper fragments.
+  - Requires steps 2.1-2.3.
+  - Extract shared compact-operator token handling, source position/span copying
+    helpers, and the object-literal preceding-character set where contracts
+    match.
+  - Success: one reviewed helper owns each duplicated contract, focused tests
+    pin unchanged diagnostics, and no production rule output changes.
+
+### 5.5. Reconcile dormant body-syntax span narrowing
+
+This step answers whether the inactive body-syntax span-narrowing surface should
+graduate into a real structured-offset path or remain quarantined as an internal
+fallback. It informs future parser upgrades without reopening the phase-2
+dialect decision.
+
+- [ ] 5.5.1. Resolve the body-syntax span-narrowing surface.
+  - Requires 2.2.6 and 2.3.4.
+  - Decide whether to wire a structured-offset parser channel or explicitly
+    quarantine `workflow-body-parser-spans.ts`, then align rule docs, ADR 0002,
+    and design guidance with the current whole-body fallback.
+  - Success: documentation and code agree on whether span narrowing is active,
+    inert, or intentionally deferred, with tests pinning the chosen contract.

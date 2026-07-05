@@ -837,3 +837,12 @@ full gate plus CodeRabbit review for the freshness repair.
     variants that future source masking and span-mapping work can execute.
   - Success: new masking variants are documented in the manifest, hash-pinned,
     and recorded with empty envelope-diagnostic expectations.
+- [ ] 1.3.3.3. Own masking fixture corpus locations.
+  - Source: review:2.3.5.
+  - Severity: low.
+  - Scope: add a `fixtures/masking/corpus.ts` owner module and broaden the
+    corpus-ownership guard so masking fixture locations cannot be reconstructed
+    or forked outside that owner.
+  - Success: masking fixture tests consume one owner module, and the ownership
+    guard rejects both inline URL locations and equivalent non-owner location
+    reconstruction for masking fixtures.
