@@ -152,6 +152,49 @@ describe("deterministic-time alias scope precision", () => {
     });
   });
 
+  it("reports member aliases declared in block scopes", () => {
+    expectSingleSpan({
+      body: "{ const now = Date.now; now(); }",
+      spanText: "now",
+    });
+  });
+
+  it("suppresses parent member aliases shadowed in block scopes", () => {
+    const { diagnostics } = scanBody("const now = Date.now;\n{ const now = () => 0; now(); }");
+
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("reports member aliases declared in for scopes", () => {
+    expectSingleSpan({
+      body: "for (const now = Date.now; false;) { now(); }",
+      spanText: "now",
+    });
+  });
+
+  it("suppresses parent member aliases shadowed in for scopes", () => {
+    const { diagnostics } = scanBody(
+      "const now = Date.now;\nfor (const now = () => 0; false;) { now(); }",
+    );
+
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("reports member aliases declared in catch scopes", () => {
+    expectSingleSpan({
+      body: "try { throw 0; } catch (error) { const now = Date.now; now(); }",
+      spanText: "now",
+    });
+  });
+
+  it("suppresses global-object aliases shadowed in catch scopes", () => {
+    const { diagnostics } = scanBody(
+      "const Clock = Date;\ntry { throw Date; } catch (Clock) { Clock.now(); }",
+    );
+
+    expect(diagnostics).toEqual([]);
+  });
+
   it("keeps generated sibling member aliases isolated by scope", () => {
     fc.assert(
       fc.property(NON_DATE_IDENTIFIER, (name) => {

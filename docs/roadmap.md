@@ -961,20 +961,20 @@ reported clearly in one command. The result informs strict-mode policy. See
   - Success: same-named aliases or global roots in unrelated scopes no longer
     suppress supported Claude compatibility warnings, while aliases shadowed at
     the use site remain suppressed and rule-doc limitations are updated.
-  - [ ] 3.1.6.1. Document deliberate initializer dropping in scope recursion.
+  - [x] 3.1.6.1. Document deliberate initializer dropping in scope recursion.
     - Addendum (from review:3.1.6; low). Add a brief code comment explaining
       why nested parameter and pattern recursion discards simple initializers
       while collecting owned scope facts. Lightweight addendum pass.
-  - [ ] 3.1.6.2. Split near-limit alias and scope-view helpers.
+  - [x] 3.1.6.2. Split near-limit alias and scope-view helpers.
     - Addendum (from review:3.1.6; low). Move alias or scope-view helper code
       out of `workflow-ast-scopes.ts` before the file-size guard forces a split
       during unrelated rule work. Lightweight addendum pass.
-  - [ ] 3.1.6.3. Document whole-scope alias and temporal dead-zone limits.
+  - [x] 3.1.6.3. Document whole-scope alias and temporal dead-zone limits.
     - Addendum (from review:3.1.6; low). State in deterministic-time rule
       limitations that alias visibility is conservative within one scope and
       does not model declaration order or temporal dead zones. Lightweight
       addendum pass.
-  - [ ] 3.1.6.4. Add block/for/catch alias-scope regression tests.
+  - [x] 3.1.6.4. Add block/for/catch alias-scope regression tests.
     - Addendum (from audit:3.1.6; low). Pin alias visibility for block, `for`,
       and `catch` scopes before later collector work changes the same scope
       model. Lightweight addendum pass.

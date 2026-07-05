@@ -58,6 +58,7 @@ export const EXPECTED_STATIC_ANALYSIS_MODULE_FILES = [
   "workflow-ast-binding-patterns.ts",
   "workflow-ast-bindings.ts",
   "workflow-ast-facts.ts",
+  "workflow-ast-scope-own-facts.ts",
   "workflow-ast-scopes.ts",
   "workflow-body-normalizer.ts",
   "workflow-body-parse.ts",

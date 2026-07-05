@@ -53,7 +53,9 @@ constructor aliases such as `const Clock = Date; new Clock()`.
 Alias declarations and alias use resolve through the same lexical scope model
 as bare `Date` roots. A same-named alias or rebinding in an unrelated scope no
 longer suppresses or fabricates a warning, and an alias shadowed at the use
-site stays suppressed.
+site stays suppressed. Alias visibility is still computed for the whole current
+scope, so use-before-declaration and temporal dead-zone ordering inside one
+scope remain conservative.
 
 The remaining conservative limits are dynamic computed keys, block, `for`, and
 `catch` shadows attributed to the enclosing function scope, optional chaining

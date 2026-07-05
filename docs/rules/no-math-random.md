@@ -54,7 +54,9 @@ string-key access such as `Math["random"]()` and `globalThis` chains such as
 Alias declarations and alias use resolve through the same lexical scope model
 as bare `Math` roots. A same-named alias or rebinding in an unrelated scope no
 longer suppresses or fabricates a warning, and an alias shadowed at the use
-site stays suppressed.
+site stays suppressed. Alias visibility is still computed for the whole current
+scope, so use-before-declaration and temporal dead-zone ordering inside one
+scope remain conservative.
 
 The remaining conservative limits are dynamic computed keys (`Math[k]()`),
 block, `for`, and `catch` shadows attributed to the enclosing function scope,
