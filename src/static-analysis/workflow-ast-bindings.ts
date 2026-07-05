@@ -31,6 +31,8 @@ const STATEMENT_BINDING_COLLECTORS: Readonly<Record<string, BindingCollector>> =
   Constructor: collectConstructorBindings,
   ClassMethod: collectClassMethodBindings,
   PrivateMethod: collectClassMethodBindings,
+  SetterProperty: collectObjectSetterBindings,
+  MethodProperty: collectObjectMethodBindings,
   BlockStatement: collectBlockStatementBindings,
   CatchClause: collectCatchClauseBindings,
 };
@@ -121,6 +123,18 @@ function collectConstructorBindings(node: AstNode, boundNames: Set<string>): voi
 function collectClassMethodBindings(node: AstNode, boundNames: Set<string>): void {
   collectFunctionLikeBindings(asNode(node.function) ?? node, boundNames);
   collectStatementBindings(asNode(asNode(node.function)?.body), boundNames);
+}
+
+/** Collects object setter parameters to match class members and scope facts. */
+function collectObjectSetterBindings(node: AstNode, boundNames: Set<string>): void {
+  collectPatternBindingNames(node.param, boundNames);
+  collectStatementBindings(asNode(node.body), boundNames);
+}
+
+/** Collects object method parameters to match class members and scope facts. */
+function collectObjectMethodBindings(node: AstNode, boundNames: Set<string>): void {
+  collectFunctionLikeBindings(node, boundNames);
+  collectStatementBindings(asNode(node.body), boundNames);
 }
 
 /** Collects bindings from a block statement. */

@@ -72,14 +72,31 @@ export const enterAliasScope = (
   node: Node,
   rules: DeterministicTimeAliasRules,
 ): DeterministicTimeAliases => {
-  const facts = scopeOwnFacts(node);
+  return enterAliasScopeWithOwnFacts(parentAliases, childBindings, scopeOwnFacts(node), rules);
+};
+
+/**
+ * Enters a child alias scope from facts already computed for one scanner node.
+ *
+ * @param parentAliases - Alias facts visible before the scanner node.
+ * @param childBindings - Lexical binding facts visible inside the scanner node.
+ * @param facts - Scope-owned facts for the scanner node.
+ * @param rules - Rule identifiers to attach to direct member alias calls.
+ * @returns A child alias view for non-empty scope facts, otherwise
+ * `parentAliases`.
+ */
+export const enterAliasScopeWithOwnFacts = (
+  parentAliases: DeterministicTimeAliases,
+  childBindings: LexicalBindingFacts,
+  facts: ScopeOwnFacts,
+  rules: DeterministicTimeAliasRules,
+): DeterministicTimeAliases => {
   if (facts.ownNames.length === 0 && facts.ownInitializers.length === 0) {
     return parentAliases;
   }
 
   return aliasViewForOwnFacts(parentAliases, facts, childBindings, rules);
 };
-
 /**
  * Matches calls through a direct deterministic member alias.
  *

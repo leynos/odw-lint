@@ -16,7 +16,7 @@ import type { Diagnostic } from "../diagnostics/types";
 import { traverseAstSubtree } from "./swc-ast";
 import type { WorkflowEnvelope } from "./types";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
-import { enterScope, rootScopeView } from "./workflow-ast-scopes";
+import { enterScopeWithOwnFacts, rootScopeView, scopeOwnFacts } from "./workflow-ast-scopes";
 import {
   type NormalizedWorkflowBody,
   originalSpanFromNormalizedOffsets,
@@ -27,7 +27,7 @@ import {
   aliasCallMatch,
   type DeterministicTimeAliases,
   type DeterministicTimeAliasRules,
-  enterAliasScope,
+  enterAliasScopeWithOwnFacts,
   memberExpressionFromCall,
   objectIdentityForExpression,
   rootAliasView,
@@ -139,11 +139,12 @@ const enterDeterministicTimeScope = (
   context: DeterministicTimeContext,
   node: Node,
 ): DeterministicTimeContext => {
-  const bindings = enterScope(context.bindings, node);
+  const ownFacts = scopeOwnFacts(node);
+  const bindings = enterScopeWithOwnFacts(context.bindings, ownFacts);
 
   return {
     bindings,
-    aliases: enterAliasScope(context.aliases, bindings, node, ALIAS_RULES),
+    aliases: enterAliasScopeWithOwnFacts(context.aliases, bindings, ownFacts, ALIAS_RULES),
   };
 };
 

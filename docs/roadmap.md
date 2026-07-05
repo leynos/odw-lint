@@ -1068,7 +1068,7 @@ See [technical-design.md](technical-design.md) §9.3.
       identifier helper logic from the binding and scope collectors into the
       shared binding-pattern support where ownership fits. Lightweight addendum
       pass.
-- [ ] 3.2.7. Reconcile scope-owned facts with public binding facts.
+- [x] 3.2.7. Reconcile scope-owned facts with public binding facts.
   - Requires 3.1.6 and 3.2.6.
   - Remove duplicate `scopeOwnFacts` collection across binding and alias scope
     entry, and align the public flat lexical-binding facts with the scope model

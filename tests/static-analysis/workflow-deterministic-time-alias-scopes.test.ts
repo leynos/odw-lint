@@ -3,6 +3,7 @@
  */
 
 import { describe, expect, it } from "bun:test";
+import type { Module, Node } from "@swc/core";
 import * as fc from "fast-check";
 import type { Diagnostic } from "odw-lint";
 import {
@@ -11,10 +12,22 @@ import {
   scanWorkflowEnvelope,
   sliceSourceSpan,
 } from "odw-lint";
+import { astChildValues, isAstNode } from "../../src/static-analysis/swc-ast";
+import {
+  enterScope,
+  rootScopeView,
+  scopeOwnFacts,
+} from "../../src/static-analysis/workflow-ast-scopes";
+import { parseNormalizedWorkflowBody } from "../../src/static-analysis/workflow-body-parse";
 import { scanDeterministicTimeWarnings } from "../../src/static-analysis/workflow-deterministic-time";
+import {
+  enterAliasScope,
+  enterAliasScopeWithOwnFacts,
+  rootAliasView,
+} from "../../src/static-analysis/workflow-deterministic-time-aliases";
 import { SOURCE_SPAN_PROPERTY_RUNNER } from "./source-file-property-oracle";
 import { decodeSpanText, expectSpanToMatchSource } from "./source-span-oracle";
-import { expectScannedEnvelope } from "./workflow-envelope-support";
+import { envelopeForBody, expectScannedEnvelope } from "./workflow-envelope-support";
 
 const DEFAULT_META = 'export const meta = { name: "time-check", description: "ok" };';
 const DATE_NOW_RULE = makeRuleId("odw/no-date-now");
@@ -49,6 +62,10 @@ type AliasScopeCase = {
 type SingleSpanExpectation = ReturnType<typeof scanBody> & {
   readonly diagnostic: Diagnostic;
 };
+const ALIAS_TEST_RULES = {
+  dateNowRule: DATE_NOW_RULE,
+  mathRandomRule: makeRuleId("odw/no-math-random"),
+} as const;
 
 /** Scans a body fragment and returns detector diagnostics plus source context. */
 const scanBody = (body: string, label = "deterministic-time-alias-scope") => {
@@ -64,6 +81,63 @@ const scanBody = (body: string, label = "deterministic-time-alias-scope") => {
     sourceFile,
     diagnostics: scanDeterministicTimeWarnings(envelope),
   };
+};
+
+/** Parses one workflow body and returns its normalized SWC module. */
+const moduleForBody = (body: string): Module => {
+  const result = parseNormalizedWorkflowBody(envelopeForBody(body));
+
+  if (!result.ok) {
+    throw new Error("Expected deterministic-time alias fixture to parse.", { cause: result.error });
+  }
+
+  return result.module;
+};
+
+/** Returns one AST node by SWC type. */
+const nodeOfType = (node: Node, type: string): Node => {
+  const match = findNodeOfType(node, type);
+  if (match === undefined) {
+    throw new Error(`Expected fixture to include ${type} node.`);
+  }
+
+  return match;
+};
+
+/** Finds one AST node by SWC type. */
+const findNodeOfType = (node: Node, type: string): Node | undefined => {
+  if (node.type === type) {
+    return node;
+  }
+
+  for (const child of astChildValues(node)) {
+    const match = nodeOfTypeInValue(child, type);
+    if (match !== undefined) {
+      return match;
+    }
+  }
+
+  return undefined;
+};
+
+/** Returns one AST node from a child value. */
+const nodeOfTypeInValue = (value: unknown, type: string): Node | undefined => {
+  if (isAstNode(value)) {
+    return findNodeOfType(value, type);
+  }
+
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  for (const item of value) {
+    const match = nodeOfTypeInValue(item, type);
+    if (match !== undefined) {
+      return match;
+    }
+  }
+
+  return undefined;
 };
 
 /** Returns the single deterministic-time diagnostic or fails with context. */
@@ -130,6 +204,34 @@ describe("deterministic-time alias scope precision", () => {
     );
 
     expect(diagnostics).toEqual([]);
+  });
+
+  it("enters alias scopes from precomputed own facts", () => {
+    const module = moduleForBody(
+      "const now = Date.now;\nfunction helper(now) { const localNow = Date.now; return localNow(); }\nnow();",
+    );
+    const rootBindings = rootScopeView(module);
+    const rootAliases = rootAliasView(module, rootBindings, ALIAS_TEST_RULES);
+    const functionNode = nodeOfType(module, "FunctionDeclaration");
+    const expressionNode = nodeOfType(module, "ExpressionStatement");
+    const functionBindings = enterScope(rootBindings, functionNode);
+
+    expect(
+      enterAliasScopeWithOwnFacts(
+        rootAliases,
+        functionBindings,
+        scopeOwnFacts(functionNode),
+        ALIAS_TEST_RULES,
+      ),
+    ).toEqual(enterAliasScope(rootAliases, functionBindings, functionNode, ALIAS_TEST_RULES));
+    expect(
+      enterAliasScopeWithOwnFacts(
+        rootAliases,
+        rootBindings,
+        scopeOwnFacts(expressionNode),
+        ALIAS_TEST_RULES,
+      ),
+    ).toBe(rootAliases);
   });
 
   it("suppresses a global-object alias rebound as a sibling parameter", () => {

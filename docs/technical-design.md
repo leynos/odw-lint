@@ -127,13 +127,15 @@ Parser-backed rule modules share SWC node-shape helpers through
 guard, semantic child-field traversal, record guard re-export, and generic
 pre-order `traverseAstSubtree` driver. The deterministic-time scanner uses the
 driver for a full-subtree walk, threading scope-narrowed binding and alias views
-through the same traversal context. Scope views, alias declaration views, and
-the lexical-binding collector consume `astChildValues` while keeping their
-distinct scope-bounded and type-dispatched recursion policies. Binding pattern
-collection and global-object resolution are not generic tree walks: they stay
-directed analyses behind the same shape helpers where needed. Keeping these
-helpers in one module prevents rule-local traversal drift while leaving public
-package exports unchanged.
+through the same traversal context. It computes each visited node's
+`ScopeOwnFacts` once, then shares that value between the binding and alias scope
+entries. Scope views, alias declaration views, and the lexical-binding collector
+consume `astChildValues` while keeping their distinct scope-bounded and
+type-dispatched recursion policies. Binding pattern collection and
+global-object resolution are not generic tree walks: they stay directed analyses
+behind the same shape helpers where needed. Keeping these helpers in one module
+prevents rule-local traversal drift while leaving public package exports
+unchanged.
 
 ### 6.2. Static source model
 

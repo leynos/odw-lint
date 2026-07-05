@@ -80,6 +80,40 @@ const genericSwcTraversalDeclarations = (sourcePath: string): readonly string[] 
   return declarations.sort();
 };
 
+/** Finds one top-level declaration by name. */
+const topLevelDeclarationByName = (
+  sourceFile: ts.SourceFile,
+  declarationName: string,
+): ts.Node | undefined => {
+  let match: ts.Node | undefined;
+
+  ts.forEachChild(sourceFile, (node) => {
+    if (topLevelDeclarationName(node) === declarationName) {
+      match = node;
+    }
+  });
+
+  return match;
+};
+
+/** Counts direct call-expression names inside one declaration body. */
+const callCountsByName = (node: ts.Node): ReadonlyMap<string, number> => {
+  const calls = new Map<string, number>();
+
+  const visit = (candidate: ts.Node): void => {
+    const callName = calledExpressionName(candidate);
+    if (callName !== undefined) {
+      calls.set(callName, (calls.get(callName) ?? 0) + 1);
+    }
+
+    ts.forEachChild(candidate, visit);
+  };
+
+  visit(node);
+
+  return calls;
+};
+
 /** Extracts a top-level declaration name that can own helper logic. */
 const topLevelDeclarationName = (node: ts.Node): string | undefined => {
   if (ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) {
@@ -167,5 +201,23 @@ describe("diagnostic architecture", () => {
       });
 
     expect(violations).toEqual([]);
+  });
+
+  it("computes deterministic-time scope-owned facts once per scanner node", () => {
+    const declaration = topLevelDeclarationByName(
+      parseSource(`${STATIC_ANALYSIS_SOURCE_PATH}/workflow-deterministic-time.ts`),
+      "enterDeterministicTimeScope",
+    );
+    if (declaration === undefined) {
+      throw new Error("Expected enterDeterministicTimeScope declaration.");
+    }
+
+    const calls = callCountsByName(declaration);
+
+    expect(calls.get("scopeOwnFacts") ?? 0).toBe(1);
+    expect(calls.get("enterScope") ?? 0).toBe(0);
+    expect(calls.get("enterAliasScope") ?? 0).toBe(0);
+    expect(calls.get("enterScopeWithOwnFacts") ?? 0).toBe(1);
+    expect(calls.get("enterAliasScopeWithOwnFacts") ?? 0).toBe(1);
   });
 });

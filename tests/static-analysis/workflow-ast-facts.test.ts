@@ -53,6 +53,15 @@ describe("collectWorkflowAstFacts", () => {
     expect(isIndexInInertRegion(facts.suppressionMasks, -1)).toBeFalse();
   });
 
+  it("includes object-literal accessor parameters in public lexical bindings", () => {
+    const facts = collectWorkflowAstFacts(
+      envelopeForBody("const o = { set value(setterParam) {}, method(methodParam) {} };\n"),
+    );
+
+    expect(isIdentifierBound(facts.lexicalBindings, "setterParam")).toBeTrue();
+    expect(isIdentifierBound(facts.lexicalBindings, "methodParam")).toBeTrue();
+  });
+
   it("can assemble public facts from an existing internal parse result", () => {
     const envelope = envelopeForBody("const Number = customNumber;\n");
     const parseResult = parseNormalizedWorkflowBody(envelope);

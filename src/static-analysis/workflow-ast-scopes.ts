@@ -32,7 +32,20 @@ export const rootScopeView = (module: Module): LexicalBindingFacts => {
  * @returns A child scope view for scope-opening nodes, otherwise `view`.
  */
 export const enterScope = (view: LexicalBindingFacts, node: Node): LexicalBindingFacts => {
-  const facts = scopeOwnFacts(node);
+  return enterScopeWithOwnFacts(view, scopeOwnFacts(node));
+};
+
+/**
+ * Enters a child scope from facts already computed for one scanner node.
+ *
+ * @param view - Binding facts visible before the scanner node.
+ * @param facts - Scope-owned facts for the scanner node.
+ * @returns A child scope view for non-empty scope facts, otherwise `view`.
+ */
+export const enterScopeWithOwnFacts = (
+  view: LexicalBindingFacts,
+  facts: ScopeOwnFacts,
+): LexicalBindingFacts => {
   if (facts.ownNames.length === 0) {
     return view;
   }

@@ -8,6 +8,7 @@ import { astChildValues, isAstNode } from "../../src/static-analysis/swc-ast";
 import { asNode, identifierName } from "../../src/static-analysis/workflow-ast-binding-patterns";
 import {
   enterScope,
+  enterScopeWithOwnFacts,
   rootScopeOwnFacts,
   rootScopeView,
   scopeOwnFacts,
@@ -151,6 +152,18 @@ describe("workflow AST scope views", () => {
     const expressionView = enterScope(rootView, userStatementOfType(module, "ExpressionStatement"));
 
     expect(expressionView).toBe(rootView);
+  });
+
+  it("enters scopes from precomputed own facts", () => {
+    const module = moduleForBody("function helper(Date) { return Date.now(); }\nhelper();\n");
+    const rootView = rootScopeView(module);
+    const functionNode = userStatementOfType(module, "FunctionDeclaration");
+    const expressionNode = userStatementOfType(module, "ExpressionStatement");
+
+    expect(enterScopeWithOwnFacts(rootView, scopeOwnFacts(functionNode))).toEqual(
+      enterScope(rootView, functionNode),
+    );
+    expect(enterScopeWithOwnFacts(rootView, scopeOwnFacts(expressionNode))).toBe(rootView);
   });
 
   it("keeps nested parameter bindings out of the root view", () => {

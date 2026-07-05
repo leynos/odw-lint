@@ -76,6 +76,7 @@ describe("collectLexicalBindings", () => {
     ["Array static call", "const y = Array.from(items);\n", "Array"],
     ["default-value reference", "function f(x = Math.max(1, 2)) {}\n", "Math"],
     ["computed object key", "const { [Math]: z } = source;\n", "Math"],
+    ["accessor body reference", "const o = { set value(_) { Math.random(); } };\n", "Math"],
   ] as const) {
     it(`does not report reference-only ${name} from ${label}`, () => {
       expect(isIdentifierBound(bindingsForBody(body), name)).toBeFalse();
@@ -105,6 +106,20 @@ describe("collectLexicalBindings", () => {
     expect(isIdentifierBound(facts, "ctor")).toBeTrue();
     expect(isIdentifierBound(facts, "method")).toBeTrue();
     expect(isIdentifierBound(facts, "secret")).toBeTrue();
+  });
+
+  it("reports object-literal setter and method parameter bindings", () => {
+    const facts = bindingsForBody(
+      "const o = { get gv() { const getterLocal = 1; }, set value(setterParam) { const setterLocal = setterParam; }, method(methodParam) { return methodParam; } };\n",
+    );
+
+    expect(isIdentifierBound(facts, "setterParam")).toBeTrue();
+    expect(isIdentifierBound(facts, "methodParam")).toBeTrue();
+    expect(isIdentifierBound(facts, "getterLocal")).toBeTrue();
+    expect(isIdentifierBound(facts, "setterLocal")).toBeTrue();
+    expect(isIdentifierBound(facts, "value")).toBeFalse();
+    expect(isIdentifierBound(facts, "method")).toBeFalse();
+    expect(isIdentifierBound(facts, "gv")).toBeFalse();
   });
 
   it("keeps bindings from array-valued patterns and class bodies", () => {
