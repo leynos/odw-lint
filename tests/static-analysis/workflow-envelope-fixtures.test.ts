@@ -6,6 +6,10 @@ import { describe, expect, it } from "bun:test";
 import { createOriginalSourceFile } from "odw-lint";
 import { scanWorkflowEnvelope } from "../../src/static-analysis/workflow-envelope";
 import { readFixtureSource } from "./fixtures/corpus-support";
+import {
+  liveDiagnosticToComparable,
+  manifestDiagnosticToComparable,
+} from "./fixtures/diagnostic-projection";
 import type { InvalidWorkflowFixtureSnapshot } from "./fixtures/invalid-workflows";
 import { INVALID_WORKFLOW_FIXTURE_CORPUS } from "./fixtures/invalid-workflows/corpus";
 import { UNSUPPORTED_IMPORT_EXPORT_FIXTURES } from "./fixtures/invalid-workflows/manifests/unsupported-import-export";
@@ -13,11 +17,8 @@ import {
   ODW_EXAMPLE_FIXTURE_SNAPSHOTS,
   type OdwExampleFixtureSnapshot,
 } from "./fixtures/odw-examples";
+import { ODW_EXAMPLE_FIXTURE_CORPUS } from "./fixtures/odw-examples/corpus";
 import { expectScannedEnvelope, spanTextFor } from "./workflow-envelope-support";
-
-const ODW_EXAMPLE_CORPUS = {
-  fixtureDirectory: new URL("./fixtures/odw-examples/", import.meta.url),
-} as const;
 
 /** Scans one unsupported import/export fixture from its manifest entry. */
 const scanInvalidFixture = (fixture: InvalidWorkflowFixtureSnapshot) => {
@@ -31,7 +32,7 @@ const scanInvalidFixture = (fixture: InvalidWorkflowFixtureSnapshot) => {
 
 /** Scans one valid ODW example fixture from its manifest entry. */
 const scanOdwExampleFixture = (fixture: OdwExampleFixtureSnapshot) => {
-  const sourceText = readFixtureSource(ODW_EXAMPLE_CORPUS, fixture.fileName);
+  const sourceText = readFixtureSource(ODW_EXAMPLE_FIXTURE_CORPUS, fixture.fileName);
   const sourceFile = createOriginalSourceFile({
     filePath: fixture.fixturePath,
     sourceText,
@@ -51,15 +52,8 @@ describe("workflow envelope invalid fixture diagnostics", () => {
     const { result, sourceFile } = scanInvalidFixture(fixture);
 
     expect(
-      result.diagnostics.map((diagnostic) => ({
-        rule: diagnostic.rule,
-        severity: diagnostic.severity,
-        message: diagnostic.message,
-        docs: diagnostic.docs,
-        span: diagnostic.span,
-        spanText: spanTextFor(sourceFile, diagnostic.span),
-      })),
-    ).toEqual([...fixture.expectedDiagnostics]);
+      result.diagnostics.map((diagnostic) => liveDiagnosticToComparable(diagnostic, sourceFile)),
+    ).toEqual(fixture.expectedDiagnostics.map(manifestDiagnosticToComparable));
   });
 });
 

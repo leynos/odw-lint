@@ -11,22 +11,15 @@ import { importArchitectureFactsFromSource } from "../diagnostics/import-edge-ex
 import { isForbiddenOdwImport } from "../diagnostics/odw-import-policy";
 import { readFixtureSource } from "./fixtures/corpus-support";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
+import { INVALID_WORKFLOW_FIXTURE_CORPUS } from "./fixtures/invalid-workflows/corpus";
 import {
   expectedInvalidFixtureOutcome,
   expectedNoErrorOutcome,
   loaderParityOutcome,
 } from "./fixtures/loader-parity";
 import { ODW_EXAMPLE_FIXTURE_SNAPSHOTS } from "./fixtures/odw-examples";
+import { ODW_EXAMPLE_FIXTURE_CORPUS } from "./fixtures/odw-examples/corpus";
 
-const TRUSTED_EXAMPLE_CORPUS = {
-  fixtureDirectory: new URL("./fixtures/odw-examples/", import.meta.url),
-  manifestRoot: "tests/static-analysis/fixtures/odw-examples/",
-} as const;
-const INVALID_FIXTURE_CORPUS = {
-  fixtureDirectory: new URL("./fixtures/invalid-workflows/", import.meta.url),
-  manifestRoot: "tests/static-analysis/fixtures/invalid-workflows/",
-  recursive: true,
-} as const;
 const PROJECT_ROOT_URL = new URL("../../", import.meta.url);
 const HARNESS_ENTRYPOINT_URLS = [new URL("./loader-parity.test.ts", import.meta.url)] as const;
 const TYPESCRIPT_SOURCE_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts"] as const;
@@ -125,7 +118,7 @@ const discoverHarnessSourceFiles = (): readonly HarnessSourceFile[] => {
 const computeInvalidFixtureOutcome = (
   fixture: (typeof INVALID_WORKFLOW_FIXTURE_SNAPSHOTS)[number],
 ) => {
-  const sourceText = readFixtureSource(INVALID_FIXTURE_CORPUS, fixture.fixturePath);
+  const sourceText = readFixtureSource(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath);
 
   return loaderParityOutcome({
     filePath: fixture.fixturePath,
@@ -247,7 +240,7 @@ describe("trusted ODW example loader parity", () => {
 
   for (const fixture of ODW_EXAMPLE_FIXTURE_SNAPSHOTS) {
     it(`${fixture.fileName} emits no dialect errors`, () => {
-      const sourceText = readFixtureSource(TRUSTED_EXAMPLE_CORPUS, fixture.fixturePath);
+      const sourceText = readFixtureSource(ODW_EXAMPLE_FIXTURE_CORPUS, fixture.fixturePath);
       const outcome = loaderParityOutcome({
         filePath: fixture.fixturePath,
         sourceText,

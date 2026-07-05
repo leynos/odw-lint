@@ -20,9 +20,15 @@ import {
 import { firstReviewedRuleTemplate } from "../../src/diagnostics/rule-catalogue";
 import { isUnknownRecord } from "../../src/static-analysis/value-guards";
 import { readFixtureSource } from "./fixtures/corpus-support";
+import {
+  liveDiagnosticToComparable,
+  manifestDiagnosticToComparable,
+} from "./fixtures/diagnostic-projection";
 import { INVALID_WORKFLOW_FIXTURE_CORPUS } from "./fixtures/invalid-workflows/corpus";
+import type { InvalidWorkflowFixtureDiagnostic } from "./fixtures/invalid-workflows/manifest-types";
 import { SYNTAX_ERROR_FIXTURES } from "./fixtures/invalid-workflows/manifests/syntax-error";
 import { ODW_EXAMPLE_FIXTURE_SNAPSHOTS } from "./fixtures/odw-examples";
+import { ODW_EXAMPLE_FIXTURE_CORPUS } from "./fixtures/odw-examples/corpus";
 import { expectScannedEnvelope } from "./workflow-envelope-support";
 
 const VALID_BODY_STATEMENT = fc.constantFrom(
@@ -54,9 +60,6 @@ const NON_EXPECTED_SYNTAX_ERROR_BODIES = [
   ["missing expression", "const value = ;\n"],
   ["stray closing brace", "}\n"],
 ] as const;
-const ODW_EXAMPLE_FIXTURE_CORPUS = {
-  fixtureDirectory: new URL("./fixtures/odw-examples/", import.meta.url),
-} as const;
 const BODY_SYNTAX_RULE_DEFINITION = ruleDefinitionFor(makeRuleId("odw/body-syntax"));
 const BODY_SYNTAX_TEMPLATE = firstReviewedRuleTemplate(BODY_SYNTAX_RULE_DEFINITION);
 
@@ -116,21 +119,17 @@ const expectBodySyntaxDiagnostic = (
   return result.diagnostic;
 };
 
-/** Projects manifest diagnostics to the parser adapter diagnostic shape. */
-const expectedBodySyntaxDiagnosticFor = (fixture: (typeof SYNTAX_ERROR_FIXTURES)[number]) => {
+/** Requires the pinned body-syntax manifest diagnostic for one syntax fixture. */
+const expectedBodySyntaxManifestDiagnostic = (
+  fixture: (typeof SYNTAX_ERROR_FIXTURES)[number],
+): InvalidWorkflowFixtureDiagnostic => {
   const expectedDiagnostic = fixture.expectedDiagnostics[0];
   expect(expectedDiagnostic).toBeDefined();
   if (expectedDiagnostic === undefined) {
     throw new Error(`Expected ${fixture.fixturePath} to pin a body syntax diagnostic.`);
   }
 
-  return {
-    rule: String(expectedDiagnostic.rule),
-    severity: expectedDiagnostic.severity,
-    message: expectedDiagnostic.message,
-    span: expectedDiagnostic.span,
-    docs: expectedDiagnostic.docs,
-  };
+  return expectedDiagnostic;
 };
 
 /** Checks whether an unknown SWC span has numeric byte offsets. */
@@ -200,13 +199,9 @@ describe("parseWorkflowBody", () => {
     const envelope = envelopeForInvalidFixture(fixture.fixturePath);
     const diagnostic = expectBodySyntaxDiagnostic(parseWorkflowBody(envelope));
 
-    expect({
-      rule: String(diagnostic.rule),
-      severity: diagnostic.severity,
-      message: diagnostic.message,
-      span: diagnostic.span,
-      docs: diagnostic.docs,
-    }).toEqual(expectedBodySyntaxDiagnosticFor(fixture));
+    expect(liveDiagnosticToComparable(diagnostic, envelope.sourceFile)).toEqual(
+      manifestDiagnosticToComparable(expectedBodySyntaxManifestDiagnostic(fixture)),
+    );
     expect(messageMatchesTemplate(BODY_SYNTAX_TEMPLATE, diagnostic.message)).toBeTrue();
     expect(diagnostic.message).not.toBe(BODY_SYNTAX_RULE_DEFINITION.messages[0]);
   });
@@ -216,7 +211,9 @@ describe("parseWorkflowBody", () => {
   )("emits original-source body span text for %s", (_fixturePath, fixture) => {
     const envelope = envelopeForInvalidFixture(fixture.fixturePath);
     const diagnostic = expectBodySyntaxDiagnostic(parseWorkflowBody(envelope));
-    const expectedDiagnostic = expectedBodySyntaxDiagnosticFor(fixture);
+    const expectedDiagnostic = manifestDiagnosticToComparable(
+      expectedBodySyntaxManifestDiagnostic(fixture),
+    );
 
     expect(diagnostic.span).toEqual(expectedDiagnostic.span);
     expect(diagnostic.span).toEqual(envelope.bodySpan);

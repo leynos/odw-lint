@@ -3,9 +3,14 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import type { Diagnostic, SourceSpan } from "odw-lint";
-import { lintWorkflowSource, ruleDefinitionFor, ruleDocsPath, sliceSourceSpan } from "odw-lint";
+import type { Diagnostic } from "odw-lint";
+import { lintWorkflowSource, ruleDefinitionFor, ruleDocsPath } from "odw-lint";
 import { readFixtureSource } from "./fixtures/corpus-support";
+import {
+  type ComparableFixtureDiagnostic,
+  liveDiagnosticToComparable,
+  manifestDiagnosticToComparable,
+} from "./fixtures/diagnostic-projection";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
 import { INVALID_WORKFLOW_FIXTURE_CORPUS } from "./fixtures/invalid-workflows/corpus";
 import type {
@@ -24,15 +29,8 @@ const TASK_2_1_3_RULES = new Set([
 ]);
 const BODY_SYNTAX_RULES = new Set(["odw/body-syntax"]);
 
-type ComparableDiagnostic = {
-  readonly rule: string;
-  readonly severity: Diagnostic["severity"];
-  readonly message: string;
-  readonly span: SourceSpan;
-  readonly spanText: string;
-};
 type TaskOwnedFixtureResult = {
-  readonly diagnostics: readonly ComparableDiagnostic[];
+  readonly diagnostics: readonly ComparableFixtureDiagnostic[];
   readonly status: InvalidWorkflowFixtureStatus | undefined;
 };
 
@@ -61,13 +59,9 @@ const classifyInvalidFixture = (
   );
 
   return {
-    diagnostics: diagnostics.map((diagnostic) => ({
-      rule: String(diagnostic.rule),
-      severity: diagnostic.severity,
-      message: diagnostic.message,
-      span: diagnostic.span,
-      spanText: sliceSourceSpan(result.sourceFile, diagnostic.span),
-    })),
+    diagnostics: diagnostics.map((diagnostic) =>
+      liveDiagnosticToComparable(diagnostic, result.sourceFile),
+    ),
     status: statusFromDiagnostics(diagnostics),
   };
 };
@@ -79,13 +73,7 @@ const comparableFixtureDiagnostics = (
   const taskDiagnostics = taskOwnedFixtureDiagnostics(diagnostics);
 
   return {
-    diagnostics: taskDiagnostics.map((diagnostic) => ({
-      rule: String(diagnostic.rule),
-      severity: diagnostic.severity,
-      message: diagnostic.message,
-      span: diagnostic.span,
-      spanText: diagnostic.spanText,
-    })),
+    diagnostics: taskDiagnostics.map(manifestDiagnosticToComparable),
     status: statusFromDiagnostics(taskDiagnostics),
   };
 };
@@ -102,13 +90,9 @@ const classifyBodySyntaxFixture = (
   const diagnostics = result.bodySyntax;
 
   return {
-    diagnostics: diagnostics.map((diagnostic) => ({
-      rule: String(diagnostic.rule),
-      severity: diagnostic.severity,
-      message: diagnostic.message,
-      span: diagnostic.span,
-      spanText: sliceSourceSpan(result.sourceFile, diagnostic.span),
-    })),
+    diagnostics: diagnostics.map((diagnostic) =>
+      liveDiagnosticToComparable(diagnostic, result.sourceFile),
+    ),
     status: statusFromDiagnostics(diagnostics),
   };
 };
@@ -122,13 +106,7 @@ const comparableBodySyntaxDiagnostics = (
   );
 
   return {
-    diagnostics: taskDiagnostics.map((diagnostic) => ({
-      rule: String(diagnostic.rule),
-      severity: diagnostic.severity,
-      message: diagnostic.message,
-      span: diagnostic.span,
-      spanText: diagnostic.spanText,
-    })),
+    diagnostics: taskDiagnostics.map(manifestDiagnosticToComparable),
     status: statusFromDiagnostics(taskDiagnostics),
   };
 };

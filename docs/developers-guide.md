@@ -491,6 +491,11 @@ their source stays byte-for-byte identical to upstream ODW examples. Do not
 format or rewrite those files in this repository. Update
 `tests/static-analysis/fixtures/odw-examples.ts` when refreshing the corpus so
 the manifest records the new hashes and the expected `no-error` diagnostics.
+Test consumers must import `ODW_EXAMPLE_FIXTURE_CORPUS` from
+`tests/static-analysis/fixtures/odw-examples/corpus.ts` instead of writing their
+own `new URL(...)` corpus locations. That owner module also exports
+`ODW_EXAMPLE_UPSTREAM_ROOT` and `findOdwExampleFixture`, and it is the permitted
+composition point for valid ODW-example fixture reads.
 
 Invalid workflow fixtures live under
 `tests/static-analysis/fixtures/invalid-workflows/`. They are deliberately raw
@@ -512,6 +517,11 @@ parser-backed messages must match catalogue-owned templates instead of broad
 substring assertions. When an invalid fixture needs a different reviewer-facing
 `message`, extend the matching catalogue entry in the same change rather than
 treating the manifest as a separate source of truth.
+Test consumers must import `INVALID_WORKFLOW_FIXTURE_CORPUS` from
+`tests/static-analysis/fixtures/invalid-workflows/corpus.ts` instead of writing
+their own invalid-workflow corpus location. The same owner module owns
+`findInvalidWorkflowFixture`, so fixture lookup and passive text reads stay
+close to the corpus definition.
 Invalid-fixture diagnostic assertions in `workflow-body-parser.test.ts`,
 `workflow-envelope-fixtures.test.ts`, `workflow-metadata.test.ts`, and
 `hostile-metadata-security.test.ts` derive their expected diagnostics from the
@@ -520,6 +530,13 @@ invalid workflow manifest. The merged-pipeline parity surface in
 envelope, and metadata rule diagnostics share one expectation source for rule
 identifiers, severities, messages, documentation paths, original-source spans,
 and reviewer-facing `spanText`.
+Parser, envelope, and metadata parity suites must project manifest diagnostics
+through
+`tests/static-analysis/fixtures/diagnostic-projection.ts`. That module is the
+single manifest-to-comparison diagnostic contract for rule identifiers,
+severities, messages, documentation paths, original-source spans, and
+reviewer-facing `spanText`; do not add local comparable-diagnostic shapes in
+individual suites.
 When intentionally bumping `@swc/core`, re-observe the `odw/body-syntax`
 parser detail for the `syntax-error` invalid workflow family and update these
 surfaces together: the raw fixtures under
@@ -551,6 +568,13 @@ sorted by filename and pin each fixture's SHA-256 hash after formatting. These
 fixtures record empty `no-envelope-diagnostics` expectations for future
 envelope-scanner work where decoy workflow syntax appears inside comments,
 strings, regex literals, and template literals.
+
+`tests/static-analysis/fixture-corpus-ownership.test.ts` enforces the two
+ODW-parity corpus-owner rules for hand-written TypeScript tests. It rejects
+inline `new URL(...)` locations for the ODW-example and invalid-workflow
+corpora, derives the protected path segments from the owner modules, and leaves
+masking fixtures out of that contract because they are `odw-lint` synthetic
+fixtures rather than ODW parity corpus inputs.
 
 Loader-parity execution for roadmap task 2.3.1 lives in
 `tests/static-analysis/loader-parity.test.ts` and the shared

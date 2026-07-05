@@ -215,6 +215,8 @@ entry; that index enumerates every current rule page.
   invalid fixture diagnostic assertions.
 - [Roadmap 2.3.4 ExecPlan](execplans/roadmap-2-3-4.md) plans TypeScript-only
   workflow-body loader rejection characterization.
+- [Roadmap 2.3.5 ExecPlan](execplans/roadmap-2-3-5.md) plans consolidated
+  fixture corpus and parity projection ownership.
 - [Roadmap 3.1.2 ExecPlan](execplans/roadmap-3-1-2.md) plans
   deterministic-time and randomness warnings.
 - [Roadmap 3.1.4 ExecPlan](execplans/roadmap-3-1-4.md) plans

@@ -881,7 +881,7 @@ code. It informs whether phase 2 can ship. See
   - Success: loader-parity evidence proves `odw-lint`'s `odw/body-syntax`
     outcome for TypeScript-only bodies matches the current ODW loader, or
     records a deliberate parity divergence for design review.
-- [ ] 2.3.5. Consolidate fixture corpus and parity projection ownership.
+- [x] 2.3.5. Consolidate fixture corpus and parity projection ownership.
   - Requires 2.3.1 and 2.3.3.
   - Single-source the ODW-example fixture corpus location, route valid and
     invalid corpus consumers through their owner modules, extract a shared
@@ -890,6 +890,10 @@ code. It informs whether phase 2 can ship. See
   - Success: loader-parity, parser, envelope, metadata, deterministic-time, and
     fixture tests use one reviewed corpus-location and diagnostic-projection
     contract, with architecture coverage preventing the contract from forking.
+  - Completed in [roadmap-2-3-5.md](execplans/roadmap-2-3-5.md): the ODW
+    example and invalid workflow corpora now have owner modules, parity suites
+    share one diagnostic projection helper, and a static-analysis guard blocks
+    new inline corpus-location literals.
 
 ### 2.4. Ship the minimal `check` command
 

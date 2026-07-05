@@ -20,6 +20,7 @@ import {
 } from "odw-lint";
 import { readFixtureSource } from "./fixtures/corpus-support";
 import { ODW_EXAMPLE_FIXTURE_SNAPSHOTS } from "./fixtures/odw-examples";
+import { ODW_EXAMPLE_FIXTURE_CORPUS } from "./fixtures/odw-examples/corpus";
 import { decodeSpanText, expectSpanToMatchSource } from "./source-span-oracle";
 import { expectScannedEnvelope } from "./workflow-envelope-support";
 
@@ -27,8 +28,6 @@ const DEFAULT_META = 'export const meta = { name: "span-check", description: "ok
 const DATE_NOW_RULE = makeRuleId("odw/no-date-now");
 const MATH_RANDOM_RULE = makeRuleId("odw/no-math-random");
 const ARGLESS_NEW_DATE_RULE = makeRuleId("odw/no-argless-new-date");
-const FIXTURE_DIRECTORY = new URL("./fixtures/odw-examples/", import.meta.url);
-const FIXTURE_CORPUS = { fixtureDirectory: FIXTURE_DIRECTORY } as const;
 
 type RuleSpanCase = {
   readonly rule: RuleId;
@@ -290,7 +289,7 @@ describe("deterministic-time diagnostic spans", () => {
 
   it("reports no Claude compatibility diagnostics for trusted ODW examples", () => {
     for (const fixture of ODW_EXAMPLE_FIXTURE_SNAPSHOTS) {
-      const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fileName);
+      const sourceText = readFixtureSource(ODW_EXAMPLE_FIXTURE_CORPUS, fixture.fileName);
       const result = lintWorkflowSource({
         filePath: fixture.fixturePath,
         sourceText,
