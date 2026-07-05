@@ -20,10 +20,11 @@ const repositoryRootPath = resolve(import.meta.dir, "../..");
 const expectedCounts: FixtureRefreshReport["counts"] = {
   odwExamples: 9,
   masking: 9,
+  dualCompat: 10,
   invalidWorkflows: 16,
   hostileMetadata: 4,
   invalidDiagnostics: 16,
-  totalFixtures: 34,
+  totalFixtures: 44,
 };
 
 describe("fixture metadata refresh boundary failures", () => {

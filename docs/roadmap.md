@@ -859,14 +859,14 @@ code. It informs whether phase 2 can ship. See
     manifest, pure-metadata and deterministic-time corpora, parity assertions,
     manifest freshness guards, and import-inertness checks without touching
     production static-analysis code.
-  - [ ] 2.3.2.1. Broaden deterministic-time parity fixtures.
+  - [x] 2.3.2.1. Broaden deterministic-time parity fixtures.
     - Addendum (from review:2.3.2; low). Add alias, `globalThis`, computed-member,
       and lint-clean shadowed-binding dual-compat fixtures. Lightweight addendum
       pass.
-  - [ ] 2.3.2.2. Add a real freshness-guard negative control.
+  - [x] 2.3.2.2. Add a real freshness-guard negative control.
     - Addendum (from review:2.3.2; low). Prove a mutated dual-compat fixture byte
       changes `deriveSha256` output. Lightweight addendum pass.
-  - [ ] 2.3.2.3. Derive the dual-compat manifest during fixture refresh.
+  - [x] 2.3.2.3. Derive the dual-compat manifest during fixture refresh.
     - Addendum (from audit:2.3.2; medium). Fold dual-compat fixture hashes and
       spans into the shared `make refresh-fixtures` derivation path. Lightweight
       addendum pass.

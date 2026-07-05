@@ -63,6 +63,7 @@ describe("fixture metadata refresh derivation", () => {
     expect(MANIFEST_PATHS).toEqual([
       "tests/static-analysis/fixtures/odw-examples.ts",
       "tests/static-analysis/fixtures/masking.ts",
+      "tests/static-analysis/fixtures/dual-compat.ts",
       "tests/static-analysis/fixtures/invalid-workflows/manifests/hostile-metadata.ts",
       "tests/static-analysis/fixtures/invalid-workflows/manifests/malformed-metadata.ts",
       "tests/static-analysis/fixtures/invalid-workflows/manifests/missing-metadata.ts",

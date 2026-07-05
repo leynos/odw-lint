@@ -4,8 +4,14 @@
 
 import { readFileSync } from "node:fs";
 import type { SourceSpan } from "odw-lint";
+import { DUAL_COMPAT_FIXTURE_SNAPSHOTS } from "./dual-compat";
+import type {
+  DualCompatFixtureDiagnostic,
+  DualCompatFixtureSnapshot,
+} from "./dual-compat/manifest-types";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./invalid-workflows";
 import type {
+  InvalidWorkflowFixtureDiagnostic,
   InvalidWorkflowFixtureFamily,
   InvalidWorkflowFixtureSnapshot,
 } from "./invalid-workflows/manifest-types";
@@ -21,6 +27,7 @@ export interface PlannedFixtureFile {
 
 const ODW_EXAMPLES_MANIFEST_PATH = "tests/static-analysis/fixtures/odw-examples.ts";
 const MASKING_MANIFEST_PATH = "tests/static-analysis/fixtures/masking.ts";
+const DUAL_COMPAT_MANIFEST_PATH = "tests/static-analysis/fixtures/dual-compat.ts";
 const HOSTILE_METADATA_MANIFEST_PATH =
   "tests/static-analysis/fixtures/invalid-workflows/manifests/hostile-metadata.ts";
 const MALFORMED_METADATA_MANIFEST_PATH =
@@ -74,6 +81,10 @@ export const plannedManifestFiles = (
   {
     relativePath: MASKING_MANIFEST_PATH,
     source: maskingManifestSource(repositoryRoot),
+  },
+  {
+    relativePath: DUAL_COMPAT_MANIFEST_PATH,
+    source: dualCompatManifestSource(repositoryRoot),
   },
   ...invalidFamilyManifestSources(repositoryRoot),
 ];
@@ -176,6 +187,44 @@ const maskingFixture = (fixture: MaskingFixtureInput): MaskingFixtureSnapshot =>
 `;
 
 /**
+ * Generates the dual-compatibility fixture manifest source.
+ */
+const dualCompatManifestSource = (repositoryRoot: URL): string =>
+  `${readOnlyHeader("Dual-compatibility workflow fixture manifest")}\n` +
+  `import {\n` +
+  `  type DualCompatFixtureSnapshot,\n` +
+  `  diagnostic,\n` +
+  `  dualCompatFixture,\n` +
+  `} from "./dual-compat/manifest-types";\n` +
+  `import { deepFreezeFixtureManifest } from "./manifest-freeze";\n\n` +
+  `export type {\n` +
+  `  DualCompatFixtureDiagnostic,\n` +
+  `  DualCompatFixtureFamily,\n` +
+  `  DualCompatFixtureSnapshot,\n` +
+  `  DualCompatFixtureStatus,\n` +
+  `} from "./dual-compat/manifest-types";\n\n` +
+  `export const DUAL_COMPAT_FIXTURE_SNAPSHOTS = deepFreezeFixtureManifest([\n` +
+  DUAL_COMPAT_FIXTURE_SNAPSHOTS.map((fixture) =>
+    dualCompatFixtureSource(repositoryRoot, fixture),
+  ).join("\n") +
+  `\n]) satisfies readonly DualCompatFixtureSnapshot[];\n`;
+
+/**
+ * Generates one dual-compatibility fixture manifest entry.
+ */
+const dualCompatFixtureSource = (
+  repositoryRoot: URL,
+  fixture: DualCompatFixtureSnapshot,
+): string => {
+  const sourceText = readFileSync(new URL(fixture.fixturePath, repositoryRoot), "utf8");
+  return `  dualCompatFixture({\n    family: ${literal(fixture.family)},\n    fileName: ${literal(
+    fixture.fileName,
+  )},\n    sha256: ${literal(deriveSha256(sourceText))},\n    expectedStatus: ${literal(
+    fixture.expectedStatus,
+  )},\n${expectedDiagnosticsSource(sourceText, fixture)}\n  }),`;
+};
+
+/**
  * Generates every invalid-fixture family manifest source.
  */
 const invalidFamilyManifestSources = (repositoryRoot: URL): readonly PlannedFixtureFile[] =>
@@ -216,9 +265,23 @@ const invalidFixtureSource = (
     fixture.fileName,
   )},\n    sha256: ${literal(deriveSha256(sourceText))},\n    expectedStatus: ${literal(
     fixture.expectedStatus,
-  )},\n    expectedDiagnostics: [\n${fixture.expectedDiagnostics
+  )},\n${expectedDiagnosticsSource(sourceText, fixture)}\n  }),`;
+};
+
+/**
+ * Generates a fixture's expected-diagnostics property.
+ */
+const expectedDiagnosticsSource = (
+  sourceText: string,
+  fixture: InvalidWorkflowFixtureSnapshot | DualCompatFixtureSnapshot,
+): string => {
+  if (fixture.expectedDiagnostics.length === 0) {
+    return "    expectedDiagnostics: [],";
+  }
+
+  return `    expectedDiagnostics: [\n${fixture.expectedDiagnostics
     .map((diagnostic) => diagnosticSource(sourceText, fixture.fixturePath, diagnostic))
-    .join("\n")}\n    ],\n  }),`;
+    .join("\n")}\n    ],`;
 };
 
 /**
@@ -227,7 +290,7 @@ const invalidFixtureSource = (
 const diagnosticSource = (
   sourceText: string,
   fixturePath: string,
-  diagnostic: InvalidWorkflowFixtureSnapshot["expectedDiagnostics"][number],
+  diagnostic: InvalidWorkflowFixtureDiagnostic | DualCompatFixtureDiagnostic,
 ): string => {
   const refreshed = refreshedDiagnosticSpan(sourceText, fixturePath, diagnostic);
   return `      diagnostic({\n        rule: ${literal(String(diagnostic.rule))},\n        severity: ${literal(
@@ -243,7 +306,7 @@ const diagnosticSource = (
 const refreshedDiagnosticSpan = (
   sourceText: string,
   fixturePath: string,
-  diagnostic: InvalidWorkflowFixtureSnapshot["expectedDiagnostics"][number],
+  diagnostic: InvalidWorkflowFixtureDiagnostic | DualCompatFixtureDiagnostic,
 ): RefreshedDiagnosticSpan => {
   const anchor = {
     fixturePath,

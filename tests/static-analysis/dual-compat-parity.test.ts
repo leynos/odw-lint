@@ -113,7 +113,7 @@ describe("dual-compat deterministic-time parity", () => {
       (fixture) => fixture.family === "deterministic-time",
     );
 
-    expect(fixtures).toHaveLength(4);
+    expect(fixtures).toHaveLength(8);
     for (const fixture of fixtures) {
       const sourceText = readDualCompatFixtureSource(fixture);
       const outcome = loaderParityOutcome({ filePath: fixture.fixturePath, sourceText });
@@ -148,9 +148,10 @@ describe("dual-compat manifest freshness", () => {
   it("matches fixture hashes and anchored diagnostic spans", () => {
     for (const fixture of DUAL_COMPAT_FIXTURE_SNAPSHOTS) {
       const sourceText = readDualCompatFixtureSource(fixture);
+      const mutatedSourceText = `${sourceText}\n/* freshness guard mutation */\n`;
 
       expect(deriveSha256(sourceText)).toBe(fixture.sha256);
-      expect(`mutated:${fixture.sha256}`).not.toBe(fixture.sha256);
+      expect(deriveSha256(mutatedSourceText)).not.toBe(fixture.sha256);
 
       for (const diagnostic of fixture.expectedDiagnostics) {
         const refreshed = deriveAnchoredDiagnosticSpan(

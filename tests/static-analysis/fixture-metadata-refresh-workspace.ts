@@ -53,12 +53,21 @@ export const createTempRefreshWorkspace = (
       { recursive: true },
     );
     cpSync(
+      join(repositoryRootPath, "tests/static-analysis/fixtures/dual-compat"),
+      join(tempFixtureRoot, "dual-compat"),
+      { recursive: true },
+    );
+    cpSync(
       join(repositoryRootPath, "tests/static-analysis/fixtures/masking.ts"),
       join(tempFixtureRoot, "masking.ts"),
     );
     cpSync(
       join(repositoryRootPath, "tests/static-analysis/fixtures/odw-examples.ts"),
       join(tempFixtureRoot, "odw-examples.ts"),
+    );
+    cpSync(
+      join(repositoryRootPath, "tests/static-analysis/fixtures/dual-compat.ts"),
+      join(tempFixtureRoot, "dual-compat.ts"),
     );
     mkdirSync(join(tempOdwReferenceCheckout, "examples"), { recursive: true });
 

@@ -9,6 +9,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { DUAL_COMPAT_FIXTURE_SNAPSHOTS } from "./dual-compat";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./invalid-workflows";
 import { MASKING_FIXTURE_SNAPSHOTS } from "./masking";
 import { ODW_EXAMPLE_FIXTURE_SNAPSHOTS } from "./odw-examples";
@@ -288,6 +289,7 @@ const currentCounts = () => {
   return {
     odwExamples: ODW_EXAMPLE_FIXTURE_SNAPSHOTS.length,
     masking: MASKING_FIXTURE_SNAPSHOTS.length,
+    dualCompat: DUAL_COMPAT_FIXTURE_SNAPSHOTS.length,
     invalidWorkflows,
     hostileMetadata: INVALID_WORKFLOW_FIXTURE_SNAPSHOTS.filter(
       (fixture) => fixture.family === "hostile-metadata",
@@ -297,7 +299,10 @@ const currentCounts = () => {
       0,
     ),
     totalFixtures:
-      ODW_EXAMPLE_FIXTURE_SNAPSHOTS.length + MASKING_FIXTURE_SNAPSHOTS.length + invalidWorkflows,
+      ODW_EXAMPLE_FIXTURE_SNAPSHOTS.length +
+      MASKING_FIXTURE_SNAPSHOTS.length +
+      DUAL_COMPAT_FIXTURE_SNAPSHOTS.length +
+      invalidWorkflows,
   };
 };
 

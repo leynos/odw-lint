@@ -41,6 +41,7 @@ export interface FixtureRefreshFailure {
 export interface FixtureRefreshCounts {
   readonly odwExamples: number;
   readonly masking: number;
+  readonly dualCompat: number;
   readonly invalidWorkflows: number;
   readonly hostileMetadata: number;
   readonly invalidDiagnostics: number;
@@ -80,6 +81,7 @@ export interface FixtureRefreshOptions {
 export const MANIFEST_PATHS = [
   "tests/static-analysis/fixtures/odw-examples.ts",
   "tests/static-analysis/fixtures/masking.ts",
+  "tests/static-analysis/fixtures/dual-compat.ts",
   "tests/static-analysis/fixtures/invalid-workflows/manifests/hostile-metadata.ts",
   "tests/static-analysis/fixtures/invalid-workflows/manifests/malformed-metadata.ts",
   "tests/static-analysis/fixtures/invalid-workflows/manifests/missing-metadata.ts",
@@ -171,6 +173,7 @@ function invalidArgumentReport(
     counts: {
       odwExamples: 0,
       masking: 0,
+      dualCompat: 0,
       invalidWorkflows: 0,
       hostileMetadata: 0,
       invalidDiagnostics: 0,

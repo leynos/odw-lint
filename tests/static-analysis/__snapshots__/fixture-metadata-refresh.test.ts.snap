@@ -3,16 +3,18 @@
 exports[`fixture metadata refresh helpers returns a sorted dry-run report for the current checked-out corpus 1`] = `
 {
   "counts": {
+    "dualCompat": 10,
     "hostileMetadata": 4,
     "invalidDiagnostics": 16,
     "invalidWorkflows": 16,
     "masking": 9,
     "odwExamples": 9,
-    "totalFixtures": 34,
+    "totalFixtures": 44,
   },
   "extraUpstreamExamples": [],
   "failures": [],
   "managedPaths": [
+    "tests/static-analysis/fixtures/dual-compat.ts",
     "tests/static-analysis/fixtures/invalid-workflows/manifests/hostile-metadata.ts",
     "tests/static-analysis/fixtures/invalid-workflows/manifests/malformed-metadata.ts",
     "tests/static-analysis/fixtures/invalid-workflows/manifests/missing-metadata.ts",
@@ -34,6 +36,7 @@ exports[`fixture metadata refresh helpers returns a sorted dry-run report for th
   "odwReferenceCheckout": "<odwReferenceCheckout>",
   "repositoryRoot": "<repositoryRoot>",
   "unchangedPaths": [
+    "tests/static-analysis/fixtures/dual-compat.ts",
     "tests/static-analysis/fixtures/invalid-workflows/manifests/hostile-metadata.ts",
     "tests/static-analysis/fixtures/invalid-workflows/manifests/malformed-metadata.ts",
     "tests/static-analysis/fixtures/invalid-workflows/manifests/missing-metadata.ts",

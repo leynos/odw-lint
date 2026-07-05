@@ -918,7 +918,7 @@ fixture manifest.
 
 ## Addenda
 
-- [ ] 2.3.2.1. Broaden deterministic-time parity fixtures.
+- [x] 2.3.2.1. Broaden deterministic-time parity fixtures.
   - Source: review:2.3.2.
   - Severity: low.
   - Scope: add dual-compat deterministic-time fixture cases for aliased
@@ -926,14 +926,14 @@ fixture manifest.
     lint-clean shadowed-binding false-positive counter-example.
   - Success: the dual-compat parity corpus, not only scanner-level span tests,
     proves these accepted hazard and false-positive shapes.
-- [ ] 2.3.2.2. Add a real freshness-guard negative control.
+- [x] 2.3.2.2. Add a real freshness-guard negative control.
   - Source: review:2.3.2.
   - Severity: low.
   - Scope: replace the tautological freshness-guard mutation assertion with a
     check that mutating fixture source changes the derived SHA-256 value.
   - Success: the freshness guard fails when fixture bytes drift and its own
     discriminating power is tested directly.
-- [ ] 2.3.2.3. Derive the dual-compat manifest during fixture refresh.
+- [x] 2.3.2.3. Derive the dual-compat manifest during fixture refresh.
   - Source: audit:2.3.2.
   - Severity: medium.
   - Scope: include the dual-compat fixture manifest in the shared

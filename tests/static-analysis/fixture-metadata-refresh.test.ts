@@ -25,7 +25,10 @@ describe("fixture metadata refresh helpers", () => {
       expect(report.odwReferenceCheckout).toBe(temp.odwReferenceCheckout);
       expect(report.failures).toEqual([]);
       expect(report.counts.totalFixtures).toBe(
-        report.counts.odwExamples + report.counts.masking + report.counts.invalidWorkflows,
+        report.counts.odwExamples +
+          report.counts.masking +
+          report.counts.dualCompat +
+          report.counts.invalidWorkflows,
       );
       expect(report.counts.hostileMetadata).toBeLessThanOrEqual(report.counts.invalidWorkflows);
       expect(report.writtenPaths).toEqual([]);

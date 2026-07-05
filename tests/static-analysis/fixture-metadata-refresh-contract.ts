@@ -38,6 +38,7 @@ if (import.meta.url === "") {
     counts: {
       odwExamples: 0,
       masking: 0,
+      dualCompat: 0,
       invalidWorkflows: 0,
       hostileMetadata: 0,
       invalidDiagnostics: 0,
