@@ -839,7 +839,7 @@ code. It informs whether phase 2 can ship. See
   - Success: `odw-lint` diagnostics match the trusted static expectations for
     `checkMeta` and `scanDualCompat` without importing executable runtime
     paths in production code.
-- [ ] 2.3.3. Consume invalid fixture manifests in dialect diagnostic tests.
+- [x] 2.3.3. Consume invalid fixture manifests in dialect diagnostic tests.
   - Requires steps 2.1-2.2.
   - Drive parser, envelope, and metadata-rule assertions from the invalid
     fixture manifest instead of duplicating expected diagnostics in later test

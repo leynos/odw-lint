@@ -11,14 +11,13 @@ import {
   parseWorkflowMetadataLiteral,
 } from "../../src/static-analysis/workflow-metadata";
 import { readFixtureSource } from "./fixtures/corpus-support";
-import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
+import {
+  findInvalidWorkflowFixture,
+  INVALID_WORKFLOW_FIXTURE_CORPUS,
+} from "./fixtures/invalid-workflows/corpus";
+import type { InvalidWorkflowFixtureFamily } from "./fixtures/invalid-workflows/manifest-types";
 
 const HOSTILE_MARKER_PROPERTY = "__odwLintHostileMetadataWasEvaluated";
-const INVALID_FIXTURE_CORPUS = {
-  fixtureDirectory: new URL("./fixtures/invalid-workflows/", import.meta.url),
-  manifestRoot: "tests/static-analysis/fixtures/invalid-workflows/",
-  recursive: true,
-} as const;
 
 /** Creates an original source record for inline workflow source. */
 const sourceFileFor = (sourceText: string) =>
@@ -62,16 +61,30 @@ const expectUnprovableSpan = (sourceText: string, expectedSpanText: string) => {
   }
 };
 
-/** Reads an invalid fixture source by family and file name. */
-const invalidFixtureSource = (family: string, fileName: string): string => {
-  const fixture = INVALID_WORKFLOW_FIXTURE_SNAPSHOTS.find(
-    (candidate) => candidate.family === family && candidate.fileName === fileName,
-  );
-  if (fixture === undefined) {
-    throw new Error(`Missing invalid fixture ${family}/${fileName}.`);
-  }
+/** Looks up an invalid fixture snapshot by family and file name. */
+const invalidFixture = (family: InvalidWorkflowFixtureFamily, fileName: string) => {
+  return findInvalidWorkflowFixture({ family, fileName });
+};
 
-  return readFixtureSource(INVALID_FIXTURE_CORPUS, fixture.fixturePath);
+/** Reads an invalid fixture source by family and file name. */
+const invalidFixtureSource = (family: InvalidWorkflowFixtureFamily, fileName: string): string => {
+  return readFixtureSource(
+    INVALID_WORKFLOW_FIXTURE_CORPUS,
+    invalidFixture(family, fileName).fixturePath,
+  );
+};
+
+/** Projects manifest diagnostics to the metadata classifier summary shape. */
+const expectedInvalidFixtureDiagnosticSummary = (
+  family: InvalidWorkflowFixtureFamily,
+  fileName: string,
+) => {
+  return invalidFixture(family, fileName).expectedDiagnostics.map((diagnostic) => ({
+    rule: String(diagnostic.rule),
+    severity: diagnostic.severity,
+    message: diagnostic.message,
+    spanText: diagnostic.spanText,
+  }));
 };
 
 /** Clears the hostile fixture marker without declaring a global test type. */
@@ -358,28 +371,17 @@ describe("workflow metadata classifier", () => {
   it("keeps hostile global-marker metadata passive", () => {
     const sourceText = invalidFixtureSource("hostile-metadata", "global-marker.js");
 
-    expect(diagnosticSummary(sourceText)).toEqual([
-      {
-        rule: "odw/meta-statically-unprovable",
-        severity: "warning",
-        message: "Workflow metadata must remain statically provable without evaluation.",
-        spanText:
-          '(() => {\n    globalThis.__odwLintHostileMetadataWasEvaluated = "hostile-global-marker";\n    return "Hostile metadata fixture.";\n  })()',
-      },
-    ]);
+    expect(diagnosticSummary(sourceText)).toEqual(
+      expectedInvalidFixtureDiagnosticSummary("hostile-metadata", "global-marker.js"),
+    );
     expect((globalThis as Record<string, unknown>)[HOSTILE_MARKER_PROPERTY]).toBeUndefined();
   });
 
   it("returns a warning instead of throwing hostile throw-marker metadata", () => {
     const sourceText = invalidFixtureSource("hostile-metadata", "throw-marker.js");
 
-    expect(diagnosticSummary(sourceText)).toEqual([
-      {
-        rule: "odw/meta-statically-unprovable",
-        severity: "warning",
-        message: "Workflow metadata must remain statically provable without evaluation.",
-        spanText: '(() => {\n    throw new Error("ODW_LINT_HOSTILE_METADATA_EVALUATED");\n  })()',
-      },
-    ]);
+    expect(diagnosticSummary(sourceText)).toEqual(
+      expectedInvalidFixtureDiagnosticSummary("hostile-metadata", "throw-marker.js"),
+    );
   });
 });

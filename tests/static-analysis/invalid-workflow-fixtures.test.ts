@@ -20,6 +20,7 @@ import {
   sha256,
 } from "./fixtures/corpus-support";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
+import { INVALID_WORKFLOW_FIXTURE_CORPUS } from "./fixtures/invalid-workflows/corpus";
 import type {
   diagnostic,
   InvalidWorkflowFixtureDiagnostic,
@@ -27,13 +28,7 @@ import type {
 } from "./fixtures/invalid-workflows/manifest-types";
 import { expectSpanToMatchSource } from "./source-span-oracle";
 
-const FIXTURE_DIRECTORY = new URL("./fixtures/invalid-workflows/", import.meta.url);
 const MANIFEST_FIXTURE_ROOT = "tests/static-analysis/fixtures/invalid-workflows/";
-const FIXTURE_CORPUS = {
-  fixtureDirectory: FIXTURE_DIRECTORY,
-  manifestRoot: MANIFEST_FIXTURE_ROOT,
-  recursive: true,
-} as const;
 const HOSTILE_MARKER_PROPERTY = "__odwLintHostileMetadataWasEvaluated";
 const EXPECTED_FILE_NAMES = [
   "missing-metadata/missing-meta-description.js",
@@ -151,9 +146,9 @@ describe("invalid workflow fixture snapshots", () => {
 
     expect(manifestFileNames).toEqual([...EXPECTED_FILE_NAMES]);
     expect(manifestFileNames).toEqual(orderInvalidFixtureNames(manifestFileNames));
-    expect(orderInvalidFixtureNames(copiedFixtureFileNames(FIXTURE_CORPUS))).toEqual([
-      ...EXPECTED_FILE_NAMES,
-    ]);
+    expect(
+      orderInvalidFixtureNames(copiedFixtureFileNames(INVALID_WORKFLOW_FIXTURE_CORPUS)),
+    ).toEqual([...EXPECTED_FILE_NAMES]);
   });
 
   it("freezes manifest metadata and diagnostic expectation arrays at runtime", () => {
@@ -214,7 +209,7 @@ describe("invalid workflow fixture snapshots", () => {
     ]);
 
     for (const fixture of fixtures) {
-      const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath);
+      const sourceText = readFixtureSource(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath);
 
       expect(sourceText).toContain(hostileFixtureMarkerText(fixture.fileName));
       expect(hostileMarkerValue()).toBeUndefined();
@@ -256,12 +251,14 @@ describe("invalid workflow fixture snapshots", () => {
       fixture.fixturePath.replace(MANIFEST_FIXTURE_ROOT, ""),
     ).sort();
 
-    expect(copiedFixtureFileNames(FIXTURE_CORPUS)).toEqual(manifestFileNames);
+    expect(copiedFixtureFileNames(INVALID_WORKFLOW_FIXTURE_CORPUS)).toEqual(manifestFileNames);
 
     for (const fixture of INVALID_WORKFLOW_FIXTURE_SNAPSHOTS) {
-      const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath);
+      const sourceText = readFixtureSource(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath);
 
-      expect(existsSync(fixtureSourceUrl(FIXTURE_CORPUS, fixture.fixturePath))).toBeTrue();
+      expect(
+        existsSync(fixtureSourceUrl(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath)),
+      ).toBeTrue();
       expect(sha256(sourceText)).toBe(fixture.sha256);
       expect(Buffer.from(sourceText, "utf8").every((byte) => byte <= 0x7f)).toBeTrue();
 

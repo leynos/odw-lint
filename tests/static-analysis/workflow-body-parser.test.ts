@@ -20,18 +20,11 @@ import {
 import { firstReviewedRuleTemplate } from "../../src/diagnostics/rule-catalogue";
 import { isUnknownRecord } from "../../src/static-analysis/value-guards";
 import { readFixtureSource } from "./fixtures/corpus-support";
+import { INVALID_WORKFLOW_FIXTURE_CORPUS } from "./fixtures/invalid-workflows/corpus";
+import { SYNTAX_ERROR_FIXTURES } from "./fixtures/invalid-workflows/manifests/syntax-error";
 import { ODW_EXAMPLE_FIXTURE_SNAPSHOTS } from "./fixtures/odw-examples";
 import { expectScannedEnvelope } from "./workflow-envelope-support";
 
-const INVALID_FIXTURE_CORPUS = {
-  fixtureDirectory: new URL("./fixtures/invalid-workflows/", import.meta.url),
-  manifestRoot: "tests/static-analysis/fixtures/invalid-workflows/",
-  recursive: true,
-} as const;
-const SYNTAX_ERROR_FIXTURES = [
-  "syntax-error/body-unclosed-block.js",
-  "syntax-error/body-unclosed-call.js",
-] as const;
 const VALID_BODY_STATEMENT = fc.constantFrom(
   "const x = 1;\n",
   'await agent("ok");\n',
@@ -99,7 +92,7 @@ const scannedEnvelopeFor = (source: { readonly filePath: string; readonly source
 const envelopeForInvalidFixture = (fixturePath: string) => {
   return scannedEnvelopeFor({
     filePath: fixturePath,
-    sourceText: readFixtureSource(INVALID_FIXTURE_CORPUS, fixturePath),
+    sourceText: readFixtureSource(INVALID_WORKFLOW_FIXTURE_CORPUS, fixturePath),
   });
 };
 
@@ -121,6 +114,23 @@ const expectBodySyntaxDiagnostic = (
   }
 
   return result.diagnostic;
+};
+
+/** Projects manifest diagnostics to the parser adapter diagnostic shape. */
+const expectedBodySyntaxDiagnosticFor = (fixture: (typeof SYNTAX_ERROR_FIXTURES)[number]) => {
+  const expectedDiagnostic = fixture.expectedDiagnostics[0];
+  expect(expectedDiagnostic).toBeDefined();
+  if (expectedDiagnostic === undefined) {
+    throw new Error(`Expected ${fixture.fixturePath} to pin a body syntax diagnostic.`);
+  }
+
+  return {
+    rule: String(expectedDiagnostic.rule),
+    severity: expectedDiagnostic.severity,
+    message: expectedDiagnostic.message,
+    span: expectedDiagnostic.span,
+    docs: expectedDiagnostic.docs,
+  };
 };
 
 /** Checks whether an unknown SWC span has numeric byte offsets. */
@@ -185,9 +195,9 @@ const isInNormalizedBodySpan = (
 
 describe("parseWorkflowBody", () => {
   it.each(
-    SYNTAX_ERROR_FIXTURES.map((fixturePath) => [fixturePath]),
-  )("converts %s syntax errors to body diagnostics", (fixturePath) => {
-    const envelope = envelopeForInvalidFixture(fixturePath);
+    SYNTAX_ERROR_FIXTURES.map((fixture) => [fixture.fixturePath, fixture]),
+  )("converts %s syntax errors to body diagnostics", (_fixturePath, fixture) => {
+    const envelope = envelopeForInvalidFixture(fixture.fixturePath);
     const diagnostic = expectBodySyntaxDiagnostic(parseWorkflowBody(envelope));
 
     expect({
@@ -196,17 +206,19 @@ describe("parseWorkflowBody", () => {
       message: diagnostic.message,
       span: diagnostic.span,
       docs: diagnostic.docs,
-    }).toMatchSnapshot();
+    }).toEqual(expectedBodySyntaxDiagnosticFor(fixture));
     expect(messageMatchesTemplate(BODY_SYNTAX_TEMPLATE, diagnostic.message)).toBeTrue();
     expect(diagnostic.message).not.toBe(BODY_SYNTAX_RULE_DEFINITION.messages[0]);
   });
 
   it.each(
-    SYNTAX_ERROR_FIXTURES.map((fixturePath) => [fixturePath]),
-  )("emits original-source body span text for %s", (fixturePath) => {
-    const envelope = envelopeForInvalidFixture(fixturePath);
+    SYNTAX_ERROR_FIXTURES.map((fixture) => [fixture.fixturePath, fixture]),
+  )("emits original-source body span text for %s", (_fixturePath, fixture) => {
+    const envelope = envelopeForInvalidFixture(fixture.fixturePath);
     const diagnostic = expectBodySyntaxDiagnostic(parseWorkflowBody(envelope));
+    const expectedDiagnostic = expectedBodySyntaxDiagnosticFor(fixture);
 
+    expect(diagnostic.span).toEqual(expectedDiagnostic.span);
     expect(diagnostic.span).toEqual(envelope.bodySpan);
     expect(sliceSourceSpan(envelope.sourceFile, diagnostic.span)).toBe(
       sliceSourceSpan(envelope.sourceFile, envelope.bodySpan),

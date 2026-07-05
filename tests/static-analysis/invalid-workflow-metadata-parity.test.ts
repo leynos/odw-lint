@@ -7,17 +7,13 @@ import type { Diagnostic, SourceSpan } from "odw-lint";
 import { lintWorkflowSource, ruleDefinitionFor, ruleDocsPath, sliceSourceSpan } from "odw-lint";
 import { readFixtureSource } from "./fixtures/corpus-support";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
+import { INVALID_WORKFLOW_FIXTURE_CORPUS } from "./fixtures/invalid-workflows/corpus";
 import type {
   InvalidWorkflowFixtureDiagnostic,
   InvalidWorkflowFixtureSnapshot,
   InvalidWorkflowFixtureStatus,
 } from "./fixtures/invalid-workflows/manifest-types";
 
-const FIXTURE_CORPUS = {
-  fixtureDirectory: new URL("./fixtures/invalid-workflows/", import.meta.url),
-  manifestRoot: "tests/static-analysis/fixtures/invalid-workflows/",
-  recursive: true,
-} as const;
 const TASK_2_1_3_RULES = new Set([
   "odw/meta-required",
   "odw/meta-object",
@@ -44,7 +40,7 @@ type TaskOwnedFixtureResult = {
 const lintInvalidFixture = (fixture: InvalidWorkflowFixtureSnapshot) => {
   return lintWorkflowSource({
     filePath: fixture.fixturePath,
-    sourceText: readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath),
+    sourceText: readFixtureSource(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath),
   });
 };
 

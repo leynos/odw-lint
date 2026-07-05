@@ -17,6 +17,10 @@ import { classifyWorkflowMetadata } from "../../src/static-analysis/workflow-met
 import { readFixtureSource } from "./fixtures/corpus-support";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "./fixtures/invalid-workflows";
 import {
+  findInvalidWorkflowFixture,
+  INVALID_WORKFLOW_FIXTURE_CORPUS,
+} from "./fixtures/invalid-workflows/corpus";
+import {
   expectFreshModuleGraphSuccess,
   freshModuleGraphScript,
   runFreshModuleGraphScript,
@@ -31,11 +35,6 @@ const HOSTILE_MARKER_PROPERTY = "__odwLintHostileMetadataWasEvaluated";
 const HOSTILE_FILESYSTEM_MARKER_ENV = "ODW_LINT_HOSTILE_FS_MARKER_PATH";
 const HOSTILE_ENV_PROBE = "ODW_LINT_HOSTILE_ENV_PROBE";
 const HOSTILE_ENV_PROBE_VALUE = "hostile-env-probe-canary";
-const FIXTURE_CORPUS = {
-  fixtureDirectory: new URL("./fixtures/invalid-workflows/", import.meta.url),
-  manifestRoot: "tests/static-analysis/fixtures/invalid-workflows/",
-  recursive: true,
-} as const;
 const HOSTILE_METADATA_FIXTURES = INVALID_WORKFLOW_FIXTURE_SNAPSHOTS.filter(
   (fixture) => fixture.family === "hostile-metadata",
 );
@@ -163,16 +162,12 @@ describe("hostile metadata security regression", () => {
 
   it("includes a filesystem-write hostile fixture without writing the marker file", () => {
     const markerPath = hostileFilesystemMarkerPath("fs-write-fixture");
-    const fixture = HOSTILE_METADATA_FIXTURES.find(
-      (candidate) => candidate.fileName === "fs-write-marker.js",
-    );
+    const fixture = findInvalidWorkflowFixture({
+      family: "hostile-metadata",
+      fileName: "fs-write-marker.js",
+    });
 
-    expect(fixture).toBeDefined();
-    if (fixture === undefined) {
-      throw new Error("Expected fs-write-marker.js in the hostile metadata corpus.");
-    }
-
-    const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath);
+    const sourceText = readFixtureSource(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath);
     const classification = lintSource({ fixturePath: fixture.fixturePath, sourceText });
 
     expect(classification.diagnostics.length).toBeGreaterThan(0);
@@ -180,16 +175,12 @@ describe("hostile metadata security regression", () => {
   });
 
   it("includes an environment-read hostile fixture without setting the marker", () => {
-    const fixture = HOSTILE_METADATA_FIXTURES.find(
-      (candidate) => candidate.fileName === "env-read-marker.js",
-    );
+    const fixture = findInvalidWorkflowFixture({
+      family: "hostile-metadata",
+      fileName: "env-read-marker.js",
+    });
 
-    expect(fixture).toBeDefined();
-    if (fixture === undefined) {
-      throw new Error("Expected env-read-marker.js in the hostile metadata corpus.");
-    }
-
-    const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath);
+    const sourceText = readFixtureSource(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath);
     const classification = lintSource({ fixturePath: fixture.fixturePath, sourceText });
 
     expect(classification.diagnostics.length).toBeGreaterThan(0);
@@ -203,7 +194,7 @@ describe("hostile metadata security regression", () => {
 
       expect(hostileMarkerValue()).toBeUndefined();
       expect(hostileFilesystemMarkerExists(markerPath)).toBeFalse();
-      const sourceText = readFixtureSource(FIXTURE_CORPUS, fixture.fixturePath);
+      const sourceText = readFixtureSource(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath);
 
       expect(() => {
         classification = lintSource({ fixturePath: fixture.fixturePath, sourceText });

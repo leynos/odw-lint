@@ -7,6 +7,7 @@ import { createOriginalSourceFile } from "odw-lint";
 import { scanWorkflowEnvelope } from "../../src/static-analysis/workflow-envelope";
 import { readFixtureSource } from "./fixtures/corpus-support";
 import type { InvalidWorkflowFixtureSnapshot } from "./fixtures/invalid-workflows";
+import { INVALID_WORKFLOW_FIXTURE_CORPUS } from "./fixtures/invalid-workflows/corpus";
 import { UNSUPPORTED_IMPORT_EXPORT_FIXTURES } from "./fixtures/invalid-workflows/manifests/unsupported-import-export";
 import {
   ODW_EXAMPLE_FIXTURE_SNAPSHOTS,
@@ -14,11 +15,6 @@ import {
 } from "./fixtures/odw-examples";
 import { expectScannedEnvelope, spanTextFor } from "./workflow-envelope-support";
 
-const INVALID_FIXTURE_CORPUS = {
-  fixtureDirectory: new URL("./fixtures/invalid-workflows/", import.meta.url),
-  manifestRoot: "tests/static-analysis/fixtures/invalid-workflows/",
-  recursive: true,
-} as const;
 const ODW_EXAMPLE_CORPUS = {
   fixtureDirectory: new URL("./fixtures/odw-examples/", import.meta.url),
 } as const;
@@ -27,7 +23,7 @@ const ODW_EXAMPLE_CORPUS = {
 const scanInvalidFixture = (fixture: InvalidWorkflowFixtureSnapshot) => {
   const sourceFile = createOriginalSourceFile({
     filePath: fixture.fixturePath,
-    sourceText: readFixtureSource(INVALID_FIXTURE_CORPUS, fixture.fixturePath),
+    sourceText: readFixtureSource(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath),
   });
 
   return { result: scanWorkflowEnvelope(sourceFile), sourceFile };

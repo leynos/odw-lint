@@ -512,14 +512,22 @@ parser-backed messages must match catalogue-owned templates instead of broad
 substring assertions. When an invalid fixture needs a different reviewer-facing
 `message`, extend the matching catalogue entry in the same change rather than
 treating the manifest as a separate source of truth.
+Invalid-fixture diagnostic assertions in `workflow-body-parser.test.ts`,
+`workflow-envelope-fixtures.test.ts`, `workflow-metadata.test.ts`, and
+`hostile-metadata-security.test.ts` derive their expected diagnostics from the
+invalid workflow manifest. The merged-pipeline parity surface in
+`invalid-workflow-metadata-parity.test.ts` also reads the manifest, so parser,
+envelope, and metadata rule diagnostics share one expectation source for rule
+identifiers, severities, messages, documentation paths, original-source spans,
+and reviewer-facing `spanText`.
 When intentionally bumping `@swc/core`, re-observe the `odw/body-syntax`
 parser detail for the `syntax-error` invalid workflow family and update these
 surfaces together: the raw fixtures under
 `tests/static-analysis/fixtures/invalid-workflows/syntax-error/`, their
 manifest at
 `tests/static-analysis/fixtures/invalid-workflows/manifests/syntax-error.ts`,
-and the parser snapshot at
-`tests/static-analysis/__snapshots__/workflow-body-parser.test.ts.snap`.
+and the manifest-driven parser parity assertions in
+`tests/static-analysis/workflow-body-parser.test.ts`.
 Also rerun `tests/static-analysis/workflow-body-dialect.test.ts` and preserve
 the TypeScript-in-body rejection set recorded by ADR
 [0002-workflow-body-parser-dialect-scope.md](adr/0002-workflow-body-parser-dialect-scope.md)
