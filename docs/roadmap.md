@@ -872,7 +872,7 @@ code. It informs whether phase 2 can ship. See
     - Addendum (from review:2.3.3; low). Add a short note or index pointer in
       the 2.2.5 and 2.2.6 ExecPlans that the developers guide is now the
       authoritative living SWC-bump surface list. Lightweight addendum pass.
-- [ ] 2.3.4. Characterize ODW loader rejection of TypeScript-only workflow body
+- [x] 2.3.4. Characterize ODW loader rejection of TypeScript-only workflow body
   syntax.
   - Use the loader-parity harness or a documented trusted probe to confirm
     ODW's Function or AsyncFunction body-compilation path rejects the ADR 0002

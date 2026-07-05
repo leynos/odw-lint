@@ -532,6 +532,9 @@ Also rerun `tests/static-analysis/workflow-body-dialect.test.ts` and preserve
 the TypeScript-in-body rejection set recorded by ADR
 [0002-workflow-body-parser-dialect-scope.md](adr/0002-workflow-body-parser-dialect-scope.md)
 unless the dependency bump intentionally changes the parser dialect contract.
+Rerun `tests/static-analysis/body-syntax-loader-parity.test.ts` as part of the
+same re-observation so the trusted `Function` and `AsyncFunction` construction
+probe stays aligned with `odw/body-syntax` for the shared ADR 0002 corpus.
 Diagnostic documentation paths are derived from `ruleDocsPath(rule)` and remain
 repository-relative paths under `docs/rules/`; hosted URLs belong in later
 reporting or documentation presentation layers. For invalid diagnostic spans,
@@ -570,7 +573,15 @@ false-positive discipline. Its freshness guard recomputes fixture SHA-256 values
 and anchored spans from source text, and its inertness guard rejects executable
 ODW runtime import edges. User-visible `odw/claude-pure-meta` emission remains
 deferred to task 3.1.1; manifest-driven dialect test consolidation remains
-2.3.3, and TypeScript-only body rejection parity remains 2.3.4.
+2.3.3.
+
+TypeScript-only body rejection parity for roadmap task 2.3.4 lives in
+`tests/static-analysis/body-syntax-loader-parity.test.ts` and the shared
+`tests/static-analysis/typescript-only-dialect-bodies.ts` corpus. The suite
+uses a trusted, construction-only `Function` and `AsyncFunction` probe over ADR
+0002 literals, never fixture or user source, and asserts that the constructor
+accept/reject decision matches `odw-lint`'s `odw/body-syntax` decision for the
+TypeScript-only rejection set and the ECMAScript boundary set.
 `tests/static-analysis/hostile-metadata-security.test.ts` still owns the broader
 no-side-effect lint regression for hostile metadata fixtures. It observes the
 global marker, marker-file absence, and environment-derived marker value while
