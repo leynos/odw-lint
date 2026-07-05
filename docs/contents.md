@@ -101,6 +101,16 @@ entry; that index enumerates every current rule page.
   delimited and balanced scanner loop consolidation.
 - [Audit 2.2.7](issues/audit-2.2.7.md) records review findings for
   workflow-body parser dialect scope.
+- [Audit 2.3.1](issues/audit-2.3.1.md) records review findings for trusted
+  ODW example loader-parity harness coverage.
+- [Audit 2.3.2](issues/audit-2.3.2.md) records review findings for
+  dual-compat parity fixtures.
+- [Audit 2.3.3](issues/audit-2.3.3.md) records review findings for
+  manifest-driven invalid-fixture diagnostics.
+- [Audit 2.3.4](issues/audit-2.3.4.md) records review findings for
+  TypeScript-only workflow-body loader rejection.
+- [Audit 2.3.5](issues/audit-2.3.5.md) records review findings for fixture
+  corpus and diagnostic projection ownership.
 - [Audit 3.1.4](issues/audit-3.1.4.md) records review findings for
   deterministic-time lexical binding compatibility.
 - [Audit 3.1.5](issues/audit-3.1.5.md) records review findings for
