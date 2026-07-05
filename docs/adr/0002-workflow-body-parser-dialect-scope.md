@@ -40,6 +40,10 @@ TypeScript-only syntax error.
 - Adding TypeScript workflow-body support would be a public behaviour change. It
   would need a new design decision, loader-parity analysis, documentation
   updates, and tests that define the new accepted and rejected syntax boundary.
+- ADR 0003 records the separate body-syntax span-narrowing disposition: the
+  current SWC parser keeps `odw/body-syntax` on the whole workflow body, with
+  token-level narrowing quarantined until a stable structured parser offset is
+  available.
 
 ## Rejected alternative
 

@@ -1375,10 +1375,11 @@ graduate into a real structured-offset path or remain quarantined as an internal
 fallback. It informs future parser upgrades without reopening the phase-2
 dialect decision.
 
-- [ ] 5.5.1. Resolve the body-syntax span-narrowing surface.
+- [x] 5.5.1. Resolve the body-syntax span-narrowing surface.
   - Requires 2.2.6 and 2.3.4.
   - Decide whether to wire a structured-offset parser channel or explicitly
     quarantine `workflow-body-parser-spans.ts`, then align rule docs, ADR 0002,
     and design guidance with the current whole-body fallback.
   - Success: documentation and code agree on whether span narrowing is active,
     inert, or intentionally deferred, with tests pinning the chosen contract.
+  - Completed by [roadmap-5-5-1.md](execplans/roadmap-5-5-1.md).

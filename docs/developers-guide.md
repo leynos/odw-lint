@@ -62,7 +62,9 @@ The parser-error span-narrowing seam is intentionally internal. The pinned
 `@swc/core@1.15.43` parser exposes no structured syntax-error byte range, so
 production diagnostics currently use the conservative whole-body fallback; do
 not export the speculative narrowing helper through the package entry until a
-production parser path can exercise it.
+production parser path can exercise it. ADR
+[0003-body-syntax-span-narrowing-quarantine.md](adr/0003-body-syntax-span-narrowing-quarantine.md)
+is the disposition of record for that quarantine.
 
 Parser-backed collectors share SWC tree-shape primitives through
 `src/static-analysis/swc-ast.ts`. Use `traverseAstSubtree` for pre-order
@@ -551,6 +553,11 @@ manifest at
 `tests/static-analysis/fixtures/invalid-workflows/manifests/syntax-error.ts`,
 and the manifest-driven parser parity assertions in
 `tests/static-analysis/workflow-body-parser.test.ts`.
+Re-observe the parser error object's structured range surface at the same time;
+ADR
+[0003-body-syntax-span-narrowing-quarantine.md](adr/0003-body-syntax-span-narrowing-quarantine.md)
+must be revisited before accepting a parser upgrade that could activate
+token-level narrowing.
 Also rerun `tests/static-analysis/workflow-body-dialect.test.ts` and preserve
 the TypeScript-in-body rejection set recorded by ADR
 [0002-workflow-body-parser-dialect-scope.md](adr/0002-workflow-body-parser-dialect-scope.md)
@@ -658,7 +665,8 @@ UTF-8 byte oracle, `sliceSourceSpan`, and `snippetForSpan`. The matrix covers
 LF, CRLF, Unicode BMP and astral code points, comments, regex literals,
 template text, and template interpolation. The snapshots intentionally record
 the whole body slice while the body parser keeps the S2 whole-body fallback;
-future narrowing belongs to roadmap task 2.2.6.
+future narrowing is governed by the ADR 0003 quarantine decision and its parser
+surface re-observation trigger.
 
 Internal source-helper ownership is split by responsibility:
 

@@ -3,7 +3,8 @@
  *
  * The current pinned SWC parser does not expose a supported structured offset
  * channel for body syntax errors. These helpers remain internal until a real
- * parser channel can exercise them in production.
+ * parser channel can exercise them in production; ADR 0003 records that
+ * dormant quarantine decision.
  */
 
 import type { SourceSpan } from "../diagnostics/types";

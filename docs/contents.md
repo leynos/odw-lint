@@ -35,6 +35,12 @@ entry; that index enumerates every current rule page.
   records the decision that `odw-lint` owns a non-executing static-analysis
   implementation and must not import executable ODW runtime paths in production
   code.
+- [ADR 0002: workflow-body parser dialect scope](adr/0002-workflow-body-parser-dialect-scope.md)
+  records the decision that workflow bodies are parsed as ECMAScript-only
+  source.
+- [ADR 0003: body-syntax span-narrowing quarantine](adr/0003-body-syntax-span-narrowing-quarantine.md)
+  records the decision that token-level body-syntax span narrowing remains an
+  intentionally deferred internal fallback.
 
 ## Maintainer practices
 
@@ -243,6 +249,8 @@ entry; that index enumerates every current rule page.
   public binding fact reconciliation.
 - [Roadmap 4.4.1 ExecPlan](execplans/roadmap-4-4-1.md) plans the documentation
   contents and repository-layout scaffolding work.
+- [Roadmap 5.5.1 ExecPlan](execplans/roadmap-5-5-1.md) plans the body-syntax
+  span-narrowing surface reconciliation.
 
 ## Roadmap
 

@@ -19,10 +19,12 @@ by this rule. That includes colon type annotations on variables or parameters
 ECMAScript parses the angle brackets as comparison operators, so that source is
 accepted by the parser rather than flagged as a syntax error.
 
-When the parser exposes a structured byte range for the syntax error, the
-diagnostic span narrows to that offending token. Parsers that expose no
-structured range keep the conservative whole-body span. In both cases, spans
-always point into original workflow source, not the normalized parser wrapper.
+The shipped parser exposes no structured byte range for syntax errors, so the
+diagnostic spans the whole normalized body while always pointing into original
+workflow source, not the normalized parser wrapper. Token-level narrowing is
+intentionally deferred by ADR
+[0003-body-syntax-span-narrowing-quarantine.md](../adr/0003-body-syntax-span-narrowing-quarantine.md)
+until a parser surface can provide stable structured offsets.
 
 When parser detail is available, the diagnostic message appends it after the
 fixed sentence, for example `...after ODW normalization: <parser detail>`.

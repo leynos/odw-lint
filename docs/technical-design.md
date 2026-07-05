@@ -114,13 +114,14 @@ loader path.
 | Reporter             | Emit text, JSON, and future SARIF-compatible diagnostic streams.                                                                   |
 | Fixture corpus       | Store valid and invalid workflow examples for differential tests.                                                                  |
 
-The span mapper is also the path for narrowing `odw/body-syntax` diagnostics
-from structured parser-error ranges; parsers that expose no structured range
-fall back to the whole original-source body span.
-The current pinned `@swc/core@1.15.43` parser exposes rendered parse-error
-prose but no structured syntax-error byte range, so that narrowing path remains
-an internal, characterization-tested fallback seam rather than a public
-consumer contract.
+The span mapper is also the deferred path for narrowing `odw/body-syntax`
+diagnostics from structured parser-error ranges. The current pinned
+`@swc/core@1.15.43` parser exposes rendered parse-error prose but no structured
+syntax-error byte range, so production diagnostics use the whole
+original-source body span. ADR
+[0003-body-syntax-span-narrowing-quarantine.md](adr/0003-body-syntax-span-narrowing-quarantine.md)
+records the narrowing path as an internal, characterization-tested fallback
+seam rather than a public consumer contract.
 
 Parser-backed rule modules share SWC node-shape helpers through
 `src/static-analysis/swc-ast.ts`. That internal seam owns the strict AST node
