@@ -111,6 +111,8 @@ entry; that index enumerates every current rule page.
   AST guard and traversal helpers.
 - [Audit 3.2.6](issues/audit-3.2.6.md) records review findings for complete
   SWC traversal-driver adoption.
+- [Audit 3.2.7](issues/audit-3.2.7.md) records review findings for
+  scope-owned and public binding fact reconciliation.
 
 ## Execution plans
 
