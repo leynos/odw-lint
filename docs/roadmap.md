@@ -948,7 +948,7 @@ reported clearly in one command. The result informs strict-mode policy. See
       coverage for nested parameters, setter params, named class-expression
       member scope, and documented block-to-function attribution. Lightweight
       addendum pass.
-- [ ] 3.1.6. Extend deterministic-time alias resolution to lexical scopes.
+- [x] 3.1.6. Extend deterministic-time alias resolution to lexical scopes.
   - Requires 3.1.5.
   - Make deterministic-time alias declaration and alias-use resolution use the
     same lexical scope model as bare `Date`, `Math`, and `globalThis` roots for

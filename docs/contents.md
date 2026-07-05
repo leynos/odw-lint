@@ -204,6 +204,8 @@ entry; that index enumerates every current rule page.
   lexical-binding compatibility for deterministic-time diagnostics.
 - [Roadmap 3.1.5 ExecPlan](execplans/roadmap-3-1-5.md) plans scope-precise
   deterministic-time shadowing.
+- [Roadmap 3.1.6 ExecPlan](execplans/roadmap-3-1-6.md) plans lexical
+  deterministic-time alias resolution.
 - [Roadmap 3.2.5 ExecPlan](execplans/roadmap-3-2-5.md) plans shared SWC AST
   guard and traversal helpers for parser-backed rules.
 - [Roadmap 3.2.6 ExecPlan](execplans/roadmap-3-2-6.md) plans complete SWC

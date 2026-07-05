@@ -50,7 +50,11 @@ access such as `Date["now"]()` and `globalThis` chains such as
 `globalThis.Date.now()`. It also detects optional member calls such as
 `Date?.now()` and direct aliases such as `const now = Date.now; now()`.
 
+Alias declarations and alias use resolve through the same lexical scope model
+as bare `Date` roots. A same-named alias or rebinding in an unrelated scope no
+longer suppresses or fabricates a warning, and an alias shadowed at the use
+site stays suppressed.
+
 The remaining conservative limits are dynamic computed keys (`Date[k]()`),
 block, `for`, and `catch` shadows attributed to the enclosing function scope,
-whole-body alias suppression beyond one direct declaration, and non-`globalThis`
-roots such as `window`, `self`, and `global`.
+and non-`globalThis` roots such as `window`, `self`, and `global`.

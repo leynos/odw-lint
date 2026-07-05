@@ -50,8 +50,12 @@ unrelated function, method, getter, or setter no longer hides the warning. It
 detects `globalThis` chains such as `new globalThis.Date()` and direct
 constructor aliases such as `const Clock = Date; new Clock()`.
 
+Alias declarations and alias use resolve through the same lexical scope model
+as bare `Date` roots. A same-named alias or rebinding in an unrelated scope no
+longer suppresses or fabricates a warning, and an alias shadowed at the use
+site stays suppressed.
+
 The remaining conservative limits are dynamic computed keys, block, `for`, and
-`catch` shadows attributed to the enclosing function scope, whole-body alias
-suppression beyond one direct declaration, optional chaining around constructor
-forms that ECMAScript does not permit with `new`, and non-`globalThis` roots
-such as `window`, `self`, and `global`.
+`catch` shadows attributed to the enclosing function scope, optional chaining
+around constructor forms that ECMAScript does not permit with `new`, and
+non-`globalThis` roots such as `window`, `self`, and `global`.

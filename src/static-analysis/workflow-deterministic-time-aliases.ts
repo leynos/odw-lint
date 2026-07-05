@@ -10,11 +10,11 @@ import type {
   Module,
   Node,
   Span,
-  VariableDeclarator,
 } from "@swc/core";
 import type { RuleId } from "../diagnostics/rule-id";
-import { isAstNode, traverseAstSubtree } from "./swc-ast";
+import { isAstNode } from "./swc-ast";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
+import { rootScopeOwnFacts, type ScopeOwnFacts, scopeOwnFacts } from "./workflow-ast-scopes";
 import {
   type GlobalObjectIdentity,
   resolveGlobalObjectIdentity,
@@ -46,33 +46,46 @@ export type AliasHazardMatch = {
 };
 
 /**
- * Collects direct aliases such as `const now = Date.now` and `const D = Date`.
+ * Builds aliases owned by the root scope of a parsed workflow body.
  *
  * Alias handling is deliberately bounded to direct declarations. Chained alias
  * inference would need scope-sensitive invalidation to avoid surprising false
  * positives.
  *
  * @param module - Parsed SWC module for a normalized workflow body.
- * @param bindings - Lexical binding facts for the parsed workflow body.
+ * @param rootBindings - Lexical binding facts visible in the root scope.
  * @param rules - Rule identifiers to attach to direct member alias calls.
- * @returns Direct alias facts keyed by the declared alias name.
+ * @returns Direct alias facts visible in the root scope.
  */
-export const collectDeterministicTimeAliases = (
+export const rootAliasView = (
   module: Module,
-  bindings: LexicalBindingFacts,
+  rootBindings: LexicalBindingFacts,
   rules: DeterministicTimeAliasRules,
 ): DeterministicTimeAliases => {
-  const aliases = new Map<string, DeterministicTimeAlias>();
+  return aliasViewForOwnFacts(new Map(), rootScopeOwnFacts(module), rootBindings, rules);
+};
 
-  traverseAstSubtree(module, bindings, (node, context) => {
-    if (isVariableDeclarator(node)) {
-      collectAliasFromDeclarator(node, context, aliases, rules);
-    }
+/**
+ * Enters a child alias scope when `node` opens one for this analysis.
+ *
+ * @param parentAliases - Alias facts visible before `node`.
+ * @param childBindings - Lexical binding facts visible inside `node`.
+ * @param node - Candidate SWC node being entered by the scanner walk.
+ * @param rules - Rule identifiers to attach to direct member alias calls.
+ * @returns A child alias view for scope-opening nodes, otherwise `parentAliases`.
+ */
+export const enterAliasScope = (
+  parentAliases: DeterministicTimeAliases,
+  childBindings: LexicalBindingFacts,
+  node: Node,
+  rules: DeterministicTimeAliasRules,
+): DeterministicTimeAliases => {
+  const facts = scopeOwnFacts(node);
+  if (facts.ownNames.length === 0 && facts.ownInitializers.length === 0) {
+    return parentAliases;
+  }
 
-    return context;
-  });
-
-  return aliases;
+  return aliasViewForOwnFacts(parentAliases, facts, childBindings, rules);
 };
 
 /**
@@ -135,21 +148,27 @@ export const memberExpressionFromCall = (node: Node): MemberExpression | undefin
   return memberExpressionFromExpression(node.callee);
 };
 
-/** Records one direct deterministic-time alias when the initializer is static. */
-const collectAliasFromDeclarator = (
-  declarator: VariableDeclarator,
+/** Builds one scope's alias view by shadowing and adding owned aliases. */
+const aliasViewForOwnFacts = (
+  parentAliases: DeterministicTimeAliases,
+  facts: ScopeOwnFacts,
   bindings: LexicalBindingFacts,
-  aliases: Map<string, DeterministicTimeAlias>,
   rules: DeterministicTimeAliasRules,
-): void => {
-  if (!isIdentifier(declarator.id) || !isExpression(declarator.init)) {
-    return;
+): DeterministicTimeAliases => {
+  const aliases = new Map(parentAliases);
+
+  for (const name of facts.ownNames) {
+    aliases.delete(name);
   }
 
-  const alias = aliasForExpression(declarator.init, bindings, rules);
-  if (alias !== undefined) {
-    aliases.set(declarator.id.value, alias);
+  for (const initializer of facts.ownInitializers) {
+    const alias = aliasForExpression(initializer.init, bindings, rules);
+    if (alias !== undefined) {
+      aliases.set(initializer.name, alias);
+    }
   }
+
+  return aliases;
 };
 
 /** Classifies direct global-object and deterministic member aliases. */
@@ -203,11 +222,6 @@ const memberExpressionFromExpression = (expression: Expression): MemberExpressio
 /** Narrows nodes to SWC call expressions. */
 const isCallExpression = (node: Node): node is CallExpression => {
   return node.type === "CallExpression";
-};
-
-/** Narrows values to SWC variable declarators. */
-const isVariableDeclarator = (node: Node): node is VariableDeclarator => {
-  return node.type === "VariableDeclarator";
 };
 
 /** Narrows values to SWC identifier expressions and patterns. */

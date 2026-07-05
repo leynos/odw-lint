@@ -23,7 +23,8 @@ const isStructuredNumericRange = (value: unknown): boolean => {
     return false;
   }
 
-  return isFiniteNumber(value["start"]) && isFiniteNumber(value["end"]);
+  const { start, end } = value;
+  return isFiniteNumber(start) && isFiniteNumber(end);
 };
 
 /** Describes allow-listed fields so future parser-surface drift is visible. */

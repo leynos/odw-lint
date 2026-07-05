@@ -51,7 +51,11 @@ string-key access such as `Math["random"]()` and `globalThis` chains such as
 `Math?.random()` and direct aliases such as
 `const random = Math.random; random()`.
 
+Alias declarations and alias use resolve through the same lexical scope model
+as bare `Math` roots. A same-named alias or rebinding in an unrelated scope no
+longer suppresses or fabricates a warning, and an alias shadowed at the use
+site stays suppressed.
+
 The remaining conservative limits are dynamic computed keys (`Math[k]()`),
 block, `for`, and `catch` shadows attributed to the enclosing function scope,
-whole-body alias suppression beyond one direct declaration, and non-`globalThis`
-roots such as `window`, `self`, and `global`.
+and non-`globalThis` roots such as `window`, `self`, and `global`.

@@ -6,7 +6,12 @@ import { describe, expect, it } from "bun:test";
 import type { Module, Node } from "@swc/core";
 import { astChildValues, isAstNode } from "../../src/static-analysis/swc-ast";
 import { asNode, identifierName } from "../../src/static-analysis/workflow-ast-binding-patterns";
-import { enterScope, rootScopeView } from "../../src/static-analysis/workflow-ast-scopes";
+import {
+  enterScope,
+  rootScopeOwnFacts,
+  rootScopeView,
+  scopeOwnFacts,
+} from "../../src/static-analysis/workflow-ast-scopes";
 import { WORKFLOW_BODY_WRAP_FUNCTION_NAME } from "../../src/static-analysis/workflow-body-normalizer";
 import { parseNormalizedWorkflowBody } from "../../src/static-analysis/workflow-body-parse";
 import { envelopeForBody } from "./workflow-envelope-support";
@@ -105,6 +110,41 @@ const isWorkflowBodyWrapper = (node: ReturnType<typeof asNode>): boolean => {
 };
 
 describe("workflow AST scope views", () => {
+  it("returns root-owned names and simple initializers", () => {
+    const module = moduleForBody("const D = Date;\nfunction helper(Date) {}\n");
+    const facts = rootScopeOwnFacts(module);
+
+    expect(facts.ownNames).toEqual(["D", "helper"]);
+    expect(facts.ownInitializers.map((initializer) => initializer.name)).toEqual(["D"]);
+  });
+
+  it("returns scope-owned names that shadow ancestor names", () => {
+    const module = moduleForBody(
+      "const now = Date.now;\nfunction helper(now) { const D = Date; return now(); }\n",
+    );
+    const facts = scopeOwnFacts(userStatementOfType(module, "FunctionDeclaration"));
+
+    expect(facts.ownNames).toEqual(["helper", "now"]);
+    expect(facts.ownInitializers).toEqual([]);
+  });
+
+  it("excludes names and initializers owned by nested scopes", () => {
+    const module = moduleForBody(
+      "{ const D = Date; { const blockAlias = Date.now; } function inner() { const innerAlias = Date.now; } }\n",
+    );
+    const facts = scopeOwnFacts(userStatementOfType(module, "BlockStatement"));
+
+    expect(facts.ownNames).toEqual(["D", "inner"]);
+    expect(facts.ownInitializers.map((initializer) => initializer.name)).toEqual(["D"]);
+  });
+
+  it("returns empty own facts for non-scope-opening nodes", () => {
+    const module = moduleForBody("const D = Date;\nD;\n");
+    const facts = scopeOwnFacts(userStatementOfType(module, "ExpressionStatement"));
+
+    expect(facts).toEqual({ ownNames: [], ownInitializers: [] });
+  });
+
   it("returns the same view for non-scope-opening nodes", () => {
     const module = moduleForBody("const timestamp = Date.now();\ntimestamp;\n");
     const rootView = rootScopeView(module);

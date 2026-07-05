@@ -16,7 +16,6 @@ import type { Diagnostic } from "../diagnostics/types";
 import { traverseAstSubtree } from "./swc-ast";
 import type { WorkflowEnvelope } from "./types";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
-import { collectLexicalBindings } from "./workflow-ast-bindings";
 import { enterScope, rootScopeView } from "./workflow-ast-scopes";
 import {
   type NormalizedWorkflowBody,
@@ -26,19 +25,29 @@ import type { NormalizedBodyParseResult } from "./workflow-body-parse";
 import { parseNormalizedWorkflowBody } from "./workflow-body-parse";
 import {
   aliasCallMatch,
-  collectDeterministicTimeAliases,
   type DeterministicTimeAliases,
+  type DeterministicTimeAliasRules,
+  enterAliasScope,
   memberExpressionFromCall,
   objectIdentityForExpression,
+  rootAliasView,
 } from "./workflow-deterministic-time-aliases";
 import { resolveStaticMemberName } from "./workflow-global-object-reference";
 
 const DATE_NOW_RULE = makeRuleId("odw/no-date-now");
 const MATH_RANDOM_RULE = makeRuleId("odw/no-math-random");
 const ARGLESS_NEW_DATE_RULE = makeRuleId("odw/no-argless-new-date");
+const ALIAS_RULES: DeterministicTimeAliasRules = {
+  dateNowRule: DATE_NOW_RULE,
+  mathRandomRule: MATH_RANDOM_RULE,
+};
 type HazardMatch = {
   readonly rule: RuleId;
   readonly span: Span;
+};
+type DeterministicTimeContext = {
+  readonly bindings: LexicalBindingFacts;
+  readonly aliases: DeterministicTimeAliases;
 };
 
 const RULE_DEFINITIONS = Object.freeze(
@@ -64,16 +73,11 @@ export const scanDeterministicTimeWarnings = (
     return Object.freeze([]);
   }
 
-  const bindings = collectLexicalBindings(parseResult.module);
-  const aliases = collectDeterministicTimeAliases(parseResult.module, bindings, {
-    dateNowRule: DATE_NOW_RULE,
-    mathRandomRule: MATH_RANDOM_RULE,
-  });
-  const diagnostics = walkDeterministicTimeHazards(
-    parseResult.module,
-    rootScopeView(parseResult.module),
-    aliases,
-  ).map((match) => {
+  const rootBindings = rootScopeView(parseResult.module);
+  const diagnostics = walkDeterministicTimeHazards(parseResult.module, {
+    bindings: rootBindings,
+    aliases: rootAliasView(parseResult.module, rootBindings, ALIAS_RULES),
+  }).map((match) => {
     return diagnosticForMatch(
       envelope,
       parseResult.normalized,
@@ -88,19 +92,18 @@ export const scanDeterministicTimeWarnings = (
 /** Recursively walks a SWC AST in source order and returns hazard matches. */
 const walkDeterministicTimeHazards = (
   root: Node,
-  bindings: LexicalBindingFacts,
-  aliases: DeterministicTimeAliases,
+  initialContext: DeterministicTimeContext,
 ): readonly HazardMatch[] => {
   const matches: HazardMatch[] = [];
 
-  traverseAstSubtree(root, bindings, (node, context) => {
-    const match = matchDeterministicTimeHazard(node, context, aliases);
+  traverseAstSubtree(root, initialContext, (node, context) => {
+    const match = matchDeterministicTimeHazard(node, context);
 
     if (match !== undefined) {
       matches.push(match);
     }
 
-    return enterScope(context, node);
+    return enterDeterministicTimeScope(context, node);
   });
 
   return matches;
@@ -109,27 +112,39 @@ const walkDeterministicTimeHazards = (
 /** Matches one of the syntactic deterministic-time hazards on a node. */
 const matchDeterministicTimeHazard = (
   node: Node,
-  bindings: LexicalBindingFacts,
-  aliases: DeterministicTimeAliases,
+  context: DeterministicTimeContext,
 ): HazardMatch | undefined => {
-  const aliasCall = aliasCallMatch(node, aliases);
+  const aliasCall = aliasCallMatch(node, context.aliases);
   if (aliasCall !== undefined) {
     return aliasCall;
   }
 
-  if (isDateNowCall(node, bindings, aliases)) {
+  if (isDateNowCall(node, context.bindings, context.aliases)) {
     return { rule: DATE_NOW_RULE, span: node.callee.span };
   }
 
-  if (isMathRandomCall(node, bindings, aliases)) {
+  if (isMathRandomCall(node, context.bindings, context.aliases)) {
     return { rule: MATH_RANDOM_RULE, span: node.callee.span };
   }
 
-  if (isArglessNewDate(node, bindings, aliases)) {
+  if (isArglessNewDate(node, context.bindings, context.aliases)) {
     return { rule: ARGLESS_NEW_DATE_RULE, span: node.span };
   }
 
   return undefined;
+};
+
+/** Enters paired binding and alias scopes for one scanner node. */
+const enterDeterministicTimeScope = (
+  context: DeterministicTimeContext,
+  node: Node,
+): DeterministicTimeContext => {
+  const bindings = enterScope(context.bindings, node);
+
+  return {
+    bindings,
+    aliases: enterAliasScope(context.aliases, bindings, node, ALIAS_RULES),
+  };
 };
 
 /** Reports global `Date.now(...)` calls, including string-key and `globalThis` forms. */
