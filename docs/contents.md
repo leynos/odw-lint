@@ -97,12 +97,16 @@ entry; that index enumerates every current rule page.
   static workflow lint entry point.
 - [Audit 2.1.13](issues/audit-2.1.13.md) records review findings for the
   shared scanner primitive layer.
+- [Audit 2.1.14](issues/audit-2.1.14.md) records review findings for
+  delimited and balanced scanner loop consolidation.
 - [Audit 2.2.7](issues/audit-2.2.7.md) records review findings for
   workflow-body parser dialect scope.
 - [Audit 3.1.4](issues/audit-3.1.4.md) records review findings for
   deterministic-time lexical binding compatibility.
 - [Audit 3.1.5](issues/audit-3.1.5.md) records review findings for
   scope-precise deterministic-time shadowing.
+- [Audit 3.1.6](issues/audit-3.1.6.md) records review findings for
+  deterministic-time alias lexical scopes.
 - [Audit 3.2.5](issues/audit-3.2.5.md) records review findings for shared SWC
   AST guard and traversal helpers.
 - [Audit 3.2.6](issues/audit-3.2.6.md) records review findings for complete
