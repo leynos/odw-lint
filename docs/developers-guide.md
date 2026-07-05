@@ -556,9 +556,21 @@ drives trusted ODW example snapshots and known invalid fixtures through the
 public `odw-lint` static pipeline, compares compact status plus manifest rule
 classes, and keeps fixture source passive. The inertness block proves hostile
 metadata fixtures do not set the global side-effect marker and that the harness
-has no executable ODW import edges. `checkMeta`/`scanDualCompat` parity remains
-roadmap task 2.3.2, manifest-driven dialect test consolidation remains 2.3.3,
-and TypeScript-only body rejection parity remains 2.3.4.
+has no executable ODW import edges.
+
+Dual-compatibility parity for roadmap task 2.3.2 lives in
+`tests/static-analysis/fixtures/dual-compat.ts`, the passive fixture files under
+`tests/static-analysis/fixtures/dual-compat/`, and
+`tests/static-analysis/dual-compat-parity.test.ts`. The manifest is the trusted
+expectation source for pure-metadata accept-path fixtures and deterministic-time
+warning fixtures. The suite proves pure-literal `meta` remains portability-clean,
+checks the `Date.now`, `Math.random`, and argless `new Date` warning rule,
+severity, message and span contracts, and keeps a masked-text counter-example for
+false-positive discipline. Its freshness guard recomputes fixture SHA-256 values
+and anchored spans from source text, and its inertness guard rejects executable
+ODW runtime import edges. User-visible `odw/claude-pure-meta` emission remains
+deferred to task 3.1.1; manifest-driven dialect test consolidation remains
+2.3.3, and TypeScript-only body rejection parity remains 2.3.4.
 `tests/static-analysis/hostile-metadata-security.test.ts` still owns the broader
 no-side-effect lint regression for hostile metadata fixtures. It observes the
 global marker, marker-file absence, and environment-derived marker value while

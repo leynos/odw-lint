@@ -208,6 +208,9 @@ entry; that index enumerates every current rule page.
   workflow-body parser dialect scope reconciliation.
 - [Roadmap 2.3.1 ExecPlan](execplans/roadmap-2-3-1.md) plans the minimal
   loader-parity harness against trusted ODW examples and invalid fixtures.
+- [Roadmap 2.3.2 ExecPlan](execplans/roadmap-2-3-2.md) plans
+  dual-compatibility parity fixtures for pure metadata and deterministic-time
+  warnings.
 - [Roadmap 2.3.3 ExecPlan](execplans/roadmap-2-3-3.md) plans manifest-driven
   invalid fixture diagnostic assertions.
 - [Roadmap 3.1.2 ExecPlan](execplans/roadmap-3-1-2.md) plans

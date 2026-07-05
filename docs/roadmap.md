@@ -843,13 +843,18 @@ code. It informs whether phase 2 can ship. See
       audit list with actual transitive import-edge discovery, or include
       imported diagnostic helpers in the audited set. Lightweight addendum
       pass.
-- [ ] 2.3.2. Add dual-compat parity fixtures for pure metadata and
+- [x] 2.3.2. Add dual-compat parity fixtures for pure metadata and
   deterministic-time warnings.
   - Requires 2.3.1.
   - See [technical-design.md](technical-design.md) §§9.2 and 11.2.
   - Success: `odw-lint` diagnostics match the trusted static expectations for
     `checkMeta` and `scanDualCompat` without importing executable runtime
     paths in production code.
+  - Completion note: ExecPlan
+    [roadmap-2-3-2.md](execplans/roadmap-2-3-2.md) added the dual-compat fixture
+    manifest, pure-metadata and deterministic-time corpora, parity assertions,
+    manifest freshness guards, and import-inertness checks without touching
+    production static-analysis code.
 - [x] 2.3.3. Consume invalid fixture manifests in dialect diagnostic tests.
   - Requires steps 2.1-2.2.
   - Drive parser, envelope, and metadata-rule assertions from the invalid
