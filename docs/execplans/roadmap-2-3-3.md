@@ -314,6 +314,27 @@ roadmap marks 2.3.3 complete. Each work item passed deterministic gates and
 CodeRabbit review; the final CodeRabbit review required one rate-limit backoff
 and retry.
 
+## Addenda
+
+- [ ] 2.3.3.1. Guard invalid-fixture diagnostic expectations against inline
+  literals.
+  - Source: review:2.3.3; severity low.
+  - Scope: add a focused meta-test or lint guard that fails if the parser,
+    envelope, or metadata invalid-fixture suites reintroduce inline diagnostic
+    `rule`, `severity`, `message`, or `spanText` literals instead of reading
+    expectations from the manifest.
+  - Success: a future hand-typed invalid-fixture diagnostic expectation in
+    those suites fails before the manifest stops being the single source of
+    truth.
+- [ ] 2.3.3.2. Reconcile historical SWC-bump ExecPlan surface references.
+  - Source: review:2.3.3; severity low.
+  - Scope: add a short note or index pointer in
+    `docs/execplans/roadmap-2-2-5.md` and
+    `docs/execplans/roadmap-2-2-6.md` explaining that the developers guide is
+    now the authoritative living SWC-bump surface list.
+  - Success: historical ExecPlan references remain understandable as
+    point-in-time records without misleading future SWC upgrade work.
+
 ## Context and orientation
 
 You are a newcomer with only this worktree. Orient here:

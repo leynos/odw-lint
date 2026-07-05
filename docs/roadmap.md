@@ -832,6 +832,17 @@ code. It informs whether phase 2 can ship. See
   - See [technical-design.md](technical-design.md) §11.2.
   - Success: current ODW examples have no dialect errors and known invalid
     cases map to expected rule classes.
+  - [ ] 2.3.1.1. Document loader-parity reducer severity scoping.
+    - Addendum (from review:2.3.1; low). Record the warning-and-error
+      `ruleClasses` scope in the ExecPlan Decision Log so info and hint
+      diagnostics remain outside the loader-parity outcome contract.
+      Lightweight addendum pass.
+  - [ ] 2.3.1.2. Derive loader-parity inertness import hygiene from import
+    edges.
+    - Addendum (from review:2.3.1; low). Replace the hard-coded harness source
+      audit list with actual transitive import-edge discovery, or include
+      imported diagnostic helpers in the audited set. Lightweight addendum
+      pass.
 - [ ] 2.3.2. Add dual-compat parity fixtures for pure metadata and
   deterministic-time warnings.
   - Requires 2.3.1.
@@ -846,6 +857,16 @@ code. It informs whether phase 2 can ship. See
     suites.
   - Success: invalid fixture expectations remain the source of truth for
     emitted dialect diagnostics and original-source spans.
+  - [ ] 2.3.3.1. Guard invalid-fixture diagnostic expectations against inline
+    literals.
+    - Addendum (from review:2.3.3; low). Add a meta-test or lint guard that
+      fails when parser, envelope, or metadata invalid-fixture suites
+      reintroduce inline diagnostic rule, severity, message, or `spanText`
+      literals. Lightweight addendum pass.
+  - [ ] 2.3.3.2. Reconcile historical SWC-bump ExecPlan surface references.
+    - Addendum (from review:2.3.3; low). Add a short note or index pointer in
+      the 2.2.5 and 2.2.6 ExecPlans that the developers guide is now the
+      authoritative living SWC-bump surface list. Lightweight addendum pass.
 - [ ] 2.3.4. Characterize ODW loader rejection of TypeScript-only workflow body
   syntax.
   - Use the loader-parity harness or a documented trusted probe to confirm
@@ -855,6 +876,15 @@ code. It informs whether phase 2 can ship. See
   - Success: loader-parity evidence proves `odw-lint`'s `odw/body-syntax`
     outcome for TypeScript-only bodies matches the current ODW loader, or
     records a deliberate parity divergence for design review.
+- [ ] 2.3.5. Consolidate fixture corpus and parity projection ownership.
+  - Requires 2.3.1 and 2.3.3.
+  - Single-source the ODW-example fixture corpus location, route valid and
+    invalid corpus consumers through their owner modules, extract a shared
+    manifest-to-comparison diagnostic projection, and add a guard against new
+    inline corpus-location literals where the owner modules should be used.
+  - Success: loader-parity, parser, envelope, metadata, deterministic-time, and
+    fixture tests use one reviewed corpus-location and diagnostic-projection
+    contract, with architecture coverage preventing the contract from forking.
 
 ### 2.4. Ship the minimal `check` command
 

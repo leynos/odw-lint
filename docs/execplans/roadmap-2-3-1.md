@@ -277,6 +277,25 @@ the harness files, the parity relation, the inertness guarantees, and the
 explicit deferrals to roadmap tasks 2.3.2 through 2.3.4. `docs/roadmap.md`
 marks 2.3.1 complete and `docs/contents.md` indexes this ExecPlan.
 
+## Addenda
+
+- [ ] 2.3.1.1. Document loader-parity reducer severity scoping.
+  - Source: review:2.3.1; severity low.
+  - Scope: record in the Decision Log that `ruleClasses` includes warning- and
+    error-severity parity diagnostics only, so info and hint diagnostics remain
+    outside the loader-parity outcome contract.
+  - Success: the ExecPlan accurately describes the shipped reducer contract and
+    future 2.3 tasks can consume the harness without inheriting stale wording.
+- [ ] 2.3.1.2. Derive loader-parity inertness import hygiene from import
+  edges.
+  - Source: review:2.3.1; severity low.
+  - Scope: replace the hard-coded harness source audit list with actual
+    transitive import-edge discovery, or include the imported diagnostic helper
+    modules in the audited set.
+  - Success: a forbidden ODW import added to a loader-parity helper imported by
+    the harness fails the inertness proof without maintainers updating an
+    allowlist first.
+
 ## Context and orientation
 
 `odw-lint` is a private TypeScript/Bun static analyser for ODW workflow files.
