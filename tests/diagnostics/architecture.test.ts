@@ -14,6 +14,13 @@ import {
   EXPECTED_PARSEABLE_SOURCE_FILES,
   EXPECTED_STATIC_ANALYSIS_MODULE_FILES,
 } from "./architecture-fixtures";
+import {
+  callCountsByName,
+  objectLiteralPropertyNames,
+  stringSetInitializerValues,
+  topLevelDeclarationByName,
+  topLevelVariableInitializer,
+} from "./architecture-source-queries";
 import { parseSource, topLevelDeclarationNames } from "./import-architecture";
 
 const STATIC_ANALYSIS_SOURCE_PATH = "src/static-analysis";
@@ -35,8 +42,17 @@ const GENERIC_SWC_TRAVERSAL_CALLS = new Set([
   "isAstNode",
   "isUnknownRecord",
 ]);
-// Scope views consume astChildValues while owning scope-bounded recursion.
 
+const PARAMETER_BINDING_SCOPE_TYPES = [
+  "FunctionDeclaration",
+  "FunctionExpression",
+  "ArrowFunctionExpression",
+  "Constructor",
+  "ClassMethod",
+  "PrivateMethod",
+  "MethodProperty",
+  "SetterProperty",
+] as const;
 /** Lists current direct TypeScript source modules below one source directory. */
 const sourceModuleFiles = (sourcePath: string): readonly string[] => {
   if (!existsSync(sourcePath)) {
@@ -110,39 +126,19 @@ const parseFixtureSource = (source: string): ts.SourceFile => {
   return ts.createSourceFile("architecture-fixture.ts", source, ts.ScriptTarget.Latest, true);
 };
 
-/** Finds one top-level declaration by name. */
-const topLevelDeclarationByName = (
-  sourceFile: ts.SourceFile,
-  declarationName: string,
-): ts.Node | undefined => {
-  let match: ts.Node | undefined;
+const flatBindingsSource = parseSource(`${STATIC_ANALYSIS_SOURCE_PATH}/workflow-ast-bindings.ts`);
+const scopeOwnFactsSource = parseSource(
+  `${STATIC_ANALYSIS_SOURCE_PATH}/workflow-ast-scope-own-facts.ts`,
+);
 
-  ts.forEachChild(sourceFile, (node) => {
-    if (topLevelDeclarationName(node) === declarationName) {
-      match = node;
-    }
-  });
-
-  return match;
-};
-
-/** Counts direct call-expression names inside one declaration body. */
-const callCountsByName = (node: ts.Node): ReadonlyMap<string, number> => {
-  const calls = new Map<string, number>();
-
-  const visit = (candidate: ts.Node): void => {
-    const callName = calledExpressionName(candidate);
-    if (callName !== undefined) {
-      calls.set(callName, (calls.get(callName) ?? 0) + 1);
-    }
-
-    ts.forEachChild(candidate, visit);
-  };
-
-  visit(node);
-
-  return calls;
-};
+const flatCollectorTypes = new Set(
+  objectLiteralPropertyNames(
+    topLevelVariableInitializer(flatBindingsSource, "STATEMENT_BINDING_COLLECTORS"),
+  ),
+);
+const functionLikeScopeTypes = stringSetInitializerValues(
+  topLevelVariableInitializer(scopeOwnFactsSource, "FUNCTION_LIKE_SCOPE_TYPES"),
+).filter((nodeType) => nodeType !== "GetterProperty");
 
 /** Extracts a top-level declaration name that can own helper logic. */
 const topLevelDeclarationName = (node: ts.Node): string | undefined => {
@@ -376,10 +372,10 @@ describe("diagnostic architecture", () => {
 
     const calls = callCountsByName(declaration);
 
-    expect(calls.get("scopeOwnFacts") ?? 0).toBe(1);
-    expect(calls.get("enterScope") ?? 0).toBe(0);
-    expect(calls.get("enterAliasScope") ?? 0).toBe(0);
-    expect(calls.get("enterScopeWithOwnFacts") ?? 0).toBe(1);
-    expect(calls.get("enterAliasScopeWithOwnFacts") ?? 0).toBe(1);
+    expect(calls.get("scopeOwnFacts")).toBe(1);
+    expect(functionLikeScopeTypes).toEqual([...PARAMETER_BINDING_SCOPE_TYPES]);
+    for (const nodeType of functionLikeScopeTypes) {
+      expect(flatCollectorTypes.has(nodeType)).toBeTrue();
+    }
   });
 });

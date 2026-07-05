@@ -60,6 +60,11 @@ export const rootAliasView = (
 /**
  * Enters a child alias scope when `node` opens one for this analysis.
  *
+ * This node-taking wrapper is retained as a standalone tested helper for
+ * callers that do not already have scope-owned facts. Scanner walks should use
+ * `enterAliasScopeWithOwnFacts` when they share one computed fact set across
+ * views.
+ *
  * @param parentAliases - Alias facts visible before `node`.
  * @param childBindings - Lexical binding facts visible inside `node`.
  * @param node - Candidate SWC node being entered by the scanner walk.

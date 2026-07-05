@@ -27,6 +27,10 @@ export const rootScopeView = (module: Module): LexicalBindingFacts => {
 /**
  * Enters a child scope when `node` opens one for this analysis.
  *
+ * This node-taking wrapper is retained as a standalone tested helper for
+ * callers that do not already have scope-owned facts. Scanner walks should use
+ * `enterScopeWithOwnFacts` when they share one computed fact set across views.
+ *
  * @param view - Binding facts visible before `node`.
  * @param node - Candidate SWC node being entered by the scanner walk.
  * @returns A child scope view for scope-opening nodes, otherwise `view`.

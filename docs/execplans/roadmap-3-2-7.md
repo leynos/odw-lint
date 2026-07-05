@@ -318,7 +318,7 @@ were resolved before later work continued.
 
 ## Addenda
 
-- [ ] 3.2.7.1. Retire or document scope-entry wrappers.
+- [x] 3.2.7.1. Retire or document scope-entry wrappers.
   - Source: review:3.2.7 and audit:3.2.7; severity low.
   - Scope: remove the node-taking `enterScope` and `enterAliasScope` wrappers
     and point their coverage at the production `*WithOwnFacts` paths, or
@@ -326,7 +326,7 @@ were resolved before later work continued.
     helper entry points rather than scanner-walk code.
   - Success: future maintainers cannot read the node-taking wrappers as live
     scanner code unless that role is explicitly documented and tested.
-- [ ] 3.2.7.2. Link binding collector node-type enumerations.
+- [x] 3.2.7.2. Link binding collector node-type enumerations.
   - Source: audit:3.2.7; severity low.
   - Scope: add a shared classification or focused parity test tying
     `STATEMENT_BINDING_COLLECTORS` and `FUNCTION_LIKE_SCOPE_TYPES` together for
@@ -334,7 +334,7 @@ were resolved before later work continued.
     should agree.
   - Success: adding, renaming, or removing an SWC function-like or accessor
     node type cannot make the two binding collectors diverge silently.
-- [ ] 3.2.7.3. Add cross-model binding-fact invariant coverage.
+- [x] 3.2.7.3. Add cross-model binding-fact invariant coverage.
   - Source: review:3.2.7; severity low.
   - Scope: add invariant coverage, using generated object-literal and class
     member bodies where useful, that compares public flat binding facts with

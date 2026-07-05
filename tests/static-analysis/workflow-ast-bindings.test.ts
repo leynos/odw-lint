@@ -3,13 +3,16 @@
  */
 
 import { describe, expect, it } from "bun:test";
+import type { Module, Node } from "@swc/core";
 import { parseSync } from "@swc/core";
 import * as fc from "fast-check";
 import { createOriginalSourceFile, scanWorkflowEnvelope } from "odw-lint";
+import { astChildValues, isAstNode } from "../../src/static-analysis/swc-ast";
 import {
   collectLexicalBindings,
   isIdentifierBound,
 } from "../../src/static-analysis/workflow-ast-bindings";
+import { rootScopeOwnFacts, scopeOwnFacts } from "../../src/static-analysis/workflow-ast-scopes";
 import { WORKFLOW_BODY_WRAP_FUNCTION_NAME } from "../../src/static-analysis/workflow-body-normalizer";
 import { parseNormalizedWorkflowBody } from "../../src/static-analysis/workflow-body-parse";
 import { expectScannedEnvelope } from "./workflow-envelope-support";
@@ -28,8 +31,8 @@ const BODY_BY_BINDING_KIND = {
   "catch parameter": (name: string) => `try {} catch (${name}) {}\n`,
 } as const;
 
-/** Builds lexical binding facts for one body snippet. */
-const bindingsForBody = (body: string) => {
+/** Parses one workflow body and returns its normalized SWC module. */
+const moduleForBody = (body: string): Module => {
   const sourceFile = createOriginalSourceFile({
     filePath: "workflows/bindings.js",
     sourceText: `export const meta = { name: "bindings", description: "ok" };\n${body}`,
@@ -41,12 +44,50 @@ const bindingsForBody = (body: string) => {
     throw new Error("Expected binding fixture body to parse.", { cause: result.error });
   }
 
-  return collectLexicalBindings(result.module);
+  return result.module;
+};
+
+/** Builds lexical binding facts for one body snippet. */
+const bindingsForBody = (body: string) => {
+  return collectLexicalBindings(moduleForBody(body));
 };
 
 /** Produces a small body that binds one name through a specific syntax form. */
 const bodyBindingName = (name: string, bindingKind: keyof typeof BODY_BY_BINDING_KIND): string => {
   return BODY_BY_BINDING_KIND[bindingKind](name);
+};
+
+/** Returns all names owned by any scope in one parsed module. */
+const scopeOwnedNamesAcrossAst = (module: Module): ReadonlySet<string> => {
+  const names = new Set(rootScopeOwnFacts(module).ownNames);
+  collectScopeOwnedNames(module, names);
+
+  return names;
+};
+
+/** Collects names from every scope-opening node below `node`. */
+const collectScopeOwnedNames = (node: Node, names: Set<string>): void => {
+  for (const name of scopeOwnFacts(node).ownNames) {
+    names.add(name);
+  }
+
+  for (const child of astChildValues(node)) {
+    collectScopeOwnedNamesFromValue(child, names);
+  }
+};
+
+/** Collects scope-owned names from one AST child value. */
+const collectScopeOwnedNamesFromValue = (value: unknown, names: Set<string>): void => {
+  if (isAstNode(value)) {
+    collectScopeOwnedNames(value, names);
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectScopeOwnedNamesFromValue(item, names);
+    }
+  }
 };
 
 describe("collectLexicalBindings", () => {
@@ -189,6 +230,39 @@ describe("collectLexicalBindings", () => {
       fc.property(identifier, (name) => {
         const facts = bindingsForBody(`const ${name} = 1;\n`);
         expect(isIdentifierBound(facts, name)).toBeTrue();
+      }),
+      IDENTIFIER_PROPERTY_RUNNER,
+    );
+  });
+
+  it("matches scope-owned facts for generated member parameter names", () => {
+    const identifierSuffix = fc
+      .array(fc.constantFrom("a", "b", "c", "x", "y", "z", "A", "B", "C", "0", "1", "2", "_"), {
+        maxLength: 8,
+      })
+      .map((characters) => characters.join(""));
+
+    fc.assert(
+      fc.property(identifierSuffix, identifierSuffix, identifierSuffix, (setter, method, klass) => {
+        const parameterNames = [`setter${setter}`, `method${method}`, `klass${klass}`];
+        const module = moduleForBody(
+          `const object = { set value(${parameterNames[0]}) {}, method(${parameterNames[1]}) {} };\nclass C { method(${parameterNames[2]}) {} }\n`,
+        );
+        const flatBindingNames = new Set(collectLexicalBindings(module).boundNames);
+        const scopeOwnedNames = scopeOwnedNamesAcrossAst(module);
+
+        expect(
+          parameterNames.filter((name) => {
+            return flatBindingNames.has(name);
+          }),
+        ).toEqual(
+          parameterNames.filter((name) => {
+            return scopeOwnedNames.has(name);
+          }),
+        );
+        for (const name of parameterNames) {
+          expect(flatBindingNames.has(name)).toBeTrue();
+        }
       }),
       IDENTIFIER_PROPERTY_RUNNER,
     );

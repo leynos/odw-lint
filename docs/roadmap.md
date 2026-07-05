@@ -1082,16 +1082,16 @@ See [technical-design.md](technical-design.md) §9.3.
     rule collectors, object-literal accessor handling no longer diverges
     between public and internal binding facts, and existing deterministic-time
     diagnostics remain unchanged.
-  - [ ] 3.2.7.1. Retire or document scope-entry wrappers.
+  - [x] 3.2.7.1. Retire or document scope-entry wrappers.
     - Addendum (from audit:3.2.7; low). Remove the orphaned node-taking
       `enterScope` and `enterAliasScope` wrappers, or explicitly document them
       as tested standalone helper entry points. Lightweight addendum pass.
-  - [ ] 3.2.7.2. Link binding collector node-type enumerations.
+  - [x] 3.2.7.2. Link binding collector node-type enumerations.
     - Addendum (from audit:3.2.7; low). Add a shared classification or parity
       check tying flat binding collector node types to scope-owned
       function-like node types where their contracts should match. Lightweight
       addendum pass.
-  - [ ] 3.2.7.3. Add cross-model binding-fact invariant coverage.
+  - [x] 3.2.7.3. Add cross-model binding-fact invariant coverage.
     - Addendum (from review:3.2.7; low). Add invariant coverage proving public
       flat binding facts and the scope-owned model agree on collected
       parameter names across generated function-like and accessor bodies.
