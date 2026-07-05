@@ -702,7 +702,7 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:2.1.13; low). Standardize `scanLineCommentEnd`
       wrapper ownership or direct primitive imports so scanner families cannot
       expose divergent same-name semantics. Lightweight addendum pass.
-- [ ] 2.1.14. Consolidate delimited and balanced scanner loops.
+- [x] 2.1.14. Consolidate delimited and balanced scanner loops.
   - Share one parametrized delimited-region primitive, and where contracts
     match one balanced-expression primitive, across escaped-delimited scanners,
     template-expression scans, metadata parsing, and parity oracles without

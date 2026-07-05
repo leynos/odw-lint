@@ -597,10 +597,23 @@ Internal source-helper ownership is split by responsibility:
   token-grammar primitives shared by the source-mask and workflow-metadata
   scanner families. It is internal-only and may be imported by static-analysis
   scanner-family modules for line terminators, escape advancement, comment
-  boundaries, delimiter guards, template-interpolation walks, and identifier
-  runs. Keep it free of mask-range, parser-cursor, diagnostic, and public
-  package types; compose primitives there, then keep token-specific range or
-  metadata decisions in the owning scanner family.
+  boundaries, delimiter guards, identifier runs,
+  `scanDelimitedRegionEnd`, `scanBalancedExpressionEnd`, and
+  `nextInertRegionEnd`. Keep it free of mask-range, parser-cursor, diagnostic,
+  and public package types; compose primitives there, then keep token-specific
+  range or metadata decisions in the owning scanner family.
+- `src/static-analysis/source-scanner-regions.ts` owns the shared
+  region-level scanner loops and is re-exported through
+  `source-scanner-primitives.ts`. Its permitted callers are the two scanner
+  families and `templateExpressionEnd`: source-mask modules use it for escaped
+  delimiters and quoted-string termination, workflow-metadata modules use it
+  for static metadata string/comment skips and matching balanced ranges, and
+  template interpolation uses it for nested `${ ... }` scans. Do not import it
+  directly from unrelated modules; use the primitives seam so the internal
+  ownership remains concentrated. The "where contracts match" exception is
+  intentional: `scanExpressionEnd` keeps its terminator-set, three-family depth,
+  and trailing-trivia contract local while delegating only its inert-region
+  skip to `nextInertRegionEnd`.
 - `src/static-analysis/source-indexes.ts` owns private index storage and
   guarded lookup for factory-created source records.
 - `src/static-analysis/source-mask.ts` is the inert-region masking facade and

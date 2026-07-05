@@ -184,6 +184,8 @@ entry; that index enumerates every current rule page.
   workflow lint entry point.
 - [Roadmap 2.1.13 ExecPlan](execplans/roadmap-2-1-13.md) plans the shared
   scanner primitive layer.
+- [Roadmap 2.1.14 ExecPlan](execplans/roadmap-2-1-14.md) plans consolidated
+  delimited and balanced scanner loops.
 - [Roadmap 2.2.1 ExecPlan](execplans/roadmap-2-2-1.md) plans the SWC-backed
   workflow body parser adapter.
 - [Roadmap 2.2.2 ExecPlan](execplans/roadmap-2-2-2.md) plans workflow-body

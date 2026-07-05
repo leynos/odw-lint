@@ -8,10 +8,10 @@ import {
   type DelimiterDepthState,
   identifierRunEnd,
   isDelimiterDepthTopLevel,
-  isStringLikeDelimiter,
   nextDelimiterDepthState,
+  nextInertRegionEnd,
+  scanBalancedExpressionEnd,
 } from "./source-scanner-primitives";
-import { scanDelimitedEnd } from "./workflow-metadata-comment-scan";
 import type { ParserCursor } from "./workflow-metadata-parser";
 
 /** Keyword value table for primitive metadata literals. */
@@ -73,13 +73,9 @@ export const scanExpressionEnd = (cursor: ParserCursor, terminators: readonly st
   let index = cursor.index;
   while (index < cursor.endIndex) {
     const character = cursor.text[index] ?? "";
-    if (isStringLikeDelimiter(character)) {
-      index = scanDelimitedEnd(cursor.text, index, character, cursor.endIndex);
-      continue;
-    }
-    const commentEndIndex = commentDispatchEnd(cursor.text, index, cursor.endIndex);
-    if (commentEndIndex !== undefined) {
-      index = commentEndIndex;
+    const inertEndIndex = nextInertRegionEnd(cursor.text, index, cursor.endIndex);
+    if (inertEndIndex !== undefined) {
+      index = inertEndIndex;
       continue;
     }
     if (isExpressionTerminator(character, terminators, depth)) {
@@ -104,29 +100,7 @@ export const scanBalancedEnd = (
   open: "[" | "{" | "(",
   close: "]" | "}" | ")",
 ): number => {
-  let depth = 0;
-  for (let index = cursor.index; index < cursor.endIndex; index += 1) {
-    const character = cursor.text[index] ?? "";
-    const commentEndIndex = commentDispatchEnd(cursor.text, index, cursor.endIndex);
-    if (commentEndIndex !== undefined) {
-      index = commentEndIndex - 1;
-      continue;
-    }
-    if (isStringLikeDelimiter(character)) {
-      index = scanDelimitedEnd(cursor.text, index, character, cursor.endIndex) - 1;
-      continue;
-    }
-    if (character === open) {
-      depth += 1;
-    }
-    if (character === close) {
-      depth -= 1;
-      if (depth === 0) {
-        return index + 1;
-      }
-    }
-  }
-  return cursor.endIndex;
+  return scanBalancedExpressionEnd(cursor.text, cursor.index, cursor.endIndex, { open, close });
 };
 
 /**

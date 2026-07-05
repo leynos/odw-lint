@@ -6,7 +6,7 @@
  */
 
 import type { SourceMaskKind, SourceMaskRange } from "./source-mask-types";
-import { indexAfterEscapedUnit, isSourceLineTerminator } from "./source-scanner-primitives";
+import { isSourceLineTerminator, scanDelimitedRegionEnd } from "./source-scanner-primitives";
 
 const WHITESPACE_PATTERN = /^\s$/u;
 
@@ -57,21 +57,7 @@ export const scanEscapedDelimitedEnd = (
   startIndex: number,
   delimiter: string,
 ): number => {
-  let index = startIndex + 1;
-
-  while (index < sourceText.length) {
-    const character = sourceText[index] ?? "";
-    if (character === "\\") {
-      index = indexAfterEscapedUnit(sourceText, index);
-      continue;
-    }
-    if (character === delimiter) {
-      return index + 1;
-    }
-    index += 1;
-  }
-
-  return sourceText.length;
+  return scanDelimitedRegionEnd(sourceText, startIndex, delimiter);
 };
 
 /**

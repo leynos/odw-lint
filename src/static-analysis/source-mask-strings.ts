@@ -7,12 +7,7 @@
 
 import { createMaskedRange } from "./source-mask-delimiters";
 import type { SourceMaskRange } from "./source-mask-types";
-import {
-  indexAfterEscapedUnit,
-  isCrLfAt,
-  isQuotedStringDelimiter,
-  isSourceLineTerminator,
-} from "./source-scanner-primitives";
+import { isQuotedStringDelimiter, scanDelimitedRegionEnd } from "./source-scanner-primitives";
 
 /**
  * Scans a single-quoted or double-quoted string from an opening delimiter.
@@ -51,33 +46,7 @@ export const scanQuotedStringEnd = (
   startIndex: number,
   delimiter: string,
 ): number => {
-  let index = startIndex + 1;
-
-  while (index < sourceText.length) {
-    const currentCharacter = sourceText[index] ?? "";
-    if (currentCharacter === "\\") {
-      index = nextEscapedQuotedStringIndex(sourceText, index);
-      continue;
-    }
-    if (currentCharacter === delimiter) {
-      return index + 1;
-    }
-    if (isSourceLineTerminator(currentCharacter)) {
-      return index;
-    }
-    index += 1;
-  }
-
-  return sourceText.length;
-};
-
-/** Finds the next index after an escaped quoted-string character. */
-const nextEscapedQuotedStringIndex = (sourceText: string, index: number): number => {
-  const escapedEndIndex = indexAfterEscapedUnit(sourceText, index);
-  return isEscapedCrLfLineContinuation(sourceText, index) ? escapedEndIndex + 1 : escapedEndIndex;
-};
-
-/** Checks whether a quoted-string escape consumes a CRLF line continuation. */
-const isEscapedCrLfLineContinuation = (sourceText: string, index: number): boolean => {
-  return isCrLfAt(sourceText, index + 1);
+  return scanDelimitedRegionEnd(sourceText, startIndex, delimiter, {
+    terminateAtLineTerminator: true,
+  });
 };

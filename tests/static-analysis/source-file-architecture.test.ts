@@ -23,6 +23,7 @@ const SOURCE_HELPER_MODULES = [
   "source-position.ts",
   "source-scan.ts",
   "source-scanner-primitives.ts",
+  "source-scanner-regions.ts",
   "source-snippet.ts",
   "types.ts",
   "utf8.ts",
@@ -197,6 +198,17 @@ describe("source-file helper architecture", () => {
       "lineCommentContentEnd",
       "lineCommentTerminatorEnd",
       "nextDelimiterDepthState",
+    ]);
+    expectModuleDeclarations("src/static-analysis/source-scanner-regions.ts", [
+      "BalancedExpressionOptions",
+      "DelimitedRegionOptions",
+      "delimitedRegionEndIndex",
+      "delimitedRegionSkipEnd",
+      "escapedDelimitedContinuationEnd",
+      "isTemplateInterpolationStart",
+      "nextInertRegionEnd",
+      "scanBalancedExpressionEnd",
+      "scanDelimitedRegionEnd",
       "templateExpressionEnd",
     ]);
     expectModuleDeclarations("src/static-analysis/source-indexes.ts", [
@@ -239,8 +251,6 @@ describe("source-file helper architecture", () => {
       "scanCommentRange",
     ]);
     expectModuleDeclarations("src/static-analysis/source-mask-strings.ts", [
-      "isEscapedCrLfLineContinuation",
-      "nextEscapedQuotedStringIndex",
       "scanQuotedStringEnd",
       "scanQuotedStringRange",
     ]);

@@ -2,9 +2,8 @@
 
 import {
   blockCommentEnd,
-  indexAfterEscapedUnit,
   type StringLikeDelimiter,
-  templateExpressionEnd,
+  scanDelimitedRegionEnd,
 } from "./source-scanner-primitives";
 
 /**
@@ -22,21 +21,10 @@ export const scanDelimitedEnd = (
   delimiter: StringLikeDelimiter,
   endIndex: number,
 ): number => {
-  for (let index = startIndex + 1; index < endIndex; index += 1) {
-    const character = text[index] ?? "";
-    if (character === "\\") {
-      index = indexAfterEscapedUnit(text, index) - 1;
-      continue;
-    }
-    if (delimiter === "`" && text.startsWith("${", index)) {
-      index = templateExpressionEnd(text, index + 2, endIndex) - 1;
-      continue;
-    }
-    if (character === delimiter) {
-      return index + 1;
-    }
-  }
-  return endIndex;
+  return scanDelimitedRegionEnd(text, startIndex, delimiter, {
+    endIndex,
+    allowTemplateInterpolation: true,
+  });
 };
 
 /**

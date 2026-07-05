@@ -50,6 +50,7 @@ export const EXPECTED_STATIC_ANALYSIS_MODULE_FILES = [
   "source-position.ts",
   "source-scan.ts",
   "source-scanner-primitives.ts",
+  "source-scanner-regions.ts",
   "source-snippet.ts",
   "swc-ast.ts",
   "types.ts",

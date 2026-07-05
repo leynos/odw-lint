@@ -3,11 +3,13 @@
 import { describe, expect, it } from "bun:test";
 import * as fc from "fast-check";
 import { scanEscapedDelimitedEnd } from "../../src/static-analysis/source-mask-delimiters";
+import { scanQuotedStringEnd } from "../../src/static-analysis/source-mask-strings";
 import { scanDelimitedEnd } from "../../src/static-analysis/workflow-metadata-comment-scan";
 import { SOURCE_SPAN_PROPERTY_RUNNER } from "./source-file-property-oracle";
 
 type SourceMaskDelimiter = "'" | '"' | "`" | "/";
 type MetadataDelimiter = "'" | '"' | "`";
+type QuotedStringDelimiter = "'" | '"';
 
 const SOURCE_FRAGMENT = fc.constantFrom(
   "",
@@ -56,6 +58,19 @@ describe("delimited scanner parity", () => {
     }
   });
 
+  it("anchors the frozen quoted-string oracle to line-terminator cases", () => {
+    for (const [sourceText, delimiter, expectedEnd] of [
+      [`"closed" tail`, '"', 8],
+      [`"escaped \\" delimiter" tail`, '"', 22],
+      ["'open\nnext", "'", 5],
+      ["'a\\\r\nb' tail", "'", 7],
+      ["'a\\\nb' tail", "'", 6],
+    ] as const) {
+      expect(expectedQuotedStringEnd(sourceText, 0, delimiter)).toBe(expectedEnd);
+      expect(scanQuotedStringEnd(sourceText, 0, delimiter)).toBe(expectedEnd);
+    }
+  });
+
   it("keeps source-mask escaped-delimited scanning equivalent to the oracle", () => {
     fc.assert(
       fc.property(
@@ -83,6 +98,23 @@ describe("delimited scanner parity", () => {
 
           expect(scanDelimitedEnd(sourceText, 0, delimiter, sourceText.length)).toBe(
             expectedDelimitedEnd(sourceText, 0, delimiter, sourceText.length),
+          );
+        },
+      ),
+      SOURCE_SPAN_PROPERTY_RUNNER,
+    );
+  });
+
+  it("keeps quoted-string scanning equivalent to the oracle", () => {
+    fc.assert(
+      fc.property(
+        fc.constantFrom<QuotedStringDelimiter>("'", '"'),
+        GENERATED_BODY,
+        (delimiter, body) => {
+          const sourceText = `${delimiter}${body}`;
+
+          expect(scanQuotedStringEnd(sourceText, 0, delimiter)).toBe(
+            expectedQuotedStringEnd(sourceText, 0, delimiter),
           );
         },
       ),
@@ -138,6 +170,32 @@ const expectedDelimitedEnd = (
   return endIndex;
 };
 
+/** Frozen copy of the pre-refactor source-mask quoted-string scanner. */
+const expectedQuotedStringEnd = (
+  text: string,
+  startIndex: number,
+  delimiter: QuotedStringDelimiter,
+): number => {
+  let index = startIndex + 1;
+
+  while (index < text.length) {
+    const character = text[index] ?? "";
+    if (character === "\\") {
+      index += isExpectedCrLfAt(text, index + 1) ? 3 : 2;
+      continue;
+    }
+    if (character === delimiter) {
+      return index + 1;
+    }
+    if (isExpectedLineTerminator(character)) {
+      return index;
+    }
+    index += 1;
+  }
+
+  return text.length;
+};
+
 /** Frozen copy of the pre-refactor template interpolation scanner. */
 const expectedTemplateExpressionEnd = (
   text: string,
@@ -187,11 +245,21 @@ const expectedCommentEnd = (
 /** Frozen line-comment scanner: content end, not terminator end. */
 const expectedLineCommentEnd = (text: string, startIndex: number, endIndex: number): number => {
   for (let index = startIndex; index < endIndex; index += 1) {
-    if (["\n", "\r", "\u2028", "\u2029"].includes(text[index] ?? "")) {
+    if (isExpectedLineTerminator(text[index] ?? "")) {
       return index;
     }
   }
   return endIndex;
+};
+
+/** Frozen line-terminator guard used by the copied scanner oracles. */
+const isExpectedLineTerminator = (character: string): boolean => {
+  return ["\n", "\r", "\u2028", "\u2029"].includes(character);
+};
+
+/** Frozen CRLF guard used by the quoted-string oracle. */
+const isExpectedCrLfAt = (text: string, index: number): boolean => {
+  return text[index] === "\r" && text[index + 1] === "\n";
 };
 
 /** Frozen block-comment scanner. */
