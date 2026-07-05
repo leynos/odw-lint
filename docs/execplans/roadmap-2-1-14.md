@@ -456,7 +456,7 @@ staying below the 400-line architecture guard.
 
 ## Addenda
 
-- [ ] 2.1.14.1. Broaden scanner parity generators.
+- [x] 2.1.14.1. Broaden scanner parity generators.
   - Source: review:2.1.14; severity low.
   - Scope: add paragraph separators, exotic whitespace, full delimiter
     interplay, and deeper nested-template fragments to the scanner parity
@@ -464,7 +464,7 @@ staying below the 400-line architecture guard.
   - Success: the parity properties exercise U+2029, tab, NBSP, form-feed,
     vertical-tab, nested-template, and delimiter-interplay cases across the
     scanner families they guard.
-- [ ] 2.1.14.2. Fold template-literal scanning onto shared walkers.
+- [x] 2.1.14.2. Fold template-literal scanning onto shared walkers.
   - Source: audit:2.1.14; severity medium.
   - Scope: make template-literal masking delegate matched delimited, balanced,
     or inert-region walk backbones through the shared region primitives or
@@ -472,7 +472,7 @@ staying below the 400-line architecture guard.
   - Success: template-literal masking output is unchanged, and the template
     scanner no longer carries a forked brace-depth or inert-region walk where
     the shared region primitive contract matches.
-- [ ] 2.1.14.3. Unify scanner regex-start heuristics.
+- [x] 2.1.14.3. Unify scanner regex-start heuristics.
   - Source: audit:2.1.14; severity medium.
   - Scope: share one preceding-token regex-start predicate and allowed-token
     source of truth across top-level and template scanners.

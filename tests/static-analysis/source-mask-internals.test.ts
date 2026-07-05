@@ -262,6 +262,18 @@ describe("source-mask template scanner", () => {
     ).toBe("; const y = 1;");
   });
 
+  it("uses the shared regex-start keyword set inside template expressions", () => {
+    const sourceText = "typeof /}`/.test(input)";
+
+    expect(nextTemplateIndex(sourceText, sourceText.indexOf("/"), 1)).toBe(11);
+  });
+
+  it("rejects postfix-operator regex starts inside template expressions", () => {
+    const sourceText = "counter++ /x/.test(input)";
+
+    expect(nextTemplateIndex(sourceText, sourceText.indexOf("/"), 1)).toBeUndefined();
+  });
+
   it("skips comments before keyword-led regex literals inside template expressions", () => {
     const sourceText = [
       "const x = `value $",

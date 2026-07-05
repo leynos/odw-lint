@@ -6,31 +6,19 @@
  */
 
 import { isAsciiIdentifierStartCharacter } from "./javascript-identifiers";
-import { scanCommentRange } from "./source-mask-comments";
-import {
-  createMaskedRange,
-  isWhitespaceCharacter,
-  scanEscapedDelimitedEnd,
-} from "./source-mask-delimiters";
-import { scanRegexBodyEnd } from "./source-mask-regex";
+import { createMaskedRange, isWhitespaceCharacter } from "./source-mask-delimiters";
+import { isRegexAllowedAfter, scanRegexBodyEnd } from "./source-mask-regex";
 import type { SourceMaskRange } from "./source-mask-types";
 import {
   asciiIdentifierRunStart,
   indexAfterEscapedUnit,
   isRegexDelimiter,
   isSourceLineTerminator,
-  isStringLikeDelimiter,
   isTemplateDelimiter,
+  nextInertRegionEnd,
+  scanBalancedExpressionEnd,
+  scanDelimitedRegionEnd,
 } from "./source-scanner-primitives";
-
-const TEMPLATE_REGEX_ALLOWED_PREVIOUS_CHARACTERS = new Set("([{,;:=!&|?+-*%<>~^".split(""));
-const TEMPLATE_REGEX_ALLOWED_PREVIOUS_KEYWORDS = new Set(["await", "return", "throw", "yield"]);
-
-/** State for a template scan step. */
-export type TemplateScanState = { readonly expressionDepth: number; readonly index: number };
-
-/** Template scan state plus an optional terminating index. */
-export type TemplateScanStep = TemplateScanState & { readonly endIndex?: number };
 
 /**
  * Scans a whole template literal, including interpolation code, as inert.
@@ -60,42 +48,10 @@ export const scanTemplateRange = (
  * @returns Exclusive end index for the template range.
  */
 export const scanTemplateEnd = (sourceText: string, startIndex: number): number => {
-  let state: TemplateScanState = { expressionDepth: 0, index: startIndex + 1 };
-
-  while (state.index < sourceText.length) {
-    const nextStep = nextTemplateStep(sourceText, state);
-    if (nextStep.endIndex !== undefined) {
-      return nextStep.endIndex;
-    }
-    state = nextStep;
-  }
-
-  return sourceText.length;
-};
-
-/**
- * Advances a template scan step.
- *
- * @param sourceText - Original source text to scan.
- * @param state - Current template scan state.
- * @returns Next scan state, or state plus `endIndex` when the template closes.
- */
-export const nextTemplateStep = (
-  sourceText: string,
-  state: TemplateScanState,
-): TemplateScanStep => {
-  const nestedIndex = nextTemplateIndex(sourceText, state.index, state.expressionDepth);
-  if (nestedIndex !== undefined) {
-    return { expressionDepth: state.expressionDepth, index: nestedIndex };
-  }
-  if (isTemplateClose(sourceText, state)) {
-    return { ...state, endIndex: state.index + 1 };
-  }
-  if (isTemplateExpressionOpen(sourceText, state.index)) {
-    return { expressionDepth: state.expressionDepth + 1, index: state.index + 2 };
-  }
-
-  return nextOrdinaryTemplateStep(sourceText, state);
+  return scanDelimitedRegionEnd(sourceText, startIndex, "`", {
+    allowTemplateInterpolation: true,
+    nextTemplateExpressionEnd: scanTemplateExpressionEnd,
+  });
 };
 
 /**
@@ -119,7 +75,7 @@ export const nextTemplateIndex = (
     return undefined;
   }
 
-  return nextTemplateExpressionIndex(sourceText, index);
+  return nextTemplateExpressionInertRegionEnd(sourceText, index, sourceText.length);
 };
 
 /** Skips an escaped character in template text. */
@@ -132,23 +88,34 @@ const nextEscapedTemplateIndex = (sourceText: string, index: number): number | u
 };
 
 /** Skips inert tokens inside a template expression. */
-const nextTemplateExpressionIndex = (sourceText: string, index: number): number | undefined => {
+const scanTemplateExpressionEnd = (
+  sourceText: string,
+  startIndex: number,
+  endIndex: number,
+): number => {
+  return scanBalancedExpressionEnd(sourceText, startIndex, endIndex, {
+    open: "{",
+    close: "}",
+    initiallyOpen: true,
+    nextInertRegionEnd: nextTemplateExpressionInertRegionEnd,
+  });
+};
+
+/** Skips inert tokens inside a template expression. */
+const nextTemplateExpressionInertRegionEnd = (
+  sourceText: string,
+  index: number,
+  endIndex: number,
+): number | undefined => {
   const character = sourceText[index] ?? "";
-  const commentEndIndex = nextTemplateCommentIndex(sourceText, index, character);
-  if (commentEndIndex !== undefined) {
-    return commentEndIndex;
-  }
   if (isTemplateRegexStart(sourceText, index, character)) {
     return scanTemplateRegexEnd(sourceText, index);
   }
   if (isTemplateDelimiter(character)) {
     return scanTemplateEnd(sourceText, index);
   }
-  if (isStringLikeDelimiter(character)) {
-    return scanEscapedDelimitedEnd(sourceText, index, character);
-  }
 
-  return undefined;
+  return nextInertRegionEnd(sourceText, index, endIndex);
 };
 
 /** Checks the local preceding-token regex heuristic. */
@@ -157,28 +124,10 @@ const isTemplateRegexStart = (sourceText: string, index: number, character: stri
     return false;
   }
 
-  const previousCharacter = previousSignificantTemplateCharacter(sourceText, index);
-  if (isTemplateRegexAllowedAfter(previousCharacter)) {
-    return true;
-  }
+  const previousToken = previousSignificantTemplateToken(sourceText, index);
+  const previousCharacter = previousToken.at(-1) ?? "";
 
-  return isTemplateRegexAllowedAfter(previousSignificantTemplateToken(sourceText, index));
-};
-
-/** Checks whether a template-expression slash may start a regex. */
-const isTemplateRegexAllowedAfter = (previousSignificantToken: string): boolean => {
-  return (
-    previousSignificantToken === "" ||
-    TEMPLATE_REGEX_ALLOWED_PREVIOUS_CHARACTERS.has(previousSignificantToken) ||
-    TEMPLATE_REGEX_ALLOWED_PREVIOUS_KEYWORDS.has(previousSignificantToken)
-  );
-};
-
-/** Finds the nearest non-whitespace, non-comment character before an expression index. */
-const previousSignificantTemplateCharacter = (sourceText: string, index: number): string => {
-  const token = previousSignificantTemplateToken(sourceText, index);
-
-  return token.at(-1) ?? "";
+  return isRegexAllowedAfter(previousCharacter, previousToken);
 };
 
 /** Finds the nearest non-whitespace, non-comment token before an expression index. */
@@ -194,13 +143,27 @@ const previousSignificantTemplateToken = (sourceText: string, index: number): st
 
   const character = sourceText[cursor] ?? "";
   if (!isAsciiIdentifierStartCharacter(character)) {
-    return character;
+    return significantTemplateOperatorEndingAt(sourceText, cursor);
   }
 
   const tokenEndIndex = cursor + 1;
   const tokenStartIndex = asciiIdentifierRunStart(sourceText, tokenEndIndex);
 
   return sourceText.slice(tokenStartIndex, tokenEndIndex);
+};
+
+/** Finds a compact operator token ending at a non-identifier index. */
+const significantTemplateOperatorEndingAt = (sourceText: string, index: number): string => {
+  const character = sourceText[index] ?? "";
+  const previousCharacter = sourceText[index - 1] ?? "";
+  if (character === "+" && previousCharacter === "+") {
+    return "++";
+  }
+  if (character === "-" && previousCharacter === "-") {
+    return "--";
+  }
+
+  return character;
 };
 
 /** Finds the previous non-whitespace character index before an expression index. */
@@ -244,60 +207,7 @@ const previousTemplateLineStartIndex = (sourceText: string, cursor: number): num
   return 0;
 };
 
-/** Skips a comment inside a template expression. */
-const nextTemplateCommentIndex = (
-  sourceText: string,
-  index: number,
-  character: string,
-): number | undefined => {
-  const nextCharacter = sourceText[index + 1] ?? "";
-  return scanCommentRange(sourceText, index, character, nextCharacter)?.endIndex;
-};
-
 /** Scans a regex-like literal inside a template expression. */
 const scanTemplateRegexEnd = (sourceText: string, startIndex: number): number | undefined => {
   return scanRegexBodyEnd(sourceText, startIndex, { shouldRequireBody: false });
-};
-
-/**
- * Checks for the outer template close.
- *
- * @param sourceText - Original source text to scan.
- * @param state - Current template scan state.
- * @returns Whether the current state closes the outer template literal.
- */
-export const isTemplateClose = (sourceText: string, state: TemplateScanState): boolean => {
-  return state.expressionDepth === 0 && isTemplateDelimiter(sourceText[state.index] ?? "");
-};
-
-/**
- * Checks for template interpolation start.
- *
- * @param sourceText - Original source text to scan.
- * @param index - Current UTF-16 source-text index.
- * @returns Whether the current index starts a template expression.
- */
-export const isTemplateExpressionOpen = (sourceText: string, index: number): boolean => {
-  return sourceText[index] === "$" && sourceText[index + 1] === "{";
-};
-
-/**
- * Advances through one ordinary template character.
- *
- * @param sourceText - Original source text to scan.
- * @param state - Current template scan state.
- * @returns Next scan state after one ordinary character.
- */
-export const nextOrdinaryTemplateStep = (
-  sourceText: string,
-  state: TemplateScanState,
-): TemplateScanState => {
-  if (state.expressionDepth > 0 && sourceText[state.index] === "{") {
-    return { expressionDepth: state.expressionDepth + 1, index: state.index + 1 };
-  }
-  if (state.expressionDepth > 0 && sourceText[state.index] === "}") {
-    return { expressionDepth: state.expressionDepth - 1, index: state.index + 1 };
-  }
-
-  return { expressionDepth: state.expressionDepth, index: state.index + 1 };
 };

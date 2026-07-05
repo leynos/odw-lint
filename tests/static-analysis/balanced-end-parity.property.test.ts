@@ -31,6 +31,10 @@ const SOURCE_FRAGMENT = fc.constantFrom(
   "",
   "a",
   " ",
+  "\t",
+  "\u00a0",
+  "\f",
+  "\v",
   "{",
   "}",
   "[",
@@ -44,9 +48,16 @@ const SOURCE_FRAGMENT = fc.constantFrom(
   '"\\"}"',
   "`outer $" + "{'}'} end`",
   "`escaped \\` delimiter`",
+  "`nested $" + "{`inner $" + "{call('}')}`}`",
+  "'quoted \" double'",
+  '"quoted \' single"',
+  "/[\\]`'\"]/g",
   "// } \n",
   "/* ] */",
   "\n",
+  "\r\n",
+  "\u2028",
+  "\u2029",
 );
 const GENERATED_BODY = fc.array(SOURCE_FRAGMENT, { maxLength: 20 }).map((parts) => parts.join(""));
 

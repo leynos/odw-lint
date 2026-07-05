@@ -12,12 +12,22 @@ export type DelimitedRegionOptions = Readonly<{
   readonly endIndex?: number;
   readonly allowTemplateInterpolation?: boolean;
   readonly terminateAtLineTerminator?: boolean;
+  readonly nextTemplateExpressionEnd?: (
+    text: string,
+    startIndex: number,
+    endIndex: number,
+  ) => number;
 }>;
 
 export type BalancedExpressionOptions = Readonly<{
   readonly open: "{" | "[" | "(";
   readonly close: "}" | "]" | ")";
   readonly initiallyOpen?: boolean;
+  readonly nextInertRegionEnd?: (
+    text: string,
+    index: number,
+    endIndex: number,
+  ) => number | undefined;
 }>;
 
 /** Finds the index after a backslash escape in a delimited region. */
@@ -66,7 +76,7 @@ const delimitedRegionSkipEnd = (
       options.allowTemplateInterpolation === true,
     )
   ) {
-    return templateExpressionEnd(text, index + 2, endIndex);
+    return (options.nextTemplateExpressionEnd ?? templateExpressionEnd)(text, index + 2, endIndex);
   }
   return undefined;
 };
@@ -151,6 +161,22 @@ export const nextInertRegionEnd = (
   return undefined;
 };
 
+/** Updates a single-pair balanced-expression depth for ordinary code. */
+const nextBalancedExpressionDepth = (
+  depth: number,
+  character: string,
+  options: BalancedExpressionOptions,
+): number => {
+  if (character === options.open) {
+    return depth + 1;
+  }
+  if (character === options.close) {
+    return depth - 1;
+  }
+
+  return depth;
+};
+
 /**
  * Finds the end of a single-pair balanced expression.
  *
@@ -167,24 +193,19 @@ export const scanBalancedExpressionEnd = (
   options: BalancedExpressionOptions,
 ): number => {
   let depth = options.initiallyOpen === true ? 1 : 0;
+  const inertRegionEnd = options.nextInertRegionEnd ?? nextInertRegionEnd;
 
   for (let index = startIndex; index < endIndex; index += 1) {
-    const inertEndIndex = nextInertRegionEnd(text, index, endIndex);
+    const inertEndIndex = inertRegionEnd(text, index, endIndex);
     if (inertEndIndex !== undefined) {
       index = inertEndIndex - 1;
       continue;
     }
 
     const character = text[index] ?? "";
-    if (character === options.open) {
-      depth += 1;
-      continue;
-    }
-    if (character === options.close) {
-      depth -= 1;
-      if (depth === 0) {
-        return index + 1;
-      }
+    depth = nextBalancedExpressionDepth(depth, character, options);
+    if (character === options.close && depth === 0) {
+      return index + 1;
     }
   }
 
