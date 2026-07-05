@@ -960,7 +960,7 @@ reported clearly in one command. The result informs strict-mode policy. See
       coverage for nested parameters, setter params, named class-expression
       member scope, and documented block-to-function attribution. Lightweight
       addendum pass.
-  - [ ] 3.1.5.3. Correct deterministic-time shadowing limitation docs.
+  - [x] 3.1.5.3. Correct deterministic-time shadowing limitation docs.
     - Addendum (from audit:3.1.6; medium). Remove stale block, `for`, and
       `catch` shadowing limitations from deterministic-time rule pages after
       3.1.5.1 made those scopes precise. Lightweight addendum pass.

@@ -57,6 +57,5 @@ site stays suppressed. Alias visibility is still computed for the whole current
 scope, so use-before-declaration and temporal dead-zone ordering inside one
 scope remain conservative.
 
-The remaining conservative limits are dynamic computed keys (`Date[k]()`),
-block, `for`, and `catch` shadows attributed to the enclosing function scope,
-and non-`globalThis` roots such as `window`, `self`, and `global`.
+The remaining conservative limits are dynamic computed keys (`Date[k]()`) and
+non-`globalThis` roots such as `window`, `self`, and `global`.

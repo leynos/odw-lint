@@ -57,7 +57,6 @@ site stays suppressed. Alias visibility is still computed for the whole current
 scope, so use-before-declaration and temporal dead-zone ordering inside one
 scope remain conservative.
 
-The remaining conservative limits are dynamic computed keys, block, `for`, and
-`catch` shadows attributed to the enclosing function scope, optional chaining
+The remaining conservative limits are dynamic computed keys, optional chaining
 around constructor forms that ECMAScript does not permit with `new`, and
 non-`globalThis` roots such as `window`, `self`, and `global`.

@@ -1232,7 +1232,7 @@ name rather than the JavaScript global.
     block-to-function attribution.
   - Success: the scope-view unit suite pins the internal `rootScopeView` and
     `enterScope` behaviour needed before later collector-unification work.
-- [ ] 3.1.5.3. Correct deterministic-time shadowing limitation docs.
+- [x] 3.1.5.3. Correct deterministic-time shadowing limitation docs.
   - Source: audit:3.1.6; severity medium.
   - Scope: remove stale block, `for`, and `catch` shadowing limitations from
     `docs/rules/no-date-now.md`, `docs/rules/no-math-random.md`, and
