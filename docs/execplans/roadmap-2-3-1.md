@@ -250,6 +250,14 @@ escalation, not a workaround.
   consolidation that is explicitly deferred to 2.3.3.
   Date/Author: 2026-07-05, implementation agent.
 
+- Decision: `ruleClasses` records only warning- and error-severity parity
+  diagnostics.
+  Rationale: the loader-parity reducer exists to compare diagnostics that can
+  change the compact loader outcome or feed later parity tasks. Info and hint
+  diagnostics remain outside the current outcome contract until a future task
+  explicitly gives them loader-parity semantics.
+  Date/Author: 2026-07-05, addendum agent.
+
 ## Outcomes & Retrospective
 
 WI-1 delivered the shared `loaderParityOutcome` reducer and trusted-example
@@ -279,14 +287,14 @@ marks 2.3.1 complete and `docs/contents.md` indexes this ExecPlan.
 
 ## Addenda
 
-- [ ] 2.3.1.1. Document loader-parity reducer severity scoping.
+- [x] 2.3.1.1. Document loader-parity reducer severity scoping.
   - Source: review:2.3.1; severity low.
   - Scope: record in the Decision Log that `ruleClasses` includes warning- and
     error-severity parity diagnostics only, so info and hint diagnostics remain
     outside the loader-parity outcome contract.
   - Success: the ExecPlan accurately describes the shipped reducer contract and
     future 2.3 tasks can consume the harness without inheriting stale wording.
-- [ ] 2.3.1.2. Derive loader-parity inertness import hygiene from import
+- [x] 2.3.1.2. Derive loader-parity inertness import hygiene from import
   edges.
   - Source: review:2.3.1; severity low.
   - Scope: replace the hard-coded harness source audit list with actual

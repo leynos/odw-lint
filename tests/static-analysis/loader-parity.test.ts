@@ -3,7 +3,9 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { WorkflowSource } from "odw-lint";
 import { importArchitectureFactsFromSource } from "../diagnostics/import-edge-extraction";
 import { isForbiddenOdwImport } from "../diagnostics/odw-import-policy";
@@ -25,34 +27,16 @@ const INVALID_FIXTURE_CORPUS = {
   manifestRoot: "tests/static-analysis/fixtures/invalid-workflows/",
   recursive: true,
 } as const;
-const HARNESS_SOURCE_FILES = [
-  {
-    filePath: "tests/static-analysis/fixtures/corpus-support.ts",
-    sourceUrl: new URL("./fixtures/corpus-support.ts", import.meta.url),
-  },
-  {
-    filePath: "tests/static-analysis/fixtures/invalid-workflows.ts",
-    sourceUrl: new URL("./fixtures/invalid-workflows.ts", import.meta.url),
-  },
-  {
-    filePath: "tests/static-analysis/fixtures/invalid-workflows/manifest-types.ts",
-    sourceUrl: new URL("./fixtures/invalid-workflows/manifest-types.ts", import.meta.url),
-  },
-  {
-    filePath: "tests/static-analysis/fixtures/loader-parity.ts",
-    sourceUrl: new URL("./fixtures/loader-parity.ts", import.meta.url),
-  },
-  {
-    filePath: "tests/static-analysis/fixtures/odw-examples.ts",
-    sourceUrl: new URL("./fixtures/odw-examples.ts", import.meta.url),
-  },
-  {
-    filePath: "tests/static-analysis/loader-parity.test.ts",
-    sourceUrl: new URL("./loader-parity.test.ts", import.meta.url),
-  },
-] as const;
+const PROJECT_ROOT_URL = new URL("../../", import.meta.url);
+const HARNESS_ENTRYPOINT_URLS = [new URL("./loader-parity.test.ts", import.meta.url)] as const;
+const TYPESCRIPT_SOURCE_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts"] as const;
 const HOSTILE_MARKER_PROPERTY = "__odwLintHostileMetadataWasEvaluated";
 const invalidFixtureOutcomeCache = new Map<string, ReturnType<typeof loaderParityOutcome>>();
+
+type HarnessSourceFile = {
+  readonly filePath: string;
+  readonly sourceUrl: URL;
+};
 
 declare global {
   var __odwLintHostileMetadataWasEvaluated: string | undefined;
@@ -74,6 +58,67 @@ const clearHostileMarker = (): void => {
 /** Reads the hostile marker value for inertness assertions. */
 const hostileMarkerValue = (): string | undefined => {
   return globalThis.__odwLintHostileMetadataWasEvaluated;
+};
+
+/** Converts a source URL to the repository-relative path used in test failures. */
+const repositoryRelativePath = (sourceUrl: URL): string => {
+  return relative(fileURLToPath(PROJECT_ROOT_URL), fileURLToPath(sourceUrl)).replaceAll("\\", "/");
+};
+
+/** Returns the first existing file URL from a deterministic candidate list. */
+const firstExistingSourceUrl = (candidateUrls: readonly URL[]): URL | undefined => {
+  return candidateUrls.find((candidateUrl) => {
+    const candidatePath = fileURLToPath(candidateUrl);
+    return existsSync(candidatePath) && statSync(candidatePath).isFile();
+  });
+};
+
+/** Resolves local TypeScript import edges without loading imported modules. */
+const resolveLocalTypeScriptImport = (
+  importerUrl: URL,
+  moduleSpecifier: string,
+): URL | undefined => {
+  if (!moduleSpecifier.startsWith(".")) {
+    return undefined;
+  }
+
+  const baseUrl = new URL(moduleSpecifier, importerUrl);
+  const withExtensions = TYPESCRIPT_SOURCE_EXTENSIONS.map(
+    (extension) => new URL(`${moduleSpecifier}${extension}`, importerUrl),
+  );
+  const indexFiles = TYPESCRIPT_SOURCE_EXTENSIONS.map(
+    (extension) => new URL(`${moduleSpecifier}/index${extension}`, importerUrl),
+  );
+
+  return firstExistingSourceUrl([baseUrl, ...withExtensions, ...indexFiles]);
+};
+
+/** Discovers the harness source graph from actual relative import edges. */
+const discoverHarnessSourceFiles = (): readonly HarnessSourceFile[] => {
+  const discovered = new Map<string, HarnessSourceFile>();
+  const pendingUrls: URL[] = [...HARNESS_ENTRYPOINT_URLS];
+
+  for (const sourceUrl of pendingUrls) {
+    const filePath = repositoryRelativePath(sourceUrl);
+    if (discovered.has(filePath)) {
+      continue;
+    }
+
+    const sourceText = readFileSync(sourceUrl, "utf8");
+    const facts = importArchitectureFactsFromSource(filePath, sourceText);
+    discovered.set(filePath, { filePath, sourceUrl });
+
+    for (const edge of facts.importLikeEdges) {
+      const importedUrl = resolveLocalTypeScriptImport(sourceUrl, edge.moduleSpecifier);
+      if (importedUrl !== undefined) {
+        pendingUrls.push(importedUrl);
+      }
+    }
+  }
+
+  return [...discovered.values()].sort((left, right) =>
+    left.filePath.localeCompare(right.filePath),
+  );
 };
 
 /** Runs the harness for one invalid fixture manifest entry. */
@@ -325,7 +370,15 @@ describe("loader-parity harness inertness", () => {
     expect(isForbiddenOdwImport("odw/src/loader")).toBe(true);
     expect(isForbiddenOdwImport("odw/loader")).toBe(false);
 
-    for (const { filePath, sourceUrl } of HARNESS_SOURCE_FILES) {
+    const harnessSourceFiles = discoverHarnessSourceFiles();
+    expect(harnessSourceFiles.map((file) => file.filePath)).toContain(
+      "tests/diagnostics/import-edge-extraction.ts",
+    );
+    expect(harnessSourceFiles.map((file) => file.filePath)).toContain(
+      "tests/static-analysis/fixtures/loader-parity.ts",
+    );
+
+    for (const { filePath, sourceUrl } of harnessSourceFiles) {
       const facts = importArchitectureFactsFromSource(filePath, readFileSync(sourceUrl, "utf8"));
       const forbiddenEdges = facts.importLikeEdges.filter((edge) =>
         isForbiddenOdwImport(edge.moduleSpecifier),

@@ -832,12 +832,12 @@ code. It informs whether phase 2 can ship. See
   - See [technical-design.md](technical-design.md) §11.2.
   - Success: current ODW examples have no dialect errors and known invalid
     cases map to expected rule classes.
-  - [ ] 2.3.1.1. Document loader-parity reducer severity scoping.
+  - [x] 2.3.1.1. Document loader-parity reducer severity scoping.
     - Addendum (from review:2.3.1; low). Record the warning-and-error
       `ruleClasses` scope in the ExecPlan Decision Log so info and hint
       diagnostics remain outside the loader-parity outcome contract.
       Lightweight addendum pass.
-  - [ ] 2.3.1.2. Derive loader-parity inertness import hygiene from import
+  - [x] 2.3.1.2. Derive loader-parity inertness import hygiene from import
     edges.
     - Addendum (from review:2.3.1; low). Replace the hard-coded harness source
       audit list with actual transitive import-edge discovery, or include
