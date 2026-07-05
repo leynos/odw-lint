@@ -681,3 +681,38 @@ worktree source (`workflow-deterministic-time.ts`,
 deterministic-time/scope/alias tests, the three rule docs, roadmap lines
 951-959, and [technical-design.md](../technical-design.md) §§6.1-6.2 and 9.2.
 No prior design-review points to address.
+
+## Addenda
+
+- [ ] 3.1.6.1. Document deliberate initializer dropping in scope recursion.
+  - Source: review:3.1.6; severity low.
+  - Scope: add a brief code comment near the parameter and declarator-pattern
+    recursion in `workflow-ast-scopes.ts` explaining why nested recursion uses a
+    throwaway own-facts accumulator and intentionally discards simple
+    initializers outside the current scope boundary.
+  - Success: a maintainer can distinguish the deliberate initializer drop from
+    a lost-alias defect, and existing scope and alias tests pass unchanged.
+- [ ] 3.1.6.2. Split near-limit alias and scope-view helpers.
+  - Source: review:3.1.6; severity low.
+  - Scope: move alias or scope-view helper code out of
+    `workflow-ast-scopes.ts` into a focused sibling module before the file-size
+    guard forces the split during unrelated deterministic-time or
+    orchestration-rule work.
+  - Success: `workflow-ast-scopes.ts` has clear headroom under the 400-line
+    limit, the ownership of the extracted helper module is documented by its
+    module JSDoc, and existing deterministic-time diagnostics remain unchanged.
+- [ ] 3.1.6.3. Document whole-scope alias and temporal dead-zone limits.
+  - Source: review:3.1.6; severity low.
+  - Scope: update the deterministic-time rule limitation lists to say alias
+    visibility is computed per whole scope and remains conservative for
+    use-before-declaration or temporal dead-zone ordering inside that scope.
+  - Success: the three deterministic-time rule pages explain the remaining
+    order-insensitive alias limitation without reintroducing the stale
+    whole-body alias limitation.
+- [ ] 3.1.6.4. Add block/for/catch alias-scope regression tests.
+  - Source: audit:3.1.6; severity low.
+  - Scope: add alias-scope regression cases for block, `for`, and `catch`
+    scopes using the existing deterministic-time alias test harness.
+  - Success: tests prove alias declarations and use-site shadows follow the
+    shared lexical scope model across block, `for`, and `catch` scopes before
+    later collector work touches the same scope machinery.
