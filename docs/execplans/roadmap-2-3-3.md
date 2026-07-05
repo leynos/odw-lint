@@ -316,7 +316,7 @@ and retry.
 
 ## Addenda
 
-- [ ] 2.3.3.1. Guard invalid-fixture diagnostic expectations against inline
+- [x] 2.3.3.1. Guard invalid-fixture diagnostic expectations against inline
   literals.
   - Source: review:2.3.3; severity low.
   - Scope: add a focused meta-test or lint guard that fails if the parser,
@@ -326,7 +326,7 @@ and retry.
   - Success: a future hand-typed invalid-fixture diagnostic expectation in
     those suites fails before the manifest stops being the single source of
     truth.
-- [ ] 2.3.3.2. Reconcile historical SWC-bump ExecPlan surface references.
+- [x] 2.3.3.2. Reconcile historical SWC-bump ExecPlan surface references.
   - Source: review:2.3.3; severity low.
   - Scope: add a short note or index pointer in
     `docs/execplans/roadmap-2-2-5.md` and

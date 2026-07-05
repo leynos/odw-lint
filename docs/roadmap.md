@@ -857,13 +857,13 @@ code. It informs whether phase 2 can ship. See
     suites.
   - Success: invalid fixture expectations remain the source of truth for
     emitted dialect diagnostics and original-source spans.
-  - [ ] 2.3.3.1. Guard invalid-fixture diagnostic expectations against inline
+  - [x] 2.3.3.1. Guard invalid-fixture diagnostic expectations against inline
     literals.
     - Addendum (from review:2.3.3; low). Add a meta-test or lint guard that
       fails when parser, envelope, or metadata invalid-fixture suites
       reintroduce inline diagnostic rule, severity, message, or `spanText`
       literals. Lightweight addendum pass.
-  - [ ] 2.3.3.2. Reconcile historical SWC-bump ExecPlan surface references.
+  - [x] 2.3.3.2. Reconcile historical SWC-bump ExecPlan surface references.
     - Addendum (from review:2.3.3; low). Add a short note or index pointer in
       the 2.2.5 and 2.2.6 ExecPlans that the developers guide is now the
       authoritative living SWC-bump surface list. Lightweight addendum pass.

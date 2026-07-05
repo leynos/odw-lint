@@ -352,6 +352,11 @@ reachable as the no-detail fallback. The fixture refresh generator now wraps
 long generated `message` fields so refreshed manifests remain Biome-clean and
 idempotent.
 
+Historical note: this ExecPlan records the SWC-bump surfaces as they existed
+for task 2.2.5. The living maintainer checklist for intentional `@swc/core`
+bumps now lives in `docs/developers-guide.md`, which supersedes this
+point-in-time surface list for future upgrade work.
+
 ## Addenda
 
 - [x] 2.2.5.1. Harden body-syntax detail marker stripping.

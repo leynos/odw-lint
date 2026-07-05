@@ -324,6 +324,11 @@ The main lesson was that the scanned `bodySpan` slice is the only reliable
 source for synthetic normalized ranges in tests; hand-built body snippets can
 be one byte out of step with the production scanner.
 
+Historical note: this ExecPlan records the SWC parser-error and span-narrowing
+surfaces as they existed for task 2.2.6. The living maintainer checklist for
+intentional `@swc/core` bumps now lives in `docs/developers-guide.md`, which
+supersedes this point-in-time surface list for future upgrade work.
+
 ## Addenda
 
 - [x] 2.2.6.1. Guard parser-error offset coordinate bases.
