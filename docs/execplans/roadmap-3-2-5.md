@@ -303,7 +303,7 @@ and the public package entry points remained unchanged.
   - Success: a future parser-backed rule cannot reintroduce private
     `isAstNode` or semantic child-field helper logic without tripping the
     reviewed guard or updating the documented exception.
-- [ ] 3.2.5.3. Unify single-type SWC node narrowers.
+- [x] 3.2.5.3. Unify single-type SWC node narrowers.
   - Source: audit:3.2.6; severity low.
   - Scope: move duplicated single-type `isExpression`, `isMemberExpression`,
     and `isIdentifier` narrowers from deterministic-time alias and

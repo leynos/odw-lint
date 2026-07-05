@@ -2,7 +2,7 @@
  * @file Shared SWC AST shape helpers for parser-backed analysis rules.
  */
 
-import type { Node } from "@swc/core";
+import type { Expression, Identifier, MemberExpression, Node } from "@swc/core";
 import { isUnknownRecord, type UnknownRecord } from "./value-guards";
 
 /**
@@ -25,6 +25,36 @@ export const astChildValues = (value: object): readonly unknown[] => {
   return Object.entries(value)
     .filter(([key]) => isTraversableChildKey(key))
     .map(([, child]) => child);
+};
+
+/**
+ * Narrows unknown wrapper contents back to a SWC expression-shaped object.
+ *
+ * @param value - Value crossing a parser-backed expression boundary.
+ * @returns Whether the value has SWC expression shape.
+ */
+export const isExpression = (value: unknown): value is Expression => {
+  return isAstNode(value);
+};
+
+/**
+ * Narrows values to SWC identifier expressions and patterns.
+ *
+ * @param value - Candidate SWC node value.
+ * @returns Whether the value is an `Identifier` node.
+ */
+export const isIdentifier = (value: unknown): value is Identifier => {
+  return isAstNode(value) && value.type === "Identifier";
+};
+
+/**
+ * Narrows values to SWC member expressions.
+ *
+ * @param value - Candidate SWC node value.
+ * @returns Whether the value is a `MemberExpression` node.
+ */
+export const isMemberExpression = (value: unknown): value is MemberExpression => {
+  return isAstNode(value) && value.type === "MemberExpression";
 };
 
 /**

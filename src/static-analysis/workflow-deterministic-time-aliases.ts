@@ -2,17 +2,9 @@
  * @file Tracks bounded deterministic-time aliases in parsed workflow bodies.
  */
 
-import type {
-  CallExpression,
-  Expression,
-  Identifier,
-  MemberExpression,
-  Module,
-  Node,
-  Span,
-} from "@swc/core";
+import type { CallExpression, Expression, MemberExpression, Module, Node, Span } from "@swc/core";
 import type { RuleId } from "../diagnostics/rule-id";
-import { isAstNode } from "./swc-ast";
+import { isExpression, isIdentifier, isMemberExpression } from "./swc-ast";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import { rootScopeOwnFacts, type ScopeOwnFacts, scopeOwnFacts } from "./workflow-ast-scopes";
 import {
@@ -222,19 +214,4 @@ const memberExpressionFromExpression = (expression: Expression): MemberExpressio
 /** Narrows nodes to SWC call expressions. */
 const isCallExpression = (node: Node): node is CallExpression => {
   return node.type === "CallExpression";
-};
-
-/** Narrows values to SWC identifier expressions and patterns. */
-const isIdentifier = (value: unknown): value is Identifier => {
-  return isAstNode(value) && value.type === "Identifier";
-};
-
-/** Narrows values to SWC member expressions. */
-const isMemberExpression = (value: unknown): value is MemberExpression => {
-  return isAstNode(value) && value.type === "MemberExpression";
-};
-
-/** Narrows unknown values to SWC expression-shaped objects. */
-const isExpression = (value: unknown): value is Expression => {
-  return isAstNode(value);
 };

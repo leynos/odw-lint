@@ -2,8 +2,8 @@
  * @file Resolves global object references from workflow body expressions.
  */
 
-import type { Expression, Identifier, MemberExpression, Node } from "@swc/core";
-import { isAstNode } from "./swc-ast";
+import type { Expression, MemberExpression, Node } from "@swc/core";
+import { isExpression, isIdentifier, isMemberExpression } from "./swc-ast";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import { isIdentifierBound } from "./workflow-ast-bindings";
 
@@ -125,19 +125,4 @@ const isTransparentWrapperExpression = (
   return (
     node.type === TRANSPARENT_WRAPPER_TYPE && "expression" in node && isExpression(node.expression)
   );
-};
-
-/** Narrows a broad SWC node union to an identifier expression. */
-const isIdentifier = (node: Expression | Node): node is Identifier => {
-  return node.type === "Identifier";
-};
-
-/** Narrows a broad SWC node union to a member expression. */
-const isMemberExpression = (node: Expression | Node): node is MemberExpression => {
-  return node.type === "MemberExpression";
-};
-
-/** Narrows unknown wrapper contents back to a SWC expression. */
-const isExpression = (value: unknown): value is Expression => {
-  return isAstNode(value);
 };

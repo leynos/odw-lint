@@ -8,6 +8,9 @@ import fc from "fast-check";
 import {
   astChildValues,
   isAstNode,
+  isExpression,
+  isIdentifier,
+  isMemberExpression,
   isUnknownRecord as seamIsUnknownRecord,
   traverseAstSubtree,
 } from "../../src/static-analysis/swc-ast";
@@ -165,6 +168,25 @@ describe("SWC AST shape helpers", () => {
 
   it("re-exports the canonical record guard", () => {
     expect(seamIsUnknownRecord).toBe(isUnknownRecord);
+  });
+
+  it.each([
+    ["expressions", isExpression, { type: "CallExpression" }, { span: {} }],
+    [
+      "identifiers",
+      isIdentifier,
+      { type: "Identifier", value: "name" },
+      { type: "StringLiteral", value: "name" },
+    ],
+    [
+      "member expressions",
+      isMemberExpression,
+      { type: "MemberExpression", object: {}, property: {} },
+      { type: "Identifier", value: "name" },
+    ],
+  ])("narrows %s through the shared SWC node seam", (_name, narrower, accepted, rejected) => {
+    expect(narrower(accepted)).toBe(true);
+    expect(narrower(rejected)).toBe(false);
   });
 });
 

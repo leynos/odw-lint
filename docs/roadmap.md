@@ -1043,7 +1043,7 @@ See [technical-design.md](technical-design.md) §9.3.
     - Addendum (from review:3.2.5; low). Add a focused architecture or
       documentation guard so new parser-backed 3.2 rules consume `swc-ast.ts`
       instead of cloning shape helpers. Lightweight addendum pass.
-  - [ ] 3.2.5.3. Unify single-type SWC node narrowers.
+  - [x] 3.2.5.3. Unify single-type SWC node narrowers.
     - Addendum (from audit:3.2.6; low). Move duplicated single-type
       `isExpression`, `isMemberExpression`, and `isIdentifier` narrowers behind
       the `swc-ast.ts` seam where their contracts match. Lightweight addendum
