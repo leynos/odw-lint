@@ -206,6 +206,8 @@ entry; that index enumerates every current rule page.
   syntax spans for structured parser offsets.
 - [Roadmap 2.2.7 ExecPlan](execplans/roadmap-2-2-7.md) plans the
   workflow-body parser dialect scope reconciliation.
+- [Roadmap 2.3.1 ExecPlan](execplans/roadmap-2-3-1.md) plans the minimal
+  loader-parity harness against trusted ODW examples and invalid fixtures.
 - [Roadmap 2.3.3 ExecPlan](execplans/roadmap-2-3-3.md) plans manifest-driven
   invalid fixture diagnostic assertions.
 - [Roadmap 3.1.2 ExecPlan](execplans/roadmap-3-1-2.md) plans

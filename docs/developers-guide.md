@@ -549,14 +549,21 @@ fixtures record empty `no-envelope-diagnostics` expectations for future
 envelope-scanner work where decoy workflow syntax appears inside comments,
 strings, regex literals, and template literals.
 
-Loader-parity execution remains owned by roadmap task 2.3.1. The fixture corpus
-records trusted source snapshots and static expectations only; it must not
-import, evaluate or execute workflow bodies during ordinary tests.
-`tests/static-analysis/hostile-metadata-security.test.ts` owns the no-side
-effect lint regression for hostile metadata fixtures. It observes the global
-marker, marker-file absence, and environment-derived marker value while linting
-fixture source text through the static analysis path and the public package
-entry.
+Loader-parity execution for roadmap task 2.3.1 lives in
+`tests/static-analysis/loader-parity.test.ts` and the shared
+`tests/static-analysis/fixtures/loader-parity.ts` harness helper. The suite
+drives trusted ODW example snapshots and known invalid fixtures through the
+public `odw-lint` static pipeline, compares compact status plus manifest rule
+classes, and keeps fixture source passive. The inertness block proves hostile
+metadata fixtures do not set the global side-effect marker and that the harness
+has no executable ODW import edges. `checkMeta`/`scanDualCompat` parity remains
+roadmap task 2.3.2, manifest-driven dialect test consolidation remains 2.3.3,
+and TypeScript-only body rejection parity remains 2.3.4.
+`tests/static-analysis/hostile-metadata-security.test.ts` still owns the broader
+no-side-effect lint regression for hostile metadata fixtures. It observes the
+global marker, marker-file absence, and environment-derived marker value while
+linting fixture source text through the static analysis path and the public
+package entry.
 
 After a refresh, review the JSON report and the Git diff. Then run:
 

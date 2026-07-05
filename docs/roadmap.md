@@ -826,7 +826,7 @@ rejected workflow classes without calling executable loader paths in production
 code. It informs whether phase 2 can ship. See
 [technical-design.md](technical-design.md) §§11.2 and 11.3.
 
-- [ ] 2.3.1. Add a minimal loader-parity harness against trusted ODW example
+- [x] 2.3.1. Add a minimal loader-parity harness against trusted ODW example
   snapshots and known invalid fixtures.
   - Requires steps 2.1-2.2.
   - See [technical-design.md](technical-design.md) §11.2.
