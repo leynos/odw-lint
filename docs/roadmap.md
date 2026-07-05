@@ -1048,6 +1048,11 @@ See [technical-design.md](technical-design.md) §9.3.
       `isExpression`, `isMemberExpression`, and `isIdentifier` narrowers behind
       the `swc-ast.ts` seam where their contracts match. Lightweight addendum
       pass.
+  - [ ] 3.2.5.4. Harden single-type SWC narrower seam guards.
+    - Addendum (from audit:3.2.7; medium). Replace the narrow architecture
+      allowlist with shape-based cloned-narrower detection and fold the
+      scope-own-facts `isExpression` copy back onto `swc-ast.ts`. Lightweight
+      addendum pass.
 - [x] 3.2.6. Complete SWC traversal-driver adoption for parser-backed
   collectors.
   - Requires 3.2.5, 3.1.5, and 3.2.5.1.
@@ -1077,6 +1082,20 @@ See [technical-design.md](technical-design.md) §9.3.
     rule collectors, object-literal accessor handling no longer diverges
     between public and internal binding facts, and existing deterministic-time
     diagnostics remain unchanged.
+  - [ ] 3.2.7.1. Retire or document scope-entry wrappers.
+    - Addendum (from audit:3.2.7; low). Remove the orphaned node-taking
+      `enterScope` and `enterAliasScope` wrappers, or explicitly document them
+      as tested standalone helper entry points. Lightweight addendum pass.
+  - [ ] 3.2.7.2. Link binding collector node-type enumerations.
+    - Addendum (from audit:3.2.7; low). Add a shared classification or parity
+      check tying flat binding collector node types to scope-owned
+      function-like node types where their contracts should match. Lightweight
+      addendum pass.
+  - [ ] 3.2.7.3. Add cross-model binding-fact invariant coverage.
+    - Addendum (from review:3.2.7; low). Add invariant coverage proving public
+      flat binding facts and the scope-owned model agree on collected
+      parameter names across generated function-like and accessor bodies.
+      Lightweight addendum pass.
 
 ### 3.3. Add configuration and warning policy
 

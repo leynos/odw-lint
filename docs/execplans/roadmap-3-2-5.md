@@ -312,6 +312,16 @@ and the public package entry points remained unchanged.
   - Success: parser-backed collectors consume one documented narrower contract
     for matching SWC node types, and existing deterministic-time and
     global-object resolver tests pass without output changes.
+- [ ] 3.2.5.4. Harden single-type SWC narrower seam guards.
+  - Source: audit:3.2.7; severity medium.
+  - Scope: replace the architecture guard's hard-coded single-type narrower
+    allowlist with shape-based cloned-narrower detection, then import the
+    `swc-ast.ts` `isExpression` seam into
+    `workflow-ast-scope-own-facts.ts`.
+  - Success: byte-identical or structurally equivalent `isExpression`,
+    `isIdentifier`, and `isMemberExpression` narrowers cannot re-enter
+    parser-backed collectors without tripping the seam guard, and scope-owned
+    facts reuse the documented SWC narrower seam.
 
 ## Context and orientation
 

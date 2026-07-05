@@ -316,6 +316,33 @@ without expectation updates. The only implementation wrinkle was repeated
 CodeRabbit feedback on the ExecPlan wording during Work Item 1; those findings
 were resolved before later work continued.
 
+## Addenda
+
+- [ ] 3.2.7.1. Retire or document scope-entry wrappers.
+  - Source: review:3.2.7 and audit:3.2.7; severity low.
+  - Scope: remove the node-taking `enterScope` and `enterAliasScope` wrappers
+    and point their coverage at the production `*WithOwnFacts` paths, or
+    update their documentation to say they are retained as standalone tested
+    helper entry points rather than scanner-walk code.
+  - Success: future maintainers cannot read the node-taking wrappers as live
+    scanner code unless that role is explicitly documented and tested.
+- [ ] 3.2.7.2. Link binding collector node-type enumerations.
+  - Source: audit:3.2.7; severity low.
+  - Scope: add a shared classification or focused parity test tying
+    `STATEMENT_BINDING_COLLECTORS` and `FUNCTION_LIKE_SCOPE_TYPES` together for
+    function-like and accessor nodes where the flat and scope-owned collectors
+    should agree.
+  - Success: adding, renaming, or removing an SWC function-like or accessor
+    node type cannot make the two binding collectors diverge silently.
+- [ ] 3.2.7.3. Add cross-model binding-fact invariant coverage.
+  - Source: review:3.2.7; severity low.
+  - Scope: add invariant coverage, using generated object-literal and class
+    member bodies where useful, that compares public flat binding facts with
+    the union of scope-owned names across the AST for collected parameter names.
+  - Success: future drift between `collectLexicalBindings` and the scope-owned
+    model fails through one structural invariant instead of relying only on
+    hand-picked accessor examples.
+
 ## Context and orientation
 
 The reader needs no prior plans. The relevant files, all under the worktree
