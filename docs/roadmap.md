@@ -896,11 +896,11 @@ code. It informs whether phase 2 can ship. See
   - Success: loader-parity evidence proves `odw-lint`'s `odw/body-syntax`
     outcome for TypeScript-only bodies matches the current ODW loader, or
     records a deliberate parity divergence for design review.
-  - [ ] 2.3.4.1. Strengthen loader-parity assertions and diagnostics.
+  - [x] 2.3.4.1. Strengthen loader-parity assertions and diagnostics.
     - Addendum (from review:2.3.4; low). Assert expected absolute accept or
       reject outcomes and report divergence direction with offending diagnostics.
       Lightweight addendum pass.
-  - [ ] 2.3.4.2. Pin one real ODW loader characterization case.
+  - [x] 2.3.4.2. Pin one real ODW loader characterization case.
     - Addendum (from review:2.3.4; medium). Cross-check the constructor proxy
       against the reachable ODW loader call site when that checkout can be read.
       Lightweight addendum pass.

@@ -753,7 +753,7 @@ complete, and finalized this ExecPlan.
 
 ## Addenda
 
-- [ ] 2.3.4.1. Strengthen loader-parity assertions and diagnostics.
+- [x] 2.3.4.1. Strengthen loader-parity assertions and diagnostics.
   - Source: review:2.3.4.
   - Severity: low.
   - Scope: assert the expected absolute reject or accept outcome for each
@@ -761,7 +761,7 @@ complete, and finalized this ExecPlan.
     direction and offending `odw-lint` diagnostic.
   - Success: a mutual false-accept or future divergence reports which side
     broke the parity contract without relying on sibling test blocks.
-- [ ] 2.3.4.2. Pin one real ODW loader characterization case.
+- [x] 2.3.4.2. Pin one real ODW loader characterization case.
   - Source: review:2.3.4.
   - Severity: medium.
   - Scope: when the ODW sibling checkout is readable, pin at least one
