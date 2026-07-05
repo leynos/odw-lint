@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { readFixtureSource } from "./fixtures/corpus-support";
+import { fixtureSourceUrl, readFixtureSource } from "./fixtures/corpus-support";
 import { ODW_EXAMPLE_FIXTURE_SNAPSHOTS } from "./fixtures/odw-examples";
 import {
   findOdwExampleFixture,
@@ -45,6 +45,18 @@ describe("ODW example workflow fixture corpus helpers", () => {
 
     expect(readFixtureSource(ODW_EXAMPLE_FIXTURE_CORPUS, fixture.fixturePath)).toBe(
       readFixtureSource(ODW_EXAMPLE_FIXTURE_CORPUS, fixture.fileName),
+    );
+  });
+
+  it("rejects manifest-looking paths outside the owner root", () => {
+    expect(() =>
+      fixtureSourceUrl(
+        ODW_EXAMPLE_FIXTURE_CORPUS,
+        "tests/static-analysis/fixtures/invalid-workflows/routing.js",
+      ),
+    ).toThrow(
+      "Fixture path tests/static-analysis/fixtures/invalid-workflows/routing.js must start " +
+        "with manifest root tests/static-analysis/fixtures/odw-examples/ or be corpus-relative.",
     );
   });
 

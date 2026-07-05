@@ -21,12 +21,28 @@ const OWNER_MODULE_PATHS = new Set([
   "tests/static-analysis/fixtures/masking/corpus.ts",
   "tests/static-analysis/fixtures/odw-examples/corpus.ts",
 ]);
+const DIAGNOSTIC_PROJECTION_PATH = "tests/static-analysis/fixtures/diagnostic-projection.ts";
+const COMPARABLE_DIAGNOSTIC_FIELDS = new Set([
+  "rule",
+  "severity",
+  "message",
+  "docs",
+  "span",
+  "spanText",
+]);
 
 type InlineCorpusLocation = {
   readonly filePath: string;
   readonly line: number;
   readonly column: number;
   readonly text: string;
+};
+
+type LocalComparableDiagnostic = {
+  readonly filePath: string;
+  readonly line: number;
+  readonly column: number;
+  readonly name: string;
 };
 
 /** Normalizes repository-relative paths for stable reports and comparisons. */
@@ -99,6 +115,68 @@ const literalText = (node: ts.Expression | undefined): string | undefined => {
 
   if (ts.isNoSubstitutionTemplateLiteral(node)) {
     return node.text;
+  }
+
+  return undefined;
+};
+
+/** Returns the stable property name for simple type members. */
+const memberName = (node: ts.TypeElement): string | undefined => {
+  if (!("name" in node) || node.name === undefined) {
+    return undefined;
+  }
+
+  if (ts.isIdentifier(node.name) || ts.isStringLiteralLike(node.name)) {
+    return node.name.text;
+  }
+
+  return undefined;
+};
+
+/** Reports whether a type member list rebuilds the shared comparable shape. */
+const hasComparableDiagnosticMembers = (members: ts.NodeArray<ts.TypeElement>): boolean => {
+  const memberNames = new Set(
+    members.map(memberName).filter((name): name is string => name !== undefined),
+  );
+
+  return [...COMPARABLE_DIAGNOSTIC_FIELDS].every((field) => memberNames.has(field));
+};
+
+/** Reports whether a type alias rebuilds the shared comparable shape. */
+const isComparableDiagnosticTypeAlias = (
+  node: ts.Node,
+): node is ts.TypeAliasDeclaration & { readonly type: ts.TypeLiteralNode } => {
+  if (!ts.isTypeAliasDeclaration(node)) {
+    return false;
+  }
+
+  if (!ts.isTypeLiteralNode(node.type)) {
+    return false;
+  }
+
+  return hasComparableDiagnosticMembers(node.type.members);
+};
+
+/** Reports a local comparable diagnostic type declaration, when present. */
+const localComparableDiagnosticDeclaration = (
+  sourceFile: ts.SourceFile,
+  filePath: string,
+  node: ts.Node,
+): LocalComparableDiagnostic | undefined => {
+  if (ts.isInterfaceDeclaration(node) && hasComparableDiagnosticMembers(node.members)) {
+    return {
+      filePath,
+      ...nodeLocation(sourceFile, node.name),
+      name: node.name.text,
+    };
+  }
+
+  if (isComparableDiagnosticTypeAlias(node)) {
+    return {
+      filePath,
+      ...nodeLocation(sourceFile, node.name),
+      name: node.name.text,
+    };
   }
 
   return undefined;
@@ -184,6 +262,40 @@ const inlineCorpusLocationsInFile = (filePath: string): readonly InlineCorpusLoc
   return inlineCorpusLocationsInSource(filePath, readFileSync(filePath, "utf8"));
 };
 
+/** Finds local comparable-diagnostic declarations in one source string. */
+const localComparableDiagnosticsInSource = (
+  filePath: string,
+  sourceText: string,
+): readonly LocalComparableDiagnostic[] => {
+  const sourceFile = ts.createSourceFile(filePath, sourceText, ts.ScriptTarget.Latest, true);
+  const declarations: LocalComparableDiagnostic[] = [];
+
+  const visit = (node: ts.Node): void => {
+    const declaration = localComparableDiagnosticDeclaration(sourceFile, filePath, node);
+
+    if (declaration !== undefined) {
+      declarations.push(declaration);
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
+  return declarations;
+};
+
+/** Finds local comparable-diagnostic declarations in one file. */
+const localComparableDiagnosticsInFile = (
+  filePath: string,
+): readonly LocalComparableDiagnostic[] => {
+  return localComparableDiagnosticsInSource(filePath, readFileSync(filePath, "utf8"));
+};
+
+/** Reports whether a test file owns manifest-driven parity comparisons. */
+const isManifestParityTestFile = (filePath: string): boolean => {
+  return filePath.endsWith("-parity.test.ts") || filePath.endsWith("-fixtures.test.ts");
+};
+
 describe("fixture corpus ownership", () => {
   it("detects inline owned fixture corpus location literals", () => {
     const inlineLiteral = inlineCorpusLocationsInSource(
@@ -238,5 +350,37 @@ describe("fixture corpus ownership", () => {
       .flatMap((filePath) => inlineCorpusLocationsInFile(filePath));
 
     expect(inlineLocations).toEqual([]);
+  });
+
+  it("detects local comparable diagnostic type declarations", () => {
+    const declarations = localComparableDiagnosticsInSource(
+      "local-parity.test.ts",
+      "type ComparableDiagnostic = {\n" +
+        "  readonly rule: string;\n" +
+        "  readonly severity: string;\n" +
+        "  readonly message: string;\n" +
+        "  readonly docs: string;\n" +
+        "  readonly span: unknown;\n" +
+        "  readonly spanText: string;\n" +
+        "};\n",
+    );
+
+    expect(declarations).toEqual([
+      {
+        filePath: "local-parity.test.ts",
+        line: 1,
+        column: 6,
+        name: "ComparableDiagnostic",
+      },
+    ]);
+  });
+
+  it("keeps parity suites on the shared diagnostic projection contract", () => {
+    const localDeclarations = sourceFilesUnder(STATIC_ANALYSIS_ROOT)
+      .filter((filePath) => filePath !== DIAGNOSTIC_PROJECTION_PATH)
+      .filter(isManifestParityTestFile)
+      .flatMap((filePath) => localComparableDiagnosticsInFile(filePath));
+
+    expect(localDeclarations).toEqual([]);
   });
 });

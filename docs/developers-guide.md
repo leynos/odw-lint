@@ -522,6 +522,12 @@ Test consumers must import `INVALID_WORKFLOW_FIXTURE_CORPUS` from
 their own invalid-workflow corpus location. The same owner module owns
 `findInvalidWorkflowFixture`, so fixture lookup and passive text reads stay
 close to the corpus definition.
+The shared `fixtureSourceUrl`/`readFixtureSource` helpers accept either a
+manifest path under the owner module's `manifestRoot` or a corpus-relative path.
+A repository-relative path outside the owner root is rejected rather than
+silently stripped. `findFixtureSnapshot` is a corpus-owner helper only; use it
+inside owner modules to keep find-or-throw lookup wording consistent, not in
+ordinary parity tests.
 Invalid-fixture diagnostic assertions in `workflow-body-parser.test.ts`,
 `workflow-envelope-fixtures.test.ts`, `workflow-metadata.test.ts`, and
 `hostile-metadata-security.test.ts` derive their expected diagnostics from the
@@ -530,7 +536,7 @@ invalid workflow manifest. The merged-pipeline parity surface in
 envelope, and metadata rule diagnostics share one expectation source for rule
 identifiers, severities, messages, documentation paths, original-source spans,
 and reviewer-facing `spanText`.
-Parser, envelope, and metadata parity suites must project manifest diagnostics
+All manifest-driven diagnostic parity suites must project manifest diagnostics
 through
 `tests/static-analysis/fixtures/diagnostic-projection.ts`. That module is the
 single manifest-to-comparison diagnostic contract for rule identifiers,
@@ -592,12 +598,13 @@ Dual-compatibility parity for roadmap task 2.3.2 lives in
 expectation source for pure-metadata accept-path fixtures and deterministic-time
 warning fixtures. The suite proves pure-literal `meta` remains portability-clean,
 checks the `Date.now`, `Math.random`, and argless `new Date` warning rule,
-severity, message and span contracts, and keeps a masked-text counter-example for
-false-positive discipline. Its freshness guard recomputes fixture SHA-256 values
-and anchored spans from source text, and its inertness guard rejects executable
-ODW runtime import edges. User-visible `odw/claude-pure-meta` emission remains
-deferred to task 3.1.1; manifest-driven dialect test consolidation remains
-2.3.3.
+severity, message, documentation path, span, and `spanText` contracts through
+the shared diagnostic projection, and keeps a masked-text counter-example for
+false-positive discipline. Its freshness guard recomputes fixture SHA-256
+values and anchored spans from source text, and its inertness guard rejects
+executable ODW runtime import edges. User-visible `odw/claude-pure-meta`
+emission remains deferred to task 3.1.1; manifest-driven dialect test
+consolidation remains 2.3.3.
 
 TypeScript-only body rejection parity for roadmap task 2.3.4 lives in
 `tests/static-analysis/body-syntax-loader-parity.test.ts` and the shared

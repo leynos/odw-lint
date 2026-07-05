@@ -68,7 +68,9 @@ describe("workflow envelope valid example fixtures", () => {
     const { result, sourceFile } = scanOdwExampleFixture(fixture);
     const envelope = expectScannedEnvelope(result, fixture.fileName);
 
-    expect(result.diagnostics).toEqual(fixture.expectedDiagnostics);
+    expect(
+      result.diagnostics.map((diagnostic) => liveDiagnosticToComparable(diagnostic, sourceFile)),
+    ).toEqual(fixture.expectedDiagnostics.map(manifestDiagnosticToComparable));
     expect(spanTextFor(sourceFile, envelope.metaDeclarationSpan)).toStartWith(
       "export const meta =",
     );

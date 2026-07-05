@@ -7,7 +7,7 @@
  * JavaScript files.
  */
 
-import type { FixtureCorpusLocation } from "../corpus-support";
+import { type FixtureCorpusLocation, findFixtureSnapshot } from "../corpus-support";
 import { INVALID_WORKFLOW_FIXTURE_SNAPSHOTS } from "../invalid-workflows";
 import type {
   InvalidWorkflowFixtureFamily,
@@ -34,12 +34,9 @@ export const findInvalidWorkflowFixture = (query: {
   readonly family: InvalidWorkflowFixtureFamily;
   readonly fileName: string;
 }): InvalidWorkflowFixtureSnapshot => {
-  const fixture = INVALID_WORKFLOW_FIXTURE_SNAPSHOTS.find(
+  return findFixtureSnapshot(
+    INVALID_WORKFLOW_FIXTURE_SNAPSHOTS,
+    `invalid workflow fixture ${query.family}/${query.fileName}`,
     (candidate) => candidate.family === query.family && candidate.fileName === query.fileName,
   );
-  if (fixture === undefined) {
-    throw new Error(`Missing invalid workflow fixture ${query.family}/${query.fileName}.`);
-  }
-
-  return fixture;
 };

@@ -7,7 +7,7 @@
  * JavaScript files.
  */
 
-import type { FixtureCorpusLocation } from "../corpus-support";
+import { type FixtureCorpusLocation, findFixtureSnapshot } from "../corpus-support";
 import { ODW_EXAMPLE_FIXTURE_SNAPSHOTS, type OdwExampleFixtureSnapshot } from "../odw-examples";
 
 /**
@@ -33,12 +33,9 @@ export const ODW_EXAMPLE_UPSTREAM_ROOT = "open-dynamic-workflows/examples";
 export const findOdwExampleFixture = (query: {
   readonly fileName: string;
 }): OdwExampleFixtureSnapshot => {
-  const fixture = ODW_EXAMPLE_FIXTURE_SNAPSHOTS.find(
+  return findFixtureSnapshot(
+    ODW_EXAMPLE_FIXTURE_SNAPSHOTS,
+    `ODW example fixture ${query.fileName}`,
     (candidate) => candidate.fileName === query.fileName,
   );
-  if (fixture === undefined) {
-    throw new Error(`Missing ODW example fixture ${query.fileName}.`);
-  }
-
-  return fixture;
 };

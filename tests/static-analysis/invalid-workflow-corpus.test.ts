@@ -24,6 +24,17 @@ describe("invalid workflow fixture corpus helpers", () => {
     );
   });
 
+  it("reads the same source through manifest and corpus-relative paths", () => {
+    const fixture = findInvalidWorkflowFixture({
+      family: "syntax-error",
+      fileName: "body-unclosed-block.js",
+    });
+
+    expect(readFixtureSource(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath)).toBe(
+      readFixtureSource(INVALID_WORKFLOW_FIXTURE_CORPUS, `${fixture.family}/${fixture.fileName}`),
+    );
+  });
+
   it("throws a clear error for unknown fixtures", () => {
     expect(() =>
       findInvalidWorkflowFixture({

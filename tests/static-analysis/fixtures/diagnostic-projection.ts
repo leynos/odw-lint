@@ -1,8 +1,8 @@
 /**
  * @file Shared fixture diagnostic projection helpers.
  *
- * Manifest-driven parity suites compare diagnostics through this one shape so
- * parser, envelope, and metadata assertions cannot drift into separate field
+ * Manifest-driven diagnostic parity suites compare diagnostics through this
+ * one shape so individual assertions cannot drift into separate field
  * contracts.
  */
 
@@ -13,7 +13,6 @@ import {
   type SourceSpan,
   sliceSourceSpan,
 } from "odw-lint";
-import type { InvalidWorkflowFixtureDiagnostic } from "./invalid-workflows/manifest-types";
 
 /**
  * Canonical reviewer-facing diagnostic shape used by fixture parity tests.
@@ -45,6 +44,11 @@ export interface LiveComparableInput {
   readonly span: SourceSpan;
 }
 
+/**
+ * Minimum manifest diagnostic fields needed for fixture parity comparison.
+ */
+export type ManifestComparableInput = ComparableFixtureDiagnostic;
+
 type ProjectableDiagnostic = Omit<ComparableFixtureDiagnosticBase, "rule"> & {
   readonly rule: unknown;
 };
@@ -69,7 +73,7 @@ const comparableDiagnosticFields = (
  * @returns Diagnostic fields used for fixture parity comparison.
  */
 export const manifestDiagnosticToComparable = (
-  diagnostic: InvalidWorkflowFixtureDiagnostic,
+  diagnostic: ManifestComparableInput,
 ): ComparableFixtureDiagnostic => {
   return {
     ...comparableDiagnosticFields(diagnostic),

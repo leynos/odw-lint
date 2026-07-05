@@ -887,7 +887,7 @@ in the worktree.
 
 ## Addenda
 
-- [ ] 2.3.5.1. Complete diagnostic-projection consolidation.
+- [x] 2.3.5.1. Complete diagnostic-projection consolidation.
   - Source: audit:2.3.2, review:2.3.5, and audit:2.3.5.
   - Severity: medium.
   - Scope: migrate the dual-compat and remaining valid-branch parity
@@ -897,7 +897,7 @@ in the worktree.
   - Success: parity comparisons use one manifest-to-comparison shape for rule,
     severity, message, docs path, span, and `spanText`, and guard coverage
     catches local comparable-diagnostic forks.
-- [ ] 2.3.5.2. Harden fixture corpus-support ergonomics.
+- [x] 2.3.5.2. Harden fixture corpus-support ergonomics.
   - Source: audit:2.3.5.
   - Severity: low.
   - Scope: anchor corpus root stripping in `corpus-support.ts` with an explicit

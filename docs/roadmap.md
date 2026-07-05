@@ -917,11 +917,11 @@ code. It informs whether phase 2 can ship. See
     example and invalid workflow corpora now have owner modules, parity suites
     share one diagnostic projection helper, and a static-analysis guard blocks
     new inline corpus-location literals.
-  - [ ] 2.3.5.1. Complete diagnostic-projection consolidation.
+  - [x] 2.3.5.1. Complete diagnostic-projection consolidation.
     - Addendum (from audit:2.3.2, review:2.3.5, and audit:2.3.5; medium).
       Route remaining parity comparisons through the shared projection, enforce
       it with the guard, and update docs. Lightweight addendum pass.
-  - [ ] 2.3.5.2. Harden fixture corpus-support ergonomics.
+  - [x] 2.3.5.2. Harden fixture corpus-support ergonomics.
     - Addendum (from audit:2.3.5; low). Anchor corpus root stripping and share
       the owner-module fixture lookup helper. Lightweight addendum pass.
 

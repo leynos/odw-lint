@@ -4,11 +4,15 @@
 
 import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
-import type { Diagnostic, SourceSpan } from "odw-lint";
-import { lintWorkflowSource, sliceSourceSpan } from "odw-lint";
+import { lintWorkflowSource } from "odw-lint";
 import { importArchitectureFactsFromSource } from "../diagnostics/import-edge-extraction";
 import { isForbiddenOdwImport } from "../diagnostics/odw-import-policy";
 import { copiedFixtureFileNames, readFixtureSource } from "./fixtures/corpus-support";
+import {
+  type ComparableFixtureDiagnostic,
+  liveDiagnosticToComparable,
+  manifestDiagnosticToComparable,
+} from "./fixtures/diagnostic-projection";
 import { DUAL_COMPAT_FIXTURE_SNAPSHOTS } from "./fixtures/dual-compat";
 import { DUAL_COMPAT_FIXTURE_CORPUS } from "./fixtures/dual-compat/corpus";
 import type {
@@ -18,14 +22,6 @@ import type {
 import { expectedNoErrorOutcome, loaderParityOutcome } from "./fixtures/loader-parity";
 import { deriveAnchoredDiagnosticSpan, deriveSha256 } from "./fixtures/refresh-metadata";
 import { expectSpanToMatchSource } from "./source-span-oracle";
-
-type ComparableDiagnostic = {
-  readonly rule: string;
-  readonly severity: Diagnostic["severity"];
-  readonly message: string;
-  readonly span: SourceSpan;
-  readonly spanText: string;
-};
 
 /** Reads one passive dual-compatibility fixture source. */
 const readDualCompatFixtureSource = (fixture: DualCompatFixtureSnapshot): string => {
@@ -43,29 +39,19 @@ const lintDualCompatFixture = (fixture: DualCompatFixtureSnapshot) => {
 /** Converts live diagnostics into the manifest comparison shape. */
 const comparableLiveDiagnostics = (
   fixture: DualCompatFixtureSnapshot,
-): readonly ComparableDiagnostic[] => {
+): readonly ComparableFixtureDiagnostic[] => {
   const result = lintDualCompatFixture(fixture);
 
-  return result.diagnostics.map((diagnostic) => ({
-    rule: String(diagnostic.rule),
-    severity: diagnostic.severity,
-    message: diagnostic.message,
-    span: diagnostic.span,
-    spanText: sliceSourceSpan(result.sourceFile, diagnostic.span),
-  }));
+  return result.diagnostics.map((diagnostic) =>
+    liveDiagnosticToComparable(diagnostic, result.sourceFile),
+  );
 };
 
 /** Converts manifest diagnostics into the same reviewer-facing shape. */
 const comparableFixtureDiagnostics = (
   diagnostics: readonly DualCompatFixtureDiagnostic[],
-): readonly ComparableDiagnostic[] => {
-  return diagnostics.map((diagnostic) => ({
-    rule: String(diagnostic.rule),
-    severity: diagnostic.severity,
-    message: diagnostic.message,
-    span: diagnostic.span,
-    spanText: diagnostic.spanText,
-  }));
+): readonly ComparableFixtureDiagnostic[] => {
+  return diagnostics.map(manifestDiagnosticToComparable);
 };
 
 /** Returns the expected unique warning rule classes for one manifest entry. */
@@ -108,7 +94,7 @@ describe("dual-compat pure-metadata parity", () => {
 });
 
 describe("dual-compat deterministic-time parity", () => {
-  it("matches scanDualCompat warning diagnostics and spans", () => {
+  it("matches deterministic-time warning diagnostics and spans", () => {
     const fixtures = DUAL_COMPAT_FIXTURE_SNAPSHOTS.filter(
       (fixture) => fixture.family === "deterministic-time",
     );
