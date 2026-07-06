@@ -995,7 +995,7 @@ reported clearly in one command. The result informs strict-mode policy. See
   - Requires 3.1.1 and 3.1.2.
   - See [technical-design.md](technical-design.md) §§7.3 and 9.2.
   - Success: strict mode exits non-zero for Claude compatibility warnings.
-  - [ ] 3.1.3.1. Consolidate strict-Claude promotion policy helpers.
+  - [x] 3.1.3.1. Consolidate strict-Claude promotion policy helpers.
     - Addendum (from audit:3.1.3; low). Add a shared non-throwing catalogue
       lookup and named strict-Claude promotion policy constant where the
       current implementation duplicates lookup and inline policy literals.

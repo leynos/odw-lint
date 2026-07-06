@@ -33,25 +33,26 @@ import {
   DIAGNOSTIC_REPORT_SCHEMA,
   DIAGNOSTIC_SCHEMA_VERSION,
   DIAGNOSTIC_SEVERITIES,
+  findRuleDefinition,
   formatTextDiagnostics,
   InvalidRuleIdError,
   isRuleId,
   makeRuleId,
   parseRuleId,
   positionAtOffset,
-  RULE_CATALOGUE,
   ruleDocsPath,
   SourceOffsetError,
   STATIC_ANALYSIS_BOUNDARY,
   STATIC_ANALYSIS_COMPONENTS,
   STATIC_ANALYSIS_STAGES,
+  STRICT_CLAUDE_PROMOTION_POLICY,
   sliceSourceSpan,
   snippetForSpan,
   spanFromOffsets,
   TOOL_NAME,
 } from "odw-lint";
 
-const META_REQUIRED_RULE = RULE_CATALOGUE.find((rule) => String(rule.id) === "odw/meta-required");
+const META_REQUIRED_RULE = findRuleDefinition(makeRuleId("odw/meta-required"));
 
 /** Returns the catalogued message used by public diagnostic examples. */
 const metaRequiredMessage = (): string => {
@@ -122,6 +123,11 @@ describe("public diagnostic consumer", () => {
     expect(DIAGNOSTIC_REPORT_SCHEMA.type).toBe("object");
     expect(DIAGNOSTIC_SCHEMA_VERSION).toBe(1);
     expect(DIAGNOSTIC_SEVERITIES).toEqual(["error", "warning", "info", "hint"]);
+    expect(STRICT_CLAUDE_PROMOTION_POLICY).toEqual({
+      category: "claude-compatibility",
+      fromSeverity: "warning",
+      toSeverity: "error",
+    });
     expect(TOOL_NAME).toBe("odw-lint");
     expect(parseRuleId(String(ruleId))).toEqual({ ok: true, value: ruleId });
     expect(isRuleId(String(ruleId))).toBeTrue();

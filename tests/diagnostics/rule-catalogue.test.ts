@@ -6,6 +6,7 @@ import { describe, expect, expectTypeOf, it } from "bun:test";
 import {
   createMessageTemplate,
   DIAGNOSTIC_SEVERITIES,
+  findRuleDefinition,
   firstReviewedRuleMessage,
   type MessageTemplate,
   makeRuleId,
@@ -235,6 +236,13 @@ describe("rule catalogue", () => {
       expect(rule.docsSlug).toBe(String(rule.id).replace("odw/", ""));
       expect(DIAGNOSTIC_SEVERITIES).toContain(rule.defaultSeverity);
     }
+  });
+
+  it("supports non-throwing catalogue lookup", () => {
+    const metaRequiredRuleId = makeRuleId("odw/meta-required");
+
+    expect(findRuleDefinition(metaRequiredRuleId)?.id).toBe(metaRequiredRuleId);
+    expect(findRuleDefinition(makeRuleId("odw/unlisted-rule-fixture"))).toBeUndefined();
   });
 
   it("records messages for released rules with invalid fixture diagnostics", () => {

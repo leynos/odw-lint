@@ -9,7 +9,7 @@ import type {
   RuleId,
   SourceSpan,
 } from "odw-lint";
-import { makeRuleId, RULE_CATALOGUE, ruleDocsPath } from "odw-lint";
+import { findRuleDefinition, makeRuleId, ruleDocsPath } from "odw-lint";
 import { deepFreezeFixtureManifest } from "../manifest-freeze";
 
 /**
@@ -131,7 +131,7 @@ export const invalidWorkflowFixture = (
 
 /** Finds the catalogue definition for a fixture diagnostic rule. */
 const ruleDefinitionForDiagnostic = (rule: RuleId): RuleDefinition => {
-  const matchingRule = RULE_CATALOGUE.find((candidate) => String(candidate.id) === String(rule));
+  const matchingRule = findRuleDefinition(rule);
 
   if (matchingRule === undefined) {
     throw new Error(`Fixture diagnostic references uncatalogued rule ${String(rule)}.`);

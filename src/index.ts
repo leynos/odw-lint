@@ -16,6 +16,7 @@ export {
 } from "./diagnostics/message-template";
 export { countDiagnostics, createDiagnosticReport } from "./diagnostics/report";
 export {
+  findRuleDefinition,
   firstReviewedRuleMessage,
   PLANNED_RULE_IDS,
   RELEASED_RULE_IDS,
@@ -44,7 +45,10 @@ export {
 } from "./diagnostics/rule-id";
 export { DIAGNOSTIC_REPORT_SCHEMA } from "./diagnostics/schema";
 export { DIAGNOSTIC_SEVERITIES, type DiagnosticSeverity } from "./diagnostics/severity";
-export { promoteStrictClaudeSeverity } from "./diagnostics/strict-claude";
+export {
+  promoteStrictClaudeSeverity,
+  STRICT_CLAUDE_PROMOTION_POLICY,
+} from "./diagnostics/strict-claude";
 export { formatTextDiagnostics } from "./diagnostics/text";
 export {
   DIAGNOSTIC_SCHEMA_VERSION,

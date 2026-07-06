@@ -552,7 +552,7 @@ Dependencies: no new packages. Uses the existing `RULE_CATALOGUE`,
 
 ## Addenda
 
-- [ ] 3.1.3.1. Consolidate strict-Claude promotion policy helpers.
+- [x] 3.1.3.1. Consolidate strict-Claude promotion policy helpers.
   - Source: audit:3.1.3; severity low.
   - Scope: add a shared non-throwing catalogue lookup and a named
     strict-Claude promotion policy constant where the current implementation

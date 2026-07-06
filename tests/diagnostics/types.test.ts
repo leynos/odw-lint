@@ -16,14 +16,15 @@ import type {
 import {
   DIAGNOSTIC_SCHEMA_VERSION,
   DIAGNOSTIC_SEVERITIES,
-  RULE_CATALOGUE,
+  findRuleDefinition,
+  makeRuleId,
   ruleDocsPath,
   TOOL_NAME,
 } from "odw-lint";
 
 /** Returns the catalogued rule used by representative diagnostic examples. */
 const representativeRule = (): RuleDefinition => {
-  const rule = RULE_CATALOGUE.find((candidate) => String(candidate.id) === "odw/meta-required");
+  const rule = findRuleDefinition(makeRuleId("odw/meta-required"));
 
   if (rule === undefined) {
     throw new Error("odw/meta-required must stay available for representative diagnostics.");

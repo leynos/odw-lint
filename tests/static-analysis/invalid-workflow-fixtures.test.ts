@@ -8,6 +8,7 @@ import { existsSync } from "node:fs";
 import type { WorkflowSource } from "odw-lint";
 import {
   createMessageTemplate,
+  findRuleDefinition,
   RULE_CATALOGUE,
   type RuleDefinition,
   ruleAllowsMessage,
@@ -116,9 +117,7 @@ const hostileFixtureMarkerText = (fileName: string): string => {
 const catalogueRuleForFixtureDiagnostic = (
   diagnostic: InvalidWorkflowFixtureDiagnostic,
 ): RuleDefinition => {
-  const matchingRule = RULE_CATALOGUE.find((rule) => {
-    return String(rule.id) === String(diagnostic.rule);
-  });
+  const matchingRule = findRuleDefinition(diagnostic.rule);
 
   if (matchingRule === undefined) {
     throw new Error(`Fixture diagnostic references uncatalogued rule ${String(diagnostic.rule)}.`);

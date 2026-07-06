@@ -6,8 +6,17 @@
  * workflow source.
  */
 
-import { RULE_CATALOGUE } from "./rule-catalogue";
+import { findRuleDefinition } from "./rule-catalogue";
 import type { Diagnostic } from "./types";
+
+/**
+ * Catalogue-backed policy used by strict Claude portability mode.
+ */
+export const STRICT_CLAUDE_PROMOTION_POLICY = Object.freeze({
+  category: "claude-compatibility",
+  fromSeverity: "warning",
+  toSeverity: "error",
+} as const);
 
 /**
  * Promotes Claude-compatibility warnings to errors.
@@ -27,15 +36,18 @@ export const promoteStrictClaudeSeverity = (
 ): readonly Diagnostic[] => {
   return Object.freeze(
     diagnostics.map((diagnostic) => {
-      const rule = RULE_CATALOGUE.find((candidate) => candidate.id === diagnostic.rule);
+      const rule = findRuleDefinition(diagnostic.rule);
 
-      if (rule?.category !== "claude-compatibility" || diagnostic.severity !== "warning") {
+      if (
+        rule?.category !== STRICT_CLAUDE_PROMOTION_POLICY.category ||
+        diagnostic.severity !== STRICT_CLAUDE_PROMOTION_POLICY.fromSeverity
+      ) {
         return diagnostic;
       }
 
       return Object.freeze({
         ...diagnostic,
-        severity: "error" as const,
+        severity: STRICT_CLAUDE_PROMOTION_POLICY.toSeverity,
       });
     }),
   );

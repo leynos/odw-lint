@@ -7,11 +7,13 @@ import fc from "fast-check";
 import {
   type Diagnostic,
   type DiagnosticSeverity,
+  findRuleDefinition,
   makeRuleId,
   promoteStrictClaudeSeverity,
   RULE_CATALOGUE,
   type RuleDefinition,
   ruleDocsPath,
+  STRICT_CLAUDE_PROMOTION_POLICY,
 } from "odw-lint";
 
 const STRICT_CLAUDE_WARNING_RULE_IDS = [
@@ -28,7 +30,7 @@ const SPAN = Object.freeze({
 
 /** Returns a catalogued rule fixture by identifier. */
 const findRule = (id: string): RuleDefinition => {
-  const rule = RULE_CATALOGUE.find((candidate) => String(candidate.id) === id);
+  const rule = findRuleDefinition(makeRuleId(id));
 
   if (rule === undefined) {
     throw new Error(`${id} must stay available in the rule catalogue.`);
@@ -137,10 +139,13 @@ describe("strict-Claude severity promotion", () => {
           const twice = promoteStrictClaudeSeverity(once);
           const [actual] = once;
           const shouldPromote =
-            rule.category === "claude-compatibility" && diagnostic.severity === "warning";
+            rule.category === STRICT_CLAUDE_PROMOTION_POLICY.category &&
+            diagnostic.severity === STRICT_CLAUDE_PROMOTION_POLICY.fromSeverity;
 
           expect(twice).toEqual(once);
-          expect(actual?.severity).toBe(shouldPromote ? "error" : diagnostic.severity);
+          expect(actual?.severity).toBe(
+            shouldPromote ? STRICT_CLAUDE_PROMOTION_POLICY.toSeverity : diagnostic.severity,
+          );
 
           if (shouldPromote) {
             expect(actual).toEqual({ ...diagnostic, severity: "error" });

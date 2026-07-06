@@ -257,12 +257,23 @@ export const PLANNED_RULE_IDS = Object.freeze(
 /**
  * Finds the catalogued definition for one rule identifier.
  *
+ * @param ruleId - Branded rule identifier referenced by diagnostics.
+ * @returns The reviewed catalogue entry for `ruleId`, or `undefined` when
+ * the identifier is not present in the production catalogue.
+ */
+export const findRuleDefinition = (ruleId: RuleId): RuleDefinition | undefined => {
+  return RULE_CATALOGUE.find((candidate) => candidate.id === ruleId);
+};
+
+/**
+ * Finds the catalogued definition for one rule identifier.
+ *
  * @param ruleId - Branded rule identifier referenced by diagnostic builders.
  * @returns The reviewed catalogue entry for `ruleId`.
  * @throws Error when `ruleId` is not present in the production catalogue.
  */
 export const ruleDefinitionFor = (ruleId: RuleId): RuleDefinition => {
-  const rule = RULE_CATALOGUE.find((candidate) => candidate.id === ruleId);
+  const rule = findRuleDefinition(ruleId);
 
   if (rule === undefined) {
     throw new Error(`Missing diagnostic rule catalogue entry for ${ruleId}.`);

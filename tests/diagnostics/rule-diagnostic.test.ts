@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from "bun:test";
 import type { RuleDefinition, SourceSpan } from "odw-lint";
-import { RULE_CATALOGUE } from "odw-lint";
+import { findRuleDefinition, makeRuleId } from "odw-lint";
 import {
   createRuleDiagnostic,
   type RuleDiagnosticInput,
@@ -18,7 +18,7 @@ const SAMPLE_SPAN: SourceSpan = {
 
 /** Returns the reviewed rule used by representative diagnostic builder tests. */
 const metaRequiredRule = (): RuleDefinition => {
-  const rule = RULE_CATALOGUE.find((candidate) => String(candidate.id) === "odw/meta-required");
+  const rule = findRuleDefinition(makeRuleId("odw/meta-required"));
 
   if (rule === undefined) {
     throw new Error("odw/meta-required must stay available for diagnostic builder tests.");

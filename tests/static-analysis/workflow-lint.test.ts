@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from "bun:test";
 import * as fc from "fast-check";
-import { RULE_CATALOGUE, ruleDocsPath } from "odw-lint";
+import { findRuleDefinition, ruleDocsPath } from "odw-lint";
 import type { RuleDefinition } from "../../src/diagnostics/rule-catalogue";
 import type { Diagnostic } from "../../src/diagnostics/types";
 import { createOriginalSourceFile } from "../../src/static-analysis/source-file";
@@ -61,7 +61,7 @@ const diagnosticRules = (diagnostics: readonly Diagnostic[]): readonly string[] 
 
 /** Returns the catalogue definition for a rule diagnostic. */
 const ruleForDiagnostic = (diagnostic: Diagnostic): RuleDefinition => {
-  const rule = RULE_CATALOGUE.find((candidate) => String(candidate.id) === String(diagnostic.rule));
+  const rule = findRuleDefinition(diagnostic.rule);
 
   if (rule === undefined) {
     throw new Error(`Diagnostic references uncatalogued rule ${String(diagnostic.rule)}.`);
