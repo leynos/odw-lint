@@ -15,6 +15,9 @@ entry; that index enumerates every current rule page.
 - [User's guide](users-guide.md) explains the intended command shape,
   diagnostic report contract, rule navigation, configuration placeholders and
   current non-goals for workflow authors.
+- [Alpha tester's guide](alpha-testers-guide.md) explains the current
+  pre-release limits, known broken areas, useful feedback, next steps and open
+  questions for early dogfooding.
 - [Repository layout](repository-layout.md) explains repository paths,
   ownership boundaries, fixture constraints and tooling responsibilities.
 - [Developers' guide](developers-guide.md) explains maintainer workflow,
