@@ -60,12 +60,14 @@ describe("source spans in diagnostics", () => {
       tool: { name: "odw-lint", version: "0.1.0" },
       summary: {
         files: 1,
+        filesSkipped: 0,
         errors: 0,
         warnings: 1,
         infos: 0,
         hints: 0,
       },
       diagnostics: [expectedDiagnostic],
+      ioErrors: [],
     });
     expect(formatTextDiagnostics(report.diagnostics)).toBe(
       "workflows/example.js:2:1 warning odw/meta-required body missing metadata",

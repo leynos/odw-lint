@@ -8,6 +8,7 @@ import {
   type DiagnosticReport,
   type DiagnosticSuggestion,
   type DiagnosticSummary,
+  type IoError,
   type SourcePosition,
   type SourceSpan,
   TOOL_NAME,
@@ -22,6 +23,17 @@ const validateReportFileCount = (files: number): number => {
   throw new RangeError(`Report file count must be a non-negative integer; received ${files}.`);
 };
 
+/** Validates the skipped-file count before it is copied into report summaries. */
+const validateReportSkippedFileCount = (filesSkipped: number): number => {
+  if (Number.isInteger(filesSkipped) && filesSkipped >= 0) {
+    return filesSkipped;
+  }
+
+  throw new RangeError(
+    `Report skipped-file count must be a non-negative integer; received ${filesSkipped}.`,
+  );
+};
+
 /**
  * Counts diagnostics by effective severity.
  *
@@ -30,9 +42,11 @@ const validateReportFileCount = (files: number): number => {
  */
 export const countDiagnostics = (input: {
   readonly files: number;
+  readonly filesSkipped?: number;
   readonly diagnostics: readonly Diagnostic[];
 }): DiagnosticSummary => {
   const files = validateReportFileCount(input.files);
+  const filesSkipped = validateReportSkippedFileCount(input.filesSkipped ?? 0);
   const counts = {
     error: 0,
     warning: 0,
@@ -46,11 +60,17 @@ export const countDiagnostics = (input: {
 
   return {
     files,
+    filesSkipped,
     errors: counts.error,
     warnings: counts.warning,
     infos: counts.info,
     hints: counts.hint,
   };
+};
+
+/** Clones an IO-error payload before report summary and envelope creation. */
+const cloneIoError = (ioError: IoError): IoError => {
+  return Object.freeze({ ...ioError });
 };
 
 /** Clones a source position so reports do not retain caller-owned objects. */
@@ -103,8 +123,10 @@ export const createDiagnosticReport = (input: {
   readonly version: string;
   readonly files: number;
   readonly diagnostics: readonly Diagnostic[];
+  readonly ioErrors?: readonly IoError[];
 }): DiagnosticReport => {
   const diagnostics = input.diagnostics.map(cloneDiagnostic);
+  const ioErrors = (input.ioErrors ?? []).map(cloneIoError);
 
   return Object.freeze({
     schemaVersion: DIAGNOSTIC_SCHEMA_VERSION,
@@ -112,7 +134,10 @@ export const createDiagnosticReport = (input: {
       name: TOOL_NAME,
       version: input.version,
     }),
-    summary: freezeDiagnosticSummary(countDiagnostics({ files: input.files, diagnostics })),
+    summary: freezeDiagnosticSummary(
+      countDiagnostics({ files: input.files, filesSkipped: ioErrors.length, diagnostics }),
+    ),
     diagnostics: Object.freeze(diagnostics),
+    ioErrors: Object.freeze(ioErrors),
   });
 };

@@ -76,6 +76,7 @@ export {
   type DiagnosticReport,
   type DiagnosticSuggestion,
   type DiagnosticSummary,
+  type IoError,
   type SourcePosition,
   type SourceSpan,
   TOOL_NAME,

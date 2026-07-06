@@ -31,32 +31,59 @@ Bun entrypoint while the published package has no `bin` field:
 bun run src/cli/main.ts check <workflow.js> [more-workflows.js ...]
 ```
 
-This slice implements only explicit path operands. Text output is now the
-default human report: one `file:line:column severity rule message` line per
-diagnostic, followed by a blank line and a `Found …` severity summary. Clean
-runs print nothing. `--output-format json` renders the versioned diagnostic
-envelope from technical design section
-[8](technical-design.md#8-diagnostic-contract). Read failures are written to
-stderr as `error: cannot read <path>: <message>`, and wider output/discovery
-behaviour is deferred to later roadmap items. The exit codes follow the
+This slice implements explicit path operands plus the Ruff-compatible
+invocation flags that have useful semantics before configured discovery and fix
+support. Text output is the default human report: one
+`file:line:column severity rule message` line per diagnostic, followed by a
+blank line and a `Found …` severity summary. Clean runs print nothing.
+`--output-format json` renders the versioned diagnostic envelope from technical
+design section [8](technical-design.md#8-diagnostic-contract), and
+`--output-file <path>` writes that rendered report to a file instead of
+standard output.
+
+`src/cli/check-args.ts` owns the `check` argument grammar.
+`src/cli/check-help.ts`, `src/cli/check-informational-action.ts`, and
+`src/cli/check-option-tables.ts` keep the help/version surface and option
+metadata out of the runner. `src/cli/path-exclusion.ts` owns the small
+`Bun.Glob`-backed helper used when `--force-exclude` applies configured
+`exclude` globs to explicit paths. `--respect-gitignore` and
+`--no-respect-gitignore` are accepted as the future discovery posture; they do
+not filter explicit paths in this command slice.
+
+`runCheckCli` keeps process IO behind seams on `CheckCliIo`.
+`writeFileText(path, contents)` backs `--output-file`, and `readStdin()` backs
+`--stdin-filename <path>`. The default implementations use synchronous
+`node:fs` calls so the runner remains synchronous, while tests can inject
+deterministic readers and writers without mutating process-wide state.
+
+Read failures are written to stderr as
+`error: cannot read <path>: <message>` and are also represented in the
+diagnostic report. `summary.filesSkipped` counts unreadable inputs, and the
+top-level `ioErrors` array carries `{ file, reason, message }` records for
+machine consumers. `summary.files` continues to count only readable files that
+were checked.
+
+`--strict-claude` promotes Claude compatibility warnings to errors for the
+invocation and takes precedence over `strictClaude: false` in configuration.
+`--max-warnings <n>` tolerates up to `n` warning-severity diagnostics. Warnings
+within the budget no longer fail the run, while errors, informational
+diagnostics, hints, and read failures still do. `--exit-zero` downgrades
+diagnostics/read-failure exit code `1` to `0` without masking usage,
+configuration, or internal failures. `--exit-non-zero-on-fix` is accepted and
+will become observable when fix support lands. The exit codes follow the
 Ruff-style policy in technical design sections
 [7.0](technical-design.md#70-ux-precedent) and
 [7.4](technical-design.md#74-exit-codes):
 
-| Code | Meaning                                                                                                                                                                   |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0    | The command completed and no diagnostics remain, or only warning-severity diagnostics within the `--max-warnings` budget remain.                                          |
-| 1    | Any error, informational, or hint diagnostic remains; warnings exceed the `--max-warnings` budget (any warning by default); or at least one input file could not be read. |
-| 2    | The invocation was invalid, such as a missing path or unknown flag, or an internal analyser failed.                                                                       |
+| Code | Meaning                                                                                             |
+| ---- | --------------------------------------------------------------------------------------------------- |
+| 0    | Success, within warning budget, or `--exit-zero` downgraded exit `1`.                               |
+| 1    | Error, info, or hint diagnostics remain; warnings exceed budget; or read failed.                    |
+| 2    | The invocation was invalid, such as a missing path or unknown flag, or an internal analyser failed. |
 
-Source snippets, output formats beyond `full` and `json`, `--output-file`,
-configured discovery, glob expansion, and the wider Ruff-compatible flag
-surface remain deferred. That includes `--exit-zero` and `--strict-claude`.
-
-`--max-warnings <n>` tolerates up to `n` warning-severity diagnostics. Warnings
-within the budget no longer fail the run, while errors, informational
-diagnostics, hints, and read failures still do. A warning count above `n` exits
-1, and an invalid `--max-warnings` value exits 2.
+Source snippets, output formats beyond `full` and `json`, configured discovery,
+glob operand expansion, `--exclude`/`--extend-exclude`, fix-mode flags, colour,
+and log-level flags remain deferred.
 
 The first implementation owns the static-analysis implementation inside this
 repository. v1 vendors the pure-literal parser behaviour from ODW's
@@ -132,15 +159,6 @@ or run backwards. It deliberately accepts numeric offsets rather than SWC AST
 types; workflow AST facts expose derived, parser-type-free data through the
 public package surface described below.
 
-Parser-backed diagnostic scanners should compose
-`src/static-analysis/workflow-body-scanner-harness.ts` when their contract is
-"parse the normalized body, collect source-order matches, then emit one
-catalogue-backed diagnostic per match". The harness owns normalized-span
-diagnostic construction and frozen diagnostic list behaviour; scanner modules
-still own their AST traversal, scope policy, match shape, and rule selection.
-Do not use the harness for syntax parsing, whole-body fallback diagnostics, or
-collectors whose output is not a one-diagnostic-per-match projection.
-
 ### Workflow AST facts
 
 `collectWorkflowAstFacts(envelope)` produces reusable, parser-type-free facts
@@ -200,10 +218,8 @@ The body parser runs once for this pipeline; `odw/body-syntax` owns syntax
 failures, and Claude compatibility checks consume the same successful parse
 result. The Claude compatibility stage currently runs the deterministic-time
 scanner and the ODW-only `validate(source)` scanner over that shared parse
-result. The validate scanner covers direct bare-identifier calls and
-single-hop-alias callees such as `const v = validate; v(source)`. The package
-entry re-exports `lintWorkflowSource` and `WorkflowLintResult` for future CLI
-and public-consumer work.
+result. The package entry re-exports `lintWorkflowSource` and
+`WorkflowLintResult` for future CLI and public-consumer work.
 
 `promoteStrictClaudeSeverity` is the library mechanism behind strict Claude
 portability mode. It reads the rule catalogue, promotes diagnostics whose rule
@@ -213,9 +229,9 @@ informational Claude compatibility findings such as `odw/no-odw-only-validate`.
 `lintWorkflowSource(source, { strictClaude: true })` applies that promotion to
 the merged `diagnostics` stream only; the `scan`, `classification`,
 `bodySyntax`, and `claudeCompatibility` sub-views continue to expose each
-pipeline stage's default-severity findings. The parsed `--strict-claude` CLI
-flag and `strictClaude` configuration key that toggle this mechanism are owned
-by the CLI tasks in roadmap 2.4 and configuration tasks in roadmap 3.3.
+pipeline stage's default-severity findings. The `--strict-claude` CLI flag and
+`strictClaude` configuration key toggle this mechanism, with the CLI flag taking
+precedence for a single invocation.
 
 ### Configuration schema
 
@@ -225,8 +241,7 @@ inert JSON object with these optional keys:
 
 - `include`: an array of non-empty glob-pattern strings.
 - `exclude`: an array of non-empty glob-pattern strings.
-- `strictClaude`: a boolean that later feeds the strict Claude promotion
-  mechanism.
+- `strictClaude`: a boolean that feeds the strict Claude promotion mechanism.
 - `rules`: an object whose keys are catalogued rule identifiers and whose
   values are `error`, `warning`, `info`, `hint`, or the configuration-only
   value `off`.
@@ -254,9 +269,8 @@ exit with code 2. Validation warnings, such as unknown pre-1.0 top-level keys,
 are written to standard error and do not prevent linting.
 
 The current `--config` implementation accepts file paths only. Inline
-`--config "key = value"` overrides, the parsed `--strict-claude` CLI flag, and
-glob-based include/exclude discovery remain deferred to their owning CLI and
-configured-discovery roadmap tasks.
+`--config "key = value"` overrides and glob-based include/exclude discovery
+remain deferred to their owning CLI and configured-discovery roadmap tasks.
 
 `include` and `exclude` are validated as string arrays before the checker uses
 them. Their glob expansion, directory traversal, and `.gitignore` behaviour are

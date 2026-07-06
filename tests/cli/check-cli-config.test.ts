@@ -124,6 +124,33 @@ describe("configuration-aware check CLI runner", () => {
     expect(result.stdout).toContain(`${fixture.filePath}:10:19 error odw/no-date-now`);
   });
 
+  it("promotes Claude-compatibility warnings when --strict-claude is supplied", () => {
+    const fixture = claudeWarningFixture();
+    const result = runCapturedCheckCli({
+      args: ["check", "--strict-claude", fixture.filePath],
+      sources: [fixture],
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain(`${fixture.filePath}:10:19 error odw/no-date-now`);
+  });
+
+  it("lets --strict-claude override disabled configuration", () => {
+    const fixture = claudeWarningFixture();
+    const result = runCapturedCheckCli({
+      args: ["check", "--strict-claude", "--config", "disabled.json", fixture.filePath],
+      sources: [fixture],
+      configs: {
+        "disabled.json": JSON.stringify({ strictClaude: false }),
+      },
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain(`${fixture.filePath}:10:19 error odw/no-date-now`);
+  });
+
   it("leaves Claude-compatibility findings as warnings without configuration", () => {
     const fixture = claudeWarningFixture();
     const result = runCapturedCheckCli({
@@ -166,6 +193,60 @@ describe("configuration-aware check CLI runner", () => {
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toBe("");
     expect(result.stdout).toContain(`${fixture.filePath}:10:19 warning odw/no-date-now`);
+  });
+
+  it("checks explicit excluded paths unless --force-exclude is supplied", () => {
+    const fixture = claudeWarningFixture();
+    const generatedFixture = {
+      filePath: "generated/workflow.js",
+      sourceText: fixture.sourceText,
+    };
+    const configs = {
+      "exclude.json": JSON.stringify({ exclude: ["**/generated/**"] }),
+    };
+
+    const withoutForceExclude = runCapturedCheckCli({
+      args: ["check", "--config", "exclude.json", generatedFixture.filePath],
+      sources: [generatedFixture],
+      configs,
+    });
+    const withForceExclude = runCapturedCheckCli({
+      args: ["check", "--force-exclude", "--config", "exclude.json", generatedFixture.filePath],
+      sources: [generatedFixture],
+      configs,
+    });
+
+    expect(withoutForceExclude.exitCode).toBe(1);
+    expect(withoutForceExclude.stdout).toContain(
+      `${generatedFixture.filePath}:10:19 warning odw/no-date-now`,
+    );
+    expect(withForceExclude).toEqual({
+      exitCode: 0,
+      stdout: "",
+      stderr: "",
+    });
+  });
+
+  it.each([
+    ["default posture", ["check", "--respect-gitignore", "generated/workflow.js"]],
+    ["disabled posture", ["check", "--no-respect-gitignore", "generated/workflow.js"]],
+  ] as const)("accepts %s without filtering explicit paths", (_caseName, args) => {
+    const fixture = claudeWarningFixture();
+    const generatedFixture = {
+      filePath: "generated/workflow.js",
+      sourceText: fixture.sourceText,
+    };
+    const result = runCapturedCheckCli({
+      args,
+      sources: [generatedFixture],
+      configs: {
+        "odw-lint.json": JSON.stringify({ exclude: ["**/generated/**"] }),
+      },
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain(`${generatedFixture.filePath}:10:19 warning odw/no-date-now`);
   });
 
   it.each([

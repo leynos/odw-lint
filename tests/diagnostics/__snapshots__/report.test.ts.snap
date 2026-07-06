@@ -42,10 +42,12 @@ exports[`diagnostic reports creates a versioned report envelope over the same di
       },
     },
   ],
+  "ioErrors": [],
   "schemaVersion": 1,
   "summary": {
     "errors": 1,
     "files": 1,
+    "filesSkipped": 0,
     "hints": 1,
     "infos": 0,
     "warnings": 0,

@@ -9,6 +9,7 @@ exports[`JSON diagnostic contract fixture snapshots the live reviewed-source ser
   },
   "summary": {
     "files": 1,
+    "filesSkipped": 0,
     "errors": 1,
     "warnings": 0,
     "infos": 0,
@@ -35,6 +36,7 @@ exports[`JSON diagnostic contract fixture snapshots the live reviewed-source ser
       "docs": "docs/rules/meta-required.md",
       "suggestions": []
     }
-  ]
+  ],
+  "ioErrors": []
 }"
 `;

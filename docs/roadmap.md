@@ -970,7 +970,7 @@ unlocks CI adoption and user feedback. See
     - Addendum (from audit:2.4.3; medium). Reconcile schema-required fields
       with guaranteed JSON output and add schema-conformance coverage across
       severity, docs, and suggestions variants. Lightweight addendum pass.
-- [ ] 2.4.4. Add Ruff-compatible invocation semantics for output, help,
+- [x] 2.4.4. Add Ruff-compatible invocation semantics for output, help,
   config, stdin, ignore handling, and exit-code policy.
   - Requires 2.4.1, 2.4.2, and 2.4.3.
   - See [technical-design.md](technical-design.md) §§7.0-7.4.

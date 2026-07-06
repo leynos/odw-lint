@@ -19,6 +19,12 @@ type CapturedCliRun = {
   readonly exitCode: 0 | 1 | 2;
   readonly stdout: string;
   readonly stderr: string;
+  readonly fileWrites: readonly CapturedFileWrite[];
+};
+
+type CapturedFileWrite = {
+  readonly path: string;
+  readonly contents: string;
 };
 
 type SourceFixture = {
@@ -34,8 +40,14 @@ type JsonReport = {
   readonly schemaVersion?: unknown;
   readonly summary?: {
     readonly errors?: unknown;
+    readonly filesSkipped?: unknown;
   };
   readonly diagnostics?: readonly JsonDiagnostic[];
+  readonly ioErrors?: readonly {
+    readonly file?: unknown;
+    readonly reason?: unknown;
+    readonly message?: unknown;
+  }[];
 };
 
 const VERSION = "0.0.0-test";
@@ -108,6 +120,7 @@ const runCapturedCheckCli = (
 ): CapturedCliRun => {
   let stdout = "";
   let stderr = "";
+  const fileWrites: CapturedFileWrite[] = [];
   const exitCode = runCheckCli(args, {
     version: VERSION,
     readFileText: readFrom(sources),
@@ -118,9 +131,12 @@ const runCapturedCheckCli = (
     writeErr: (message) => {
       stderr += message;
     },
+    writeFileText: (path, contents) => {
+      fileWrites.push({ path, contents });
+    },
   });
 
-  return { exitCode, stdout, stderr };
+  return { exitCode, stdout, stderr, fileWrites };
 };
 
 /** Parse captured JSON output into the report fields asserted by CLI tests. */
@@ -136,6 +152,7 @@ describe("explicit-path check CLI runner", () => {
       exitCode: 0,
       stdout: "",
       stderr: "",
+      fileWrites: [],
     });
   });
 
@@ -145,6 +162,7 @@ describe("explicit-path check CLI runner", () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toBe("");
+    expect(result.fileWrites).toEqual([]);
     expect(result.stdout).toContain(`${fixture.filePath}:1:1 error odw/meta-required`);
     expect(result.stdout).toContain("Found 1 error.");
   });
@@ -158,6 +176,7 @@ describe("explicit-path check CLI runner", () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toBe("");
+    expect(result.fileWrites).toEqual([]);
     expect(result.stdout).toContain(`${fixture.filePath}:1:1 error odw/meta-required`);
     expect(result.stdout).toContain("Found 1 error.");
   });
@@ -172,6 +191,7 @@ describe("explicit-path check CLI runner", () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toBe("");
+    expect(result.fileWrites).toEqual([]);
     expect(report.schemaVersion).toBe(1);
     expect(report.summary?.errors).toBe(1);
     expect(report.diagnostics?.[0]?.rule).toBe("odw/meta-required");
@@ -187,6 +207,7 @@ describe("explicit-path check CLI runner", () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.stderr).toBe("");
+    expect(result.fileWrites).toEqual([]);
     expect(report.schemaVersion).toBe(1);
     expect(report.diagnostics).toEqual([]);
   });
@@ -197,77 +218,19 @@ describe("explicit-path check CLI runner", () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toBe("");
+    expect(result.fileWrites).toEqual([]);
     expect(result.stdout).toContain(
       `${fixture.filePath}:3:16 warning odw/meta-statically-unprovable`,
     );
     expect(result.stdout).toContain("Found 1 warning.");
-  });
-
-  it("returns 0 for warnings within the explicit warning budget", () => {
-    const fixture = warningFixture();
-    const result = runCapturedCheckCli(
-      ["check", "--max-warnings", "1", fixture.filePath],
-      [fixture],
-    );
-
-    expect(result.exitCode).toBe(0);
-    expect(result.stderr).toBe("");
-    expect(result.stdout).toContain(
-      `${fixture.filePath}:3:16 warning odw/meta-statically-unprovable`,
-    );
-    expect(result.stdout).toContain("Found 1 warning.");
-  });
-
-  it("returns 1 for warnings above the explicit warning budget", () => {
-    const fixture = warningFixture();
-    const result = runCapturedCheckCli(
-      ["check", "--max-warnings", "0", fixture.filePath],
-      [fixture],
-    );
-
-    expect(result.exitCode).toBe(1);
-    expect(result.stderr).toBe("");
-    expect(result.stdout).toContain("Found 1 warning.");
-  });
-
-  it("accepts the equals spelling for the warning budget", () => {
-    const fixture = warningFixture();
-    const result = runCapturedCheckCli(["check", "--max-warnings=1", fixture.filePath], [fixture]);
-
-    expect(result.exitCode).toBe(0);
-    expect(result.stderr).toBe("");
-    expect(result.stdout).toContain("Found 1 warning.");
-  });
-
-  it("returns 1 for errors even when a warning budget is present", () => {
-    const fixture = errorFixture();
-    const result = runCapturedCheckCli(
-      ["check", "--max-warnings", "5", fixture.filePath],
-      [fixture],
-    );
-
-    expect(result.exitCode).toBe(1);
-    expect(result.stderr).toBe("");
-    expect(result.stdout).toContain("Found 1 error.");
-  });
-
-  it("returns 0 for a clean workflow when a warning budget is present", () => {
-    const fixture = cleanFixture();
-
-    expect(
-      runCapturedCheckCli(["check", "--max-warnings", "1", fixture.filePath], [fixture]),
-    ).toEqual({
-      exitCode: 0,
-      stdout: "",
-      stderr: "",
-    });
   });
 
   it("reports unreadable paths on stderr and returns 1", () => {
     const result = runCapturedCheckCli(["check", "missing-workflow.js"]);
 
     expect(result.exitCode).toBe(1);
-    expect(result.stdout).toBe("");
+    expect(result.stdout).toBe("Skipped 1 file.\n");
+    expect(result.fileWrites).toEqual([]);
     expect(result.stderr).toContain("error: cannot read missing-workflow.js: missing test fixture");
   });
 
@@ -279,8 +242,9 @@ describe("explicit-path check CLI runner", () => {
     );
 
     expect(result.exitCode).toBe(1);
+    expect(result.fileWrites).toEqual([]);
     expect(result.stdout).toContain(`${fixture.filePath}:1:1 error odw/meta-required`);
-    expect(result.stdout).toContain("Found 1 error.");
+    expect(result.stdout).toContain("Found 1 error; skipped 1 file.");
     expect(result.stderr).toContain("error: cannot read missing-workflow.js: missing test fixture");
   });
 
@@ -289,8 +253,14 @@ describe("explicit-path check CLI runner", () => {
     const report = parseCapturedJsonReport(result.stdout);
 
     expect(result.exitCode).toBe(1);
+    expect(result.fileWrites).toEqual([]);
     expect(report.schemaVersion).toBe(1);
     expect(report.diagnostics).toEqual([]);
+    expect(report.summary?.filesSkipped).toBe(1);
+    expect(report.ioErrors?.[0]).toMatchObject({
+      file: "missing-workflow.js",
+      reason: "not-found",
+    });
     expect(result.stderr).toContain("error: cannot read missing-workflow.js: missing test fixture");
   });
 
@@ -303,9 +273,52 @@ describe("explicit-path check CLI runner", () => {
     const report = parseCapturedJsonReport(result.stdout);
 
     expect(result.exitCode).toBe(1);
+    expect(result.fileWrites).toEqual([]);
     expect(report.diagnostics?.[0]?.rule).toBe("odw/meta-required");
     expect(report.summary?.errors).toBe(1);
     expect(result.stderr).toContain("error: cannot read missing-workflow.js: missing test fixture");
+  });
+
+  it("writes JSON diagnostics to --output-file instead of stdout", () => {
+    const fixture = errorFixture();
+    const result = runCapturedCheckCli(
+      ["check", "--output-file", "out.json", "--output-format", "json", fixture.filePath],
+      [fixture],
+    );
+    const fileWrite = result.fileWrites[0];
+
+    if (fileWrite === undefined) {
+      throw new Error("Expected captured output-file write.");
+    }
+
+    const report = parseCapturedJsonReport(fileWrite.contents);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toBe("");
+    expect(result.fileWrites).toHaveLength(1);
+    expect(fileWrite.path).toBe("out.json");
+    expect(fileWrite.contents.endsWith("\n")).toBe(true);
+    expect(report.diagnostics?.[0]?.rule).toBe("odw/meta-required");
+  });
+
+  it("writes text diagnostics to --output-file instead of stdout", () => {
+    const fixture = errorFixture();
+    const result = runCapturedCheckCli(
+      ["check", "--output-file=out.txt", fixture.filePath],
+      [fixture],
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toBe("");
+    expect(result.fileWrites).toEqual([
+      {
+        path: "out.txt",
+        contents: expect.stringContaining(`${fixture.filePath}:1:1 error odw/meta-required`),
+      },
+    ]);
+    expect(result.fileWrites[0]?.contents).toContain("Found 1 error.\n");
   });
 
   it.each([
@@ -317,22 +330,6 @@ describe("explicit-path check CLI runner", () => {
       ["check", "--output-format", "json-lines", "workflow.js"],
       "unsupported output format: json-lines",
     ],
-    ["missing max warnings", ["check", "--max-warnings"], "missing value for --max-warnings"],
-    [
-      "non-integer max warnings",
-      ["check", "--max-warnings", "abc", "workflow.js"],
-      "invalid value for --max-warnings: abc",
-    ],
-    [
-      "negative max warnings",
-      ["check", "--max-warnings", "-1", "workflow.js"],
-      "invalid value for --max-warnings: -1",
-    ],
-    [
-      "fractional max warnings",
-      ["check", "--max-warnings", "1.5", "workflow.js"],
-      "invalid value for --max-warnings: 1.5",
-    ],
     ["wrong subcommand", ["lint", "workflow.js"], "unknown command: lint"],
   ] as const)("returns 2 for %s", (_caseName, args, expectedError) => {
     const result = runCapturedCheckCli(args);
@@ -341,6 +338,28 @@ describe("explicit-path check CLI runner", () => {
       exitCode: 2,
       stdout: "",
       stderr: `${expectedError}\n`,
+      fileWrites: [],
+    });
+  });
+
+  it.each([
+    ["separate form", ["check", "--output-file"]],
+    ["equals form", ["check", "--output-file="]],
+  ] as const)("rejects --output-file without a value in %s", (_caseName, args) => {
+    expect(runCapturedCheckCli(args)).toEqual({
+      exitCode: 2,
+      stdout: "",
+      stderr: "missing value for --output-file\n",
+      fileWrites: [],
+    });
+  });
+
+  it("rejects --stdin-filename without an equals-form value", () => {
+    expect(runCapturedCheckCli(["check", "--stdin-filename="])).toEqual({
+      exitCode: 2,
+      stdout: "",
+      stderr: "missing value for --stdin-filename\n",
+      fileWrites: [],
     });
   });
 
@@ -362,7 +381,7 @@ describe("explicit-path check CLI runner", () => {
     });
 
     expect(exitCode).toBe(1);
-    expect(stdout).toBe("");
+    expect(stdout).toBe("Skipped 1 file.\n");
     expect(stderr).toContain("error: cannot read workflow.js: [object Object]");
   });
 });

@@ -4,12 +4,13 @@
 
 import { describe, expect, it } from "bun:test";
 import { countDiagnostics, createDiagnosticReport, DIAGNOSTIC_SEVERITIES } from "odw-lint";
-import { diagnosticForSeverity, severitySummaryKeys } from "./fixtures";
+import { diagnosticForSeverity, ioErrorFor, severitySummaryKeys } from "./fixtures";
 
 describe("diagnostic reports", () => {
   it("counts an empty diagnostic list", () => {
     expect(countDiagnostics({ files: 0, diagnostics: [] })).toEqual({
       files: 0,
+      filesSkipped: 0,
       errors: 0,
       warnings: 0,
       infos: 0,
@@ -35,6 +36,7 @@ describe("diagnostic reports", () => {
 
     expect(countDiagnostics({ files: 3, diagnostics })).toEqual({
       files: 3,
+      filesSkipped: 0,
       errors: 1,
       warnings: 1,
       infos: 1,
@@ -85,14 +87,30 @@ describe("diagnostic reports", () => {
       tool: { name: "odw-lint", version: "0.1.0" },
       summary: {
         files: 1,
+        filesSkipped: 0,
         errors: 1,
         warnings: 0,
         infos: 0,
         hints: 1,
       },
       diagnostics,
+      ioErrors: [],
     });
     expect(report).toMatchSnapshot();
+  });
+
+  it("counts skipped files from machine-readable IO errors", () => {
+    const ioErrors = [ioErrorFor("missing.js"), ioErrorFor("directory", "not-a-file")];
+    const report = createDiagnosticReport({
+      version: "0.1.0",
+      files: 0,
+      diagnostics: [],
+      ioErrors,
+    });
+
+    expect(report.summary.files).toBe(0);
+    expect(report.summary.filesSkipped).toBe(2);
+    expect(report.ioErrors).toEqual(ioErrors);
   });
 
   it("snapshots diagnostics before caller-owned arrays can change", () => {
@@ -104,6 +122,7 @@ describe("diagnostic reports", () => {
     expect(report.diagnostics).toEqual([diagnosticForSeverity("error")]);
     expect(report.summary).toEqual({
       files: 1,
+      filesSkipped: 0,
       errors: 1,
       warnings: 0,
       infos: 0,
@@ -127,6 +146,7 @@ describe("diagnostic reports", () => {
     expect(Object.isFrozen(report.tool)).toBe(true);
     expect(Object.isFrozen(report.summary)).toBe(true);
     expect(Object.isFrozen(report.diagnostics)).toBe(true);
+    expect(Object.isFrozen(report.ioErrors)).toBe(true);
 
     const diagnostic = report.diagnostics[0];
     if (diagnostic === undefined) {
@@ -138,6 +158,21 @@ describe("diagnostic reports", () => {
     expect(Object.isFrozen(diagnostic.span.end)).toBe(true);
     expect(Object.isFrozen(diagnostic.suggestions)).toBe(true);
     expect(Object.isFrozen(diagnostic.suggestions?.[0])).toBe(true);
+  });
+
+  it("snapshots IO errors before caller-owned arrays can change", () => {
+    const ioErrors = [ioErrorFor("missing.js")];
+    const report = createDiagnosticReport({
+      version: "0.1.0",
+      files: 0,
+      diagnostics: [],
+      ioErrors,
+    });
+
+    ioErrors.push(ioErrorFor("other.js", "unreadable"));
+
+    expect(report.ioErrors).toEqual([ioErrorFor("missing.js")]);
+    expect(report.summary.filesSkipped).toBe(1);
   });
 
   it("snapshots nested diagnostic payloads before caller-owned objects can change", () => {

@@ -13,6 +13,7 @@ import type {
   DiagnosticSummary,
   InvalidRuleId,
   InvalidRuleIdReason,
+  IoError,
   OriginalSourceFile,
   RuleDocumentationPath,
   RuleId,
@@ -89,6 +90,7 @@ describe("public diagnostic consumer", () => {
 
     const summary = {
       files: 1,
+      filesSkipped: 0,
       errors: 1,
       warnings: 0,
       infos: 0,
@@ -104,6 +106,7 @@ describe("public diagnostic consumer", () => {
     expect(report.schemaVersion).toBe(DIAGNOSTIC_SCHEMA_VERSION);
     expect(report.tool).toEqual({ name: TOOL_NAME, version: "0.1.0" });
     expect(report.summary).toEqual(summary);
+    expect(report.ioErrors).toEqual([]);
     expect(report.diagnostics[0]?.span.start.line).toBe(1);
   });
 
@@ -206,10 +209,16 @@ describe("public diagnostic consumer", () => {
     }>();
     expectTypeOf<DiagnosticSummary>().toEqualTypeOf<{
       readonly files: number;
+      readonly filesSkipped: number;
       readonly errors: number;
       readonly warnings: number;
       readonly infos: number;
       readonly hints: number;
+    }>();
+    expectTypeOf<IoError>().toEqualTypeOf<{
+      readonly file: string;
+      readonly reason: "not-found" | "not-a-file" | "unreadable";
+      readonly message: string;
     }>();
     expectTypeOf<ToolInfo>().toEqualTypeOf<{
       readonly name: typeof TOOL_NAME;
@@ -220,6 +229,7 @@ describe("public diagnostic consumer", () => {
       readonly tool: ToolInfo;
       readonly summary: DiagnosticSummary;
       readonly diagnostics: readonly Diagnostic[];
+      readonly ioErrors: readonly IoError[];
     }>();
   });
 

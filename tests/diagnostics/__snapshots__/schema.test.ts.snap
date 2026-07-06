@@ -133,6 +133,34 @@ exports[`diagnostic JSON Schema matches the reviewed schema snapshot 1`] = `
       "minItems": 0,
       "type": "array",
     },
+    "ioErrors": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "type": "string",
+          },
+          "message": {
+            "type": "string",
+          },
+          "reason": {
+            "enum": [
+              "not-found",
+              "not-a-file",
+              "unreadable",
+            ],
+          },
+        },
+        "required": [
+          "file",
+          "reason",
+          "message",
+        ],
+        "type": "object",
+      },
+      "minItems": 0,
+      "type": "array",
+    },
     "schemaVersion": {
       "enum": [
         1,
@@ -146,6 +174,10 @@ exports[`diagnostic JSON Schema matches the reviewed schema snapshot 1`] = `
           "type": "integer",
         },
         "files": {
+          "minimum": 0,
+          "type": "integer",
+        },
+        "filesSkipped": {
           "minimum": 0,
           "type": "integer",
         },
@@ -164,6 +196,7 @@ exports[`diagnostic JSON Schema matches the reviewed schema snapshot 1`] = `
       },
       "required": [
         "files",
+        "filesSkipped",
         "errors",
         "warnings",
         "infos",
@@ -195,6 +228,7 @@ exports[`diagnostic JSON Schema matches the reviewed schema snapshot 1`] = `
     "tool",
     "summary",
     "diagnostics",
+    "ioErrors",
   ],
   "type": "object",
 }

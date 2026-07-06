@@ -6,6 +6,7 @@
   },
   "summary": {
     "files": 1,
+    "filesSkipped": 0,
     "errors": 1,
     "warnings": 0,
     "infos": 0,
@@ -32,5 +33,6 @@
       "docs": "docs/rules/meta-required.md",
       "suggestions": []
     }
-  ]
+  ],
+  "ioErrors": []
 }

@@ -2,9 +2,10 @@
  * @file Argument parsing and writer wiring for the explicit-path `check` CLI.
  */
 
+import { readFileSync, writeFileSync } from "node:fs";
 import { cwd, stderr, stdout } from "node:process";
 import packageJson from "../../package.json";
-import type { ConfigValidationWarning } from "../config/linter-config";
+import type { ConfigValidationWarning, LinterConfig } from "../config/linter-config";
 import {
   type ConfigFileReader,
   type ConfigLoadError,
@@ -14,7 +15,11 @@ import {
 import { formatJsonReport } from "../diagnostics/report-json";
 import { formatTextReport } from "../diagnostics/text";
 import type { DiagnosticReport } from "../diagnostics/types";
-import { type CheckOutputFormat, type ParsedCheckArgs, parseCheckArgs } from "./check-cli-args";
+import type { ParsedCheckRunArgs } from "./check-arg-types";
+import { parseCheckArgs } from "./check-args";
+import { CHECK_USAGE_TEXT } from "./check-help";
+import type { CheckOutputFormat } from "./check-output-format";
+import { isPathExcluded } from "./path-exclusion";
 import type { ReadFileText, WorkflowSourceReadFailure } from "./read-workflow-source";
 import {
   type CheckExitPolicy,
@@ -29,6 +34,8 @@ export type CheckCliExitCode = 0 | 1 | 2;
 export type CheckCliIo = {
   readonly writeOut?: (message: string) => void;
   readonly writeErr?: (message: string) => void;
+  readonly writeFileText?: (path: string, contents: string) => void;
+  readonly readStdin?: () => string;
   readonly readFileText?: ReadFileText;
   readonly readConfigFile?: ConfigFileReader;
   readonly version?: string;
@@ -37,6 +44,7 @@ export type CheckCliIo = {
 type CheckCliWriters = {
   readonly writeOut: (message: string) => void;
   readonly writeErr: (message: string) => void;
+  readonly writeFileText: (path: string, contents: string) => void;
 };
 
 /** Resolve optional writer seams to the real process streams. */
@@ -44,30 +52,40 @@ const resolveWriters = (io: CheckCliIo): CheckCliWriters => {
   return {
     writeOut: io.writeOut ?? ((message) => void stdout.write(message)),
     writeErr: io.writeErr ?? ((message) => void stderr.write(message)),
+    writeFileText: io.writeFileText ?? ((path, contents) => writeFileSync(path, contents, "utf8")),
   };
 };
 
-/** Emit the current minimal text diagnostics contract. */
-const writeTextDiagnostics = (writers: CheckCliWriters, diagnosticsText: string): void => {
-  if (diagnosticsText.length === 0) {
-    return;
+/** Render the selected diagnostic report, including the trailing CLI newline. */
+const renderedReport = (outputFormat: CheckOutputFormat, report: DiagnosticReport): string => {
+  if (outputFormat === "json") {
+    return `${formatJsonReport(report)}\n`;
   }
 
-  writers.writeOut(`${diagnosticsText}\n`);
-};
+  const diagnosticsText = formatTextReport(report);
 
+  if (diagnosticsText.length === 0) {
+    return "";
+  }
+
+  return `${diagnosticsText}\n`;
+};
 /** Emit the selected diagnostic report rendering. */
 const writeReport = (
   writers: CheckCliWriters,
-  outputFormat: CheckOutputFormat,
+  parsedArgs: ParsedCheckRunArgs,
   report: DiagnosticReport,
 ): void => {
-  if (outputFormat === "json") {
-    writers.writeOut(`${formatJsonReport(report)}\n`);
+  const rendered = renderedReport(parsedArgs.outputFormat, report);
+
+  if (parsedArgs.outputFile !== undefined) {
+    writers.writeFileText(parsedArgs.outputFile, rendered);
     return;
   }
 
-  writeTextDiagnostics(writers, formatTextReport(report));
+  if (rendered.length > 0) {
+    writers.writeOut(rendered);
+  }
 };
 
 /** Emit read failures as CLI-level errors until JSON IO diagnostics exist. */
@@ -114,10 +132,7 @@ const writeConfigLoadError = (writers: CheckCliWriters, error: ConfigLoadError):
 };
 
 /** Loads configuration for a parsed check invocation through the CLI seams. */
-const loadConfigForCheck = (
-  parsedArgs: Extract<ParsedCheckArgs, { readonly ok: true }>,
-  io: CheckCliIo,
-): ConfigLoadResult => {
+const loadConfigForCheck = (parsedArgs: ParsedCheckRunArgs, io: CheckCliIo): ConfigLoadResult => {
   return loadLinterConfig({
     ...(parsedArgs.configPath === undefined ? {} : { configPath: parsedArgs.configPath }),
     ...(parsedArgs.isolated ? { isolated: true } : {}),
@@ -126,30 +141,61 @@ const loadConfigForCheck = (
   });
 };
 
+/** Applies command-line options whose precedence is higher than configuration. */
+const configForInvocation = (
+  parsedArgs: ParsedCheckRunArgs,
+  config: LinterConfig,
+): LinterConfig => {
+  return parsedArgs.strictClaude ? { ...config, strictClaude: true } : config;
+};
+
+/** Reads standard input synchronously to preserve the current CLI contract. */
+const defaultReadStdin = (): string => readFileSync(0, "utf8");
 /** Builds the check request while respecting exact optional property types. */
 const checkRequestFor = (
-  parsedArgs: Extract<ParsedCheckArgs, { readonly ok: true }>,
+  parsedArgs: ParsedCheckRunArgs,
   io: CheckCliIo,
   configLoad: Extract<ConfigLoadResult, { readonly ok: true }>,
 ): CheckRequest => {
-  return io.readFileText === undefined
+  const config = configForInvocation(parsedArgs, configLoad.config);
+  const candidatePaths =
+    parsedArgs.stdinFilename === undefined ? parsedArgs.paths : [parsedArgs.stdinFilename];
+  const paths = pathsForInvocation(parsedArgs, candidatePaths, config);
+  const readFileText = readFileTextForInvocation(parsedArgs, io);
+
+  return readFileText === undefined
     ? {
-        paths: parsedArgs.paths,
+        paths,
         version: io.version ?? packageJson.version,
-        config: configLoad.config,
+        config,
       }
     : {
-        paths: parsedArgs.paths,
+        paths,
         version: io.version ?? packageJson.version,
-        readFileText: io.readFileText,
-        config: configLoad.config,
+        readFileText,
+        config,
       };
 };
 
+/** Applies `--force-exclude` to explicit and stdin-logical check paths. */
+const pathsForInvocation = (
+  parsedArgs: ParsedCheckRunArgs,
+  paths: readonly string[],
+  config: LinterConfig,
+): readonly string[] => {
+  if (!parsedArgs.forceExclude || config.exclude === undefined) {
+    return paths;
+  }
+
+  return paths.filter((path) => !isPathExcluded(path, config.exclude ?? []));
+};
+/** Reports whether this v1 invocation applied fixes to any workflow source. */
+const fixesAppliedByInvocation = (): boolean => {
+  return false;
+};
+
 /** Builds optional warning-budget policy without changing the default branch. */
-const checkExitPolicyFor = (
-  parsedArgs: Extract<ParsedCheckArgs, { readonly ok: true }>,
-): CheckExitPolicy => {
+const checkExitPolicyFor = (parsedArgs: ParsedCheckRunArgs): CheckExitPolicy => {
   return parsedArgs.maxWarnings === undefined ? {} : { maxWarnings: parsedArgs.maxWarnings };
 };
 
@@ -169,6 +215,16 @@ export const runCheckCli = (args: readonly string[], io: CheckCliIo = {}): Check
     return 2;
   }
 
+  if ("action" in parsedArgs) {
+    if (parsedArgs.action === "version") {
+      writers.writeOut(`${io.version ?? packageJson.version}\n`);
+      return 0;
+    }
+
+    writers.writeOut(`${CHECK_USAGE_TEXT}\n`);
+    return 0;
+  }
+
   try {
     const configLoad = loadConfigForCheck(parsedArgs, io);
 
@@ -181,12 +237,49 @@ export const runCheckCli = (args: readonly string[], io: CheckCliIo = {}): Check
 
     const outcome = runCheck(checkRequestFor(parsedArgs, io, configLoad));
 
-    writeReport(writers, parsedArgs.outputFormat, outcome.report);
+    writeReport(writers, parsedArgs, outcome.report);
     writeReadFailures(writers, outcome.readFailures);
 
-    return checkDiagnosticsExitCode(outcome, checkExitPolicyFor(parsedArgs));
+    return checkExitCodeForInvocation(parsedArgs, outcome);
   } catch (error) {
     writers.writeErr(`internal error: ${messageForThrownValue(error)}\n`);
     return 2;
   }
+};
+
+/** Builds the source reader for either explicit files or stdin mode. */
+const readFileTextForInvocation = (
+  parsedArgs: ParsedCheckRunArgs,
+  io: CheckCliIo,
+): ReadFileText | undefined => {
+  if (parsedArgs.stdinFilename === undefined) {
+    return io.readFileText;
+  }
+
+  const readStdin = io.readStdin ?? defaultReadStdin;
+  const stdinText = readStdin();
+
+  return () => stdinText;
+};
+
+/** Applies invocation-level exit policy to the completed check outcome. */
+const checkExitCodeForInvocation = (
+  parsedArgs: ParsedCheckRunArgs,
+  outcome: ReturnType<typeof runCheck>,
+): CheckCliExitCode => {
+  const defaultExitCode = checkDiagnosticsExitCode(outcome, checkExitPolicyFor(parsedArgs));
+
+  if (parsedArgs.exitNonZeroOnFix) {
+    const fixesApplied = fixesAppliedByInvocation();
+
+    if (fixesApplied) {
+      return parsedArgs.exitZero ? 0 : 1;
+    }
+  }
+
+  if (parsedArgs.exitZero) {
+    return defaultExitCode === 1 ? 0 : defaultExitCode;
+  }
+
+  return defaultExitCode;
 };

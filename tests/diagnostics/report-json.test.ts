@@ -3,18 +3,23 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import type { Diagnostic } from "odw-lint";
+import type { Diagnostic, IoError } from "odw-lint";
 import {
   createDiagnosticReport,
   DIAGNOSTIC_REPORT_SCHEMA,
   DIAGNOSTIC_SEVERITIES,
   formatJsonReport,
 } from "odw-lint";
-import { diagnosticForSeverity } from "./fixtures";
+import { diagnosticForSeverity, ioErrorFor } from "./fixtures";
 
 /** Builds a small report fixture for JSON projection assertions. */
 const reportWith = (diagnostics: readonly Diagnostic[]) => {
   return createDiagnosticReport({ version: "0.1.0", files: 2, diagnostics });
+};
+
+/** Builds a small report fixture with IO errors for JSON projection assertions. */
+const reportWithIoErrors = (ioErrors: readonly IoError[]) => {
+  return createDiagnosticReport({ version: "0.1.0", files: 0, diagnostics: [], ioErrors });
 };
 
 /** Omits optional docs so the serializer/schema contract covers both variants. */
@@ -34,6 +39,7 @@ describe("JSON diagnostic reports", () => {
       tool: { name: "odw-lint", version: "0.1.0" },
       summary: {
         files: 2,
+        filesSkipped: 0,
         errors: 1,
         warnings: 0,
         infos: 0,
@@ -53,6 +59,7 @@ describe("JSON diagnostic reports", () => {
           suggestions: [],
         },
       ],
+      ioErrors: [],
     });
   });
 
@@ -61,7 +68,13 @@ describe("JSON diagnostic reports", () => {
     const parsedReport = JSON.parse(formatJsonReport(reportWith([diagnostic])));
     const firstDiagnostic = parsedReport.diagnostics[0];
 
-    expect(Object.keys(parsedReport)).toEqual(["schemaVersion", "tool", "summary", "diagnostics"]);
+    expect(Object.keys(parsedReport)).toEqual([
+      "schemaVersion",
+      "tool",
+      "summary",
+      "diagnostics",
+      "ioErrors",
+    ]);
     expect(Object.keys(firstDiagnostic)).toEqual([
       "file",
       "rule",
@@ -70,6 +83,20 @@ describe("JSON diagnostic reports", () => {
       "span",
       "docs",
       "suggestions",
+    ]);
+  });
+
+  it("projects machine-readable IO errors into the documented envelope", () => {
+    const parsedReport = JSON.parse(
+      formatJsonReport(
+        reportWithIoErrors([ioErrorFor("missing.js"), ioErrorFor("workflow-dir", "not-a-file")]),
+      ),
+    );
+
+    expect(parsedReport.summary.filesSkipped).toBe(2);
+    expect(parsedReport.ioErrors).toEqual([
+      { file: "missing.js", reason: "not-found", message: "cannot read missing.js" },
+      { file: "workflow-dir", reason: "not-a-file", message: "cannot read workflow-dir" },
     ]);
   });
 

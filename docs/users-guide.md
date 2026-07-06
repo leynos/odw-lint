@@ -44,38 +44,49 @@ The standalone command is path-first. It does not resolve bare ODW workflow
 names. A future ODW-owned integration may expose `odw check`, but that command
 is outside the v1 standalone contract.
 
-The planned options follow `ruff check` where the concepts map cleanly:
+The available options follow `ruff check` where the concepts map cleanly:
 
-- `--output-format full|json` is available now. `full` is the default text
+- `--output-format full|json` selects output. `full` is the default text
   output, and `json` emits the versioned diagnostic report.
-- JSON Lines, GitHub, GitLab, JUnit, and SARIF-style output remain planned.
 - `--output-file <path>` writes diagnostics to a file instead of standard
   output.
-- `--fix`, `--unsafe-fixes`, `--diff`, and `--fix-only` control future fix
-  support. Rules without fix support still report diagnostics only.
 - `--strict-claude` promotes Claude Code portability warnings to errors.
 - `--max-warnings <n>` fails the run when warning counts exceed the threshold;
   warnings within the budget no longer fail the run.
-- `--config <path-or-override>` selects a configuration file or applies an
-  inline override. `--isolated` ignores configuration files.
-- `--exclude`, `--extend-exclude`, `--force-exclude`,
-  `--respect-gitignore`, and `--no-respect-gitignore` control file discovery.
-- `--stdin-filename <path>` gives standard-input diagnostics a stable path.
-- `--exit-zero` keeps diagnostic findings from failing the command.
-- `--exit-non-zero-on-fix` fails when fixes were applied.
-- `--color auto|always|never`, `--verbose`, `--quiet`, and `--silent` control
-  text output and logging.
+- `--config <path>` loads a JSON configuration file. `--isolated` ignores
+  configuration files.
+- `--force-exclude` applies configured exclusions to explicit paths.
+- `--respect-gitignore` and `--no-respect-gitignore` record the discovery
+  posture. They do not filter explicit paths in the current explicit-path
+  command slice.
+- `--stdin-filename <path>` analyses standard input and gives diagnostics a
+  stable path.
+- `--exit-zero` keeps diagnostic findings and unreadable input files from
+  failing the command.
+- `--exit-non-zero-on-fix` is accepted and will fail when fixes are applied
+  once fix support lands.
+- `--help` and `--version` print command discovery information.
+
+The following options remain planned:
+
+- JSON Lines, GitHub, GitLab, JUnit, and SARIF-style output.
+- `--fix`, `--unsafe-fixes`, `--diff`, and `--fix-only`.
+- Inline `--config` overrides.
+- Configured discovery, glob operand expansion, `--exclude`, and
+  `--extend-exclude`.
+- `--color auto|always|never`, `--verbose`, `--quiet`, and `--silent`.
 
 ## Exit codes
 
-| Code | Meaning                                                                                                                                     |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0    | No diagnostics remain, only warnings within the `--max-warnings` budget remain, or all diagnostics were fixed automatically.                |
-| 1    | Diagnostics remain, warning thresholds were exceeded, fixes were applied with `--exit-non-zero-on-fix`, or an input file could not be read. |
-| 2    | Invalid configuration, invalid CLI options, or internal analyser failure.                                                                   |
+| Code | Meaning                                                                         |
+| ---- | ------------------------------------------------------------------------------- |
+| 0    | Success, within warning budget, or `--exit-zero` downgraded exit `1`.           |
+| 1    | Diagnostics remain, warnings exceed budget, fixes were applied, or read failed. |
+| 2    | Invalid configuration, invalid CLI options, or internal analyser failure.       |
 
-`--exit-zero` only affects diagnostic findings. It does not hide abnormal
-termination, invalid configuration, or invalid command-line usage.
+`--exit-zero` affects diagnostic findings and unreadable input files. It does
+not hide abnormal termination, invalid configuration, or invalid command-line
+usage.
 
 ## Diagnostic reports
 
@@ -84,8 +95,15 @@ The JSON report is a versioned object:
 ```json
 {
   "schemaVersion": 1,
-  "tool": { "name": "odw-lint", "version": "0.1.0" },
-  "summary": { "files": 1, "errors": 1, "warnings": 0, "infos": 0, "hints": 0 },
+  "tool": { "name": "odw-lint", "version": "0.0.0" },
+  "summary": {
+    "files": 1,
+    "filesSkipped": 0,
+    "errors": 1,
+    "warnings": 0,
+    "infos": 0,
+    "hints": 0
+  },
   "diagnostics": [
     {
       "file": "workflows/example.js",
@@ -99,16 +117,21 @@ The JSON report is a versioned object:
       "docs": "docs/rules/meta-required.md",
       "suggestions": []
     }
-  ]
+  ],
+  "ioErrors": []
 }
 ```
 
-Report consumers should treat `schemaVersion`, `tool`, `summary`, and
-`diagnostics` as the stable top-level fields. Diagnostic spans point to the
-original source file, not to any normalized parser input. Offsets are
-zero-based UTF-8 byte offsets; lines and columns are one-based display
-positions. `span.start` is inclusive and `span.end` is exclusive. Point
-diagnostics may use a zero-length span where `start` and `end` are identical.
+Report consumers should treat `schemaVersion`, `tool`, `summary`,
+`diagnostics`, and `ioErrors` as stable top-level fields. `summary.files` counts
+readable files that were checked, and `summary.filesSkipped` counts input files
+that could not be read. `ioErrors` is always present and carries
+machine-readable read failures with `file`, `reason`, and `message` fields.
+Diagnostic spans point to the original source file, not to any normalized parser
+input. Offsets are zero-based UTF-8 byte offsets; lines and columns are
+one-based display positions. `span.start` is inclusive and `span.end` is
+exclusive. Point diagnostics may use a zero-length span where `start` and `end`
+are identical.
 
 The default human text report is derived from the same diagnostic objects and
 summary counts as JSON output. Each diagnostic is printed as one
@@ -140,9 +163,10 @@ run under ODW but are not portable to Claude Code's static workflow reader.
 Orchestration-risk findings describe legal workflow patterns that may be
 expensive, non-deterministic, or hard to supervise.
 
-## Configuration placeholders
+## Configuration
 
-Configuration is planned but not implemented yet. The intended first shape is:
+The optional configuration file is `odw-lint.json` by default. The available
+shape is:
 
 ```json
 {
@@ -161,11 +185,9 @@ Configuration is planned but not implemented yet. The intended first shape is:
 ```
 
 Command-line flags override configuration. Unknown rule identifiers are errors.
-Unknown configuration keys are expected to be warnings before the configuration
-schema stabilizes and errors after it stabilizes.
-
-Until the configuration loader and remaining CLI flags land, treat this section
-as a contract placeholder rather than an available feature.
+Unknown top-level keys are warnings while the schema remains pre-1.0. The
+current `--config` option accepts file paths only; inline overrides remain
+planned.
 
 ## Current non-goals
 

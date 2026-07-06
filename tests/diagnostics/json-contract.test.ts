@@ -56,11 +56,13 @@ describe("JSON diagnostic contract fixture", () => {
     expect(goldenReport.tool.name).toBe("odw-lint");
     expect(Object.keys(goldenReport.summary)).toEqual([
       "files",
+      "filesSkipped",
       "errors",
       "warnings",
       "infos",
       "hints",
     ]);
+    expect(goldenReport.ioErrors).toEqual([]);
     expect(firstDiagnostic.rule).toBe("odw/meta-required");
     expect(firstDiagnostic.span).toEqual({
       start: { offset: 0, line: 1, column: 1 },

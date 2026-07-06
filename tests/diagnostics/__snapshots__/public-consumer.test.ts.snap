@@ -9,6 +9,7 @@ exports[`public diagnostic consumer keeps public diagnostic values importable fr
   },
   "summary": {
     "files": 1,
+    "filesSkipped": 0,
     "errors": 1,
     "warnings": 0,
     "infos": 0,
@@ -34,7 +35,8 @@ exports[`public diagnostic consumer keeps public diagnostic values importable fr
       },
       "suggestions": []
     }
-  ]
+  ],
+  "ioErrors": []
 }"
 `;
 

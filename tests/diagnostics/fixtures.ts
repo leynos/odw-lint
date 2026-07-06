@@ -5,7 +5,7 @@
  * coverage without repeating representative diagnostic data.
  */
 
-import type { Diagnostic, DiagnosticSeverity, DiagnosticSummary } from "odw-lint";
+import type { Diagnostic, DiagnosticSeverity, DiagnosticSummary, IoError } from "odw-lint";
 import { RULE_CATALOGUE, RULE_IDS, ruleDocsPath } from "odw-lint";
 
 export const documentedRuleIds = RULE_IDS;
@@ -48,5 +48,20 @@ export const diagnosticForSeverity = (severity: DiagnosticSeverity): Diagnostic 
       end: { offset: 0, line: 1, column: 1 },
     },
     docs: ruleDocsPath(META_REQUIRED_RULE),
+  };
+};
+
+/**
+ * Builds an IO-error fixture for report and CLI assertions.
+ *
+ * @param file File path to embed in the IO-error fixture.
+ * @param reason Stable read-failure reason to embed.
+ * @returns IO-error fixture for report assertions.
+ */
+export const ioErrorFor = (file: string, reason: IoError["reason"] = "not-found"): IoError => {
+  return {
+    file,
+    reason,
+    message: `cannot read ${file}`,
   };
 };

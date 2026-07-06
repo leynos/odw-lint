@@ -331,7 +331,14 @@ JSON output is a versioned object, not a bare diagnostics array:
 {
   "schemaVersion": 1,
   "tool": { "name": "odw-lint", "version": "0.1.0" },
-  "summary": { "files": 1, "errors": 1, "warnings": 0, "infos": 0, "hints": 0 },
+  "summary": {
+    "files": 1,
+    "filesSkipped": 0,
+    "errors": 1,
+    "warnings": 0,
+    "infos": 0,
+    "hints": 0
+  },
   "diagnostics": [
     {
       "file": "examples/fan-out-reduce.js",
@@ -345,7 +352,8 @@ JSON output is a versioned object, not a bare diagnostics array:
       "docs": "docs/rules/meta-required.md",
       "suggestions": []
     }
-  ]
+  ],
+  "ioErrors": []
 }
 ```
 
@@ -353,7 +361,15 @@ The diagnostic contract has these invariants:
 
 - `schemaVersion` changes only when JSON consumers need compatibility logic.
 - `tool.version` comes from the package version.
-- `summary` counts diagnostics after severity overrides.
+- `summary` counts diagnostics after severity overrides. `summary.files` counts
+  readable files that were checked. `summary.filesSkipped` counts input files
+  skipped because they could not be read.
+- `ioErrors` is always present. It is empty for a run with no input-file read
+  failures. Each entry has the invocation `file`, a stable `reason` of
+  `not-found`, `not-a-file`, or `unreadable`, and the human-readable `message`
+  also emitted on stderr by the command-line interface (CLI). IO errors are
+  not catalogued rule diagnostics because they are host input failures, not
+  workflow-content violations.
 - `rule` is constrained to the catalogue-derived `RULE_IDS` enum and is stable
   once released.
 - `severity` is one of `error`, `warning`, `info`, or `hint`.
@@ -375,6 +391,9 @@ The diagnostic contract has these invariants:
 - Suggestions are optional. Safe fixes may be applied by `--fix` once the rule
   has fix support; unsafe fixes require `--unsafe-fixes`.
 - Text output is derived from the same diagnostic objects as JSON output.
+  Text report footers also include skipped-file counts when `ioErrors` is
+  non-empty, so human and machine-readable reports distinguish skipped inputs
+  from clean runs.
 
 Adding a new catalogued rule ID expands the schema enum and requires catalogue,
 schema, rule documentation, and parity-test updates. That addition does not by
@@ -382,6 +401,12 @@ itself change `schemaVersion` when the diagnostic object shape and existing
 rule meanings remain compatible. Renaming or removing a released rule, changing
 an existing rule's meaning, or changing the diagnostic object shape requires
 schema-version review and compatibility handling.
+
+ADR [0004](adr/0004-machine-readable-io-error-channel.md) records the decision
+to add `ioErrors` and `summary.filesSkipped` without changing
+`schemaVersion`. The package remains private and pre-release, and existing
+consumers that read known fields do not need compatibility logic for these
+additive fields.
 
 Reviewed message templates keep dynamic diagnostics inside the same catalogue
 contract as exact messages. Template text may contain placeholders of the form

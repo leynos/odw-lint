@@ -1,0 +1,268 @@
+/**
+ * @file Isolated argument-parser tests for the `check` command.
+ */
+
+import { describe, expect, it } from "bun:test";
+import { parseCheckArgs } from "../../src/cli/check-args";
+
+const DEFAULT_EXIT_POLICY = {
+  exitZero: false,
+  exitNonZeroOnFix: false,
+  forceExclude: false,
+  respectGitignore: true,
+} as const;
+
+describe("check argument parser", () => {
+  it("parses paths with default options", () => {
+    expect(parseCheckArgs(["check", "one.js", "two.js"])).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze(["one.js", "two.js"]),
+      isolated: false,
+      strictClaude: false,
+      ...DEFAULT_EXIT_POLICY,
+    });
+  });
+
+  it.each([
+    ["unknown option", ["check", "--flag"], "unknown option: --flag"],
+    ["unknown command", ["lint", "workflow.js"], "unknown command: lint"],
+    ["no command", [], "usage: odw-lint check <workflow.js ...>"],
+    ["no paths", ["check"], "usage: odw-lint check <workflow.js ...>"],
+  ] as const)("rejects %s", (_caseName, args, usageError) => {
+    expect(parseCheckArgs(args)).toEqual({ ok: false, usageError });
+  });
+
+  it.each([
+    ["separate value", ["check", "--output-format", "json", "workflow.js"]],
+    ["equals value", ["check", "--output-format=json", "workflow.js"]],
+  ] as const)("parses output format from %s", (_caseName, args) => {
+    expect(parseCheckArgs(args)).toEqual({
+      ok: true,
+      outputFormat: "json",
+      paths: Object.freeze(["workflow.js"]),
+      isolated: false,
+      strictClaude: false,
+      ...DEFAULT_EXIT_POLICY,
+    });
+  });
+
+  it.each([
+    ["separate value", ["check", "--max-warnings", "3", "workflow.js"]],
+    ["equals value", ["check", "--max-warnings=3", "workflow.js"]],
+  ] as const)("parses max warnings from %s", (_caseName, args) => {
+    expect(parseCheckArgs(args)).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze(["workflow.js"]),
+      maxWarnings: 3,
+      isolated: false,
+      strictClaude: false,
+      ...DEFAULT_EXIT_POLICY,
+    });
+  });
+
+  it.each([
+    ["missing value", ["check", "--max-warnings"], "missing value for --max-warnings"],
+    ["text value", ["check", "--max-warnings", "abc"], "invalid value for --max-warnings: abc"],
+    ["negative value", ["check", "--max-warnings", "-1"], "invalid value for --max-warnings: -1"],
+    [
+      "fractional value",
+      ["check", "--max-warnings", "1.5"],
+      "invalid value for --max-warnings: 1.5",
+    ],
+  ] as const)("rejects max warnings with %s", (_caseName, args, usageError) => {
+    expect(parseCheckArgs(args)).toEqual({ ok: false, usageError });
+  });
+
+  it.each([
+    [
+      "separate unsupported value",
+      ["check", "--output-format", "json-lines", "workflow.js"],
+      "unsupported output format: json-lines",
+    ],
+    [
+      "equals unsupported value",
+      ["check", "--output-format=json-lines", "workflow.js"],
+      "unsupported output format: json-lines",
+    ],
+    ["missing value", ["check", "--output-format"], "missing value for --output-format"],
+  ] as const)("rejects output format with %s", (_caseName, args, usageError) => {
+    expect(parseCheckArgs(args)).toEqual({
+      ok: false,
+      usageError,
+    });
+  });
+
+  it("parses --config with a value", () => {
+    expect(parseCheckArgs(["check", "--config", "odw-lint.json", "workflow.js"])).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze(["workflow.js"]),
+      configPath: "odw-lint.json",
+      isolated: false,
+      strictClaude: false,
+      ...DEFAULT_EXIT_POLICY,
+    });
+  });
+
+  it.each([
+    ["separate value", ["check", "--output-file", "out.txt", "workflow.js"]],
+    ["equals value", ["check", "--output-file=out.txt", "workflow.js"]],
+  ] as const)("parses output file from %s", (_caseName, args) => {
+    expect(parseCheckArgs(args)).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze(["workflow.js"]),
+      outputFile: "out.txt",
+      isolated: false,
+      strictClaude: false,
+      ...DEFAULT_EXIT_POLICY,
+    });
+  });
+
+  it.each([
+    ["separate form", ["check", "--output-file"]],
+    ["equals form", ["check", "--output-file="]],
+  ] as const)("rejects --output-file without a value in %s", (_caseName, args) => {
+    expect(parseCheckArgs(args)).toEqual({
+      ok: false,
+      usageError: "missing value for --output-file",
+    });
+  });
+
+  it.each([
+    ["separate value", ["check", "--stdin-filename", "workflows/stdin.js"]],
+    ["equals value", ["check", "--stdin-filename=workflows/stdin.js"]],
+  ] as const)("parses stdin filename from %s", (_caseName, args) => {
+    expect(parseCheckArgs(args)).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze([]),
+      stdinFilename: "workflows/stdin.js",
+      isolated: false,
+      strictClaude: false,
+      ...DEFAULT_EXIT_POLICY,
+    });
+  });
+
+  it.each([
+    ["separate form", ["check", "--stdin-filename"]],
+    ["equals form", ["check", "--stdin-filename="]],
+  ] as const)("rejects --stdin-filename without a value in %s", (_caseName, args) => {
+    expect(parseCheckArgs(args)).toEqual({
+      ok: false,
+      usageError: "missing value for --stdin-filename",
+    });
+  });
+
+  it("rejects --stdin-filename combined with path operands", () => {
+    expect(parseCheckArgs(["check", "--stdin-filename", "workflows/stdin.js", "extra.js"])).toEqual(
+      {
+        ok: false,
+        usageError: "--stdin-filename cannot be combined with path operands",
+      },
+    );
+  });
+
+  it("rejects --config without a value", () => {
+    expect(parseCheckArgs(["check", "--config"])).toEqual({
+      ok: false,
+      usageError: "missing value for --config",
+    });
+  });
+
+  it("parses --isolated", () => {
+    expect(parseCheckArgs(["check", "--isolated", "workflow.js"])).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze(["workflow.js"]),
+      isolated: true,
+      strictClaude: false,
+      ...DEFAULT_EXIT_POLICY,
+    });
+  });
+
+  it("parses --strict-claude", () => {
+    expect(parseCheckArgs(["check", "--strict-claude", "workflow.js"])).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze(["workflow.js"]),
+      isolated: false,
+      strictClaude: true,
+      ...DEFAULT_EXIT_POLICY,
+    });
+  });
+
+  it("parses --exit-zero", () => {
+    expect(parseCheckArgs(["check", "--exit-zero", "workflow.js"])).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze(["workflow.js"]),
+      isolated: false,
+      strictClaude: false,
+      exitZero: true,
+      exitNonZeroOnFix: false,
+      forceExclude: false,
+      respectGitignore: true,
+    });
+  });
+
+  it("parses --exit-non-zero-on-fix", () => {
+    expect(parseCheckArgs(["check", "--exit-non-zero-on-fix", "workflow.js"])).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze(["workflow.js"]),
+      isolated: false,
+      strictClaude: false,
+      exitZero: false,
+      exitNonZeroOnFix: true,
+      forceExclude: false,
+      respectGitignore: true,
+    });
+  });
+
+  it("parses --force-exclude", () => {
+    expect(parseCheckArgs(["check", "--force-exclude", "workflow.js"])).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze(["workflow.js"]),
+      isolated: false,
+      strictClaude: false,
+      exitZero: false,
+      exitNonZeroOnFix: false,
+      forceExclude: true,
+      respectGitignore: true,
+    });
+  });
+
+  it("parses gitignore posture flags with last-wins semantics", () => {
+    expect(
+      parseCheckArgs(["check", "--no-respect-gitignore", "--respect-gitignore", "workflow.js"]),
+    ).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze(["workflow.js"]),
+      isolated: false,
+      strictClaude: false,
+      exitZero: false,
+      exitNonZeroOnFix: false,
+      forceExclude: false,
+      respectGitignore: true,
+    });
+
+    expect(
+      parseCheckArgs(["check", "--respect-gitignore", "--no-respect-gitignore", "workflow.js"]),
+    ).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze(["workflow.js"]),
+      isolated: false,
+      strictClaude: false,
+      exitZero: false,
+      exitNonZeroOnFix: false,
+      forceExclude: false,
+      respectGitignore: false,
+    });
+  });
+});

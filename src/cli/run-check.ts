@@ -11,7 +11,7 @@ import { applyConfiguredRuleSeverities } from "../config/apply-config-severities
 import type { LinterConfig } from "../config/linter-config";
 import { createDiagnosticReport } from "../diagnostics/report";
 import { promoteStrictClaudeSeverity } from "../diagnostics/strict-claude";
-import type { Diagnostic, DiagnosticReport } from "../diagnostics/types";
+import type { Diagnostic, DiagnosticReport, IoError } from "../diagnostics/types";
 import { lintWorkflowSource } from "../static-analysis/workflow-lint";
 import {
   type ReadFileText,
@@ -47,6 +47,14 @@ const applyCheckConfiguration = (
     : configuredDiagnostics;
 };
 
+/** Converts filesystem read failures into the report's machine channel. */
+const ioErrorFromReadFailure = (failure: WorkflowSourceReadFailure): IoError => {
+  return {
+    file: failure.filePath,
+    reason: failure.reason,
+    message: failure.message,
+  };
+};
 /**
  * Lints explicit workflow file paths and aggregates their diagnostics.
  *
@@ -79,6 +87,7 @@ export const runCheck = (request: CheckRequest): CheckOutcome => {
       version: request.version,
       files: readFileCount,
       diagnostics,
+      ioErrors: readFailures.map(ioErrorFromReadFailure),
     }),
     readFailures: Object.freeze(readFailures),
   });

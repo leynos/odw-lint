@@ -47,12 +47,23 @@ const diagnosticSuggestionSchema = {
   },
 } as const;
 
+const ioErrorSchema = {
+  type: "object",
+  required: ["file", "reason", "message"],
+  additionalProperties: false,
+  properties: {
+    file: stringSchema,
+    reason: { enum: ["not-found", "not-a-file", "unreadable"] },
+    message: stringSchema,
+  },
+} as const;
+
 /**
  * JSON Schema for the diagnostic report envelope.
  */
 export const DIAGNOSTIC_REPORT_SCHEMA = {
   type: "object",
-  required: ["schemaVersion", "tool", "summary", "diagnostics"],
+  required: ["schemaVersion", "tool", "summary", "diagnostics", "ioErrors"],
   additionalProperties: false,
   properties: {
     schemaVersion: { enum: [DIAGNOSTIC_SCHEMA_VERSION] },
@@ -67,15 +78,21 @@ export const DIAGNOSTIC_REPORT_SCHEMA = {
     },
     summary: {
       type: "object",
-      required: ["files", "errors", "warnings", "infos", "hints"],
+      required: ["files", "filesSkipped", "errors", "warnings", "infos", "hints"],
       additionalProperties: false,
       properties: {
         files: nonNegativeIntegerSchema,
+        filesSkipped: nonNegativeIntegerSchema,
         errors: nonNegativeIntegerSchema,
         warnings: nonNegativeIntegerSchema,
         infos: nonNegativeIntegerSchema,
         hints: nonNegativeIntegerSchema,
       },
+    },
+    ioErrors: {
+      type: "array",
+      minItems: 0,
+      items: ioErrorSchema,
     },
     diagnostics: {
       type: "array",

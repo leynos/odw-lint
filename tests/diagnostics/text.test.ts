@@ -55,7 +55,15 @@ const expectedSummaryLine = (summary: DiagnosticSummary): string => {
     return [`${count} ${count === 1 ? severity : `${severity}s`}`];
   });
 
-  return `Found ${parts.join(", ")}.`;
+  const diagnosticSummary = `Found ${parts.join(", ")}.`;
+
+  if (summary.filesSkipped === 0) {
+    return diagnosticSummary;
+  }
+
+  const skipped = `${summary.filesSkipped} ${summary.filesSkipped === 1 ? "file" : "files"}`;
+
+  return `${diagnosticSummary.slice(0, -1)}; skipped ${skipped}.`;
 };
 
 /** Builds a report whose diagnostics realize the requested severity sequence. */
@@ -142,12 +150,37 @@ describe("text diagnostics", () => {
     expect(formatTextReport(report)).toBe("");
   });
 
+  it("prints a skipped-file footer for a skip-only report", () => {
+    const report = createDiagnosticReport({
+      version: "0.1.0",
+      files: 0,
+      diagnostics: [],
+      ioErrors: [{ file: "missing.js", reason: "not-found", message: "missing" }],
+    });
+
+    expect(formatTextReport(report)).toBe("Skipped 1 file.");
+  });
+
   it("formats a report with a diagnostic line and summary footer", () => {
     expect(formatTextReport(reportForSeverities(["error"]))).toBe(
       ["examples/error.js:1:1 error odw/meta-required error diagnostic", "", "Found 1 error."].join(
         "\n",
       ),
     );
+  });
+
+  it("formats a report with diagnostics and skipped files", () => {
+    const report = createDiagnosticReport({
+      version: "0.1.0",
+      files: 1,
+      diagnostics: [diagnosticForSeverity("error")],
+      ioErrors: [
+        { file: "missing.js", reason: "not-found", message: "missing" },
+        { file: "directory", reason: "not-a-file", message: "directory" },
+      ],
+    });
+
+    expect(summaryFromTextReport(formatTextReport(report))).toBe("Found 1 error; skipped 2 files.");
   });
 
   for (const testCase of summaryCases) {

@@ -6,6 +6,7 @@ import type {
   Diagnostic,
   DiagnosticReport,
   DiagnosticSuggestion,
+  IoError,
   SourcePosition,
   SourceSpan,
 } from "./types";
@@ -49,6 +50,15 @@ const projectDiagnostic = (diagnostic: Diagnostic): Diagnostic => {
   return projectedDiagnostic;
 };
 
+/** Projects an IO error into the public JSON field order. */
+const projectIoError = (ioError: IoError): IoError => {
+  return {
+    file: ioError.file,
+    reason: ioError.reason,
+    message: ioError.message,
+  };
+};
+
 /**
  * Formats a diagnostic report as the versioned canonical JSON envelope.
  *
@@ -64,12 +74,14 @@ export const formatJsonReport = (report: DiagnosticReport): string => {
     },
     summary: {
       files: report.summary.files,
+      filesSkipped: report.summary.filesSkipped,
       errors: report.summary.errors,
       warnings: report.summary.warnings,
       infos: report.summary.infos,
       hints: report.summary.hints,
     },
     diagnostics: report.diagnostics.map(projectDiagnostic),
+    ioErrors: report.ioErrors.map(projectIoError),
   };
 
   return JSON.stringify(projection, null, 2);

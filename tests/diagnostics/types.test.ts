@@ -8,6 +8,7 @@ import type {
   DiagnosticReport,
   DiagnosticSeverity,
   DiagnosticSummary,
+  IoError,
   RuleDefinition,
   RuleDocumentationPath,
   RuleId,
@@ -121,10 +122,16 @@ describe("diagnostics", () => {
     void absoluteDocsUrl;
     expectTypeOf<DiagnosticSummary>().toEqualTypeOf<{
       readonly files: number;
+      readonly filesSkipped: number;
       readonly errors: number;
       readonly warnings: number;
       readonly infos: number;
       readonly hints: number;
+    }>();
+    expectTypeOf<IoError>().toEqualTypeOf<{
+      readonly file: string;
+      readonly reason: "not-found" | "not-a-file" | "unreadable";
+      readonly message: string;
     }>();
     expectTypeOf<DiagnosticReport>().toEqualTypeOf<{
       readonly schemaVersion: typeof DIAGNOSTIC_SCHEMA_VERSION;
@@ -134,6 +141,7 @@ describe("diagnostics", () => {
       };
       readonly summary: DiagnosticSummary;
       readonly diagnostics: readonly Diagnostic[];
+      readonly ioErrors: readonly IoError[];
     }>();
   });
 });

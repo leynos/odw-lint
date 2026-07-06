@@ -91,8 +91,17 @@ const formatSummaryPart = (part: SummaryPart): string => {
 /** Formats report summary counts as the human-readable footer. */
 const formatDiagnosticSummary = (summary: DiagnosticSummary): string => {
   const parts = summaryPartsFor(summary).map(formatSummaryPart);
+  const skippedFiles = `${summary.filesSkipped} ${summary.filesSkipped === 1 ? "file" : "files"}`;
 
-  return `Found ${parts.join(", ")}.`;
+  if (parts.length === 0) {
+    return summary.filesSkipped === 0 ? "" : `Skipped ${skippedFiles}.`;
+  }
+
+  if (summary.filesSkipped === 0) {
+    return `Found ${parts.join(", ")}.`;
+  }
+
+  return `Found ${parts.join(", ")}; skipped ${skippedFiles}.`;
 };
 
 /**
@@ -116,9 +125,15 @@ export const formatTextDiagnostics = (diagnostics: readonly Diagnostic[]): strin
  * @returns Text output with diagnostic lines and a severity summary footer.
  */
 export const formatTextReport = (report: DiagnosticReport): string => {
+  const summary = formatDiagnosticSummary(report.summary);
+
   if (report.diagnostics.length === 0) {
+    return summary;
+  }
+
+  if (summary.length === 0) {
     return "";
   }
 
-  return `${formatTextDiagnostics(report.diagnostics)}\n\n${formatDiagnosticSummary(report.summary)}`;
+  return `${formatTextDiagnostics(report.diagnostics)}\n\n${summary}`;
 };

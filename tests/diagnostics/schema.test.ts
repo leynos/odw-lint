@@ -6,6 +6,7 @@ import { describe, expect, it } from "bun:test";
 import { DIAGNOSTIC_REPORT_SCHEMA, DIAGNOSTIC_SEVERITIES, RULE_IDS } from "odw-lint";
 
 const diagnosticItemSchema = DIAGNOSTIC_REPORT_SCHEMA.properties.diagnostics.items;
+const ioErrorItemSchema = DIAGNOSTIC_REPORT_SCHEMA.properties.ioErrors.items;
 const sourceSpanSchema = diagnosticItemSchema.properties.span;
 
 describe("diagnostic JSON Schema", () => {
@@ -30,6 +31,17 @@ describe("diagnostic JSON Schema", () => {
       "tool",
       "summary",
       "diagnostics",
+      "ioErrors",
+    ]);
+  });
+
+  it("requires the machine-readable IO-error fields", () => {
+    expect(ioErrorItemSchema.required).toEqual(["file", "reason", "message"]);
+    expect(Object.keys(ioErrorItemSchema.properties)).toEqual(["file", "reason", "message"]);
+    expect(ioErrorItemSchema.properties.reason.enum).toEqual([
+      "not-found",
+      "not-a-file",
+      "unreadable",
     ]);
   });
 
@@ -48,9 +60,17 @@ describe("diagnostic JSON Schema", () => {
   it("matches the summary shape and constrains counts to non-negative integers", () => {
     const summarySchema = DIAGNOSTIC_REPORT_SCHEMA.properties.summary;
 
-    expect(summarySchema.required).toEqual(["files", "errors", "warnings", "infos", "hints"]);
+    expect(summarySchema.required).toEqual([
+      "files",
+      "filesSkipped",
+      "errors",
+      "warnings",
+      "infos",
+      "hints",
+    ]);
     expect(Object.keys(summarySchema.properties)).toEqual([
       "files",
+      "filesSkipped",
       "errors",
       "warnings",
       "infos",
@@ -88,6 +108,7 @@ describe("diagnostic JSON Schema", () => {
       sourceSpanSchema.properties.start,
       sourceSpanSchema.properties.end,
       diagnosticItemSchema.properties.suggestions.items,
+      ioErrorItemSchema,
     ];
 
     for (const objectSchema of ownedObjectSchemas) {

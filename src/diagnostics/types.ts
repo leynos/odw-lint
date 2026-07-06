@@ -67,11 +67,25 @@ export type Diagnostic = {
 };
 
 /**
+ * Machine-readable input-file read failure.
+ */
+export type IoError = {
+  /** File path supplied by the caller. */
+  readonly file: string;
+  /** Stable reason code for the read failure. */
+  readonly reason: "not-found" | "not-a-file" | "unreadable";
+  /** Human-readable read failure message. */
+  readonly message: string;
+};
+
+/**
  * Summary counts for a diagnostic report.
  */
 export type DiagnosticSummary = {
-  /** Number of files considered by the caller. */
+  /** Number of readable files checked by the caller. */
   readonly files: number;
+  /** Number of input files skipped because they could not be read. */
+  readonly filesSkipped: number;
   /** Number of error diagnostics. */
   readonly errors: number;
   /** Number of warning diagnostics. */
@@ -104,4 +118,6 @@ export type DiagnosticReport = {
   readonly summary: DiagnosticSummary;
   /** Diagnostics emitted for the analysed files. */
   readonly diagnostics: readonly Diagnostic[];
+  /** Input-file read failures surfaced for machine consumers. */
+  readonly ioErrors: readonly IoError[];
 };

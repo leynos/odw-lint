@@ -27,6 +27,7 @@ export const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
   "InvalidRuleId",
   "InvalidRuleIdError",
   "InvalidRuleIdReason",
+  "IoError",
   "LexicalBindingFacts",
   "LinterConfig",
   "LoadLinterConfigOptions",
