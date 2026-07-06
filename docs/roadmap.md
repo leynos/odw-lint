@@ -1383,3 +1383,12 @@ dialect decision.
   - Success: documentation and code agree on whether span narrowing is active,
     inert, or intentionally deferred, with tests pinning the chosen contract.
   - Completed by [roadmap-5-5-1.md](execplans/roadmap-5-5-1.md).
+  - [ ] 5.5.1.1. Consolidate SWC parser-error surface guard scaffolding.
+    - Requires 5.5.1.
+    - Extract one shared real-SWC parse-error capture helper and parser-options
+      constant, bind the structured-field surface guard to the production
+      allow-list, remove the redundant range assertion, and name the guard in
+      the SWC upgrade checklist.
+    - Success: the quarantine and range tests share one parser-error support
+      seam, the guard tracks the production allow-list, and `make all` passes
+      without changing body-syntax diagnostics.
