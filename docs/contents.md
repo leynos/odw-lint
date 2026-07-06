@@ -117,6 +117,8 @@ entry; that index enumerates every current rule page.
   TypeScript-only workflow-body loader rejection.
 - [Audit 2.3.5](issues/audit-2.3.5.md) records review findings for fixture
   corpus and diagnostic projection ownership.
+- [Audit 3.1.3](issues/audit-3.1.3.md) records review findings for
+  strict-Claude severity promotion.
 - [Audit 3.1.4](issues/audit-3.1.4.md) records review findings for
   deterministic-time lexical binding compatibility.
 - [Audit 3.1.5](issues/audit-3.1.5.md) records review findings for
