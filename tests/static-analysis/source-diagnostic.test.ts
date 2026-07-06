@@ -9,6 +9,7 @@ import {
   createOriginalSourceFile,
   DIAGNOSTIC_REPORT_SCHEMA,
   DIAGNOSTIC_SEVERITIES,
+  formatJsonReport,
   formatTextDiagnostics,
   makeRuleId,
   spanFromOffsets,
@@ -44,10 +45,13 @@ describe("source spans in diagnostics", () => {
     });
     callerSpan.start.line = 99;
     const reportDiagnostic = requiredReportDiagnostic(report.diagnostics[0]);
+    const jsonDiagnostic = requiredReportDiagnostic(
+      JSON.parse(formatJsonReport(report)).diagnostics[0],
+    );
 
     expect(Object.keys(report).sort()).toEqual([...DIAGNOSTIC_REPORT_SCHEMA.required].sort());
     expect(report.diagnostics).toEqual([expectedDiagnostic]);
-    expectRequiredDiagnosticKeys(reportDiagnostic);
+    expectRequiredDiagnosticKeys(jsonDiagnostic);
     expect(DIAGNOSTIC_SEVERITIES).toContain(reportDiagnostic.severity);
     expectPositionSatisfiesMinimums(reportDiagnostic.span.start, sourceSpanSchema.properties.start);
     expectPositionSatisfiesMinimums(reportDiagnostic.span.end, sourceSpanSchema.properties.end);

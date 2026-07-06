@@ -33,6 +33,18 @@ describe("diagnostic JSON Schema", () => {
     ]);
   });
 
+  it("requires the diagnostic fields guaranteed by JSON serialization", () => {
+    expect(diagnosticItemSchema.required).toEqual([
+      "file",
+      "rule",
+      "severity",
+      "message",
+      "span",
+      "suggestions",
+    ]);
+    expect(diagnosticItemSchema.required).not.toContain("docs");
+  });
+
   it("matches the summary shape and constrains counts to non-negative integers", () => {
     const summarySchema = DIAGNOSTIC_REPORT_SCHEMA.properties.summary;
 

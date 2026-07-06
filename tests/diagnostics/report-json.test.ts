@@ -4,12 +4,24 @@
 
 import { describe, expect, it } from "bun:test";
 import type { Diagnostic } from "odw-lint";
-import { createDiagnosticReport, formatJsonReport } from "odw-lint";
+import {
+  createDiagnosticReport,
+  DIAGNOSTIC_REPORT_SCHEMA,
+  DIAGNOSTIC_SEVERITIES,
+  formatJsonReport,
+} from "odw-lint";
 import { diagnosticForSeverity } from "./fixtures";
 
 /** Builds a small report fixture for JSON projection assertions. */
 const reportWith = (diagnostics: readonly Diagnostic[]) => {
   return createDiagnosticReport({ version: "0.1.0", files: 2, diagnostics });
+};
+
+/** Omits optional docs so the serializer/schema contract covers both variants. */
+const withoutDocs = (diagnostic: Diagnostic): Diagnostic => {
+  const { docs: _docs, ...diagnosticWithoutDocs } = diagnostic;
+
+  return diagnosticWithoutDocs;
 };
 
 describe("JSON diagnostic reports", () => {
@@ -73,6 +85,50 @@ describe("JSON diagnostic reports", () => {
 
     expect(parsedReport.diagnostics[0].suggestions).toEqual([]);
     expect(parsedReport.diagnostics[1].suggestions).toEqual([
+      { message: "Add exported metadata." },
+    ]);
+  });
+
+  it("serializes diagnostics that satisfy the schema-required fields", () => {
+    const diagnostics = DIAGNOSTIC_SEVERITIES.map((severity) => {
+      const diagnostic = diagnosticForSeverity(severity);
+
+      if (severity === "warning") {
+        return withoutDocs(diagnostic);
+      }
+
+      if (severity === "hint") {
+        return {
+          ...diagnostic,
+          suggestions: [{ message: "Add exported metadata." }],
+        };
+      }
+
+      return diagnostic;
+    });
+    const parsedReport = JSON.parse(formatJsonReport(reportWith(diagnostics)));
+    const requiredDiagnosticFields = DIAGNOSTIC_REPORT_SCHEMA.properties.diagnostics.items.required;
+    const allowedDiagnosticFields = Object.keys(
+      DIAGNOSTIC_REPORT_SCHEMA.properties.diagnostics.items.properties,
+    );
+
+    expect(parsedReport.diagnostics.map((diagnostic: Diagnostic) => diagnostic.severity)).toEqual(
+      DIAGNOSTIC_SEVERITIES,
+    );
+
+    for (const diagnostic of parsedReport.diagnostics) {
+      for (const field of requiredDiagnosticFields) {
+        expect(diagnostic).toHaveProperty(field);
+      }
+
+      expect(
+        Object.keys(diagnostic).every((field) => allowedDiagnosticFields.includes(field)),
+      ).toBe(true);
+      expect(Array.isArray(diagnostic.suggestions)).toBe(true);
+    }
+
+    expect(parsedReport.diagnostics[1]).not.toHaveProperty("docs");
+    expect(parsedReport.diagnostics[3].suggestions).toEqual([
       { message: "Add exported metadata." },
     ]);
   });

@@ -784,7 +784,7 @@ helpers under `tests/static-analysis/fixtures/`.
 
 ## Addenda
 
-- [ ] 2.4.3.1. Enforce the JSON schema and serializer contract.
+- [x] 2.4.3.1. Enforce the JSON schema and serializer contract.
   - Source: audit:2.4.3; severity: medium.
   - Scope: reconcile `DIAGNOSTIC_REPORT_SCHEMA` required fields with the
     guaranteed `formatJsonReport` projection, and add a direct

@@ -126,6 +126,7 @@ exports[`diagnostic JSON Schema matches the reviewed schema snapshot 1`] = `
           "severity",
           "message",
           "span",
+          "suggestions",
         ],
         "type": "object",
       },

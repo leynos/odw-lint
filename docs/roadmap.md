@@ -962,7 +962,7 @@ unlocks CI adoption and user feedback. See
   - See [technical-design.md](technical-design.md) §8.
   - Success: JSON output is stable under snapshot tests and includes the
     versioned envelope.
-  - [ ] 2.4.3.1. Enforce the JSON schema and serializer contract.
+  - [x] 2.4.3.1. Enforce the JSON schema and serializer contract.
     - Addendum (from audit:2.4.3; medium). Reconcile schema-required fields
       with guaranteed JSON output and add schema-conformance coverage across
       severity, docs, and suggestions variants. Lightweight addendum pass.

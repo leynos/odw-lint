@@ -82,7 +82,7 @@ export const DIAGNOSTIC_REPORT_SCHEMA = {
       minItems: 0,
       items: {
         type: "object",
-        required: ["file", "rule", "severity", "message", "span"],
+        required: ["file", "rule", "severity", "message", "span", "suggestions"],
         additionalProperties: false,
         properties: {
           file: stringSchema,
