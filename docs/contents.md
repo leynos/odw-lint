@@ -279,6 +279,8 @@ entry; that index enumerates every current rule page.
   validate diagnostics in the lint pipeline.
 - [Roadmap 3.1.8 ExecPlan](execplans/roadmap-3-1-8.md) plans assessing and
   widening ODW-only validate callee detection to single-hop aliases.
+- [Roadmap 3.1.9 ExecPlan](execplans/roadmap-3-1-9.md) plans chained
+  ODW-only validate alias inference.
 - [Roadmap 3.2.5 ExecPlan](execplans/roadmap-3-2-5.md) plans shared SWC AST
   guard and traversal helpers for parser-backed rules.
 - [Roadmap 3.2.6 ExecPlan](execplans/roadmap-3-2-6.md) plans complete SWC

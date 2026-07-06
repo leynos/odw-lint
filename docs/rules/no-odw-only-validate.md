@@ -36,6 +36,14 @@ const checkWorkflow = validate;
 const result = checkWorkflow(args.generatedWorkflowSource);
 ```
 
+Chained aliases of that primitive are also reported:
+
+```js
+const checkWorkflow = validate;
+const runCheck = checkWorkflow;
+const result = runCheck(args.generatedWorkflowSource);
+```
+
 ## Fixed example
 
 ```js
@@ -52,19 +60,21 @@ await agent(`Summarize validation result: ${JSON.stringify(args.validationResult
 
 The scanner detects direct calls to a lexically unshadowed bare `validate`
 identifier, such as `validate(source)`, and single-hop aliases of that
-primitive, such as `const v = validate; v(source)`.
+primitive, such as `const v = validate; v(source)`. It also detects chained
+aliases, such as `const v = validate; const w = v; w(source)`.
 
-Alias declarations and alias use resolve through the same lexical scope model
-as bare `validate` calls. A same-named alias or rebinding in an unrelated scope
-does not suppress or fabricate a note, and an alias shadowed at the use site
-stays suppressed. Alias visibility is still computed for the whole current
-scope, so use-before-declaration and temporal dead-zone ordering inside one
-scope remain conservative.
+Alias declarations, chained alias declarations, and alias use resolve through
+the same lexical scope model as bare `validate` calls. A same-named alias or
+rebinding in an unrelated scope does not suppress or fabricate a note, and an
+alias shadowed at the use site stays suppressed. Alias visibility is still
+computed for the whole current scope, so use-before-declaration and temporal
+dead-zone ordering inside one scope remain conservative. The same whole-scope
+reassignment and temporal-dead-zone bound applies to each hop of a chain, so a
+chain off a reassigned or temporal-dead-zone-ordered base remains
+conservatively broad.
 
 The remaining conservative limits are member forms such as
 `namespace.validate(source)`, dynamic and computed callees such as
-`registry["validate"](source)`, global forms such as
-`globalThis.validate(source)`, and chained aliases such as
-`const v = validate; const w = v; w(source)`. These forms stay intentionally
-undetected because the scanner cannot prove that they reference ODW's injected
-primitive.
+`registry["validate"](source)`, and global forms such as
+`globalThis.validate(source)`. These forms stay intentionally undetected because
+the scanner cannot prove that they reference ODW's injected primitive.

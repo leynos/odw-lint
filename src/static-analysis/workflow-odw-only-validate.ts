@@ -135,21 +135,33 @@ const enterValidateAliasScope = (
 
 /** Checks whether an initializer directly aliases ODW's injected validate primitive. */
 const isUnshadowedValidateAliasInitializer = (
-  value: unknown,
+  init: unknown,
   bindings: LexicalBindingFacts,
 ): boolean => {
-  if (!isIdentifier(value)) {
+  if (!isIdentifier(init)) {
     return false;
   }
 
-  if (value.value !== "validate") {
+  if (init.value !== "validate") {
     return false;
   }
 
   return !isIdentifierBound(bindings, "validate");
 };
 
-/** Builds one scope's validate alias view by shadowing and adding direct aliases. */
+/** Checks whether an initializer resolves to the injected validate primitive. */
+const resolvesToValidateAlias = (
+  init: unknown,
+  aliases: ReadonlySet<string>,
+  bindings: LexicalBindingFacts,
+): boolean => {
+  if (!isIdentifier(init)) {
+    return false;
+  }
+
+  return isUnshadowedValidateAliasInitializer(init, bindings) || aliases.has(init.value);
+};
+/** Builds one scope's validate alias view by shadowing and resolving aliases. */
 const validateAliasesForOwnFacts = (
   parentAliases: ReadonlySet<string>,
   facts: ScopeOwnFacts,
@@ -161,9 +173,20 @@ const validateAliasesForOwnFacts = (
     aliases.delete(name);
   }
 
-  for (const initializer of facts.ownInitializers) {
-    if (isUnshadowedValidateAliasInitializer(initializer.init, bindings)) {
-      aliases.add(initializer.name);
+  let hasNewAlias = true;
+  while (hasNewAlias) {
+    hasNewAlias = false;
+
+    // Alias visibility is whole-scope and order-independent, so reverse-declared
+    // chains need repeated passes until the scope's alias view stops changing.
+    for (const initializer of facts.ownInitializers) {
+      if (
+        !aliases.has(initializer.name) &&
+        resolvesToValidateAlias(initializer.init, aliases, bindings)
+      ) {
+        aliases.add(initializer.name);
+        hasNewAlias = true;
+      }
     }
   }
 

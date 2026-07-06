@@ -174,13 +174,58 @@ describe("scanOdwOnlyValidateNotes", () => {
     expectValidateDiagnostic(expectSingleDiagnostic(diagnostics), sourceText, "v");
   });
 
-  it("does not follow chained validate aliases", () => {
-    const { diagnostics } = scanBody(
+  it("follows chained validate aliases", () => {
+    const { sourceText, diagnostics } = scanBody(
       "const v = validate;\nconst w = v;\nw(args.source);",
       "chained-alias",
     );
 
+    expectValidateDiagnostic(expectSingleDiagnostic(diagnostics), sourceText, "w");
+  });
+
+  it("follows multi-hop validate alias chains", () => {
+    const { sourceText, diagnostics } = scanBody(
+      "const a = validate;\nconst b = a;\nconst c = b;\nc(args.source);",
+      "multi-hop-alias",
+    );
+
+    expectValidateDiagnostic(expectSingleDiagnostic(diagnostics), sourceText, "c");
+  });
+
+  it("follows a reverse-declared chain within one scope", () => {
+    const { sourceText, diagnostics } = scanBody(
+      "var w = v;\nvar v = validate;\nw(args.source);",
+      "reverse-declared-alias",
+    );
+
+    expectValidateDiagnostic(expectSingleDiagnostic(diagnostics), sourceText, "w");
+  });
+
+  it("stops a chain when the base is shadowed in a nested scope", () => {
+    const { diagnostics } = scanBody(
+      "const v = validate;\nif (args.local) {\n  const v = other;\n  const w = v;\n  w(args.source);\n}",
+      "nested-shadowed-chain",
+    );
+
     expect(diagnostics).toEqual([]);
+  });
+
+  it("ignores a chain whose base is workflow-local", () => {
+    const { diagnostics } = scanBody(
+      "const validate = makeValidator();\nconst v = validate;\nconst w = v;\nw(args.source);",
+      "workflow-local-chain",
+    );
+
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("treats a chain off a reassigned base as the documented whole-scope bound", () => {
+    const { sourceText, diagnostics } = scanBody(
+      "let v = validate;\nv = other;\nconst w = v;\nw(args.source);",
+      "reassigned-base-chain",
+    );
+
+    expectValidateDiagnostic(expectSingleDiagnostic(diagnostics), sourceText, "w");
   });
 
   it("ignores member, computed, and non-call validate references", () => {
@@ -234,6 +279,25 @@ describe("scanOdwOnlyValidateNotes", () => {
 
         expectValidateDiagnostic(expectSingleDiagnostic(diagnostics), sourceText, name);
       }),
+      SOURCE_SPAN_PROPERTY_RUNNER,
+    );
+  });
+
+  it("reports generated valid two-hop validate aliases", () => {
+    fc.assert(
+      fc.property(
+        fc
+          .tuple(VALIDATE_ALIAS_IDENTIFIER, VALIDATE_ALIAS_IDENTIFIER)
+          .filter(([firstName, secondName]) => firstName !== secondName),
+        ([firstName, secondName]) => {
+          const { sourceText, diagnostics } = scanBody(
+            `const ${firstName} = validate;\nconst ${secondName} = ${firstName};\n${secondName}(args.source);`,
+            "generated-chained-alias",
+          );
+
+          expectValidateDiagnostic(expectSingleDiagnostic(diagnostics), sourceText, secondName);
+        },
+      ),
       SOURCE_SPAN_PROPERTY_RUNNER,
     );
   });

@@ -1123,7 +1123,7 @@ reported clearly in one command. The result informs strict-mode policy. See
       reassignment and temporal-dead-zone limitation on the ODW-only validate
       rule page so it matches the deterministic-time rule pages. Lightweight
       addendum pass.
-- [ ] 3.1.9. Evaluate chained ODW-only validate alias inference.
+- [x] 3.1.9. Evaluate chained ODW-only validate alias inference.
   - Requires 3.1.8.
   - Assess whether chained aliases such as `const v = validate; const w = v;
     w(source)` can be detected with scope-sensitive invalidation and without
