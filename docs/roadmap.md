@@ -985,7 +985,7 @@ unlocks CI adoption and user feedback. See
     `--respect-gitignore`, `--force-exclude`, `--exit-zero`, and
     `--exit-non-zero-on-fix`, plus unreadable-input machine-output parity and
     basic usage/help/version behaviour.
-  - [ ] 2.4.4.1. Harden informational-flag value handling.
+  - [x] 2.4.4.1. Harden informational-flag value handling.
     - Addendum (from review:2.4.4; low). Make help and version detection
       value-aware so option values or operands named like informational flags do
       not become actions. Lightweight addendum pass.

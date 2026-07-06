@@ -1303,7 +1303,7 @@ No new runtime or dev dependencies. Reuse `JSON.stringify`, the existing
 
 ## Addenda
 
-- [ ] 2.4.4.1. Harden informational-flag value handling.
+- [x] 2.4.4.1. Harden informational-flag value handling.
   - Source: review:2.4.4; severity low.
   - Scope: make `--help`, `-h`, `--version`, and `-V` detection aware of
     recognised value-taking options and operands so a filename or option value

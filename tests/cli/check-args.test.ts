@@ -48,6 +48,18 @@ describe("check argument parser", () => {
   });
 
   it.each([
+    ["output format", ["check", "--output-format", "--help", "workflow.js"]],
+    ["max warnings", ["check", "--max-warnings", "-h", "workflow.js"]],
+  ] as const)("treats informational-looking %s values as option values", (_caseName, args) => {
+    const result = parseCheckArgs(args);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.usageError).not.toStartWith("usage:");
+    }
+  });
+
+  it.each([
     ["separate value", ["check", "--max-warnings", "3", "workflow.js"]],
     ["equals value", ["check", "--max-warnings=3", "workflow.js"]],
   ] as const)("parses max warnings from %s", (_caseName, args) => {
@@ -100,6 +112,21 @@ describe("check argument parser", () => {
       outputFormat: "full",
       paths: Object.freeze(["workflow.js"]),
       configPath: "odw-lint.json",
+      isolated: false,
+      strictClaude: false,
+      ...DEFAULT_EXIT_POLICY,
+    });
+  });
+
+  it.each([
+    ["config", ["check", "--config", "--help", "workflow.js"], { configPath: "--help" }],
+    ["output file", ["check", "--output-file", "-h", "workflow.js"], { outputFile: "-h" }],
+  ] as const)("parses informational-looking %s values as strings", (_caseName, args, value) => {
+    expect(parseCheckArgs(args)).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze(["workflow.js"]),
+      ...value,
       isolated: false,
       strictClaude: false,
       ...DEFAULT_EXIT_POLICY,
@@ -163,6 +190,18 @@ describe("check argument parser", () => {
         usageError: "--stdin-filename cannot be combined with path operands",
       },
     );
+  });
+
+  it("parses an informational-looking stdin filename as the stdin operand", () => {
+    expect(parseCheckArgs(["check", "--stdin-filename", "--version"])).toEqual({
+      ok: true,
+      outputFormat: "full",
+      paths: Object.freeze([]),
+      stdinFilename: "--version",
+      isolated: false,
+      strictClaude: false,
+      ...DEFAULT_EXIT_POLICY,
+    });
   });
 
   it("rejects --config without a value", () => {
@@ -233,6 +272,13 @@ describe("check argument parser", () => {
       exitNonZeroOnFix: false,
       forceExclude: true,
       respectGitignore: true,
+    });
+  });
+
+  it("does not treat informational flags after path operands as actions", () => {
+    expect(parseCheckArgs(["check", "workflow.js", "--version"])).toEqual({
+      ok: false,
+      usageError: "unknown option: --version",
     });
   });
 
