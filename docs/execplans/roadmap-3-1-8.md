@@ -693,7 +693,7 @@ dependency (Tolerance 3), no public-API or module-manifest fixture edit
 
 ## Addenda
 
-- [ ] 3.1.8.1. Document validate alias reassignment limits.
+- [x] 3.1.8.1. Document validate alias reassignment limits.
   - Source: review:3.1.8; severity low.
   - Scope: update `docs/rules/no-odw-only-validate.md` so the limitations
     section states that validate alias visibility is computed for the whole

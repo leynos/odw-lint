@@ -54,6 +54,13 @@ The scanner detects direct calls to a lexically unshadowed bare `validate`
 identifier, such as `validate(source)`, and single-hop aliases of that
 primitive, such as `const v = validate; v(source)`.
 
+Alias declarations and alias use resolve through the same lexical scope model
+as bare `validate` calls. A same-named alias or rebinding in an unrelated scope
+does not suppress or fabricate a note, and an alias shadowed at the use site
+stays suppressed. Alias visibility is still computed for the whole current
+scope, so use-before-declaration and temporal dead-zone ordering inside one
+scope remain conservative.
+
 The remaining conservative limits are member forms such as
 `namespace.validate(source)`, dynamic and computed callees such as
 `registry["validate"](source)`, global forms such as

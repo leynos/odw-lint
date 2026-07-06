@@ -1118,7 +1118,7 @@ reported clearly in one command. The result informs strict-mode policy. See
     lint outcomes, rule-page limitations match the shipped coverage, and
     `odw/no-odw-only-validate` still reports clearly through the one-command
     Claude compatibility pipeline.
-  - [ ] 3.1.8.1. Document validate alias reassignment limits.
+  - [x] 3.1.8.1. Document validate alias reassignment limits.
     - Addendum (from review:3.1.8; low). State the whole-scope alias
       reassignment and temporal-dead-zone limitation on the ODW-only validate
       rule page so it matches the deterministic-time rule pages. Lightweight
