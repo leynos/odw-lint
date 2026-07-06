@@ -1,0 +1,60 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`JSON diagnostic reports snapshots a small multi-diagnostic JSON report 1`] = `
+"{
+  "schemaVersion": 1,
+  "tool": {
+    "name": "odw-lint",
+    "version": "0.1.0"
+  },
+  "summary": {
+    "files": 2,
+    "errors": 1,
+    "warnings": 0,
+    "infos": 0,
+    "hints": 1
+  },
+  "diagnostics": [
+    {
+      "file": "examples/error.js",
+      "rule": "odw/meta-required",
+      "severity": "error",
+      "message": "error diagnostic",
+      "span": {
+        "start": {
+          "offset": 0,
+          "line": 1,
+          "column": 1
+        },
+        "end": {
+          "offset": 0,
+          "line": 1,
+          "column": 1
+        }
+      },
+      "docs": "docs/rules/meta-required.md",
+      "suggestions": []
+    },
+    {
+      "file": "examples/hint.js",
+      "rule": "odw/meta-required",
+      "severity": "hint",
+      "message": "hint diagnostic",
+      "span": {
+        "start": {
+          "offset": 0,
+          "line": 1,
+          "column": 1
+        },
+        "end": {
+          "offset": 0,
+          "line": 1,
+          "column": 1
+        }
+      },
+      "docs": "docs/rules/meta-required.md",
+      "suggestions": []
+    }
+  ]
+}"
+`;

@@ -5,28 +5,36 @@ run. It is intended for workflow authors, reviewers, and CI maintainers who
 need a static preflight check without executing workflow source or dispatching
 agents.
 
-The minimal explicit-path CLI is available through the Bun entrypoint while the
-published package has no `bin` field. This guide records both the shipped
-minimal command slice and the intended user-facing contract for later options.
+The first executable command slice is available through the Bun entrypoint.
+This guide records the current user-facing contract and the planned shape for
+the remaining command surface.
 
 ## Command shape
 
-The planned standalone command is:
+The standalone command is:
 
 ```text
 odw-lint check [path-or-glob ...]
 ```
 
-Today, run the minimal explicit-path implementation through Bun:
+The currently implemented entrypoint accepts explicit workflow file paths:
 
 ```bash
 bun run src/cli/main.ts check <workflow.js> [more-workflows.js ...]
 ```
 
-Pass explicit workflow files after `check`. When configured discovery lands,
-the planned v1 command checks configured include globs when no files are
-passed. If no configuration exists, it checks these roots when they are
-present:
+The default `full` output is one diagnostic per line. Use `--output-format json`
+to emit the versioned report envelope shown in
+[Diagnostic reports](#diagnostic-reports):
+
+```bash
+bun run src/cli/main.ts check --output-format json workflows/example.js
+```
+
+Shell-expanded globs, configured discovery, and the published `odw-lint` binary
+remain planned. When no files are passed, the planned v1 command checks
+configured include globs. If no configuration exists, it checks these roots when
+they are present:
 
 - `.odw/workflows/**/*.js`
 - `.claude/workflows/**/*.js`
@@ -38,8 +46,9 @@ is outside the v1 standalone contract.
 
 The planned options follow `ruff check` where the concepts map cleanly:
 
-- `--output-format <format>` selects text, JSON, JSON Lines, GitHub, GitLab,
-  JUnit, or SARIF-style output as those reporters are implemented.
+- `--output-format full|json` is available now. `full` is the default text
+  output, and `json` emits the versioned diagnostic report.
+- JSON Lines, GitHub, GitLab, JUnit, and SARIF-style output remain planned.
 - `--output-file <path>` writes diagnostics to a file instead of standard
   output.
 - `--fix`, `--unsafe-fixes`, `--diff`, and `--fix-only` control future fix
@@ -58,11 +67,11 @@ The planned options follow `ruff check` where the concepts map cleanly:
 
 ## Exit codes
 
-| Code | Meaning                                                                                                    |
-| ---- | ---------------------------------------------------------------------------------------------------------- |
-| 0    | No diagnostics remain, or all diagnostics were fixed automatically.                                        |
-| 1    | Diagnostics remain, warning thresholds were exceeded, or fixes were applied with `--exit-non-zero-on-fix`. |
-| 2    | Invalid configuration, invalid CLI options, unreadable required inputs, or internal analyser failure.      |
+| Code | Meaning                                                                                                                                     |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | No diagnostics remain, or all diagnostics were fixed automatically.                                                                         |
+| 1    | Diagnostics remain, warning thresholds were exceeded, fixes were applied with `--exit-non-zero-on-fix`, or an input file could not be read. |
+| 2    | Invalid configuration, invalid CLI options, or internal analyser failure.                                                                   |
 
 `--exit-zero` only affects diagnostic findings. It does not hide abnormal
 termination, invalid configuration, or invalid command-line usage.
@@ -106,8 +115,7 @@ summary counts as JSON output. Each diagnostic is printed as one
 `Found …` severity summary such as `Found 1 error.` or
 `Found 2 errors, 1 warning.` Clean runs print nothing. Use a machine-readable
 output format in Continuous Integration (CI) or editor integrations when
-callers need stable field names; those machine formats remain planned rather
-than shipped in the minimal command slice.
+callers need stable field names.
 
 ## Rule reference
 
@@ -154,8 +162,8 @@ Command-line flags override configuration. Unknown rule identifiers are errors.
 Unknown configuration keys are expected to be warnings before the configuration
 schema stabilizes and errors after it stabilizes.
 
-Until the executable CLI and configuration loader land, treat this section as a
-contract placeholder rather than an available feature.
+Until the configuration loader and remaining CLI flags land, treat this section
+as a contract placeholder rather than an available feature.
 
 ## Current non-goals
 

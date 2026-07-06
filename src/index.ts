@@ -15,6 +15,7 @@ export {
   renderMessageTemplate,
 } from "./diagnostics/message-template";
 export { countDiagnostics, createDiagnosticReport } from "./diagnostics/report";
+export { formatJsonReport } from "./diagnostics/report-json";
 export {
   findRuleDefinition,
   firstReviewedRuleMessage,

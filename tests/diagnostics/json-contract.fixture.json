@@ -1,7 +1,4 @@
-// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
-
-exports[`public diagnostic consumer keeps public diagnostic values importable from the package entry 1`] = `
-"{
+{
   "schemaVersion": 1,
   "tool": {
     "name": "odw-lint",
@@ -16,7 +13,7 @@ exports[`public diagnostic consumer keeps public diagnostic values importable fr
   },
   "diagnostics": [
     {
-      "file": "workflow.js",
+      "file": "workflows/example.js",
       "rule": "odw/meta-required",
       "severity": "error",
       "message": "Workflow source must export literal metadata.",
@@ -32,10 +29,8 @@ exports[`public diagnostic consumer keeps public diagnostic values importable fr
           "column": 1
         }
       },
+      "docs": "docs/rules/meta-required.md",
       "suggestions": []
     }
   ]
-}"
-`;
-
-exports[`public diagnostic consumer keeps public diagnostic values importable from the package entry 2`] = `"workflow.js:1:1 error odw/meta-required Workflow source must export literal metadata."`;
+}

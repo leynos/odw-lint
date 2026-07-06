@@ -34,10 +34,14 @@ bun run src/cli/main.ts check <workflow.js> [more-workflows.js ...]
 This slice implements only explicit path operands. Text output is now the
 default human report: one `file:line:column severity rule message` line per
 diagnostic, followed by a blank line and a `Found …` severity summary. Clean
-runs print nothing. Read failures are written to stderr as
-`error: cannot read <path>: <message>`. The exit codes follow the Ruff-style
-policy in technical design sections [7.0](technical-design.md#70-ux-precedent)
-and [7.4](technical-design.md#74-exit-codes):
+runs print nothing. `--output-format json` renders the versioned diagnostic
+envelope from technical design section
+[8](technical-design.md#8-diagnostic-contract). Read failures are written to
+stderr as `error: cannot read <path>: <message>`, and wider output/discovery
+behaviour is deferred to later roadmap items. The exit codes follow the
+Ruff-style policy in technical design sections
+[7.0](technical-design.md#70-ux-precedent) and
+[7.4](technical-design.md#74-exit-codes):
 
 | Code | Meaning                                                                                             |
 | ---- | --------------------------------------------------------------------------------------------------- |
@@ -45,10 +49,10 @@ and [7.4](technical-design.md#74-exit-codes):
 | 1    | Any diagnostic remains, regardless of severity, or at least one input file could not be read.       |
 | 2    | The invocation was invalid, such as a missing path or unknown flag, or an internal analyser failed. |
 
-Colour, source snippets, `--output-format`, `--output-file`, JSON output,
+Source snippets, output formats beyond `full` and `json`, `--output-file`,
 configured discovery, glob expansion, and the wider Ruff-compatible flag
-surface remain deferred to roadmap 2.4.3 and 2.4.4. That includes
-`--exit-zero`, `--max-warnings`, and `--strict-claude`.
+surface remain deferred. That includes `--exit-zero`, `--max-warnings`, and
+`--strict-claude`.
 
 The first implementation owns the static-analysis implementation inside this
 repository. v1 vendors the pure-literal parser behaviour from ODW's
@@ -66,6 +70,13 @@ parser-backed dynamic diagnostics, and the static-analysis source helpers that
 downstream parser, mapper, and reporter code may consume through `odw-lint`. It
 must stay free of executable ODW runtime imports and should expose
 package-level contracts only through explicit named re-exports.
+
+`src/diagnostics/report-json.ts` owns the canonical JSON projection for
+diagnostic reports. Its public `formatJsonReport` export builds the stable
+section 8 envelope from an existing `DiagnosticReport`; it must not analyse
+source, read files, or invent diagnostics. Keep the JSON reporter aligned with
+the schema, the golden contract fixture, and `formatTextDiagnostics` as sibling
+presentation surfaces over the same report object.
 
 The first envelope scanner lives in `src/static-analysis/workflow-envelope.ts`.
 It extracts `export const meta` from masked source, records metadata value

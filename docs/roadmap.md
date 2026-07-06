@@ -946,7 +946,7 @@ unlocks CI adoption and user feedback. See
   - See [technical-design.md](technical-design.md) §8.
   - Success: human output contains enough location information to fix a
     fixture without opening JSON.
-- [ ] 2.4.3. Add JSON output and a JSON contract fixture.
+- [x] 2.4.3. Add JSON output and a JSON contract fixture.
   - Requires 1.2.1, 2.1.10, and 2.4.1.
   - See [technical-design.md](technical-design.md) §8.
   - Success: JSON output is stable under snapshot tests and includes the

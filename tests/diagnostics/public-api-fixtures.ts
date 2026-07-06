@@ -74,6 +74,7 @@ export const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
   "createOriginalSourceFile",
   "findRuleDefinition",
   "firstReviewedRuleMessage",
+  "formatJsonReport",
   "formatTextDiagnostics",
   "isIdentifierBound",
   "isIndexInInertRegion",

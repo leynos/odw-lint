@@ -25,6 +25,19 @@ type CliProcessResult = {
   readonly stderr: string;
 };
 
+type JsonCliReport = {
+  readonly schemaVersion?: unknown;
+  readonly tool?: {
+    readonly name?: unknown;
+  };
+  readonly summary?: {
+    readonly errors?: unknown;
+  };
+  readonly diagnostics?: readonly {
+    readonly rule?: unknown;
+  }[];
+};
+
 type InvalidFixtureSample = {
   readonly family: InvalidWorkflowFixtureFamily;
   readonly fileName: string;
@@ -65,6 +78,11 @@ const runCheckProcess = (args: readonly string[]): CliProcessResult => {
 /** Select one representative fixture from every invalid workflow family. */
 const invalidFamilyFixtures = (): InvalidWorkflowFixtureSnapshot[] => {
   return INVALID_FAMILY_SAMPLES.map((sample) => findInvalidWorkflowFixture(sample));
+};
+
+/** Parse process JSON output into the report fields asserted by e2e tests. */
+const parseJsonCliReport = (stdoutText: string): JsonCliReport => {
+  return JSON.parse(stdoutText) as JsonCliReport;
 };
 
 describe("explicit-path check CLI corpus process contract", () => {
@@ -111,6 +129,26 @@ describe("explicit-path check CLI corpus process contract", () => {
     expect(result.exitCode).toBe(1);
     expect(result.stdout).toContain("error odw/meta-required");
     expect(result.stderr).toBe("");
+  });
+
+  it("prints JSON diagnostics for an invalid explicit path", () => {
+    const fixture = findInvalidWorkflowFixture({
+      family: "missing-metadata",
+      fileName: "missing-meta.js",
+    });
+    const result = runCheckProcess([
+      "--output-format",
+      "json",
+      fixturePathArgument(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath),
+    ]);
+    const report = parseJsonCliReport(result.stdout);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toBe("");
+    expect(report.schemaVersion).toBe(1);
+    expect(report.tool?.name).toBe("odw-lint");
+    expect(Number(report.summary?.errors)).toBeGreaterThanOrEqual(1);
+    expect(report.diagnostics?.[0]?.rule).toBe("odw/meta-required");
   });
 
   it("returns 2 for a no-operand invocation", () => {

@@ -34,6 +34,7 @@ import {
   DIAGNOSTIC_SCHEMA_VERSION,
   DIAGNOSTIC_SEVERITIES,
   findRuleDefinition,
+  formatJsonReport,
   formatTextDiagnostics,
   InvalidRuleIdError,
   isRuleId,
@@ -118,6 +119,12 @@ describe("public diagnostic consumer", () => {
         end: { offset: 0, line: 1, column: 1 },
       },
     };
+    const report = createDiagnosticReport({
+      version: "0.1.0",
+      files: 1,
+      diagnostics: [diagnostic],
+    });
+    const renderedJson = formatJsonReport(report);
     const renderedText = formatTextDiagnostics([diagnostic]);
 
     expect(DIAGNOSTIC_REPORT_SCHEMA.type).toBe("object");
@@ -133,13 +140,11 @@ describe("public diagnostic consumer", () => {
     expect(isRuleId(String(ruleId))).toBeTrue();
     expect(InvalidRuleIdError).toBeFunction();
     expect(countDiagnostics({ files: 1, diagnostics: [diagnostic] }).errors).toBe(1);
-    expect(
-      createDiagnosticReport({ version: "0.1.0", files: 1, diagnostics: [diagnostic] })
-        .diagnostics[0]?.rule,
-    ).toBe(ruleId);
+    expect(report.diagnostics[0]?.rule).toBe(ruleId);
     expect(diagnostic.file).toBe("workflow.js");
     expect(diagnostic.rule).toBe(ruleId);
     expect(diagnostic.severity).toBe("error");
+    expect(renderedJson).toMatchSnapshot();
     expect(renderedText).toMatchSnapshot();
   });
 

@@ -26,6 +26,18 @@ type SourceFixture = {
   readonly sourceText: string;
 };
 
+type JsonDiagnostic = {
+  readonly rule?: unknown;
+};
+
+type JsonReport = {
+  readonly schemaVersion?: unknown;
+  readonly summary?: {
+    readonly errors?: unknown;
+  };
+  readonly diagnostics?: readonly JsonDiagnostic[];
+};
+
 const VERSION = "0.0.0-test";
 
 /** Resolves a reviewed fixture snapshot to the file path used in diagnostics. */
@@ -105,6 +117,11 @@ const runCapturedCheckCli = (
   return { exitCode, stdout, stderr };
 };
 
+/** Parse captured JSON output into the report fields asserted by CLI tests. */
+const parseCapturedJsonReport = (stdoutText: string): JsonReport => {
+  return JSON.parse(stdoutText) as JsonReport;
+};
+
 describe("explicit-path check CLI runner", () => {
   it("returns 0 without output for a clean workflow", () => {
     const fixture = cleanFixture();
@@ -124,6 +141,48 @@ describe("explicit-path check CLI runner", () => {
     expect(result.stderr).toBe("");
     expect(result.stdout).toContain(`${fixture.filePath}:1:1 error odw/meta-required`);
     expect(result.stdout).toContain("Found 1 error.");
+  });
+
+  it("prints full text diagnostics when the output format is explicit", () => {
+    const fixture = errorFixture();
+    const result = runCapturedCheckCli(
+      ["check", "--output-format", "full", fixture.filePath],
+      [fixture],
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain(`${fixture.filePath}:1:1 error odw/meta-required`);
+    expect(result.stdout).toContain("Found 1 error.");
+  });
+
+  it("prints JSON diagnostics and returns 1 for an invalid workflow", () => {
+    const fixture = errorFixture();
+    const result = runCapturedCheckCli(
+      ["check", "--output-format=json", fixture.filePath],
+      [fixture],
+    );
+    const report = parseCapturedJsonReport(result.stdout);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toBe("");
+    expect(report.schemaVersion).toBe(1);
+    expect(report.summary?.errors).toBe(1);
+    expect(report.diagnostics?.[0]?.rule).toBe("odw/meta-required");
+  });
+
+  it("prints an empty JSON diagnostics array for a clean workflow", () => {
+    const fixture = cleanFixture();
+    const result = runCapturedCheckCli(
+      ["check", "--output-format", "json", fixture.filePath],
+      [fixture],
+    );
+    const report = parseCapturedJsonReport(result.stdout);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(report.schemaVersion).toBe(1);
+    expect(report.diagnostics).toEqual([]);
   });
 
   it("returns 1 for warning-only diagnostics under Ruff parity", () => {
@@ -146,10 +205,25 @@ describe("explicit-path check CLI runner", () => {
     expect(result.stderr).toContain("error: cannot read missing-workflow.js: missing test fixture");
   });
 
+  it("keeps read failures on stderr when JSON output is selected", () => {
+    const result = runCapturedCheckCli(["check", "--output-format", "json", "missing-workflow.js"]);
+    const report = parseCapturedJsonReport(result.stdout);
+
+    expect(result.exitCode).toBe(1);
+    expect(report.schemaVersion).toBe(1);
+    expect(report.diagnostics).toEqual([]);
+    expect(result.stderr).toContain("error: cannot read missing-workflow.js: missing test fixture");
+  });
+
   it.each([
     ["no operands", [], "usage: odw-lint check <workflow.js ...>"],
     ["no paths", ["check"], "usage: odw-lint check <workflow.js ...>"],
     ["unknown flag", ["check", "--flag"], "unknown option: --flag"],
+    [
+      "unknown output format",
+      ["check", "--output-format", "json-lines", "workflow.js"],
+      "unsupported output format: json-lines",
+    ],
     ["wrong subcommand", ["lint", "workflow.js"], "unknown command: lint"],
   ] as const)("returns 2 for %s", (_caseName, args, expectedError) => {
     const result = runCapturedCheckCli(args);
