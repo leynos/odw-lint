@@ -31,12 +31,13 @@ Bun entrypoint while the published package has no `bin` field:
 bun run src/cli/main.ts check <workflow.js> [more-workflows.js ...]
 ```
 
-This slice implements only explicit path operands. Text output is the existing
-one-diagnostic-per-line formatter, read failures are written to stderr as
-`error: cannot read <path>: <message>`, and wider output/discovery behaviour is
-deferred to later roadmap items. The exit codes follow the Ruff-style policy in
-technical design sections [7.0](technical-design.md#70-ux-precedent) and
-[7.4](technical-design.md#74-exit-codes):
+This slice implements only explicit path operands. Text output is now the
+default human report: one `file:line:column severity rule message` line per
+diagnostic, followed by a blank line and a `Found …` severity summary. Clean
+runs print nothing. Read failures are written to stderr as
+`error: cannot read <path>: <message>`. The exit codes follow the Ruff-style
+policy in technical design sections [7.0](technical-design.md#70-ux-precedent)
+and [7.4](technical-design.md#74-exit-codes):
 
 | Code | Meaning                                                                                             |
 | ---- | --------------------------------------------------------------------------------------------------- |
@@ -44,8 +45,9 @@ technical design sections [7.0](technical-design.md#70-ux-precedent) and
 | 1    | Any diagnostic remains, regardless of severity, or at least one input file could not be read.       |
 | 2    | The invocation was invalid, such as a missing path or unknown flag, or an internal analyser failed. |
 
-JSON output, richer text formatting, configured discovery, glob expansion, and
-the wider Ruff-compatible flag surface remain deferred. That includes
+Colour, source snippets, `--output-format`, `--output-file`, JSON output,
+configured discovery, glob expansion, and the wider Ruff-compatible flag
+surface remain deferred to roadmap 2.4.3 and 2.4.4. That includes
 `--exit-zero`, `--max-warnings`, and `--strict-claude`.
 
 The first implementation owns the static-analysis implementation inside this

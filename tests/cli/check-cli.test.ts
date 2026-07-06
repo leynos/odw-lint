@@ -123,6 +123,7 @@ describe("explicit-path check CLI runner", () => {
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toBe("");
     expect(result.stdout).toContain(`${fixture.filePath}:1:1 error odw/meta-required`);
+    expect(result.stdout).toContain("Found 1 error.");
   });
 
   it("returns 1 for warning-only diagnostics under Ruff parity", () => {
@@ -134,6 +135,7 @@ describe("explicit-path check CLI runner", () => {
     expect(result.stdout).toContain(
       `${fixture.filePath}:3:16 warning odw/meta-statically-unprovable`,
     );
+    expect(result.stdout).toContain("Found 1 warning.");
   });
 
   it("reports unreadable paths on stderr and returns 1", () => {

@@ -4,7 +4,7 @@
 
 import { stderr, stdout } from "node:process";
 import packageJson from "../../package.json";
-import { formatTextDiagnostics } from "../diagnostics/text";
+import { formatTextReport } from "../diagnostics/text";
 import type { ReadFileText, WorkflowSourceReadFailure } from "./read-workflow-source";
 import { checkDiagnosticsExitCode, runCheck } from "./run-check";
 
@@ -120,7 +120,7 @@ export const runCheckCli = (args: readonly string[], io: CheckCliIo = {}): Check
       ...request,
     });
 
-    writeTextDiagnostics(writers, formatTextDiagnostics(outcome.report.diagnostics));
+    writeTextDiagnostics(writers, formatTextReport(outcome.report));
     writeReadFailures(writers, outcome.readFailures);
 
     return checkDiagnosticsExitCode(outcome);

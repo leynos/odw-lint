@@ -5,21 +5,28 @@ run. It is intended for workflow authors, reviewers, and CI maintainers who
 need a static preflight check without executing workflow source or dispatching
 agents.
 
-The CLI is not implemented yet. This guide records the intended user-facing
-contract so early adopters can follow the planned shape before the first
-executable command slice lands.
+The minimal explicit-path CLI is available through the Bun entrypoint while the
+published package has no `bin` field. This guide records both the shipped
+minimal command slice and the intended user-facing contract for later options.
 
 ## Command shape
 
-The standalone command is:
+The planned standalone command is:
 
 ```text
 odw-lint check [path-or-glob ...]
 ```
 
-Pass explicit workflow files or shell-expanded globs after `check`. When no
-files are passed, the planned v1 command checks configured include globs. If no
-configuration exists, it checks these roots when they are present:
+Today, run the minimal explicit-path implementation through Bun:
+
+```bash
+bun run src/cli/main.ts check <workflow.js> [more-workflows.js ...]
+```
+
+Pass explicit workflow files after `check`. When configured discovery lands,
+the planned v1 command checks configured include globs when no files are
+passed. If no configuration exists, it checks these roots when they are
+present:
 
 - `.odw/workflows/**/*.js`
 - `.claude/workflows/**/*.js`
@@ -93,9 +100,14 @@ zero-based UTF-8 byte offsets; lines and columns are one-based display
 positions. `span.start` is inclusive and `span.end` is exclusive. Point
 diagnostics may use a zero-length span where `start` and `end` are identical.
 
-Text output is derived from the same diagnostic objects as JSON output. Use a
-machine-readable output format in CI or editor integrations when callers need
-stable field names.
+The default human text report is derived from the same diagnostic objects and
+summary counts as JSON output. Each diagnostic is printed as one
+`file:line:column severity rule message` line, followed by a blank line and a
+`Found …` severity summary such as `Found 1 error.` or
+`Found 2 errors, 1 warning.` Clean runs print nothing. Use a machine-readable
+output format in Continuous Integration (CI) or editor integrations when
+callers need stable field names; those machine formats remain planned rather
+than shipped in the minimal command slice.
 
 ## Rule reference
 

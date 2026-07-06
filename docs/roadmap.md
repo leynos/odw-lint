@@ -940,7 +940,7 @@ unlocks CI adoption and user feedback. See
   - See [technical-design.md](technical-design.md) §7.
   - Success: the command returns the designed exit codes for valid and invalid
     fixtures.
-- [ ] 2.4.2. Add text output with file, line, column, severity, rule, and
+- [x] 2.4.2. Add text output with file, line, column, severity, rule, and
   message.
   - Requires 1.2.1 and 2.4.1.
   - See [technical-design.md](technical-design.md) §8.
