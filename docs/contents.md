@@ -121,6 +121,12 @@ entry; that index enumerates every current rule page.
   TypeScript-only workflow-body loader rejection.
 - [Audit 2.3.5](issues/audit-2.3.5.md) records review findings for fixture
   corpus and diagnostic projection ownership.
+- [Audit 2.4.2](issues/audit-2.4.2.md) records review findings for `check`
+  text output.
+- [Audit 2.4.3](issues/audit-2.4.3.md) records review findings for `check`
+  JSON output.
+- [Audit 2.4.4](issues/audit-2.4.4.md) records review findings for
+  Ruff-compatible `check` invocation semantics.
 - [Audit 3.1.3](issues/audit-3.1.3.md) records review findings for
   strict-Claude severity promotion.
 - [Audit 3.1.4](issues/audit-3.1.4.md) records review findings for
@@ -129,12 +135,20 @@ entry; that index enumerates every current rule page.
   scope-precise deterministic-time shadowing.
 - [Audit 3.1.6](issues/audit-3.1.6.md) records review findings for
   deterministic-time alias lexical scopes.
+- [Audit 3.1.7](issues/audit-3.1.7.md) records review findings for ODW-only
+  validate diagnostics.
+- [Audit 3.1.8](issues/audit-3.1.8.md) records review findings for widened
+  ODW-only validate callee detection.
 - [Audit 3.2.5](issues/audit-3.2.5.md) records review findings for shared SWC
   AST guard and traversal helpers.
 - [Audit 3.2.6](issues/audit-3.2.6.md) records review findings for complete
   SWC traversal-driver adoption.
 - [Audit 3.2.7](issues/audit-3.2.7.md) records review findings for
   scope-owned and public binding fact reconciliation.
+- [Audit 3.3.1](issues/audit-3.3.1.md) records review findings for optional
+  lint configuration.
+- [Audit 3.3.2](issues/audit-3.3.2.md) records review findings for
+  `--max-warnings`.
 - [Audit 5.5.1](issues/audit-5.5.1.md) records review findings for body-syntax
   span-narrowing quarantine.
 
