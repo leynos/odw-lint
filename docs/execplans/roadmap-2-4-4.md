@@ -1300,3 +1300,14 @@ No new runtime or dev dependencies. Reuse `JSON.stringify`, the existing
   equals-form string flags. `--output-file=` and `--stdin-filename=` now reject
   empty values with `missing value for <flag>` at the parser boundary, and
   parser plus CLI tests pin the exit `2` behaviour.
+
+## Addenda
+
+- [ ] 2.4.4.1. Harden informational-flag value handling.
+  - Source: review:2.4.4; severity low.
+  - Scope: make `--help`, `-h`, `--version`, and `-V` detection aware of
+    recognised value-taking options and operands so a filename or option value
+    equal to an informational flag is not misread as the requested action.
+  - Success: parser or CLI coverage proves informational flags still work when
+    supplied as options, while value and operand collisions are parsed as
+    normal invocation data.

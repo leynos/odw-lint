@@ -300,6 +300,20 @@ the no-policy call preserves the original "any diagnostic fails" rule.
     pinned.
   - Success: the e2e corpus suite proves warning budgets propagate to process
     exit codes without relying only on injected-reader CLI tests.
+- [ ] 3.3.2.3. Remove the orphaned duplicate check parser.
+  - Source: audit:2.4.4; severity high.
+  - Scope: delete the unwired `src/cli/check-cli-args.ts` parser duplicate and
+    update any stale references that still identify it as the live parser home.
+  - Success: the live `src/cli/check-args.ts` parser remains the only
+    recognised `check` argument parser, and import or inventory coverage keeps
+    future parser work from landing on an unwired duplicate.
+- [ ] 3.3.2.4. List `--max-warnings` in check help.
+  - Source: audit:2.4.4; severity medium.
+  - Scope: add the shipped warning-budget flag to `check --help` and derive or
+    cross-check help coverage from the recognised option set where that can be
+    done without making help text unreadable.
+  - Success: the help text exposes `--max-warnings`, and tests fail when a
+    recognised user-facing flag has no help row.
 
 ## Context and orientation
 

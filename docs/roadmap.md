@@ -985,6 +985,10 @@ unlocks CI adoption and user feedback. See
     `--respect-gitignore`, `--force-exclude`, `--exit-zero`, and
     `--exit-non-zero-on-fix`, plus unreadable-input machine-output parity and
     basic usage/help/version behaviour.
+  - [ ] 2.4.4.1. Harden informational-flag value handling.
+    - Addendum (from review:2.4.4; low). Make help and version detection
+      value-aware so option values or operands named like informational flags do
+      not become actions. Lightweight addendum pass.
 
 ## 3. Second vertical slice: portability and orchestration feedback
 
@@ -1290,6 +1294,14 @@ It informs CI usage and later plugin integration. See
     - Addendum (from review:3.3.2; low). Cover `--max-warnings` in the real
       process corpus path so `main.ts` to exit-code propagation is pinned.
       Lightweight addendum pass.
+  - [ ] 3.3.2.3. Remove the orphaned duplicate check parser.
+    - Addendum (from audit:2.4.4; high). Delete the unwired
+      `check-cli-args.ts` parser duplicate so parser maintenance has one live
+      home. Lightweight addendum pass.
+  - [ ] 3.3.2.4. List `--max-warnings` in check help.
+    - Addendum (from audit:2.4.4; medium). Add the warning-budget flag to
+      `check --help` and pin recognised-option parity for future flags.
+      Lightweight addendum pass.
 - [ ] 3.3.3. Add pairwise CLI-mode coverage for format, strict mode, warning
   threshold, config, and stdin.
   - Requires 3.3.1 and 3.3.2.
@@ -1310,6 +1322,15 @@ It informs CI usage and later plugin integration. See
   - Success: strict-mode reports, JSON output, and programmatic stage sub-views
     either expose one consistent promoted severity contract or document a typed
     default-versus-effective distinction with coverage for downstream callers.
+- [ ] 3.3.6. Apply configured discovery and ignore filtering.
+  - Requires 2.4.4 and 3.3.1.
+  - Implement directory and glob traversal for configured include roots and
+    command operands, consuming the recorded `--respect-gitignore` and
+    `--no-respect-gitignore` posture during discovery rather than only storing
+    it.
+  - Success: discovery tests prove gitignore-filtered traversal, disabled
+    gitignore filtering, and explicit-path exclusion behaviour all match
+    [technical-design.md](technical-design.md) §7.2.
 
 ## 4. Third vertical slice: adoption and ODW integration
 
