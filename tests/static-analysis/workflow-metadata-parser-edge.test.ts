@@ -25,6 +25,9 @@ const spanText = (sourceText: string, span: Parameters<typeof sliceSourceSpan>[1
 
 /** Returns a recursive reviewer-friendly value shape for parser snapshots. */
 const parsedValueSummary = (value: ParsedMetadataValue): unknown => {
+  if (value.kind === "impure") {
+    return { kind: value.kind };
+  }
   if (value.kind === "primitive") {
     return { kind: value.kind, value: value.value };
   }
@@ -52,6 +55,9 @@ const parserOutcomeSummary = (sourceText: string): unknown => {
 
   return {
     status: result.status,
+    ...(result.facts.firstImpureSpan === undefined
+      ? {}
+      : { firstImpureSpan: spanText(sourceText, result.facts.firstImpureSpan) }),
     properties: result.facts.properties.map((property) => ({
       key: property.key,
       value: parsedValueSummary(property.value),
@@ -68,13 +74,17 @@ const parsedFacts = (sourceText: string) => {
   return result.facts;
 };
 
-/** Asserts the first unprovable parser span for inline workflow source. */
-const expectUnprovableSpan = (sourceText: string, expectedSpanText: string): void => {
+/** Asserts the first impure parser span for inline object-literal metadata. */
+const expectFirstImpureSpan = (sourceText: string, expectedSpanText: string): void => {
   const result = parseSource(sourceText);
 
-  expect(result.status).toBe("not-statically-provable");
-  if (result.status === "not-statically-provable") {
-    expect(spanText(sourceText, result.span)).toBe(expectedSpanText);
+  expect(result.status).toBe("parsed");
+  if (result.status === "parsed") {
+    expect(result.facts.portability).toBe("not-statically-provable");
+    expect(result.facts.firstImpureSpan).toBeDefined();
+    if (result.facts.firstImpureSpan !== undefined) {
+      expect(spanText(sourceText, result.facts.firstImpureSpan)).toBe(expectedSpanText);
+    }
   }
 };
 
@@ -128,7 +138,7 @@ describe("workflow metadata parser edge cases", () => {
   });
 
   it("rejects infix arithmetic instead of tokenizing it as a number", () => {
-    expectUnprovableSpan(
+    expectFirstImpureSpan(
       'export const meta = { name: "n", description: "d", retries: 1-2 };',
       "1-2",
     );
@@ -146,14 +156,14 @@ describe("workflow metadata parser edge cases", () => {
   });
 
   it("rejects raw line terminators inside quoted strings", () => {
-    expectUnprovableSpan(
+    expectFirstImpureSpan(
       'export const meta = { name: "n", description: "broken\nline" };',
       '"broken\nline"',
     );
   });
 
   it("ignores braces inside comments while balancing computed keys", () => {
-    expectUnprovableSpan(
+    expectFirstImpureSpan(
       'export const meta = { name: "n", [/* } */ key]: "d", description: "d" };',
       "[/* } */ key]",
     );

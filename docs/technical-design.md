@@ -426,13 +426,17 @@ These findings prevent the workflow from being loaded as an ODW workflow.
 
 These findings distinguish ODW runtime validity from Claude Code portability.
 
-| Rule                       | Default | Condition                                          |
-| -------------------------- | ------- | -------------------------------------------------- |
-| `odw/claude-pure-meta`     | Warning | `meta` is not a pure literal.                      |
-| `odw/no-date-now`          | Warning | The workflow calls `Date.now()`.                   |
-| `odw/no-math-random`       | Warning | The workflow calls `Math.random()`.                |
-| `odw/no-argless-new-date`  | Warning | The workflow calls `new Date()` without arguments. |
-| `odw/no-odw-only-validate` | Info    | The workflow calls ODW-only `validate(source)`.    |
+| Rule                       | Default | Condition                                                       |
+| -------------------------- | ------- | --------------------------------------------------------------- |
+| `odw/claude-pure-meta`     | Warning | `meta` is not a pure literal within §6.3's ODW-acceptance gate. |
+| `odw/no-date-now`          | Warning | The workflow calls `Date.now()`.                                |
+| `odw/no-math-random`       | Warning | The workflow calls `Math.random()`.                             |
+| `odw/no-argless-new-date`  | Warning | The workflow calls `new Date()` without arguments.              |
+| `odw/no-odw-only-validate` | Info    | The workflow calls ODW-only `validate(source)`.                 |
+
+For `odw/claude-pure-meta`, the ODW-acceptance gate means that required fields
+are provable literal strings and every computed part is a self-contained
+constant expression that cannot throw.
 
 `--strict-claude` promotes all Claude compatibility warnings to errors. The
 `validate(source)` rule should remain informational unless a future mode

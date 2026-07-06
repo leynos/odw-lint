@@ -970,7 +970,7 @@ This step answers whether ODW-only validity and Claude portability can be
 reported clearly in one command. The result informs strict-mode policy. See
 [technical-design.md](technical-design.md) §9.2.
 
-- [ ] 3.1.1. Implement pure-literal metadata compatibility checks.
+- [x] 3.1.1. Implement pure-literal metadata compatibility checks.
   - Requires 2.1.3 and step 2.3.
   - See [technical-design.md](technical-design.md) §§6.3 and 9.2.
   - Success: ODW-valid but Claude-incompatible metadata produces

@@ -9,22 +9,23 @@ import {
 import { createRuleDiagnostic } from "../diagnostics/rule-diagnostic";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic, SourceSpan } from "../diagnostics/types";
-import { textIndexAtOffset } from "./source-indexes";
-import { maskNonCodeSource } from "./source-mask";
-import { isWhitespaceCharacter } from "./source-mask-delimiters";
 import type { OriginalSourceFile, WorkflowEnvelopeScanResult, WorkflowMetaValue } from "./types";
+import { isClosedConstantSpan } from "./workflow-metadata-constant-expr";
+import { expressionContainsObjectLiteralCandidate } from "./workflow-metadata-expression";
 import { parseWorkflowMetadataLiteral } from "./workflow-metadata-parser";
 
 const META_OBJECT_RULE = makeRuleId("odw/meta-object");
 const META_NAME_RULE = makeRuleId("odw/meta-name");
 const META_DESCRIPTION_RULE = makeRuleId("odw/meta-description");
 const META_STATICALLY_UNPROVABLE_RULE = makeRuleId("odw/meta-statically-unprovable");
+const CLAUDE_PURE_META_RULE = makeRuleId("odw/claude-pure-meta");
 const META_OBJECT_RULE_DEFINITION = ruleDefinitionFor(META_OBJECT_RULE);
 const META_NAME_RULE_DEFINITION = ruleDefinitionFor(META_NAME_RULE);
 const META_DESCRIPTION_RULE_DEFINITION = ruleDefinitionFor(META_DESCRIPTION_RULE);
 const META_STATICALLY_UNPROVABLE_RULE_DEFINITION = ruleDefinitionFor(
   META_STATICALLY_UNPROVABLE_RULE,
 );
+const CLAUDE_PURE_META_RULE_DEFINITION = ruleDefinitionFor(CLAUDE_PURE_META_RULE);
 const META_OBJECT_MESSAGE = firstReviewedRuleMessage(META_OBJECT_RULE_DEFINITION);
 const META_OBJECT_COMPLETE_MESSAGE = reviewedRuleMessage(META_OBJECT_RULE_DEFINITION, 1);
 const META_NAME_MESSAGE = firstReviewedRuleMessage(META_NAME_RULE_DEFINITION);
@@ -35,6 +36,7 @@ const META_DESCRIPTION_STRING_MESSAGE = reviewedRuleMessage(META_DESCRIPTION_RUL
 const META_STATICALLY_UNPROVABLE_MESSAGE = firstReviewedRuleMessage(
   META_STATICALLY_UNPROVABLE_RULE_DEFINITION,
 );
+const CLAUDE_PURE_META_MESSAGE = firstReviewedRuleMessage(CLAUDE_PURE_META_RULE_DEFINITION);
 
 export type WorkflowMetadataPortability = "pure-literal" | "not-statically-provable";
 
@@ -55,6 +57,10 @@ export type ParsedMetadataValue =
       readonly kind: "primitive";
       readonly span: SourceSpan;
       readonly value: ParsedMetadataPrimitive;
+    }
+  | {
+      readonly kind: "impure";
+      readonly span: SourceSpan;
     };
 
 export type ParsedMetadataProperty = {
@@ -68,6 +74,8 @@ export type WorkflowMetadataFacts = {
   readonly objectSpan: SourceSpan;
   readonly name: ParsedMetadataProperty | undefined;
   readonly description: ParsedMetadataProperty | undefined;
+  readonly firstImpureSpan?: SourceSpan;
+  readonly impurities: readonly SourceSpan[];
   readonly portability: WorkflowMetadataPortability;
   readonly properties: readonly ParsedMetadataProperty[];
 };
@@ -99,6 +107,11 @@ export type WorkflowMetadataClassification =
   | {
       readonly status: "statically-unprovable";
       readonly diagnostics: readonly Diagnostic[];
+    }
+  | {
+      readonly status: "claude-incompatible";
+      readonly facts: WorkflowMetadataFacts;
+      readonly diagnostics: readonly Diagnostic[];
     };
 
 /**
@@ -127,20 +140,65 @@ export const classifyWorkflowMetadata = (
   if (parseResult.status === "not-statically-provable") {
     return staticallyUnprovable(scanResult.sourceFile, parseResult.span);
   }
-  if (parseResult.facts.portability !== "pure-literal") {
-    return staticallyUnprovable(scanResult.sourceFile, parseResult.facts.objectSpan);
+
+  return classifyParsedMetadata(scanResult.sourceFile, parseResult.facts);
+};
+
+/** Classifies parsed object-literal metadata facts. */
+const classifyParsedMetadata = (
+  sourceFile: OriginalSourceFile,
+  facts: WorkflowMetadataFacts,
+): WorkflowMetadataClassification => {
+  const requiredFields = classifyRequiredFields(facts);
+  if (requiredFields.status === "invalid-literal") {
+    return runtimeInvalid(requiredFieldDiagnostics(sourceFile, facts));
+  }
+  if (requiredFields.status === "unprovable") {
+    return staticallyUnprovable(sourceFile, firstUnprovableSpan(facts));
   }
 
-  const diagnostics = requiredFieldDiagnostics(scanResult.sourceFile, parseResult.facts);
-  if (diagnostics.length > 0) {
-    return runtimeInvalid(diagnostics);
+  if (facts.portability !== "pure-literal") {
+    const firstImpureSpan = firstUnprovableSpan(facts);
+    if (!allImpuritiesAreClosedConstants(sourceFile, facts)) {
+      return staticallyUnprovable(sourceFile, firstImpureSpan);
+    }
+    return claudePureMeta(sourceFile, facts, firstImpureSpan);
   }
 
   return Object.freeze({
     status: "valid",
-    facts: parseResult.facts,
+    facts,
     diagnostics: Object.freeze([]),
   });
+};
+
+type RequiredFieldsClassification =
+  | { readonly status: "valid-literal" }
+  | { readonly status: "invalid-literal" }
+  | { readonly status: "unprovable" };
+
+/** Classifies required metadata fields without folding computed values. */
+const classifyRequiredFields = (facts: WorkflowMetadataFacts): RequiredFieldsClassification => {
+  if (facts.name?.value.kind === "impure" || facts.description?.value.kind === "impure") {
+    return Object.freeze({ status: "unprovable" });
+  }
+  if (!hasValidNameLiteral(facts) || !hasValidDescriptionLiteral(facts)) {
+    return Object.freeze({ status: "invalid-literal" });
+  }
+  return Object.freeze({ status: "valid-literal" });
+};
+
+/** Checks whether `name` is present as a non-empty string literal. */
+const hasValidNameLiteral = (facts: WorkflowMetadataFacts): boolean => {
+  return facts.name !== undefined && isNonEmptyStringProperty(facts.name);
+};
+
+/** Checks whether `description` is present as a string literal. */
+const hasValidDescriptionLiteral = (facts: WorkflowMetadataFacts): boolean => {
+  return (
+    facts.description?.value.kind === "primitive" &&
+    typeof facts.description.value.value === "string"
+  );
 };
 
 /** Classifies metadata value states already proven by the envelope scanner. */
@@ -187,6 +245,19 @@ const classifyScannedMetaValue = (
   return undefined;
 };
 
+/** Checks that every recorded impure expression is structurally closed. */
+const allImpuritiesAreClosedConstants = (
+  sourceFile: OriginalSourceFile,
+  facts: WorkflowMetadataFacts,
+): boolean => {
+  return facts.impurities.every((span) => isClosedConstantSpan(sourceFile, span));
+};
+
+/** Returns the best unprovable span for impure parsed metadata. */
+const firstUnprovableSpan = (facts: WorkflowMetadataFacts): SourceSpan => {
+  return facts.firstImpureSpan ?? facts.objectSpan;
+};
+
 /** Builds required-field diagnostics from parsed metadata facts. */
 const requiredFieldDiagnostics = (
   sourceFile: OriginalSourceFile,
@@ -227,6 +298,26 @@ const requiredFieldDiagnostics = (
   }
 
   return Object.freeze(diagnostics);
+};
+
+/** Builds a Claude-incompatible classification result. */
+const claudePureMeta = (
+  sourceFile: OriginalSourceFile,
+  facts: WorkflowMetadataFacts,
+  span: SourceSpan,
+): WorkflowMetadataClassification => {
+  return Object.freeze({
+    status: "claude-incompatible",
+    facts,
+    diagnostics: Object.freeze([
+      metadataDiagnostic(
+        sourceFile,
+        CLAUDE_PURE_META_RULE_DEFINITION,
+        CLAUDE_PURE_META_MESSAGE,
+        span,
+      ),
+    ]),
+  });
 };
 
 /** Builds a frozen metadata diagnostic for one source span. */
@@ -271,77 +362,6 @@ const staticallyUnprovable = (
   });
 };
 
-/** Checks whether a non-object metadata expression may contain an object literal. */
-const expressionContainsObjectLiteralCandidate = (
-  sourceFile: OriginalSourceFile,
-  span: SourceSpan,
-): boolean => {
-  const maskedText = maskNonCodeSource(sourceFile).maskedText;
-  const startIndex = textIndexForOffset(sourceFile, span.start.offset);
-  const endIndex = textIndexForOffset(sourceFile, span.end.offset);
-
-  for (let index = startIndex; index < endIndex; index += 1) {
-    if (maskedText[index] !== "{") {
-      continue;
-    }
-    if (isObjectLiteralOpening(maskedText, startIndex, index)) {
-      return true;
-    }
-    index = scanMaskedBraceEnd(maskedText, index, endIndex) - 1;
-  }
-
-  return false;
-};
-
-/** Checks whether a brace appears where JavaScript accepts an expression. */
-const isObjectLiteralOpening = (text: string, startIndex: number, braceIndex: number): boolean => {
-  const previousIndex = previousNonWhitespaceIndex(text, startIndex, braceIndex);
-  if (previousIndex === undefined) {
-    return true;
-  }
-  if (isArrowBodyOpening(text, previousIndex)) {
-    return false;
-  }
-  return "([{,;:?=+-*/%!&|^~<>".includes(text[previousIndex] ?? "");
-};
-
-/** Checks whether a brace opens an arrow-function block body. */
-const isArrowBodyOpening = (text: string, previousIndex: number): boolean => {
-  return text[previousIndex] === ">" && text[previousIndex - 1] === "=";
-};
-
-/** Finds the previous non-whitespace text index in a half-open range. */
-const previousNonWhitespaceIndex = (
-  text: string,
-  startIndex: number,
-  endIndex: number,
-): number | undefined => {
-  for (let index = endIndex - 1; index >= startIndex; index -= 1) {
-    if (!isWhitespaceCharacter(text[index] ?? "")) {
-      return index;
-    }
-  }
-  return undefined;
-};
-
-/** Skips a brace-delimited block in already masked source text. */
-const scanMaskedBraceEnd = (text: string, startIndex: number, endIndex: number): number => {
-  let depth = 0;
-  for (let index = startIndex; index < endIndex; index += 1) {
-    const character = text[index];
-    if (character === "{") {
-      depth += 1;
-    }
-    if (character === "}") {
-      depth -= 1;
-      if (depth === 0) {
-        return index + 1;
-      }
-    }
-  }
-  return endIndex;
-};
-
 /** Checks whether a property value satisfies ODW's runtime `name` contract. */
 const isNonEmptyStringProperty = (property: ParsedMetadataProperty): boolean => {
   return (
@@ -350,9 +370,5 @@ const isNonEmptyStringProperty = (property: ParsedMetadataProperty): boolean => 
     property.value.value.length > 0
   );
 };
-
-/** Converts a UTF-8 byte offset from a source span back to a text index. */
-const textIndexForOffset = (file: OriginalSourceFile, offset: number): number =>
-  textIndexAtOffset(file, offset);
 
 export { parseWorkflowMetadataLiteral };

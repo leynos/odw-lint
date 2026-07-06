@@ -51,13 +51,17 @@ const parseFacts = (sourceText: string) => {
   return result.facts;
 };
 
-/** Asserts the first unprovable parser span for inline workflow source. */
-const expectUnprovableSpan = (sourceText: string, expectedSpanText: string) => {
+/** Asserts the first impure parser span for inline object-literal metadata. */
+const expectFirstImpureSpan = (sourceText: string, expectedSpanText: string) => {
   const result = parseWorkflowMetadataLiteral(scanSource(sourceText));
 
-  expect(result.status).toBe("not-statically-provable");
-  if (result.status === "not-statically-provable") {
-    expect(spanText(sourceText, result.span)).toBe(expectedSpanText);
+  expect(result.status).toBe("parsed");
+  if (result.status === "parsed") {
+    expect(result.facts.portability).toBe("not-statically-provable");
+    expect(result.facts.firstImpureSpan).toBeDefined();
+    if (result.facts.firstImpureSpan !== undefined) {
+      expect(spanText(sourceText, result.facts.firstImpureSpan)).toBe(expectedSpanText);
+    }
   }
 };
 
@@ -85,11 +89,6 @@ const expectedInvalidFixtureDiagnosticSummary = (
     message: diagnostic.message,
     spanText: diagnostic.spanText,
   }));
-};
-
-/** Clears the hostile fixture marker without declaring a global test type. */
-const clearHostileMarker = (): void => {
-  delete (globalThis as Record<string, unknown>)[HOSTILE_MARKER_PROPERTY];
 };
 
 describe("workflow metadata literal parser", () => {
@@ -161,10 +160,14 @@ describe("workflow metadata literal parser", () => {
       'const café = "before";\nexport const meta = { name: "unicode", description: suffix };\n';
     const result = parseWorkflowMetadataLiteral(scanSource(sourceText));
 
-    expect(result.status).toBe("not-statically-provable");
-    if (result.status === "not-statically-provable") {
-      expect(spanText(sourceText, result.span)).toBe("suffix");
-      expect(result.span.start.offset).toBe(
+    expect(result.status).toBe("parsed");
+    if (result.status === "parsed") {
+      expect(result.facts.firstImpureSpan).toBeDefined();
+      if (result.facts.firstImpureSpan === undefined) {
+        return;
+      }
+      expect(spanText(sourceText, result.facts.firstImpureSpan)).toBe("suffix");
+      expect(result.facts.firstImpureSpan.start.offset).toBe(
         Buffer.byteLength(
           'const café = "before";\nexport const meta = { name: "unicode", description: ',
           "utf8",
@@ -203,14 +206,16 @@ describe("workflow metadata literal parser", () => {
     ],
     ["numeric string escape", 'export const meta = { name: "n", description: "\\0" };', '"\\0"'],
   ] as const) {
-    it(`reports the first unprovable span for ${description}`, () => {
-      expectUnprovableSpan(sourceText, expectedSpanText);
+    it(`records the first impure span for ${description}`, () => {
+      expectFirstImpureSpan(sourceText, expectedSpanText);
     });
   }
 });
 
 describe("workflow metadata classifier", () => {
-  afterEach(clearHostileMarker);
+  afterEach(() => {
+    delete (globalThis as Record<string, unknown>)[HOSTILE_MARKER_PROPERTY];
+  });
 
   for (const [description, sourceText, expected] of [
     [
@@ -359,14 +364,6 @@ describe("workflow metadata classifier", () => {
       ]);
     });
   }
-
-  it("does not emit claude pure-meta diagnostics in this task", () => {
-    const diagnostics = diagnosticSummary(
-      'export const meta = { name: "n", description: "d", phases: [{ title: helper }] };',
-    );
-
-    expect(diagnostics.map((diagnostic) => diagnostic.rule)).not.toContain("odw/claude-pure-meta");
-  });
 
   it("keeps hostile global-marker metadata passive", () => {
     const sourceText = invalidFixtureSource("hostile-metadata", "global-marker.js");

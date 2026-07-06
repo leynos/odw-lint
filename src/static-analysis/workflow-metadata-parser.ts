@@ -4,13 +4,28 @@ import type { SourceSpan } from "../diagnostics/types";
 import { textIndexAtOffset } from "./source-indexes";
 import { spanFromTextIndexes } from "./source-position";
 import { isStringLikeDelimiter } from "./source-scanner-primitives";
-import type { OriginalSourceFile, WorkflowEnvelopeScanResult, WorkflowMetaValue } from "./types";
+import type { OriginalSourceFile, WorkflowEnvelopeScanResult } from "./types";
 import type {
   ParsedMetadataProperty,
   ParsedMetadataValue,
-  WorkflowMetadataFacts,
   WorkflowMetadataParseResult,
 } from "./workflow-metadata";
+import { collectPropertyImpuritySpans, firstImpureSpan } from "./workflow-metadata-impurity";
+import {
+  freezeArray,
+  freezeMetadataFacts,
+  impureValue,
+  lastPropertyNamed,
+  normalizeNumericPropertyKey,
+  type ParsedPropertyResult,
+  type ParsedValueResult,
+  parsedProperty,
+  parsedValue,
+  parseNumericLiteral,
+  spanForUnparsedMetaValue,
+  type UnprovableResult,
+  unprovableFrom,
+} from "./workflow-metadata-parser-results";
 import {
   currentCharacter,
   isArrayTerminator,
@@ -32,16 +47,7 @@ export type ParserCursor = {
   readonly endIndex: number;
 };
 
-type ValueParseResult =
-  | {
-      readonly status: "parsed";
-      readonly value: ParsedMetadataValue;
-    }
-  | {
-      readonly status: "not-statically-provable";
-      readonly startIndex: number;
-      readonly endIndex: number;
-    };
+type ValueParseResult = ParsedValueResult | UnprovableResult;
 
 /**
  * Parses static literal metadata from an already scanned workflow envelope.
@@ -95,13 +101,20 @@ export const parseWorkflowMetadataLiteral = (
   }
 
   const properties = parsedObject.value.properties;
+  const impurities = freezeArray([
+    ...parsedObject.impurities,
+    ...collectPropertyImpuritySpans(properties),
+  ]);
+  const firstImpure = firstImpureSpan(impurities);
   return Object.freeze({
     status: "parsed",
     facts: freezeMetadataFacts({
       objectSpan: parsedObject.value.span,
       name: lastPropertyNamed(properties, "name"),
       description: lastPropertyNamed(properties, "description"),
-      portability: "pure-literal",
+      ...(firstImpure === undefined ? {} : { firstImpureSpan: firstImpure }),
+      impurities,
+      portability: firstImpure === undefined ? "pure-literal" : "not-statically-provable",
       properties,
     }),
   });
@@ -111,24 +124,31 @@ export const parseWorkflowMetadataLiteral = (
 const parseObject = (cursor: ParserCursor): ValueParseResult => {
   const objectStartIndex = cursor.index;
   cursor.index += 1;
+  const impurities: SourceSpan[] = [];
   const properties: ParsedMetadataProperty[] = [];
   skipTrivia(cursor);
 
   while (cursor.index < cursor.endIndex) {
     if (currentCharacter(cursor) === "}") {
       cursor.index += 1;
-      return parsedValue({
-        kind: "object",
-        span: spanFromTextIndexes(cursor.file, objectStartIndex, cursor.index),
-        properties: freezeArray(properties),
-      });
+      return parsedValue(
+        {
+          kind: "object",
+          span: spanFromTextIndexes(cursor.file, objectStartIndex, cursor.index),
+          properties: freezeArray(properties),
+        },
+        impurities,
+      );
     }
 
     const property = parseProperty(cursor);
     if (property.status === "not-statically-provable") {
       return property;
     }
-    properties.push(property.property);
+    impurities.push(...property.impurities);
+    if (property.property !== undefined) {
+      properties.push(property.property);
+    }
     skipTrivia(cursor);
 
     if (currentCharacter(cursor) === ",") {
@@ -145,58 +165,94 @@ const parseObject = (cursor: ParserCursor): ValueParseResult => {
 };
 
 /** Parses one object property or returns the first unprovable property span. */
-const parseProperty = (
-  cursor: ParserCursor,
-):
-  | {
-      readonly status: "parsed";
-      readonly property: ParsedMetadataProperty;
-    }
-  | {
-      readonly status: "not-statically-provable";
-      readonly startIndex: number;
-      readonly endIndex: number;
-    } => {
+const parseProperty = (cursor: ParserCursor): ParsedPropertyResult | UnprovableResult => {
   skipTrivia(cursor);
   const propertyStartIndex = cursor.index;
   if (cursor.text.startsWith("...", cursor.index)) {
-    return unprovableFrom(cursor, propertyStartIndex, scanExpressionEnd(cursor, [",", "}"]));
+    const endIndex = scanExpressionEnd(cursor, [",", "}"]);
+    cursor.index = endIndex;
+    return parsedProperty(undefined, [
+      spanFromTextIndexes(cursor.file, propertyStartIndex, endIndex),
+    ]);
   }
   if (currentCharacter(cursor) === "[") {
-    return unprovableFrom(cursor, propertyStartIndex, scanBalancedEnd(cursor, "[", "]"));
+    return parseComputedProperty(cursor, propertyStartIndex);
   }
 
   const key = parsePropertyKey(cursor);
   if (key === undefined) {
-    return unprovableFrom(cursor, propertyStartIndex, scanExpressionEnd(cursor, [",", "}"]));
+    const endIndex = scanExpressionEnd(cursor, [",", "}"]);
+    cursor.index = endIndex;
+    return parsedProperty(undefined, [
+      spanFromTextIndexes(cursor.file, propertyStartIndex, endIndex),
+    ]);
   }
 
   skipTrivia(cursor);
   if (currentCharacter(cursor) !== ":") {
-    return unprovableFrom(cursor, propertyStartIndex, scanExpressionEnd(cursor, [",", "}"]));
+    const endIndex = scanExpressionEnd(cursor, [",", "}"]);
+    cursor.index = endIndex;
+    return parsedProperty(undefined, [
+      spanFromTextIndexes(cursor.file, propertyStartIndex, endIndex),
+    ]);
   }
   cursor.index += 1;
   skipTrivia(cursor);
 
   const valueStartIndex = cursor.index;
-  const value = parseValue(cursor);
+  let value = parseValue(cursor);
   if (value.status === "not-statically-provable") {
     return value;
   }
   skipTrivia(cursor);
   if (!isPropertyTerminator(currentCharacter(cursor))) {
-    return unprovableFrom(cursor, valueStartIndex, scanExpressionEnd(cursor, [",", "}"]));
+    value = impureValue(cursor, valueStartIndex, scanExpressionEnd(cursor, [",", "}"]));
   }
 
-  return Object.freeze({
-    status: "parsed",
-    property: Object.freeze({
+  return parsedProperty(
+    Object.freeze({
       key: key.value,
       keySpan: key.span,
       value: value.value,
       span: spanFromTextIndexes(cursor.file, propertyStartIndex, cursor.index),
     }),
-  });
+    value.impurities,
+  );
+};
+
+/** Parses a computed property and records its key as object-level impurity. */
+const parseComputedProperty = (
+  cursor: ParserCursor,
+  propertyStartIndex: number,
+): ReturnType<typeof parseProperty> => {
+  const keyEndIndex = scanBalancedEnd(cursor, "[", "]");
+  const keySpan = spanFromTextIndexes(cursor.file, propertyStartIndex, keyEndIndex);
+  cursor.index = keyEndIndex;
+  skipTrivia(cursor);
+  const impurities: SourceSpan[] = [keySpan];
+  if (currentCharacter(cursor) !== ":") {
+    const endIndex = scanExpressionEnd(cursor, [",", "}"]);
+    cursor.index = endIndex;
+    return parsedProperty(undefined, [
+      ...impurities,
+      spanFromTextIndexes(cursor.file, keyEndIndex, endIndex),
+    ]);
+  }
+  cursor.index += 1;
+  skipTrivia(cursor);
+  const valueStartIndex = cursor.index;
+  const value = parseValue(cursor);
+  if (value.status === "not-statically-provable") {
+    return value;
+  }
+  impurities.push(...value.impurities);
+  skipTrivia(cursor);
+  if (!isPropertyTerminator(currentCharacter(cursor))) {
+    const valueEndIndex = scanExpressionEnd(cursor, [",", "}"]);
+    impurities.push(spanFromTextIndexes(cursor.file, valueStartIndex, valueEndIndex));
+    cursor.index = valueEndIndex;
+  }
+  return parsedProperty(undefined, impurities);
 };
 
 /** Parses a literal, numeric, or identifier object-property key. */
@@ -249,7 +305,7 @@ const parseValue = (cursor: ParserCursor): ValueParseResult => {
   if (isStringLikeDelimiter(character)) {
     const literal = scanStringLiteral(cursor, character);
     if (literal === undefined) {
-      return unprovableFrom(cursor, startIndex, scanExpressionEnd(cursor, [",", "}", "]"]));
+      return impureValue(cursor, startIndex, scanExpressionEnd(cursor, [",", "}", "]"]));
     }
     return parsedValue({
       kind: "primitive",
@@ -276,35 +332,40 @@ const parseValue = (cursor: ParserCursor): ValueParseResult => {
     });
   }
 
-  return unprovableFrom(cursor, startIndex, scanExpressionEnd(cursor, [",", "}", "]"]));
+  return impureValue(cursor, startIndex, scanExpressionEnd(cursor, [",", "}", "]"]));
 };
 
 /** Parses an array literal and each statically provable item. */
 const parseArray = (cursor: ParserCursor): ValueParseResult => {
   const arrayStartIndex = cursor.index;
   cursor.index += 1;
+  const impurities: SourceSpan[] = [];
   const items: ParsedMetadataValue[] = [];
   skipTrivia(cursor);
 
   while (cursor.index < cursor.endIndex) {
     if (currentCharacter(cursor) === "]") {
       cursor.index += 1;
-      return parsedValue({
-        kind: "array",
-        span: spanFromTextIndexes(cursor.file, arrayStartIndex, cursor.index),
-        items: freezeArray(items),
-      });
+      return parsedValue(
+        {
+          kind: "array",
+          span: spanFromTextIndexes(cursor.file, arrayStartIndex, cursor.index),
+          items: freezeArray(items),
+        },
+        impurities,
+      );
     }
 
     const itemStartIndex = cursor.index;
-    const item = parseValue(cursor);
+    let item = parseValue(cursor);
     if (item.status === "not-statically-provable") {
       return item;
     }
     skipTrivia(cursor);
     if (!isArrayTerminator(currentCharacter(cursor))) {
-      return unprovableFrom(cursor, itemStartIndex, scanExpressionEnd(cursor, [",", "]"]));
+      item = impureValue(cursor, itemStartIndex, scanExpressionEnd(cursor, [",", "]"]));
     }
+    impurities.push(...item.impurities);
     items.push(item.value);
     if (currentCharacter(cursor) === ",") {
       cursor.index += 1;
@@ -313,81 +374,4 @@ const parseArray = (cursor: ParserCursor): ValueParseResult => {
   }
 
   return unprovableFrom(cursor, arrayStartIndex, cursor.endIndex);
-};
-
-/** Freezes a successfully parsed metadata value result. */
-const parsedValue = (value: ParsedMetadataValue): ValueParseResult => {
-  return Object.freeze({ status: "parsed", value: freezeParsedValue(value) });
-};
-
-/** Advances the cursor to the end of the unprovable expression span. */
-const unprovableFrom = (
-  cursor: ParserCursor,
-  startIndex: number,
-  endIndex: number,
-): ValueParseResult & { readonly status: "not-statically-provable" } => {
-  cursor.index = endIndex;
-  return Object.freeze({ status: "not-statically-provable", startIndex, endIndex });
-};
-
-/** Finds the final property with a given key to mirror object literal overwrite. */
-const lastPropertyNamed = (
-  properties: readonly ParsedMetadataProperty[],
-  name: string,
-): ParsedMetadataProperty | undefined => {
-  return [...properties].reverse().find((property) => property.key === name);
-};
-
-/** Freezes top-level metadata facts before returning them to callers. */
-const freezeMetadataFacts = (facts: WorkflowMetadataFacts): WorkflowMetadataFacts => {
-  return Object.freeze({
-    ...facts,
-    properties: freezeArray(facts.properties),
-  });
-};
-
-/** Deep-freezes a parsed value tree. */
-const freezeParsedValue = (value: ParsedMetadataValue): ParsedMetadataValue => {
-  if (value.kind === "array") {
-    return Object.freeze({ ...value, items: freezeArray(value.items.map(freezeParsedValue)) });
-  }
-  if (value.kind === "object") {
-    return Object.freeze({
-      ...value,
-      properties: freezeArray(value.properties.map(freezeProperty)),
-    });
-  }
-  return Object.freeze(value);
-};
-
-/** Deep-freezes a parsed object property. */
-const freezeProperty = (property: ParsedMetadataProperty): ParsedMetadataProperty => {
-  return Object.freeze({ ...property, value: freezeParsedValue(property.value) });
-};
-
-/** Freezes a copied readonly array to avoid leaking mutable internals. */
-const freezeArray = <Value>(values: readonly Value[]): readonly Value[] => {
-  return Object.freeze([...values]);
-};
-
-/** Coerces numeric property keys the same way object literals do at runtime. */
-const normalizeNumericPropertyKey = (rawValue: string): string => {
-  return String(parseNumericLiteral(rawValue));
-};
-
-/** Parses a numeric literal after removing JavaScript numeric separators. */
-const parseNumericLiteral = (rawValue: string): number => Number(rawValue.replaceAll("_", ""));
-
-/** Chooses the best span for metadata values the literal parser cannot parse. */
-const spanForUnparsedMetaValue = (
-  sourceFile: OriginalSourceFile,
-  metaValue: WorkflowMetaValue,
-): SourceSpan => {
-  if (metaValue.kind === "non-object-expression") {
-    return metaValue.expressionSpan;
-  }
-  if ("span" in metaValue) {
-    return metaValue.span;
-  }
-  return spanFromTextIndexes(sourceFile, 0, 0);
 };

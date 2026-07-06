@@ -166,6 +166,9 @@ export const RULE_CATALOGUE = Object.freeze([
     category: "claude-compatibility",
     defaultSeverity: "warning",
     releaseStatus: "released",
+    messages: [
+      "Workflow metadata is not a pure literal, which Claude Code rejects because its static workflow reader cannot evaluate computed metadata.",
+    ],
   }),
   ruleDefinition({
     id: "odw/no-date-now",

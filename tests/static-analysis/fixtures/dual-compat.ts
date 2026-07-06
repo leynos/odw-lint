@@ -33,6 +33,44 @@ export const DUAL_COMPAT_FIXTURE_SNAPSHOTS = deepFreezeFixtureManifest([
     expectedDiagnostics: [],
   }),
   dualCompatFixture({
+    family: "claude-pure-meta",
+    fileName: "closed-constant-retries.js",
+    sha256: "092db658e90944197aa9cfb35defadba4bc3bb489b9bc17322a7434580b0d973",
+    expectedStatus: "warning",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/claude-pure-meta",
+        severity: "warning",
+        message:
+          "Workflow metadata is not a pure literal, which Claude Code rejects because its static workflow reader cannot evaluate computed metadata.",
+        span: {
+          start: { offset: 249, line: 8, column: 12 },
+          end: { offset: 254, line: 8, column: 17 },
+        },
+        spanText: "1 - 2",
+      }),
+    ],
+  }),
+  dualCompatFixture({
+    family: "claude-pure-meta",
+    fileName: "concat-tag.js",
+    sha256: "aefddfafb92fff53c096a6158146905b14b7ab2935dfdefcbdd41c2c6f51d08e",
+    expectedStatus: "warning",
+    expectedDiagnostics: [
+      diagnostic({
+        rule: "odw/claude-pure-meta",
+        severity: "warning",
+        message:
+          "Workflow metadata is not a pure literal, which Claude Code rejects because its static workflow reader cannot evaluate computed metadata.",
+        span: {
+          start: { offset: 235, line: 8, column: 10 },
+          end: { offset: 244, line: 8, column: 19 },
+        },
+        spanText: '"a" + "b"',
+      }),
+    ],
+  }),
+  dualCompatFixture({
     family: "deterministic-time",
     fileName: "date-alias.js",
     sha256: "00f0b6ee316a10c873c3c242504290cb33fdf642525dd6f763826aeab4133481",

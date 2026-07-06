@@ -3,13 +3,13 @@
 exports[`fixture metadata refresh CLI prints a parseable dry-run report from the CLI 1`] = `
 {
   "counts": {
-    "dualCompat": 10,
+    "dualCompat": 12,
     "hostileMetadata": 4,
     "invalidDiagnostics": 16,
     "invalidWorkflows": 16,
     "masking": 9,
     "odwExamples": 9,
-    "totalFixtures": 44,
+    "totalFixtures": 46,
   },
   "extraUpstreamExamples": [],
   "failures": [],
@@ -63,13 +63,13 @@ exports[`fixture metadata refresh CLI prints a parseable dry-run report from the
 exports[`fixture metadata refresh CLI prints actionable CLI failures to stderr 1`] = `
 {
   "counts": {
-    "dualCompat": 10,
+    "dualCompat": 12,
     "hostileMetadata": 4,
     "invalidDiagnostics": 16,
     "invalidWorkflows": 16,
     "masking": 9,
     "odwExamples": 9,
-    "totalFixtures": 44,
+    "totalFixtures": 46,
   },
   "extraUpstreamExamples": [],
   "failures": [

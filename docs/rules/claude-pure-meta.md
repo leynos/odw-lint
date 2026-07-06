@@ -15,15 +15,17 @@ that relies on computation rather than a pure literal shape.
 Prefer a plain metadata object made from literal values. Move computed values
 into the workflow body when they are not needed for discovery.
 
+The diagnostic points at the first computed value. It fires only when ODW would
+still load the workflow: the required fields are literal strings and every
+computed part is a self-contained constant expression.
+
 ## Failing example
 
 ```js
-const workflowName = "dynamic-name";
-
 export const meta = {
-  name: workflowName,
-  description: "Uses computed metadata.",
-  phases: [{ title: "Run" }],
+  name: "status-report",
+  description: "Summarizes status.",
+  retries: 1 - 2,
 };
 
 await agent("Draft status.");
@@ -33,8 +35,8 @@ await agent("Draft status.");
 
 ```js
 export const meta = {
-  name: "dynamic-name",
-  description: "Uses static metadata.",
+  name: "status-report",
+  description: "Summarizes status.",
   phases: [{ title: "Run" }],
 };
 

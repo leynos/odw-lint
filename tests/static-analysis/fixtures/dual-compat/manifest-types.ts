@@ -15,7 +15,7 @@ import { deepFreezeFixtureManifest } from "../manifest-freeze";
 /**
  * Supported dual-compatibility fixture families.
  */
-export type DualCompatFixtureFamily = "pure-metadata" | "deterministic-time";
+export type DualCompatFixtureFamily = "pure-metadata" | "deterministic-time" | "claude-pure-meta";
 
 /**
  * Expected lint status for dual-compatibility fixtures.

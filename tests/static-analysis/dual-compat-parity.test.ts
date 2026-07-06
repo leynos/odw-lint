@@ -117,6 +117,30 @@ describe("dual-compat deterministic-time parity", () => {
   });
 });
 
+describe("dual-compat claude-pure-meta parity", () => {
+  it("matches closed-constant metadata warning diagnostics and spans", () => {
+    const fixtures = DUAL_COMPAT_FIXTURE_SNAPSHOTS.filter(
+      (fixture) => fixture.family === "claude-pure-meta",
+    );
+
+    expect(fixtures).toHaveLength(2);
+    for (const fixture of fixtures) {
+      const sourceText = readDualCompatFixtureSource(fixture);
+      const outcome = loaderParityOutcome({ filePath: fixture.fixturePath, sourceText });
+      const expectedDiagnostics = comparableFixtureDiagnostics(fixture.expectedDiagnostics);
+
+      expect(comparableLiveDiagnostics(fixture)).toEqual(expectedDiagnostics);
+      expect(outcome.status).toBe("warning");
+      expect(outcome.dialectErrorRules).toEqual([]);
+      expect(outcome.ruleClasses).toEqual(["odw/claude-pure-meta"]);
+
+      for (const diagnostic of fixture.expectedDiagnostics) {
+        expectSpanToMatchSource(sourceText, diagnostic.span, diagnostic.spanText);
+      }
+    }
+  });
+});
+
 describe("dual-compat harness integration", () => {
   it("reduces every fixture to the manifest status and rule classes", () => {
     for (const fixture of DUAL_COMPAT_FIXTURE_SNAPSHOTS) {

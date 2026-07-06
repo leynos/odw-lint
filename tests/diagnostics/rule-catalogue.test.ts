@@ -90,7 +90,16 @@ const EXPECTED_RULE_ROWS = [
     ["Workflow body must be syntactically complete after ODW normalization."],
     "released",
   ],
-  ["odw/claude-pure-meta", "claude-compatibility", "warning", "claude-pure-meta", [], "released"],
+  [
+    "odw/claude-pure-meta",
+    "claude-compatibility",
+    "warning",
+    "claude-pure-meta",
+    [
+      "Workflow metadata is not a pure literal, which Claude Code rejects because its static workflow reader cannot evaluate computed metadata.",
+    ],
+    "released",
+  ],
   [
     "odw/no-date-now",
     "claude-compatibility",
