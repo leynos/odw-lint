@@ -550,6 +550,17 @@ export const lintWorkflowSource: (
 Dependencies: no new packages. Uses the existing `RULE_CATALOGUE`,
 `Diagnostic`/`DiagnosticSeverity` types, `bun test`, and `fast-check`.
 
+## Addenda
+
+- [ ] 3.1.3.1. Consolidate strict-Claude promotion policy helpers.
+  - Source: audit:3.1.3; severity low.
+  - Scope: add a shared non-throwing catalogue lookup and a named
+    strict-Claude promotion policy constant where the current implementation
+    duplicates lookup and inline policy literals.
+  - Success: strict-Claude promotion, tests, and public examples consume the
+    shared helper or policy constant where their contracts match, without
+    changing promoted diagnostics or default severities.
+
 ## Revision note
 
 Initial draft. Decomposes roadmap task 3.1.3 into three atomic work items:

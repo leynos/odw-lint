@@ -1142,6 +1142,13 @@ rule page.
   - Success: parser-backed diagnostics can add catalogue-owned messages without
     copying local `RULE_CATALOGUE.find(...)` or first-message guard logic into
     each checker.
+- [ ] 2.1.6.5. Add released-rule emission invariant coverage.
+  - Source: audit:3.1.3; severity medium.
+  - Scope: cross-check `RELEASED_RULE_IDS` against the production-emitted rule
+    set so released-but-unemitted rules fail before catalogue drift reaches
+    users.
+  - Success: a rule cannot remain `released` unless production diagnostics can
+    emit it, or the catalogue test fails with the missing rule identifier.
 
 ## Revision note
 

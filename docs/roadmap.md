@@ -546,6 +546,10 @@ statically. It unlocks metadata rules and body parsing. See
       first-message access behind diagnostics-layer helpers before
       parser-backed diagnostics multiply catalogue access patterns.
       Lightweight addendum pass.
+  - [ ] 2.1.6.5. Add released-rule emission invariant coverage.
+    - Addendum (from audit:3.1.3; medium). Cross-check `RELEASED_RULE_IDS`
+      against the production-emitted rule set so released-but-unemitted rules
+      fail before catalogue drift reaches users. Lightweight addendum pass.
 - [x] 2.1.7. Add rule-catalogue parity checks for fixture diagnostics.
   - Requires 2.1.6 and step 1.3.
   - Check fixture manifest expectations against the typed rule catalogue so
@@ -952,8 +956,9 @@ unlocks CI adoption and user feedback. See
   - Requires 2.4.1, 2.4.2, and 2.4.3.
   - See [technical-design.md](technical-design.md) §§7.0-7.4.
   - Success: fixtures cover `--output-format`, `--output-file`,
-    `--stdin-filename`, `--config`, `--isolated`, `--respect-gitignore`,
-    `--force-exclude`, `--exit-zero`, and `--exit-non-zero-on-fix`.
+    `--stdin-filename`, `--strict-claude`, `--config`, `--isolated`,
+    `--respect-gitignore`, `--force-exclude`, `--exit-zero`, and
+    `--exit-non-zero-on-fix`.
 
 ## 3. Second vertical slice: portability and orchestration feedback
 
@@ -990,6 +995,11 @@ reported clearly in one command. The result informs strict-mode policy. See
   - Requires 3.1.1 and 3.1.2.
   - See [technical-design.md](technical-design.md) §§7.3 and 9.2.
   - Success: strict mode exits non-zero for Claude compatibility warnings.
+  - [ ] 3.1.3.1. Consolidate strict-Claude promotion policy helpers.
+    - Addendum (from audit:3.1.3; low). Add a shared non-throwing catalogue
+      lookup and named strict-Claude promotion policy constant where the
+      current implementation duplicates lookup and inline policy literals.
+      Lightweight addendum pass.
 - [x] 3.1.4. Apply lexical-binding facts to deterministic-time compatibility
   detection.
   - Requires 2.2.4 and 3.1.2.
@@ -1059,6 +1069,15 @@ reported clearly in one command. The result informs strict-mode policy. See
     - Addendum (from audit:3.1.6; low). Pin alias visibility for block, `for`,
       and `catch` scopes before later collector work changes the same scope
       model. Lightweight addendum pass.
+- [ ] 3.1.7. Emit ODW-only validate diagnostics in the lint pipeline.
+  - Requires 3.1.3 and 3.1.6.
+  - Add a production scanner for ODW-only `validate(source)` calls, route its
+    diagnostics through `lintWorkflowSource`, and reconcile catalogue messages,
+    release status, rule docs, and strict-Claude non-promotion coverage.
+  - Success: `validate(source)` fixtures produce `odw/no-odw-only-validate`
+    info diagnostics through the merged pipeline, `strictClaude` leaves them
+    informational, and the released rule catalogue no longer advertises an
+    unemitted rule.
 
 ### 3.2. Add first orchestration-risk rules
 
@@ -1176,7 +1195,8 @@ It informs CI usage and later plugin integration. See
   strictness, and rule severity settings.
   - Requires 2.4.1.
   - See [technical-design.md](technical-design.md) §§7.2 and 10.
-  - Success: unknown rule identifiers fail configuration validation.
+  - Success: unknown rule identifiers fail configuration validation, and
+    `strictClaude` feeds the strict-Claude promotion mechanism from 3.1.3.
 - [ ] 3.3.2. Implement `--max-warnings`.
   - Requires 3.3.1.
   - See [technical-design.md](technical-design.md) §7.3.
@@ -1193,6 +1213,14 @@ It informs CI usage and later plugin integration. See
   - Success: tests cover `--fix`, `--fix-only`, `--diff`, `--unsafe-fixes`,
     `--show-fixes`, and `--exit-non-zero-on-fix` with Ruff-compatible exit
     behaviour.
+- [ ] 3.3.5. Decide strict-Claude stage-view severity semantics.
+  - Requires 3.3.1 and 3.3.3.
+  - Revisit whether structured pipeline sub-views should preserve default
+    severities or reflect strict-Claude promotion once the CLI flag and
+    configuration key make strict mode user-visible.
+  - Success: strict-mode reports, JSON output, and programmatic stage sub-views
+    either expose one consistent promoted severity contract or document a typed
+    default-versus-effective distinction with coverage for downstream callers.
 
 ## 4. Third vertical slice: adoption and ODW integration
 
