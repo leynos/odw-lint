@@ -1473,7 +1473,7 @@ types" and [developers-guide.md](developers-guide.md) "Documentation Upkeep".
     - Addendum (from audit:2.1.14; low). Add
       `source-scanner-regions.ts` and primitive wrapper-versus-direct-import
       guidance to `docs/repository-layout.md`. Lightweight addendum pass.
-  - [ ] 4.4.1.5. Document CLI and configuration source boundaries.
+  - [x] 4.4.1.5. Document CLI and configuration source boundaries.
     - Addendum (from audit:3.3.1; medium). Add `src/cli/` and `src/config/`
       ownership notes to `docs/repository-layout.md` so the layout guide
       matches the shipped configuration and command surfaces. Lightweight

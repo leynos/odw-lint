@@ -23,6 +23,8 @@ documents for the rationale behind those boundaries:
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AGENTS.md`                | Repository-local instructions for agents and maintainers. Keep process, style and quality-gate rules here when they apply to all work in the repository.                                                                      |
 | `docs/`                    | Long-lived requirements, design, maintenance and delivery documentation. Treat this directory as the knowledge base and keep it current when behaviour, architecture, dependencies or roadmap scope changes.                  |
+| `src/cli/`                 | Command-line argument parsing, help/version output, process IO seams, report writing, warning budgets, path exclusion and `check` command orchestration. Keep user-facing command semantics aligned with the user's guide.    |
+| `src/config/`              | Inert linter configuration schema validation, configuration-file loading and configured severity application. Keep this module independent of workflow-source readers and executable ODW runtime helpers.                     |
 | `src/diagnostics/`         | Diagnostic contracts, rule identifiers, rule catalogue data, severities, text rendering, JSON Schema support and report shapes. Changes here affect public diagnostic meaning and must stay aligned with rule docs and tests. |
 | `src/static-analysis/`     | Static source-file, position, span, snippet and scan helpers. This is part of the static-analysis ownership boundary; production code here must not import or execute ODW runtime loaders or primitives.                      |
 | `tests/diagnostics/`       | Tests for diagnostic contracts, public package exports, rule-catalogue parity, report rendering and architecture facts. Update these tests with any intentional diagnostic, schema, rule or export change.                    |
@@ -72,6 +74,26 @@ where those materials live.
   completed or re-scoped.
 
 ## Source boundaries
+
+`src/cli/` owns the standalone command surface described in the
+[user's guide](users-guide.md) and
+[developers' guide](developers-guide.md#static-analysis-boundary). Keep
+argument parsing, help and version output, output-format selection, warning
+budget handling, process IO seams, `--output-file`, `--stdin-filename`, path
+exclusion, and `check` command orchestration in this directory. The CLI may
+compose diagnostics, static analysis and configuration modules, but it should
+not make those lower-level modules depend on process streams, exit-code policy,
+or user-facing option parsing.
+
+`src/config/` owns the optional `odw-lint.json` configuration surface described
+in the [user's guide](users-guide.md#configuration) and
+[developers' guide](developers-guide.md#configuration-schema). Keep schema
+validation, default and explicit file loading, `--isolated` behaviour,
+configuration warnings, and configured severity application in this directory.
+Configuration modules must stay inert: they may validate JSON-like values and
+apply severity settings to existing diagnostics, but they must not read
+workflow source, import CLI file readers, execute ODW runtime helpers, or
+discover workflow inputs.
 
 `src/diagnostics/` owns diagnostic data and presentation contracts. The
 message-template module owns the parser-backed diagnostic interpolation
