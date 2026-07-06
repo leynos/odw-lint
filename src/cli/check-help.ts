@@ -7,6 +7,7 @@ export const CHECK_USAGE_TEXT = `Usage: odw-lint check [OPTIONS] <workflow.js ..
 Options:
   --output-format <format>       Select output format: full or json.
   --output-file <path>           Write diagnostics to a file instead of stdout.
+  --max-warnings <n>             Exit 1 when warnings exceed n.
   --strict-claude                Promote Claude portability findings to errors.
   --config <path>                Load configuration from the given file.
   --isolated                     Ignore discovered configuration files.

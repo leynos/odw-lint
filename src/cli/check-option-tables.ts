@@ -30,11 +30,3 @@ export const STRING_VALUE_OPTIONS = new Map<string, StringValueOption>([
     { field: "stdinFilename", missingValueError: "missing value for --stdin-filename" },
   ],
 ]);
-
-export const EQUALS_STRING_VALUE_OPTIONS = new Map<string, StringValueOption>([
-  ["--output-file=", { field: "outputFile", missingValueError: "missing value for --output-file" }],
-  [
-    "--stdin-filename=",
-    { field: "stdinFilename", missingValueError: "missing value for --stdin-filename" },
-  ],
-]);

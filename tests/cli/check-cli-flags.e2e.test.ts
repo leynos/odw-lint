@@ -120,6 +120,7 @@ describe("check CLI process flag surface", () => {
     for (const flag of [
       "--output-format",
       "--output-file",
+      "--max-warnings",
       "--strict-claude",
       "--config",
       "--isolated",
@@ -178,6 +179,19 @@ describe("check CLI process flag surface", () => {
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toBe("");
     expect(result.stdout).toContain(`${fixturePath}:10:19 error odw/no-date-now`);
+  });
+
+  it.each([
+    ["within budget", "1", 0],
+    ["above budget", "0", 1],
+  ] as const)("applies --max-warnings to process exits when warnings are %s", (_caseName, budget, exitCode) => {
+    const fixturePath = claudeWarningFixturePath();
+    const result = runCheckProcess(["--max-warnings", budget, fixturePath]);
+
+    expect(result.exitCode).toBe(exitCode);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain(`${fixturePath}:10:19 warning odw/no-date-now`);
+    expect(result.stdout).toContain("Found 1 warning.");
   });
 
   it("keeps diagnostics visible while returning 0 with --exit-zero", () => {

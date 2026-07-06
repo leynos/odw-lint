@@ -5,6 +5,7 @@
 import { describe, expect, it } from "bun:test";
 import { parseCheckArgs } from "../../src/cli/check-args";
 import { runCheckCli } from "../../src/cli/check-cli";
+import { STRING_VALUE_OPTIONS, VALUE_LESS_CHECK_OPTIONS } from "../../src/cli/check-option-tables";
 
 type CapturedCliRun = {
   readonly exitCode: 0 | 1 | 2;
@@ -16,16 +17,11 @@ const VERSION = "0.0.0-test";
 
 const IMPLEMENTED_HELP_FLAGS = [
   "--output-format",
-  "--output-file",
-  "--strict-claude",
-  "--config",
-  "--isolated",
-  "--force-exclude",
+  "--max-warnings",
+  ...STRING_VALUE_OPTIONS.keys(),
+  ...VALUE_LESS_CHECK_OPTIONS.keys(),
   "--respect-gitignore",
   "--no-respect-gitignore",
-  "--stdin-filename",
-  "--exit-zero",
-  "--exit-non-zero-on-fix",
   "--help",
   "--version",
 ] as const;
@@ -78,6 +74,7 @@ describe("check CLI help and version", () => {
 
   it.each([
     ["--output-format", ["check", "--output-format"]],
+    ["--max-warnings", ["check", "--max-warnings"]],
     ["--output-file", ["check", "--output-file"]],
     ["--config", ["check", "--config"]],
     ["--stdin-filename", ["check", "--stdin-filename"]],

@@ -8,7 +8,6 @@ import {
   informationalActionFor,
 } from "./check-informational-action";
 import {
-  EQUALS_STRING_VALUE_OPTIONS,
   STRING_VALUE_OPTIONS,
   type StringValueOption,
   VALUE_LESS_CHECK_OPTIONS,
@@ -38,7 +37,76 @@ type ParsedCheckOption =
 type ParsedValueLessCheckOption =
   | { readonly handled: true; readonly state: ParsedCheckArgState }
   | { readonly handled: false };
+
+type ValueCheckOption = {
+  readonly missingValueError: string;
+  readonly apply: (
+    state: ParsedCheckArgState,
+    value: string,
+    nextIndex: number,
+  ) => ParsedCheckOption;
+};
+
 const USAGE = "usage: odw-lint check <workflow.js ...>";
+
+/** Adapts table-driven string options into the common valued-option parser. */
+const valueCheckOptionFromStringOption = (option: StringValueOption): ValueCheckOption => ({
+  missingValueError: option.missingValueError,
+  apply: (state, value, nextIndex) => ({
+    ok: true,
+    handled: true,
+    state: stateWithStringOptionValue(state, option.field, value, nextIndex),
+  }),
+});
+
+const STRING_VALUE_CHECK_OPTION_ENTRIES: readonly (readonly [string, ValueCheckOption])[] = [
+  ...[...STRING_VALUE_OPTIONS].map(
+    ([optionName, option]) => [optionName, valueCheckOptionFromStringOption(option)] as const,
+  ),
+];
+
+const VALUE_CHECK_OPTIONS: ReadonlyMap<string, ValueCheckOption> = new Map([
+  [
+    "--output-format",
+    {
+      missingValueError: "missing value for --output-format",
+      apply: (state, value, nextIndex) => {
+        const parsedFormat = parseOutputFormatValue(value);
+
+        return parsedFormat.ok
+          ? {
+              ok: true,
+              handled: true,
+              state: { ...state, outputFormat: parsedFormat.outputFormat, nextIndex },
+            }
+          : parsedFormat;
+      },
+    },
+  ],
+  [
+    "--max-warnings",
+    {
+      missingValueError: "missing value for --max-warnings",
+      apply: (state, value, nextIndex) => {
+        const parsedMaxWarnings = parseMaxWarningsValue(value);
+
+        return parsedMaxWarnings.ok
+          ? {
+              ok: true,
+              handled: true,
+              state: { ...state, maxWarnings: parsedMaxWarnings.maxWarnings, nextIndex },
+            }
+          : parsedMaxWarnings;
+      },
+    },
+  ],
+  ...STRING_VALUE_CHECK_OPTION_ENTRIES,
+]);
+
+const EQUALS_VALUE_CHECK_OPTIONS: ReadonlyMap<string, ValueCheckOption> = new Map([
+  ...[...VALUE_CHECK_OPTIONS].map(([optionName, option]) => [`${optionName}=`, option] as const),
+]);
+
 /** Builds the successful parser result without retaining mutable arrays. */
 const parsedCheckArgsFromState = (state: ParsedCheckArgState): ParsedCheckArgs => {
   return {
@@ -217,45 +285,15 @@ const parseSeparateValueCheckOption = (
   state: ParsedCheckArgState,
   token: string,
 ): ParsedCheckOption => {
-  if (token === "--output-format") {
+  const option = VALUE_CHECK_OPTIONS.get(token);
+
+  if (option !== undefined) {
     const value = tokens[state.nextIndex + 1];
-    if (value === undefined) {
-      return { ok: false, usageError: "missing value for --output-format" };
+    if (isMissingSeparateOptionValue(value)) {
+      return { ok: false, usageError: option.missingValueError };
     }
 
-    const parsedFormat = parseOutputFormatValue(value);
-    return parsedFormat.ok
-      ? {
-          ok: true,
-          handled: true,
-          state: {
-            ...state,
-            outputFormat: parsedFormat.outputFormat,
-            nextIndex: state.nextIndex + 2,
-          },
-        }
-      : parsedFormat;
-  }
-  if (token === "--max-warnings") {
-    const value = tokens[state.nextIndex + 1];
-    const parsedMaxWarnings = parseMaxWarningsValue(value);
-    return parsedMaxWarnings.ok
-      ? {
-          ok: true,
-          handled: true,
-          state: {
-            ...state,
-            maxWarnings: parsedMaxWarnings.maxWarnings,
-            nextIndex: state.nextIndex + 2,
-          },
-        }
-      : parsedMaxWarnings;
-  }
-
-  const stringOption = STRING_VALUE_OPTIONS.get(token);
-
-  if (stringOption !== undefined) {
-    return parseSeparateStringValueOption(tokens, state, stringOption);
+    return option.apply(state, value, state.nextIndex + 2);
   }
 
   return { ok: true, handled: false };
@@ -266,91 +304,35 @@ const parseEqualsValueCheckOption = (
   state: ParsedCheckArgState,
   token: string,
 ): ParsedCheckOption => {
-  if (token.startsWith("--output-format=")) {
-    const value = token.slice("--output-format=".length);
-    if (value.length === 0) {
-      return { ok: false, usageError: "missing value for --output-format" };
-    }
-
-    const parsedFormat = parseOutputFormatValue(value);
-    return parsedFormat.ok
-      ? {
-          ok: true,
-          handled: true,
-          state: {
-            ...state,
-            outputFormat: parsedFormat.outputFormat,
-            nextIndex: state.nextIndex + 1,
-          },
-        }
-      : parsedFormat;
-  }
-  if (token.startsWith("--max-warnings=")) {
-    const parsedMaxWarnings = parseMaxWarningsValue(token.slice("--max-warnings=".length));
-    return parsedMaxWarnings.ok
-      ? {
-          ok: true,
-          handled: true,
-          state: {
-            ...state,
-            maxWarnings: parsedMaxWarnings.maxWarnings,
-            nextIndex: state.nextIndex + 1,
-          },
-        }
-      : parsedMaxWarnings;
-  }
-
-  const stringOption = parseEqualsStringValueOption(state, token);
-
-  if (!stringOption.ok) {
-    return stringOption;
-  }
-  if (stringOption.handled) {
-    return { ok: true, handled: true, state: stringOption.state };
-  }
-
-  return { ok: true, handled: false };
-};
-
-/** Parses two-token string options that all share missing-value semantics. */
-const parseSeparateStringValueOption = (
-  tokens: readonly string[],
-  state: ParsedCheckArgState,
-  option: StringValueOption,
-): ParsedCheckOption => {
-  const value = tokens[state.nextIndex + 1];
-
-  return value === undefined
-    ? { ok: false, usageError: option.missingValueError }
-    : {
-        ok: true,
-        handled: true,
-        state: stateWithStringOptionValue(state, option.field, value, state.nextIndex + 2),
-      };
-};
-
-/** Parses recognised `--option=value` string options. */
-const parseEqualsStringValueOption = (
-  state: ParsedCheckArgState,
-  token: string,
-): ParsedCheckOption => {
-  for (const [prefix, option] of EQUALS_STRING_VALUE_OPTIONS) {
+  for (const [prefix, option] of EQUALS_VALUE_CHECK_OPTIONS) {
     if (token.startsWith(prefix)) {
       const value = token.slice(prefix.length);
 
-      if (value.length === 0) {
-        return { ok: false, usageError: option.missingValueError };
-      }
-
-      return {
-        ok: true,
-        handled: true,
-        state: stateWithStringOptionValue(state, option.field, value, state.nextIndex + 1),
-      };
+      return value.length === 0
+        ? { ok: false, usageError: option.missingValueError }
+        : option.apply(state, value, state.nextIndex + 1);
     }
   }
 
   return { ok: true, handled: false };
+};
+
+/** Treats another recognised option as a missing split-form value. */
+const isMissingSeparateOptionValue = (value: string | undefined): value is undefined => {
+  return value === undefined || isRecognisedCheckOptionToken(value);
+};
+
+/** Returns whether a token would be consumed as a `check` option. */
+const isRecognisedCheckOptionToken = (token: string): boolean => {
+  return (
+    VALUE_CHECK_OPTIONS.has(token) ||
+    token.startsWith("--output-format=") ||
+    token.startsWith("--max-warnings=") ||
+    [...STRING_VALUE_OPTIONS.keys()].some((optionName) => token.startsWith(`${optionName}=`)) ||
+    VALUE_LESS_CHECK_OPTIONS.has(token) ||
+    token === "--respect-gitignore" ||
+    token === "--no-respect-gitignore"
+  );
 };
 
 /** Sets one parsed string option while preserving exact optional properties. */

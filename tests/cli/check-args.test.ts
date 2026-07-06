@@ -3,6 +3,9 @@
  */
 
 import { describe, expect, it } from "bun:test";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseCheckArgs } from "../../src/cli/check-args";
 
 const DEFAULT_EXIT_POLICY = {
@@ -106,8 +109,11 @@ describe("check argument parser", () => {
     });
   });
 
-  it("parses --config with a value", () => {
-    expect(parseCheckArgs(["check", "--config", "odw-lint.json", "workflow.js"])).toEqual({
+  it.each([
+    ["separate value", ["check", "--config", "odw-lint.json", "workflow.js"]],
+    ["equals value", ["check", "--config=odw-lint.json", "workflow.js"]],
+  ] as const)("parses --config from %s", (_caseName, args) => {
+    expect(parseCheckArgs(args)).toEqual({
       ok: true,
       outputFormat: "full",
       paths: Object.freeze(["workflow.js"]),
@@ -204,11 +210,37 @@ describe("check argument parser", () => {
     });
   });
 
-  it("rejects --config without a value", () => {
-    expect(parseCheckArgs(["check", "--config"])).toEqual({
-      ok: false,
-      usageError: "missing value for --config",
-    });
+  it.each([
+    ["separate form", ["check", "--config"]],
+    ["equals form", ["check", "--config="]],
+    ["known option token", ["check", "--config", "--isolated", "workflow.js"]],
+  ] as const)("rejects --config without a value in %s", (_caseName, args) => {
+    expect(parseCheckArgs(args)).toEqual({ ok: false, usageError: "missing value for --config" });
+  });
+
+  it.each([
+    [
+      "output format",
+      ["check", "--output-format", "--config", "workflow.js"],
+      "missing value for --output-format",
+    ],
+    [
+      "max warnings",
+      ["check", "--max-warnings", "--config", "workflow.js"],
+      "missing value for --max-warnings",
+    ],
+    [
+      "output file",
+      ["check", "--output-file", "--config", "workflow.js"],
+      "missing value for --output-file",
+    ],
+    [
+      "stdin filename",
+      ["check", "--stdin-filename", "--config"],
+      "missing value for --stdin-filename",
+    ],
+  ] as const)("rejects known option tokens as %s values", (_caseName, args, usageError) => {
+    expect(parseCheckArgs(args)).toEqual({ ok: false, usageError });
   });
 
   it("parses --isolated", () => {
@@ -311,4 +343,12 @@ describe("check argument parser", () => {
       respectGitignore: false,
     });
   });
+
+  it("keeps check-args as the only check parser module", () => {
+    expect(existsSync(ORPHANED_CHECK_ARGS_MODULE)).toBe(false);
+  });
 });
+
+const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
+
+const ORPHANED_CHECK_ARGS_MODULE = join(repositoryRoot, "src/cli/check-cli-args.ts");

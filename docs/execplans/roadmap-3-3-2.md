@@ -150,11 +150,12 @@ Hard invariants that must hold throughout implementation.
   was still an unknown option. Green: the focused test passed after adding
   strict non-negative integer parsing, accepting both split and equals
   spellings, and passing the parsed budget into `checkDiagnosticsExitCode`.
-  Refactor/gates: `src/cli/check-cli-args.ts` now owns parser helpers so
-  `src/cli/check-cli.ts` stays below the file-size limit and
-  `parseCheckOption` stays below the complexity limit; scrutineer reported
-  `make check-fmt`, `make typecheck`, `make lint`, `make test`, and `make all`
-  passed.
+  Refactor/gates: parser helpers were extracted out of `src/cli/check-cli.ts`
+  so the command runner stayed below the file-size limit and `parseCheckOption`
+  stayed below the complexity limit; scrutineer reported `make check-fmt`,
+  `make typecheck`, `make lint`, `make test`, and `make all` passed. Addendum
+  3.3.2.3 later removed the orphaned duplicate parser so `src/cli/check-args.ts`
+  remains the only live parser home.
 - [x] (2026-07-06T08:20Z) WI-4: Document the `--max-warnings` warning-budget
   behaviour. Updated the developers guide, users guide, and technical design
   exit-code tables so the warning-budget exception is explicit, removed
@@ -258,9 +259,11 @@ Hard invariants that must hold throughout implementation.
   change while preserving default Ruff-parity behaviour for all existing
   callers that omit the policy argument.
   Date/Author: 2026-07-06T07:57Z, implementation agent.
-- Decision: WI-3 moved argument parsing into `src/cli/check-cli-args.ts` while
+- Decision: WI-3 moved argument parsing out of `src/cli/check-cli.ts` while
   leaving report writing, configuration loading, and process-exit orchestration
-  in `src/cli/check-cli.ts`.
+  in `src/cli/check-cli.ts`. The maintained parser home is now
+  `src/cli/check-args.ts`; addendum 3.3.2.3 deletes the unwired
+  `src/cli/check-cli-args.ts` duplicate.
   Rationale: the extraction was the smallest way to satisfy the existing
   file-size and complexity gates after adding `--max-warnings`, without moving
   analysis, configuration, or reporting responsibilities.
@@ -284,7 +287,7 @@ the no-policy call preserves the original "any diagnostic fails" rule.
 
 ## Addenda
 
-- [ ] 3.3.2.1. Normalize valued `check` option parsing.
+- [x] 3.3.2.1. Normalize valued `check` option parsing.
   - Source: review:3.3.1, review:3.3.2, and audit:3.3.2; severity medium.
   - Scope: align missing-value, equals-form, and option-like token handling
     for valued `check` options, including `--config`, `--output-format`, and
@@ -293,21 +296,21 @@ the no-policy call preserves the original "any diagnostic fails" rule.
   - Success: split and equals spellings produce consistent usage errors,
     option tokens are not silently consumed as values, and adding a new valued
     option does not require cloning the parser dispatch pattern.
-- [ ] 3.3.2.2. Add process-level warning-budget coverage.
+- [x] 3.3.2.2. Add process-level warning-budget coverage.
   - Source: review:3.3.2; severity low.
   - Scope: add real-process corpus coverage for `--max-warnings` so the path
     from `main.ts` through `runCheckCli` to the warning-budget exit policy is
     pinned.
   - Success: the e2e corpus suite proves warning budgets propagate to process
     exit codes without relying only on injected-reader CLI tests.
-- [ ] 3.3.2.3. Remove the orphaned duplicate check parser.
+- [x] 3.3.2.3. Remove the orphaned duplicate check parser.
   - Source: audit:2.4.4; severity high.
   - Scope: delete the unwired `src/cli/check-cli-args.ts` parser duplicate and
     update any stale references that still identify it as the live parser home.
   - Success: the live `src/cli/check-args.ts` parser remains the only
     recognised `check` argument parser, and import or inventory coverage keeps
     future parser work from landing on an unwired duplicate.
-- [ ] 3.3.2.4. List `--max-warnings` in check help.
+- [x] 3.3.2.4. List `--max-warnings` in check help.
   - Source: audit:2.4.4; severity medium.
   - Scope: add the shipped warning-budget flag to `check --help` and derive or
     cross-check help coverage from the recognised option set where that can be

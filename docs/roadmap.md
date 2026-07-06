@@ -1285,20 +1285,20 @@ It informs CI usage and later plugin integration. See
   - Requires 3.3.1.
   - See [technical-design.md](technical-design.md) §7.3.
   - Success: the command exits code 1 when warning count exceeds the threshold.
-  - [ ] 3.3.2.1. Normalize valued `check` option parsing.
+  - [x] 3.3.2.1. Normalize valued `check` option parsing.
     - Addendum (from review:3.3.1, review:3.3.2, and audit:3.3.2; medium).
       Align missing, equals, and option-like value handling for valued options,
       including `--config` and `--max-warnings`, behind the shared parser
       table. Lightweight addendum pass.
-  - [ ] 3.3.2.2. Add process-level warning-budget coverage.
+  - [x] 3.3.2.2. Add process-level warning-budget coverage.
     - Addendum (from review:3.3.2; low). Cover `--max-warnings` in the real
       process corpus path so `main.ts` to exit-code propagation is pinned.
       Lightweight addendum pass.
-  - [ ] 3.3.2.3. Remove the orphaned duplicate check parser.
+  - [x] 3.3.2.3. Remove the orphaned duplicate check parser.
     - Addendum (from audit:2.4.4; high). Delete the unwired
       `check-cli-args.ts` parser duplicate so parser maintenance has one live
       home. Lightweight addendum pass.
-  - [ ] 3.3.2.4. List `--max-warnings` in check help.
+  - [x] 3.3.2.4. List `--max-warnings` in check help.
     - Addendum (from audit:2.4.4; medium). Add the warning-budget flag to
       `check --help` and pin recognised-option parity for future flags.
       Lightweight addendum pass.
