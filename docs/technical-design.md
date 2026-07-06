@@ -164,13 +164,15 @@ Both the source-mask scanner family and workflow-metadata scanners compose
 shared token-grammar primitives from
 `src/static-analysis/source-scanner-primitives.ts`. That internal seam owns
 line-terminator classification, escape advancement, comment boundaries,
-delimiter guards, identifier-run scanners, and the shared region walkers for
-delimited strings/templates, single-pair balanced expressions, and inert-region
-skips. Region-level loops may live in focused sibling modules, but they are
-re-exported through the primitives seam. Scanner-family modules may build
-token-specific orchestration around those primitives, but they must not
-re-implement the shared UTF-16 delimited, balanced, string, or comment-walk
-loops.
+delimiter guards, identifier-run scanners, compact operator token recognition,
+the shared expression-leading previous-character base set, and the shared
+region walkers for delimited strings/templates, single-pair balanced
+expressions, and inert-region skips. Region-level loops may live in focused
+sibling modules, but they are re-exported through the primitives seam.
+Scanner-family modules may build token-specific orchestration around those
+primitives, but they must not re-implement the shared UTF-16 delimited,
+balanced, string, comment-walk, compact-operator, or expression-leading
+character contracts.
 
 ### 6.3. Metadata classification
 

@@ -6,6 +6,7 @@
  * source-file factory rather than trusting structurally forged records.
  */
 
+import { freezeSourceSpan } from "../diagnostics/source-coordinates";
 import type { SourcePosition, SourceSpan } from "../diagnostics/types";
 import { sourceIndexes } from "./source-indexes";
 import { type OriginalSourceFile, SourceOffsetError } from "./types";
@@ -223,8 +224,5 @@ const isSamePosition = (left: SourcePosition, right: SourcePosition): boolean =>
 
 /** Copies a source span into a readonly record. */
 const sourceSpan = (span: SourceSpan): SourceSpan => {
-  return Object.freeze({
-    start: span.start,
-    end: span.end,
-  });
+  return freezeSourceSpan(span.start, span.end);
 };

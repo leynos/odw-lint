@@ -11,7 +11,7 @@ import { scanRegexRange } from "./source-mask-regex";
 import { scanQuotedStringRange } from "./source-mask-strings";
 import { scanTemplateRange } from "./source-mask-templates";
 import type { MaskedSource, SourceMaskRange } from "./source-mask-types";
-import { asciiIdentifierRunStart } from "./source-scanner-primitives";
+import { asciiIdentifierRunStart, compactOperatorTokenEndingAt } from "./source-scanner-primitives";
 import type { OriginalSourceFile } from "./types";
 
 export type { MaskedSource, SourceMaskKind, SourceMaskRange } from "./source-mask-types";
@@ -127,24 +127,10 @@ const lastSignificantTokenInRange = (
 const significantTokenEndingAt = (sourceText: string, index: number): string => {
   const tokenStartIndex = asciiIdentifierRunStart(sourceText, index + 1);
   if (tokenStartIndex === index + 1) {
-    return significantOperatorEndingAt(sourceText, index);
+    return compactOperatorTokenEndingAt(sourceText, index);
   }
 
   return sourceText.slice(tokenStartIndex, index + 1);
-};
-
-/** Finds a compact operator token ending at a non-identifier index. */
-const significantOperatorEndingAt = (sourceText: string, index: number): string => {
-  const character = sourceText[index] ?? "";
-  const previousCharacter = sourceText[index - 1] ?? "";
-  if (character === "+" && previousCharacter === "+") {
-    return "++";
-  }
-  if (character === "-" && previousCharacter === "-") {
-    return "--";
-  }
-
-  return character;
 };
 
 /** Scans for any maskable range at one source-text index. */

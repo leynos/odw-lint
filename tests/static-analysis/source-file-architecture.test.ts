@@ -176,6 +176,7 @@ describe("source-file helper architecture", () => {
     ]);
     expectModuleDeclarations("src/static-analysis/source-scanner-primitives.ts", [
       "DelimiterDepthState",
+      "EXPRESSION_LEADING_PREVIOUS_CHARACTERS",
       "QuotedStringDelimiter",
       "RegexDelimiter",
       "SOURCE_LINE_TERMINATORS",
@@ -185,6 +186,7 @@ describe("source-file helper architecture", () => {
       "asciiIdentifierRunStart",
       "blockCommentEnd",
       "codePointStringAt",
+      "compactOperatorTokenEndingAt",
       "commentDispatchEnd",
       "identifierRunEnd",
       "indexAfterEscapedUnit",
@@ -232,7 +234,6 @@ describe("source-file helper architecture", () => {
       "nextSignificantCharacterAfterRange",
       "nextSignificantTokenAfterRange",
       "scanMaskRange",
-      "significantOperatorEndingAt",
       "significantTokenEndingAt",
     ]);
     expectModuleDeclarations("src/static-analysis/source-mask-types.ts", [
@@ -268,7 +269,6 @@ describe("source-file helper architecture", () => {
       "scanTemplateRegexEnd",
       "scanTemplateEnd",
       "scanTemplateRange",
-      "significantTemplateOperatorEndingAt",
     ]);
     expectModuleDeclarations("src/static-analysis/source-mask-regex.ts", [
       "REGEX_ALLOWED_PREVIOUS_CHARACTERS",

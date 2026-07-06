@@ -5,6 +5,7 @@
 import type { RuleDefinition } from "./rule-catalogue";
 import { ruleDocsPath } from "./rule-catalogue";
 import type { DiagnosticSeverity } from "./severity";
+import { copySourcePosition, freezeSourceSpan } from "./source-coordinates";
 import type { Diagnostic, DiagnosticSuggestion, SourcePosition, SourceSpan } from "./types";
 
 /**
@@ -49,15 +50,12 @@ export const createRuleDiagnostic = (input: RuleDiagnosticInput): Diagnostic => 
 
 /** Copies one source position into a frozen diagnostic payload. */
 const frozenPosition = (position: SourcePosition): SourcePosition => {
-  return Object.freeze({ ...position });
+  return copySourcePosition(position);
 };
 
 /** Copies one source span into a frozen diagnostic payload. */
 const frozenSpan = (span: SourceSpan): SourceSpan => {
-  return Object.freeze({
-    start: frozenPosition(span.start),
-    end: frozenPosition(span.end),
-  });
+  return freezeSourceSpan(frozenPosition(span.start), frozenPosition(span.end));
 };
 
 /** Copies diagnostic suggestions into a frozen diagnostic payload. */

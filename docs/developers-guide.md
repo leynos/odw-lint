@@ -720,9 +720,16 @@ Internal source-helper ownership is split by responsibility:
   scanner-family modules for line terminators, escape advancement, comment
   boundaries, delimiter guards, identifier runs,
   `scanDelimitedRegionEnd`, `scanBalancedExpressionEnd`, and
-  `nextInertRegionEnd`. Keep it free of mask-range, parser-cursor, diagnostic,
-  and public package types; compose primitives there, then keep token-specific
-  range or metadata decisions in the owning scanner family.
+  `nextInertRegionEnd`. It also owns compact operator token recognition through
+  `compactOperatorTokenEndingAt` and the shared
+  `EXPRESSION_LEADING_PREVIOUS_CHARACTERS` base set used when a following `/`
+  or `{` may start an expression. Keep it free of mask-range, parser-cursor,
+  diagnostic, and public package types; compose primitives there, then keep
+  token-specific range or metadata decisions in the owning scanner family.
+  Object-literal detection deliberately derives its local set as that base plus
+  `/`, because a division or regex-close context can still precede an
+  object-literal expression while regex-literal detection must not treat `/` as
+  a regex-leading previous character.
 - `src/static-analysis/source-scanner-regions.ts` owns the shared
   region-level scanner loops and is re-exported through
   `source-scanner-primitives.ts`. Its permitted callers are the two scanner
@@ -760,6 +767,13 @@ Internal source-helper ownership is split by responsibility:
   construction, and caller-supplied span validation.
 - `src/static-analysis/source-snippet.ts` owns validated source slicing and
   reviewer-facing snippets.
+- `src/diagnostics/source-coordinates.ts` owns frozen source-coordinate copies
+  shared across diagnostics and static-analysis modules. Use
+  `copySourcePosition` for a frozen copy of one `SourcePosition`, and
+  `freezeSourceSpan` for the shallow `{ start, end }` span wrapper. Callers
+  that need deep span copies must copy the positions first, then freeze the
+  span, so shallow source-span construction and deep diagnostic-span
+  construction remain explicit.
 
 Keep new parser, mapper, and reporter code on the public facade unless it needs
 an explicitly internal helper. Do not re-export private index or validation

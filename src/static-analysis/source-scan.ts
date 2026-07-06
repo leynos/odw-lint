@@ -6,6 +6,7 @@
  * parser normalization or future span mapping can alter the source shape.
  */
 
+import { copySourcePosition } from "../diagnostics/source-coordinates";
 import type { SourcePosition } from "../diagnostics/types";
 import { codePointStringAt, isCrLfAt, isSourceLineTerminator } from "./source-scanner-primitives";
 import type { SourceLine } from "./types";
@@ -175,5 +176,5 @@ export const sourceLine = (line: SourceLine): SourceLine => {
  * @returns An immutable copy of the source position.
  */
 export const sourcePosition = (position: SourcePosition): SourcePosition => {
-  return Object.freeze({ ...position });
+  return copySourcePosition(position);
 };

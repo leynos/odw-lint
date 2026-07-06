@@ -1388,13 +1388,14 @@ This step answers whether deferred static-analysis refactors can reduce drift
 without changing the validated v1 diagnostic contract. It informs future rule
 work by keeping shared helpers documented, tested, and owned once.
 
-- [ ] 5.4.1. Consolidate duplicated static-analysis helper fragments.
+- [x] 5.4.1. Consolidate duplicated static-analysis helper fragments.
   - Requires steps 2.1-2.3.
   - Extract shared compact-operator token handling, source position/span copying
     helpers, and the object-literal preceding-character set where contracts
     match.
   - Success: one reviewed helper owns each duplicated contract, focused tests
     pin unchanged diagnostics, and no production rule output changes.
+  - Completed by [roadmap-5-4-1.md](execplans/roadmap-5-4-1.md).
 
 ### 5.5. Reconcile dormant body-syntax span narrowing
 

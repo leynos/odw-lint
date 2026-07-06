@@ -11,6 +11,7 @@ import { isRegexAllowedAfter, scanRegexBodyEnd } from "./source-mask-regex";
 import type { SourceMaskRange } from "./source-mask-types";
 import {
   asciiIdentifierRunStart,
+  compactOperatorTokenEndingAt,
   indexAfterEscapedUnit,
   isRegexDelimiter,
   isSourceLineTerminator,
@@ -143,27 +144,13 @@ const previousSignificantTemplateToken = (sourceText: string, index: number): st
 
   const character = sourceText[cursor] ?? "";
   if (!isAsciiIdentifierStartCharacter(character)) {
-    return significantTemplateOperatorEndingAt(sourceText, cursor);
+    return compactOperatorTokenEndingAt(sourceText, cursor);
   }
 
   const tokenEndIndex = cursor + 1;
   const tokenStartIndex = asciiIdentifierRunStart(sourceText, tokenEndIndex);
 
   return sourceText.slice(tokenStartIndex, tokenEndIndex);
-};
-
-/** Finds a compact operator token ending at a non-identifier index. */
-const significantTemplateOperatorEndingAt = (sourceText: string, index: number): string => {
-  const character = sourceText[index] ?? "";
-  const previousCharacter = sourceText[index - 1] ?? "";
-  if (character === "+" && previousCharacter === "+") {
-    return "++";
-  }
-  if (character === "-" && previousCharacter === "-") {
-    return "--";
-  }
-
-  return character;
 };
 
 /** Finds the previous non-whitespace character index before an expression index. */

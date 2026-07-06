@@ -4,7 +4,15 @@ import type { SourceSpan } from "../diagnostics/types";
 import { textIndexAtOffset } from "./source-indexes";
 import { maskNonCodeSource } from "./source-mask";
 import { isWhitespaceCharacter } from "./source-mask-delimiters";
+import { EXPRESSION_LEADING_PREVIOUS_CHARACTERS } from "./source-scanner-primitives";
 import type { OriginalSourceFile } from "./types";
+
+const OBJECT_LITERAL_ALLOWED_PREVIOUS_CHARACTERS = new Set([
+  ...EXPRESSION_LEADING_PREVIOUS_CHARACTERS,
+  // Unlike regex starts, division and regex-close contexts may still be
+  // followed by an object-literal expression.
+  "/",
+]);
 
 /**
  * Checks whether a non-object metadata expression may contain an object literal.
@@ -44,7 +52,7 @@ const isObjectLiteralOpening = (text: string, startIndex: number, braceIndex: nu
   if (isArrowBodyOpening(text, previousIndex)) {
     return false;
   }
-  return "([{,;:?=+-*/%!&|^~<>".includes(text[previousIndex] ?? "");
+  return OBJECT_LITERAL_ALLOWED_PREVIOUS_CHARACTERS.has(text[previousIndex] ?? "");
 };
 
 /** Checks whether a brace opens an arrow-function block body. */

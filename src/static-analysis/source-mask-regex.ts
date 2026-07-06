@@ -9,12 +9,13 @@ import { createMaskedRange } from "./source-mask-delimiters";
 import type { SourceMaskRange } from "./source-mask-types";
 import {
   asciiIdentifierRunEnd,
+  EXPRESSION_LEADING_PREVIOUS_CHARACTERS,
   indexAfterEscapedUnit,
   isRegexDelimiter,
   isSourceLineTerminator,
 } from "./source-scanner-primitives";
 
-export const REGEX_ALLOWED_PREVIOUS_CHARACTERS = new Set("([{,;:=!&|?+-*%<>~^".split(""));
+export const REGEX_ALLOWED_PREVIOUS_CHARACTERS = new Set(EXPRESSION_LEADING_PREVIOUS_CHARACTERS);
 export const REGEX_ALLOWED_PREVIOUS_KEYWORDS = new Set([
   "await",
   "case",

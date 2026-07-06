@@ -259,6 +259,8 @@ entry; that index enumerates every current rule page.
   public binding fact reconciliation.
 - [Roadmap 4.4.1 ExecPlan](execplans/roadmap-4-4-1.md) plans the documentation
   contents and repository-layout scaffolding work.
+- [Roadmap 5.4.1 ExecPlan](execplans/roadmap-5-4-1.md) plans duplicated
+  static-analysis helper consolidation.
 - [Roadmap 5.5.1 ExecPlan](execplans/roadmap-5-5-1.md) plans the body-syntax
   span-narrowing surface reconciliation.
 

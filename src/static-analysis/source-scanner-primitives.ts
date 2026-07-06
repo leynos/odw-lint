@@ -9,6 +9,16 @@ import {
 /** JavaScript line terminators recognised by static source scanners. */
 const SOURCE_LINE_TERMINATORS = new Set(["\n", "\r", "\u2028", "\u2029"]);
 
+/**
+ * Characters after which JavaScript may start another expression.
+ *
+ * Static scanners share this base when deciding whether `/` may open a regex
+ * literal or `{` may open an object-literal expression.
+ */
+export const EXPRESSION_LEADING_PREVIOUS_CHARACTERS: ReadonlySet<string> = new Set(
+  "([{,;:=!&|?+-*%<>~^".split(""),
+);
+
 export type QuotedStringDelimiter = "'" | '"';
 export type TemplateDelimiter = "`";
 export type RegexDelimiter = "/";
@@ -244,6 +254,26 @@ export const asciiIdentifierRunStart = (text: string, end: number): number => {
   }
 
   return index + 1;
+};
+
+/**
+ * Finds a compact operator token ending at a non-identifier index.
+ *
+ * @param sourceText - Source text to inspect.
+ * @param index - UTF-16 index of the operator token end.
+ * @returns `++`, `--`, or the single source character at `index`.
+ */
+export const compactOperatorTokenEndingAt = (sourceText: string, index: number): string => {
+  const character = sourceText[index] ?? "";
+  const previousCharacter = sourceText[index - 1] ?? "";
+  if (character === "+" && previousCharacter === "+") {
+    return "++";
+  }
+  if (character === "-" && previousCharacter === "-") {
+    return "--";
+  }
+
+  return character;
 };
 
 export type { BalancedExpressionOptions, DelimitedRegionOptions } from "./source-scanner-regions";
