@@ -151,6 +151,18 @@ failures, and Claude compatibility checks consume the same successful parse
 result. The package entry re-exports `lintWorkflowSource` and
 `WorkflowLintResult` for future CLI and public-consumer work.
 
+`promoteStrictClaudeSeverity` is the library mechanism behind strict Claude
+portability mode. It reads the rule catalogue, promotes diagnostics whose rule
+category is `claude-compatibility` and whose effective severity is `warning`,
+and leaves all other diagnostics unchanged. This includes preserving
+informational Claude compatibility findings such as `odw/no-odw-only-validate`.
+`lintWorkflowSource(source, { strictClaude: true })` applies that promotion to
+the merged `diagnostics` stream only; the `scan`, `classification`,
+`bodySyntax`, and `claudeCompatibility` sub-views continue to expose each
+pipeline stage's default-severity findings. The parsed `--strict-claude` CLI
+flag and `strictClaude` configuration key that toggle this mechanism are owned
+by the CLI tasks in roadmap 2.4 and configuration tasks in roadmap 3.3.
+
 `parseWorkflowBody` remains available for standalone parser-span tests and
 callers that need only body-syntax diagnostics. Callers that need full workflow
 diagnostics should use `lintWorkflowSource` so the body-syntax and Claude

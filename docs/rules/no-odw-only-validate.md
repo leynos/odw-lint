@@ -11,6 +11,8 @@
 This rule reports calls to ODW-only `validate(source)`. The call may be valid
 inside ODW, but it does not map cleanly to pure Claude Code execution.
 
+It is informational and is not promoted by `--strict-claude`.
+
 Keep validation behind an ODW-specific path, or replace it with a host-provided
 check when the workflow must remain portable.
 

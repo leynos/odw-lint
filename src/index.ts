@@ -44,6 +44,7 @@ export {
 } from "./diagnostics/rule-id";
 export { DIAGNOSTIC_REPORT_SCHEMA } from "./diagnostics/schema";
 export { DIAGNOSTIC_SEVERITIES, type DiagnosticSeverity } from "./diagnostics/severity";
+export { promoteStrictClaudeSeverity } from "./diagnostics/strict-claude";
 export { formatTextDiagnostics } from "./diagnostics/text";
 export {
   DIAGNOSTIC_SCHEMA_VERSION,

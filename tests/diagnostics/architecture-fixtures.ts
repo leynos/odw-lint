@@ -12,6 +12,7 @@ export const EXPECTED_PACKAGE_ENTRY_MODULE_SPECIFIERS = [
   "./diagnostics/rule-id",
   "./diagnostics/schema",
   "./diagnostics/severity",
+  "./diagnostics/strict-claude",
   "./diagnostics/text",
   "./diagnostics/types",
   "./static-analysis",
@@ -28,6 +29,7 @@ export const EXPECTED_DIAGNOSTIC_MODULE_FILES = [
   "rule-id.ts",
   "schema.ts",
   "severity.ts",
+  "strict-claude.ts",
   "text.ts",
   "types.ts",
 ] as const;

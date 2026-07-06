@@ -12,6 +12,9 @@ This rule reports metadata that is valid for ODW's runtime but not portable to
 Claude Code's stricter static workflow expectations. It highlights metadata
 that relies on computation rather than a pure literal shape.
 
+It is a warning by default and is promoted to an error under
+`--strict-claude`.
+
 Prefer a plain metadata object made from literal values. Move computed values
 into the workflow body when they are not needed for discovery.
 

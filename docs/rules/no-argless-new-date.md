@@ -13,6 +13,9 @@ It does not report `new Date(value)` or other calls that pass an explicit
 timestamp or date value. Like `Date.now()`, argless date construction captures
 ambient wall-clock time.
 
+It is a warning by default and is promoted to an error under
+`--strict-claude`.
+
 Pass a timestamp or date string into the workflow and construct dates from that
 explicit value.
 

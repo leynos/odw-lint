@@ -3,9 +3,12 @@
  *
  * This module owns the first complete static lint pipeline: build an original
  * source file, scan the workflow envelope, classify workflow metadata, and
- * return the canonical diagnostic stream.
+ * return the canonical diagnostic stream. Stage sub-views keep each stage's
+ * default severities; the merged `diagnostics` stream is the only field that
+ * reflects strict-Claude severity promotion.
  */
 
+import { promoteStrictClaudeSeverity } from "../diagnostics/strict-claude";
 import type { Diagnostic } from "../diagnostics/types";
 import { createOriginalSourceFile } from "./source-file";
 import type {
@@ -26,7 +29,13 @@ export type WorkflowLintResult = {
   readonly classification: WorkflowMetadataClassification;
   readonly bodySyntax: readonly Diagnostic[];
   readonly claudeCompatibility: readonly Diagnostic[];
+  /** Merged pipeline diagnostics after any entry-point severity promotion. */
   readonly diagnostics: readonly Diagnostic[];
+};
+
+type WorkflowLintOptions = {
+  /** Promote Claude-compatibility warnings to errors; mirrors `--strict-claude`. */
+  readonly strictClaude?: boolean;
 };
 
 type WorkflowBodyDiagnostics = {
@@ -39,11 +48,18 @@ type WorkflowBodyDiagnostics = {
  *
  * Diagnostics are returned in canonical pipeline order: envelope diagnostics
  * first, followed by metadata, body syntax, and Claude compatibility diagnostics.
+ * With `strictClaude: true`, only the merged diagnostics field reflects
+ * promoted Claude-compatibility warnings; stage sub-views keep default
+ * severities for pipeline introspection.
  *
  * @param source - Workflow source text and its diagnostic file path.
+ * @param options - Optional entry-point severity promotion settings.
  * @returns Immutable source, scan, classification, and merged diagnostics.
  */
-export const lintWorkflowSource = (source: WorkflowSource): WorkflowLintResult => {
+export const lintWorkflowSource = (
+  source: WorkflowSource,
+  options?: WorkflowLintOptions,
+): WorkflowLintResult => {
   const sourceFile = createOriginalSourceFile(source);
   const scan = scanWorkflowEnvelope(sourceFile);
   const classification = classifyWorkflowMetadata(scan);
@@ -51,12 +67,14 @@ export const lintWorkflowSource = (source: WorkflowSource): WorkflowLintResult =
     scan.status === "scanned"
       ? lintScannedWorkflowBody(scan.envelope)
       : emptyWorkflowBodyDiagnostics();
-  const diagnostics = Object.freeze([
+  const rawDiagnostics = Object.freeze([
     ...scan.diagnostics,
     ...classification.diagnostics,
     ...bodySyntax,
     ...claudeCompatibility,
   ]);
+  const diagnostics =
+    options?.strictClaude === true ? promoteStrictClaudeSeverity(rawDiagnostics) : rawDiagnostics;
 
   return Object.freeze({
     sourceFile,

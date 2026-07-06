@@ -239,6 +239,8 @@ entry; that index enumerates every current rule page.
   metadata compatibility checks.
 - [Roadmap 3.1.2 ExecPlan](execplans/roadmap-3-1-2.md) plans
   deterministic-time and randomness warnings.
+- [Roadmap 3.1.3 ExecPlan](execplans/roadmap-3-1-3.md) plans strict-Claude
+  severity promotion.
 - [Roadmap 3.1.4 ExecPlan](execplans/roadmap-3-1-4.md) plans
   lexical-binding compatibility for deterministic-time diagnostics.
 - [Roadmap 3.1.5 ExecPlan](execplans/roadmap-3-1-5.md) plans scope-precise

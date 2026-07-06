@@ -986,7 +986,7 @@ reported clearly in one command. The result informs strict-mode policy. See
       pin intra-expression hazard source order, including mixed
       `Math.random()`, `Date.now()`, and nested `new Date(Date.now())` cases.
       Lightweight addendum pass.
-- [ ] 3.1.3. Implement `--strict-claude` severity promotion.
+- [x] 3.1.3. Implement `--strict-claude` severity promotion.
   - Requires 3.1.1 and 3.1.2.
   - See [technical-design.md](technical-design.md) §§7.3 and 9.2.
   - Success: strict mode exits non-zero for Claude compatibility warnings.

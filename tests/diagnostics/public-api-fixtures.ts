@@ -86,6 +86,7 @@ export const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
   "parseWorkflowBody",
   "parseWorkflowMetadataLiteral",
   "positionAtOffset",
+  "promoteStrictClaudeSeverity",
   "renderMessageTemplate",
   "reviewedRuleMessage",
   "ruleAllowsMessage",
