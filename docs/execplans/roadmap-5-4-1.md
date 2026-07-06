@@ -656,7 +656,7 @@ No new external dependencies. No public package surface change.
 
 ## Addenda
 
-- [ ] 5.4.1.1. Extract parser-backed body-scanner harness helpers.
+- [x] 5.4.1.1. Extract parser-backed body-scanner harness helpers.
   - Source: audit:3.1.7; severity low.
   - Scope: extract the shared normalized-span diagnostic constructor used by
     parser-backed body scanners, and introduce a shared body-match collection

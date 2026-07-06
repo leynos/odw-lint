@@ -1436,7 +1436,7 @@ work by keeping shared helpers documented, tested, and owned once.
   - Success: one reviewed helper owns each duplicated contract, focused tests
     pin unchanged diagnostics, and no production rule output changes.
   - Completed by [roadmap-5-4-1.md](execplans/roadmap-5-4-1.md).
-  - [ ] 5.4.1.1. Extract parser-backed body-scanner harness helpers.
+  - [x] 5.4.1.1. Extract parser-backed body-scanner harness helpers.
     - Addendum (from audit:3.1.7; low). Share normalized-span diagnostic
       construction, and body-match collection where contracts align, before
       further parser-backed scanners copy the same scaffolding. Lightweight

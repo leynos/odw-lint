@@ -8,8 +8,7 @@
 
 import type { CallExpression, MemberExpression, NewExpression, Node, Span } from "@swc/core";
 import type { RuleDefinition } from "../diagnostics/rule-catalogue";
-import { firstReviewedRuleMessage, ruleDefinitionFor } from "../diagnostics/rule-catalogue";
-import { createRuleDiagnostic } from "../diagnostics/rule-diagnostic";
+import { ruleDefinitionFor } from "../diagnostics/rule-catalogue";
 import type { RuleId } from "../diagnostics/rule-id";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic } from "../diagnostics/types";
@@ -17,12 +16,9 @@ import { traverseAstSubtree } from "./swc-ast";
 import type { WorkflowEnvelope } from "./types";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import { enterScopeWithOwnFacts, rootScopeView, scopeOwnFacts } from "./workflow-ast-scopes";
-import {
-  type NormalizedWorkflowBody,
-  originalSpanFromNormalizedOffsets,
-} from "./workflow-body-normalizer";
 import type { NormalizedBodyParseResult } from "./workflow-body-parse";
 import { parseNormalizedWorkflowBody } from "./workflow-body-parse";
+import { diagnosticsForBodyMatches } from "./workflow-body-scanner-harness";
 import {
   aliasCallMatch,
   type DeterministicTimeAliases,
@@ -69,24 +65,19 @@ export const scanDeterministicTimeWarnings = (
   envelope: WorkflowEnvelope,
   parseResult: NormalizedBodyParseResult = parseNormalizedWorkflowBody(envelope),
 ): readonly Diagnostic[] => {
-  if (!parseResult.ok) {
-    return Object.freeze([]);
-  }
+  return diagnosticsForBodyMatches({
+    envelope,
+    parseResult,
+    collectMatches: (parsedBody) => {
+      const rootBindings = rootScopeView(parsedBody.module);
 
-  const rootBindings = rootScopeView(parseResult.module);
-  const diagnostics = walkDeterministicTimeHazards(parseResult.module, {
-    bindings: rootBindings,
-    aliases: rootAliasView(parseResult.module, rootBindings, ALIAS_RULES),
-  }).map((match) => {
-    return diagnosticForMatch(
-      envelope,
-      parseResult.normalized,
-      parseResult.module.span.start,
-      match,
-    );
+      return walkDeterministicTimeHazards(parsedBody.module, {
+        bindings: rootBindings,
+        aliases: rootAliasView(parsedBody.module, rootBindings, ALIAS_RULES),
+      });
+    },
+    ruleForMatch: (match) => definitionFor(match.rule),
   });
-
-  return Object.freeze(diagnostics);
 };
 
 /** Recursively walks a SWC AST in source order and returns hazard matches. */
@@ -199,29 +190,6 @@ const isGlobalMemberCall = (
 /** Narrows nodes to SWC constructor expressions. */
 const isNewExpression = (node: Node): node is NewExpression => {
   return node.type === "NewExpression";
-};
-
-/** Builds a project diagnostic for one matched AST span. */
-const diagnosticForMatch = (
-  envelope: WorkflowEnvelope,
-  normalized: NormalizedWorkflowBody,
-  moduleBase: number,
-  match: HazardMatch,
-): Diagnostic => {
-  const rule = definitionFor(match.rule);
-
-  return createRuleDiagnostic({
-    file: envelope.sourceFile.filePath,
-    rule,
-    severity: rule.defaultSeverity,
-    message: firstReviewedRuleMessage(rule),
-    span: originalSpanFromNormalizedOffsets(
-      envelope.sourceFile,
-      normalized,
-      match.span.start - moduleBase,
-      match.span.end - moduleBase,
-    ),
-  });
 };
 
 /** Returns the preloaded rule definition for a deterministic-time rule. */

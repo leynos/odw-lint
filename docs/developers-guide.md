@@ -128,6 +128,15 @@ or run backwards. It deliberately accepts numeric offsets rather than SWC AST
 types; workflow AST facts expose derived, parser-type-free data through the
 public package surface described below.
 
+Parser-backed diagnostic scanners should compose
+`src/static-analysis/workflow-body-scanner-harness.ts` when their contract is
+"parse the normalized body, collect source-order matches, then emit one
+catalogue-backed diagnostic per match". The harness owns normalized-span
+diagnostic construction and frozen diagnostic list behaviour; scanner modules
+still own their AST traversal, scope policy, match shape, and rule selection.
+Do not use the harness for syntax parsing, whole-body fallback diagnostics, or
+collectors whose output is not a one-diagnostic-per-match projection.
+
 ### Workflow AST facts
 
 `collectWorkflowAstFacts(envelope)` produces reusable, parser-type-free facts

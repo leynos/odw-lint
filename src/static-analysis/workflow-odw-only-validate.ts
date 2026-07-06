@@ -7,8 +7,7 @@
  */
 
 import type { CallExpression, Node, Span } from "@swc/core";
-import { firstReviewedRuleMessage, ruleDefinitionFor } from "../diagnostics/rule-catalogue";
-import { createRuleDiagnostic } from "../diagnostics/rule-diagnostic";
+import { ruleDefinitionFor } from "../diagnostics/rule-catalogue";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic } from "../diagnostics/types";
 import { isIdentifier, traverseAstSubtree } from "./swc-ast";
@@ -16,12 +15,9 @@ import type { WorkflowEnvelope } from "./types";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import { isIdentifierBound } from "./workflow-ast-bindings";
 import { enterScopeWithOwnFacts, rootScopeView, scopeOwnFacts } from "./workflow-ast-scopes";
-import {
-  type NormalizedWorkflowBody,
-  originalSpanFromNormalizedOffsets,
-} from "./workflow-body-normalizer";
 import type { NormalizedBodyParseResult } from "./workflow-body-parse";
 import { parseNormalizedWorkflowBody } from "./workflow-body-parse";
+import { diagnosticsForBodyMatches } from "./workflow-body-scanner-harness";
 
 const ODW_ONLY_VALIDATE_RULE = makeRuleId("odw/no-odw-only-validate");
 const RULE_DEFINITION = ruleDefinitionFor(ODW_ONLY_VALIDATE_RULE);
@@ -40,23 +36,14 @@ export const scanOdwOnlyValidateNotes = (
   envelope: WorkflowEnvelope,
   parseResult: NormalizedBodyParseResult = parseNormalizedWorkflowBody(envelope),
 ): readonly Diagnostic[] => {
-  if (!parseResult.ok) {
-    return Object.freeze([]);
-  }
-
-  const diagnostics = walkOdwOnlyValidateCalls(
-    parseResult.module,
-    rootScopeView(parseResult.module),
-  ).map((match) => {
-    return diagnosticForMatch(
-      envelope,
-      parseResult.normalized,
-      parseResult.module.span.start,
-      match,
-    );
+  return diagnosticsForBodyMatches({
+    envelope,
+    parseResult,
+    collectMatches: (parsedBody) => {
+      return walkOdwOnlyValidateCalls(parsedBody.module, rootScopeView(parsedBody.module));
+    },
+    ruleForMatch: () => RULE_DEFINITION,
   });
-
-  return Object.freeze(diagnostics);
 };
 
 /** Recursively walks a SWC AST in source order and returns validate matches. */
@@ -98,25 +85,4 @@ const matchOdwOnlyValidateCall = (
 /** Narrows nodes to SWC call expressions. */
 const isValidateCallExpression = (node: Node): node is CallExpression => {
   return node.type === "CallExpression";
-};
-
-/** Builds a project diagnostic for one matched AST span. */
-const diagnosticForMatch = (
-  envelope: WorkflowEnvelope,
-  normalized: NormalizedWorkflowBody,
-  moduleBase: number,
-  match: OdwOnlyValidateMatch,
-): Diagnostic => {
-  return createRuleDiagnostic({
-    file: envelope.sourceFile.filePath,
-    rule: RULE_DEFINITION,
-    severity: RULE_DEFINITION.defaultSeverity,
-    message: firstReviewedRuleMessage(RULE_DEFINITION),
-    span: originalSpanFromNormalizedOffsets(
-      envelope.sourceFile,
-      normalized,
-      match.span.start - moduleBase,
-      match.span.end - moduleBase,
-    ),
-  });
 };
