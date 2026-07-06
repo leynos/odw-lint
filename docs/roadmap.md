@@ -1114,6 +1114,19 @@ reported clearly in one command. The result informs strict-mode policy. See
     lint outcomes, rule-page limitations match the shipped coverage, and
     `odw/no-odw-only-validate` still reports clearly through the one-command
     Claude compatibility pipeline.
+  - [ ] 3.1.8.1. Document validate alias reassignment limits.
+    - Addendum (from review:3.1.8; low). State the whole-scope alias
+      reassignment and temporal-dead-zone limitation on the ODW-only validate
+      rule page so it matches the deterministic-time rule pages. Lightweight
+      addendum pass.
+- [ ] 3.1.9. Evaluate chained ODW-only validate alias inference.
+  - Requires 3.1.8.
+  - Assess whether chained aliases such as `const v = validate; const w = v;
+    w(source)` can be detected with scope-sensitive invalidation and without
+    introducing false positives against shadowed or reassigned identifiers.
+  - Success: chained `validate` aliases either have intentional lint outcomes
+    through the one-command Claude compatibility pipeline or the rule page
+    records the false-positive-free bound that keeps them unsupported.
 
 ### 3.2. Add first orchestration-risk rules
 
@@ -1181,6 +1194,10 @@ See [technical-design.md](technical-design.md) §9.3.
     - Addendum (from audit:3.1.7; medium). Route duplicated
       `CallExpression` narrowers through `swc-ast.ts` and harden the seam guard
       against bare `.type` discriminant clones. Lightweight addendum pass.
+  - [ ] 3.2.5.6. Hoist constructor-expression narrowing onto the SWC seam.
+    - Addendum (from audit:3.1.8; low). Route duplicated `NewExpression`
+      narrowers through `swc-ast.ts` where their contracts match the existing
+      parser-backed narrower seam. Lightweight addendum pass.
 - [x] 3.2.6. Complete SWC traversal-driver adoption for parser-backed
   collectors.
   - Requires 3.2.5, 3.1.5, and 3.2.5.1.
@@ -1224,6 +1241,16 @@ See [technical-design.md](technical-design.md) §9.3.
       flat binding facts and the scope-owned model agree on collected
       parameter names across generated function-like and accessor bodies.
       Lightweight addendum pass.
+- [ ] 3.2.8. Consolidate parser-backed scanner orchestration.
+  - Requires 3.1.8, 3.2.6, and 3.2.7.
+  - Extract shared scope-alias tracking and scope-aware body-walk support where
+    validate and deterministic-time scanner contracts match, introduce a
+    readonly scanner registry for parser-backed body diagnostics, and make
+    registration order the documented intra-stage diagnostic order.
+  - Success: combined-body fixtures pin Claude compatibility diagnostic order,
+    future parser-backed scanners append through one documented registry, and
+    shared scope-alias semantics cannot drift between validate and
+    deterministic-time rules.
 
 ### 3.3. Add configuration and warning policy
 

@@ -691,6 +691,18 @@ whichever re-exports it) and reuses its existing imports of `isIdentifier`,
 dependency (Tolerance 3), no public-API or module-manifest fixture edit
 (Constraint 4).
 
+## Addenda
+
+- [ ] 3.1.8.1. Document validate alias reassignment limits.
+  - Source: review:3.1.8; severity low.
+  - Scope: update `docs/rules/no-odw-only-validate.md` so the limitations
+    section states that validate alias visibility is computed for the whole
+    current scope and does not model reassignment order or temporal dead zones,
+    matching the deterministic-time rule-page limitation wording where the
+    scanner semantics align.
+  - Success: the ODW-only validate rule page and deterministic-time rule pages
+    describe the same whole-scope alias conservatism, and Markdown gates pass.
+
 ## Revision note
 
 2026-07-06 initial draft. First planning round for roadmap task 3.1.8. It

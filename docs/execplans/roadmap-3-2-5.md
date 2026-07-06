@@ -331,6 +331,14 @@ and the public package entry points remained unchanged.
   - Success: parser-backed collectors share one reviewed call-expression
     narrower, and cloned `.type` single-node guards cannot bypass the SWC seam
     guard.
+- [ ] 3.2.5.6. Hoist constructor-expression narrowing onto the SWC seam.
+  - Source: audit:3.1.8; severity low.
+  - Scope: move duplicated `NewExpression` narrowers behind
+    `src/static-analysis/swc-ast.ts` where their runtime and TypeScript
+    narrowing contracts match the existing parser-backed narrower seam.
+  - Success: parser-backed collectors share one reviewed constructor-expression
+    narrower where the contracts match, and existing deterministic-time
+    constructor diagnostics keep their current output.
 
 ## Context and orientation
 
