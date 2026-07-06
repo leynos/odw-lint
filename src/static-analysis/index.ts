@@ -58,6 +58,7 @@ export {
   type WorkflowMetadataParseResult,
   type WorkflowMetadataPortability,
 } from "./workflow-metadata";
+export { scanOdwOnlyValidateNotes } from "./workflow-odw-only-validate";
 export {
   buildSuppressionMasks,
   isIndexInInertRegion,

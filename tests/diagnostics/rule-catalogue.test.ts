@@ -136,7 +136,9 @@ const EXPECTED_RULE_ROWS = [
     "claude-compatibility",
     "info",
     "no-odw-only-validate",
-    [],
+    [
+      "Workflow calls ODW-only validate(source), which Claude Code cannot run because the validate primitive is injected only by the ODW loader.",
+    ],
     "released",
   ],
   ["odw/bounded-loop", "orchestration-risk", "warning", "bounded-loop", [], "planned"],

@@ -4,7 +4,13 @@
 
 import { describe, expect, it } from "bun:test";
 import * as fc from "fast-check";
-import { findRuleDefinition, ruleDocsPath } from "odw-lint";
+import {
+  findRuleDefinition,
+  firstReviewedRuleMessage,
+  makeRuleId,
+  ruleDefinitionFor,
+  ruleDocsPath,
+} from "odw-lint";
 import type { RuleDefinition } from "../../src/diagnostics/rule-catalogue";
 import type { Diagnostic } from "../../src/diagnostics/types";
 import { createOriginalSourceFile } from "../../src/static-analysis/source-file";
@@ -13,6 +19,7 @@ import { scanWorkflowEnvelope } from "../../src/static-analysis/workflow-envelop
 import { lintWorkflowSource } from "../../src/static-analysis/workflow-lint";
 import { classifyWorkflowMetadata } from "../../src/static-analysis/workflow-metadata";
 import { SOURCE_SPAN_PROPERTY_RUNNER } from "./source-file-property-oracle";
+import { expectSpanToMatchSource } from "./source-span-oracle";
 
 declare global {
   // The hostile source writes this marker only if metadata is evaluated.
@@ -20,6 +27,7 @@ declare global {
 }
 
 const HOSTILE_MARKER_PROPERTY = "__odwLintWorkflowLintHostileMetaWasEvaluated";
+const ODW_ONLY_VALIDATE_RULE = makeRuleId("odw/no-odw-only-validate");
 const METADATA_PREFIX_SOURCE = fc.constantFrom(
   "",
   "// leading comment with inert export const meta = {}\n",
@@ -180,6 +188,31 @@ describe("lintWorkflowSource", () => {
     expect(diagnosticRules(unrelatedResult.claudeCompatibility)).toEqual(["odw/no-date-now"]);
     expect(diagnosticRules(unrelatedResult.diagnostics)).toEqual(["odw/no-date-now"]);
     expect(enclosedResult.claudeCompatibility).toEqual([]);
+  });
+
+  it("routes ODW-only validate notes through the merged pipeline", () => {
+    const sourceText = [
+      "export const meta = { name: 'example', description: 'ok' };",
+      "const result = validate(args.source);",
+    ].join("\n");
+    const result = lintSource(sourceText);
+    const rule = ruleDefinitionFor(ODW_ONLY_VALIDATE_RULE);
+
+    expect(result.classification.diagnostics).toEqual([]);
+    expect(result.bodySyntax).toEqual([]);
+    expect(diagnosticRules(result.claudeCompatibility)).toEqual([ODW_ONLY_VALIDATE_RULE]);
+    expect(result.diagnostics).toEqual(result.claudeCompatibility);
+
+    const diagnostic = result.claudeCompatibility[0];
+    expect(diagnostic).toBeDefined();
+    if (diagnostic === undefined) {
+      throw new Error("expected one ODW-only validate diagnostic");
+    }
+
+    expect(diagnostic.severity).toBe("info");
+    expect(diagnostic.message).toBe(firstReviewedRuleMessage(rule));
+    expect(diagnostic.docs).toBe("docs/rules/no-odw-only-validate.md");
+    expectSpanToMatchSource(result.sourceFile.sourceText, diagnostic.span, "validate");
   });
 
   it("reports body syntax once and silences deterministic-time warnings", () => {

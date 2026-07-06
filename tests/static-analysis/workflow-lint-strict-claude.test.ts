@@ -11,6 +11,11 @@ const STRICT_CLAUDE_SOURCE = [
   "const timestamp = Date.now();",
   "const sample = Math.random();",
 ].join("\n");
+const STRICT_CLAUDE_VALIDATE_SOURCE = [
+  "export const meta = { name: 'example', description: 'ok' };",
+  "const result = validate(args.source);",
+  "const timestamp = Date.now();",
+].join("\n");
 
 /** Returns rule identifiers that became errors in the observed diagnostics. */
 const promotedRules = (diagnostics: readonly Diagnostic[]): readonly string[] => {
@@ -109,5 +114,30 @@ describe("lintWorkflowSource strict-Claude promotion", () => {
     expect(defaultReport.summary.warnings).toBe(3);
     expect(strictReport.summary.errors).toBe(3);
     expect(strictReport.summary.warnings).toBe(0);
+  });
+
+  it("preserves ODW-only validate notes as report infos under strict-Claude mode", () => {
+    const result = lintSource(STRICT_CLAUDE_VALIDATE_SOURCE, { strictClaude: true });
+    const report = createDiagnosticReport({
+      version: "0.0.0-test",
+      files: 1,
+      diagnostics: result.diagnostics,
+    });
+
+    expect(severitiesByRule(result.diagnostics)).toEqual(
+      new Map([
+        ["odw/no-odw-only-validate", "info"],
+        ["odw/no-date-now", "error"],
+      ]),
+    );
+    expect(severitiesByRule(result.claudeCompatibility)).toEqual(
+      new Map([
+        ["odw/no-odw-only-validate", "info"],
+        ["odw/no-date-now", "warning"],
+      ]),
+    );
+    expect(report.summary.errors).toBe(1);
+    expect(report.summary.warnings).toBe(0);
+    expect(report.summary.infos).toBe(1);
   });
 });

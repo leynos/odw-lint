@@ -93,6 +93,7 @@ export {
   type StaticAnalysisComponent,
   type StaticAnalysisStage,
   scanDeterministicTimeWarnings,
+  scanOdwOnlyValidateNotes,
   scanWorkflowEnvelope,
   sliceSourceSpan,
   snippetForSpan,

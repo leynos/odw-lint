@@ -22,6 +22,7 @@ import { bodySyntaxDiagnosticsForParse } from "./workflow-body-parser";
 import { scanDeterministicTimeWarnings } from "./workflow-deterministic-time";
 import { scanWorkflowEnvelope } from "./workflow-envelope";
 import { classifyWorkflowMetadata, type WorkflowMetadataClassification } from "./workflow-metadata";
+import { scanOdwOnlyValidateNotes } from "./workflow-odw-only-validate";
 
 export type WorkflowLintResult = {
   readonly sourceFile: OriginalSourceFile;
@@ -108,6 +109,9 @@ const lintScannedWorkflowBody = (envelope: WorkflowEnvelope): WorkflowBodyDiagno
 
   return Object.freeze({
     bodySyntax,
-    claudeCompatibility: Object.freeze([...scanDeterministicTimeWarnings(envelope, bodyParse)]),
+    claudeCompatibility: Object.freeze([
+      ...scanDeterministicTimeWarnings(envelope, bodyParse),
+      ...scanOdwOnlyValidateNotes(envelope, bodyParse),
+    ]),
   });
 };

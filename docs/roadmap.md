@@ -1091,7 +1091,7 @@ reported clearly in one command. The result informs strict-mode policy. See
     - Addendum (from audit:3.1.6; low). Pin alias visibility for block, `for`,
       and `catch` scopes before later collector work changes the same scope
       model. Lightweight addendum pass.
-- [ ] 3.1.7. Emit ODW-only validate diagnostics in the lint pipeline.
+- [x] 3.1.7. Emit ODW-only validate diagnostics in the lint pipeline.
   - Requires 3.1.3 and 3.1.6.
   - Add a production scanner for ODW-only `validate(source)` calls, route its
     diagnostics through `lintWorkflowSource`, and reconcile catalogue messages,

@@ -40,3 +40,11 @@ export const meta = {
 
 await agent(`Summarize validation result: ${JSON.stringify(args.validationResult)}.`);
 ```
+
+## Limitations
+
+The scanner detects direct calls to a lexically unshadowed bare `validate`
+identifier, such as `validate(source)`. It does not detect aliases such as
+`const v = validate; v(source)`, member forms such as
+`namespace.validate(source)`, or dynamic and computed callees such as
+`registry["validate"](source)` in this release.

@@ -89,6 +89,7 @@ export const EXPECTED_STATIC_ANALYSIS_MODULE_FILES = [
   "workflow-metadata-parser.ts",
   "workflow-metadata-string-scan.ts",
   "workflow-metadata.ts",
+  "workflow-odw-only-validate.ts",
   "workflow-suppression-mask.ts",
 ] as const;
 

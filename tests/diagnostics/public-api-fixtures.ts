@@ -96,6 +96,7 @@ export const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
   "ruleDefinitionFor",
   "ruleDocsPath",
   "scanDeterministicTimeWarnings",
+  "scanOdwOnlyValidateNotes",
   "scanWorkflowEnvelope",
   "sliceSourceSpan",
   "snippetForSpan",

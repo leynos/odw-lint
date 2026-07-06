@@ -255,6 +255,8 @@ entry; that index enumerates every current rule page.
   deterministic-time shadowing.
 - [Roadmap 3.1.6 ExecPlan](execplans/roadmap-3-1-6.md) plans lexical
   deterministic-time alias resolution.
+- [Roadmap 3.1.7 ExecPlan](execplans/roadmap-3-1-7.md) plans ODW-only
+  validate diagnostics in the lint pipeline.
 - [Roadmap 3.2.5 ExecPlan](execplans/roadmap-3-2-5.md) plans shared SWC AST
   guard and traversal helpers for parser-backed rules.
 - [Roadmap 3.2.6 ExecPlan](execplans/roadmap-3-2-6.md) plans complete SWC

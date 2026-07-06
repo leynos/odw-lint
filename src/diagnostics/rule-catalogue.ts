@@ -202,6 +202,9 @@ export const RULE_CATALOGUE = Object.freeze([
     category: "claude-compatibility",
     defaultSeverity: "info",
     releaseStatus: "released",
+    messages: [
+      "Workflow calls ODW-only validate(source), which Claude Code cannot run because the validate primitive is injected only by the ODW loader.",
+    ],
   }),
   ruleDefinition({
     id: "odw/bounded-loop",

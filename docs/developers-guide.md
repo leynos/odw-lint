@@ -185,6 +185,8 @@ diagnostics in canonical order: envelope diagnostics first, then metadata
 diagnostics, body syntax diagnostics, and Claude compatibility diagnostics.
 The body parser runs once for this pipeline; `odw/body-syntax` owns syntax
 failures, and Claude compatibility checks consume the same successful parse
+result. The Claude compatibility stage currently runs the deterministic-time
+scanner and the ODW-only `validate(source)` scanner over that shared parse
 result. The package entry re-exports `lintWorkflowSource` and
 `WorkflowLintResult` for future CLI and public-consumer work.
 
