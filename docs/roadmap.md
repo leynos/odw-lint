@@ -376,16 +376,16 @@ depending on manual post-commit audits.
   - Success: branch-freshness, whitespace-hygiene, and review-evidence command
     modules share one CLI orchestration seam, and reviewer availability options
     cannot drift by path-specific parser branches.
-  - [ ] 1.5.11.1. Document the shared build-gate run-and-exit seam.
+  - [x] 1.5.11.1. Document the shared build-gate run-and-exit seam.
     - Addendum (from review:1.5.11 and audit:1.5.11; low). Refresh the
       developers-guide `cli-support.ts` and review-evidence artefact guidance
       for `runCliEntrypoint`, exit modes, entrypoint ownership, and the
       `--evidence-path=` flag. Lightweight addendum pass.
-  - [ ] 1.5.11.2. Harden entrypoint-seam process detection.
+  - [x] 1.5.11.2. Harden entrypoint-seam process detection.
     - Addendum (from review:1.5.11; low). Extend the AST seam guard and
       discovery filter to catch named and aliased `node:process` imports that
       clone direct-execution orchestration. Lightweight addendum pass.
-  - [ ] 1.5.11.3. Share entrypoint-seam AST test primitives.
+  - [x] 1.5.11.3. Share entrypoint-seam AST test primitives.
     - Addendum (from audit:1.5.11; medium). Extract shared import-inspection
       helpers for CLI seam tests and fix call-expression recursion so nested
       calls are discovered. Lightweight addendum pass.

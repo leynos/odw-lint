@@ -756,7 +756,7 @@ dependency used by the support-helper tests.
 
 ## Addenda
 
-- [ ] 1.5.11.1. Document the shared build-gate run-and-exit seam.
+- [x] 1.5.11.1. Document the shared build-gate run-and-exit seam.
   - Source: review:1.5.11 and audit:1.5.11; severity low.
   - Scope: refresh the developers-guide `cli-support.ts` and
     review-evidence artefact guidance for `runCliEntrypoint`, exit modes,
@@ -764,7 +764,7 @@ dependency used by the support-helper tests.
   - Success: maintainer-facing documentation names `cli-support.ts` as the
     owner of run-and-exit orchestration and documents the artefact-check flag
     without describing a competing gate-local exit-code contract.
-- [ ] 1.5.11.2. Harden entrypoint-seam process detection.
+- [x] 1.5.11.2. Harden entrypoint-seam process detection.
   - Source: review:1.5.11; severity low.
   - Scope: extend the AST seam guard and directory discovery filter to catch
     named `node:process` imports, aliased named imports, and aliased default
@@ -772,7 +772,7 @@ dependency used by the support-helper tests.
   - Success: support tests reject entrypoint clones written with
     `import { argv, exit } from "node:process"` or an aliased `process`
     default import, while legitimate `runCliEntrypoint` users still pass.
-- [ ] 1.5.11.3. Share entrypoint-seam AST test primitives.
+- [x] 1.5.11.3. Share entrypoint-seam AST test primitives.
   - Source: audit:1.5.11; severity medium.
   - Scope: extract shared import-inspection helpers for CLI seam tests and fix
     call-expression recursion so nested calls are discovered instead of being

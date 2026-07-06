@@ -3,6 +3,11 @@
  */
 
 import ts from "typescript";
+import {
+  hasNamedImport,
+  importSpecifierName,
+  nodeModuleNamedImports,
+} from "./cli-import-test-support";
 
 type CliSeamExpectation = {
   readonly source: string;
@@ -52,42 +57,6 @@ export function expectSharedCliWriterSeam(expectation: CliSeamExpectation): void
       `build-gate CLI must not inline default process-stream writer objects: ${defaultStreamWriters.join(", ")}`,
     );
   }
-}
-
-/** Check whether a source file imports a named symbol from one module path. */
-function hasNamedImport(
-  sourceFile: ts.SourceFile,
-  importPath: string,
-  importedName: string,
-): boolean {
-  return sourceFile.statements.some((statement) =>
-    hasMatchingNamedImport(statement, importPath, importedName),
-  );
-}
-
-/** Check one import declaration for a specific named import. */
-function hasMatchingNamedImport(
-  statement: ts.Statement,
-  importPath: string,
-  importedName: string,
-): boolean {
-  if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) {
-    return false;
-  }
-
-  const namedBindings = statement.importClause?.namedBindings;
-
-  return (
-    statement.moduleSpecifier.text === importPath &&
-    namedBindings !== undefined &&
-    ts.isNamedImports(namedBindings) &&
-    namedBindings.elements.some((element) => importSpecifierName(element) === importedName)
-  );
-}
-
-/** Return the exported symbol name for direct and aliased named imports. */
-function importSpecifierName(element: ts.ImportSpecifier): string {
-  return element.propertyName?.text ?? element.name.text;
 }
 
 /** Find top-level type declarations that clone the two-field writer contract. */
@@ -298,21 +267,7 @@ function processStreamBindings(sourceFile: ts.SourceFile): ProcessStreamBindings
 
 /** Return named imports from `node:process`, if a statement is that import. */
 function nodeProcessNamedImports(statement: ts.Statement): ts.NamedImports | undefined {
-  if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) {
-    return undefined;
-  }
-
-  if (statement.moduleSpecifier.text !== "node:process") {
-    return undefined;
-  }
-
-  const namedBindings = statement.importClause?.namedBindings;
-
-  if (namedBindings === undefined || !ts.isNamedImports(namedBindings)) {
-    return undefined;
-  }
-
-  return namedBindings;
+  return nodeModuleNamedImports(statement, "node:process");
 }
 
 /** Add a local binding for a named process stream import when present. */

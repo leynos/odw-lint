@@ -3,11 +3,23 @@
  */
 
 import ts from "typescript";
+import {
+  importSpecifierName,
+  namedImportBindings,
+  nodeModuleImportClause,
+} from "./cli-import-test-support";
 
 type CliEntrypointSeamExpectation = {
   readonly source: string;
   readonly importPath: string;
 };
+
+type ProcessEntrypointBindings = Readonly<{
+  readonly process: ReadonlySet<string>;
+  readonly argv: ReadonlySet<string>;
+  readonly exit: ReadonlySet<string>;
+  readonly exitCode: ReadonlySet<string>;
+}>;
 
 /**
  * Assert that a build-gate CLI uses the shared direct-entrypoint helper.
@@ -34,54 +46,15 @@ export function expectSharedCliEntrypointSeam(expectation: CliEntrypointSeamExpe
   }
 
   const hasSharedEntrypointCall = hasCallExpression(sourceFile, entrypointBindings);
-  if (hasInlineRunAndExitGuard(sourceFile, entrypointBindings)) {
+  if (
+    hasInlineRunAndExitGuard(sourceFile, entrypointBindings, processEntrypointBindings(sourceFile))
+  ) {
     throw new Error("build-gate CLI must not inline the run-and-exit guard");
   }
 
   if (!hasSharedEntrypointCall) {
     throw new Error("build-gate CLI must call runCliEntrypoint");
   }
-}
-
-/** Return local bindings for a named symbol imported from one module path. */
-function namedImportBindings(
-  sourceFile: ts.SourceFile,
-  importPath: string,
-  importedName: string,
-): readonly string[] {
-  return sourceFile.statements.flatMap((statement) =>
-    matchingNamedImportBindings(statement, importPath, importedName),
-  );
-}
-
-/** Return local bindings from one import declaration for a named import. */
-function matchingNamedImportBindings(
-  statement: ts.Statement,
-  importPath: string,
-  importedName: string,
-): readonly string[] {
-  if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) {
-    return [];
-  }
-
-  const namedBindings = statement.importClause?.namedBindings;
-
-  if (statement.moduleSpecifier.text !== importPath) {
-    return [];
-  }
-
-  if (namedBindings === undefined || !ts.isNamedImports(namedBindings)) {
-    return [];
-  }
-
-  return namedBindings.elements
-    .filter((element) => importSpecifierName(element) === importedName)
-    .map((element) => element.name.text);
-}
-
-/** Return the exported symbol name for direct and aliased named imports. */
-function importSpecifierName(element: ts.ImportSpecifier): string {
-  return element.propertyName?.text ?? element.name.text;
 }
 
 /** Check whether the source contains a direct call to one of the named helpers. */
@@ -95,7 +68,9 @@ function hasCallExpression(sourceFile: ts.SourceFile, functionNames: readonly st
 
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
       found = functionNames.includes(node.expression.text);
-      return;
+      if (found) {
+        return;
+      }
     }
 
     ts.forEachChild(node, visit);
@@ -109,6 +84,7 @@ function hasCallExpression(sourceFile: ts.SourceFile, functionNames: readonly st
 function hasInlineRunAndExitGuard(
   sourceFile: ts.SourceFile,
   sharedEntrypointBindings: readonly string[],
+  processBindings: ProcessEntrypointBindings,
 ): boolean {
   let found = false;
 
@@ -121,7 +97,7 @@ function hasInlineRunAndExitGuard(
       return;
     }
 
-    if (isInlineProcessEntrypointAccess(node)) {
+    if (isInlineProcessEntrypointAccess(node, processBindings)) {
       found = true;
       return;
     }
@@ -134,16 +110,19 @@ function hasInlineRunAndExitGuard(
 }
 
 /** Check for local process access that belongs inside the shared helper seam. */
-function isInlineProcessEntrypointAccess(node: ts.Node): boolean {
-  if (isProcessArgvAccess(node)) {
+function isInlineProcessEntrypointAccess(
+  node: ts.Node,
+  processBindings: ProcessEntrypointBindings,
+): boolean {
+  if (isProcessArgvAccess(node, processBindings)) {
     return true;
   }
 
-  if (isProcessExitCodeAssignment(node)) {
+  if (isProcessExitCodeAssignment(node, processBindings)) {
     return true;
   }
 
-  return isProcessExitCall(node);
+  return isProcessExitCall(node, processBindings);
 }
 
 /** Check for a call through the shared direct-entrypoint helper. */
@@ -159,34 +138,119 @@ function isSharedEntrypointCall(
 }
 
 /** Check for direct `process.argv` access outside the shared helper call. */
-function isProcessArgvAccess(node: ts.Node): boolean {
-  return ts.isPropertyAccessExpression(node) && isProcessPropertyAccess(node, "argv");
+function isProcessArgvAccess(node: ts.Node, processBindings: ProcessEntrypointBindings): boolean {
+  if (ts.isIdentifier(node) && processBindings.argv.has(node.text)) {
+    return true;
+  }
+
+  return (
+    ts.isPropertyAccessExpression(node) && isProcessPropertyAccess(node, "argv", processBindings)
+  );
 }
 
 /** Check for direct `process.exitCode = ...` assignment. */
-function isProcessExitCodeAssignment(node: ts.Node): boolean {
+function isProcessExitCodeAssignment(
+  node: ts.Node,
+  processBindings: ProcessEntrypointBindings,
+): boolean {
   return (
     ts.isBinaryExpression(node) &&
     node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
-    ts.isPropertyAccessExpression(node.left) &&
-    isProcessPropertyAccess(node.left, "exitCode")
+    ((ts.isPropertyAccessExpression(node.left) &&
+      isProcessPropertyAccess(node.left, "exitCode", processBindings)) ||
+      (ts.isIdentifier(node.left) && processBindings.exitCode.has(node.left.text)))
   );
 }
 
 /** Check for direct `process.exit(...)` calls. */
-function isProcessExitCall(node: ts.Node): boolean {
+function isProcessExitCall(node: ts.Node, processBindings: ProcessEntrypointBindings): boolean {
   return (
     ts.isCallExpression(node) &&
-    ts.isPropertyAccessExpression(node.expression) &&
-    isProcessPropertyAccess(node.expression, "exit")
+    ((ts.isPropertyAccessExpression(node.expression) &&
+      isProcessPropertyAccess(node.expression, "exit", processBindings)) ||
+      (ts.isIdentifier(node.expression) && processBindings.exit.has(node.expression.text)))
   );
 }
 
-/** Check for a direct property access on the global process object. */
-function isProcessPropertyAccess(node: ts.PropertyAccessExpression, propertyName: string): boolean {
+/** Check for a property access on the global or imported process object. */
+function isProcessPropertyAccess(
+  node: ts.PropertyAccessExpression,
+  propertyName: string,
+  processBindings: ProcessEntrypointBindings,
+): boolean {
   return (
     node.name.text === propertyName &&
     ts.isIdentifier(node.expression) &&
-    node.expression.text === "process"
+    processBindings.process.has(node.expression.text)
   );
+}
+
+/** Collect process bindings that can clone direct-entrypoint orchestration. */
+function processEntrypointBindings(sourceFile: ts.SourceFile): ProcessEntrypointBindings {
+  const processBindings = new Set(["process"]);
+  const argvBindings = new Set<string>();
+  const exitBindings = new Set<string>();
+  const exitCodeBindings = new Set<string>();
+
+  for (const statement of sourceFile.statements) {
+    addNodeProcessBindings(statement, {
+      argv: argvBindings,
+      exit: exitBindings,
+      exitCode: exitCodeBindings,
+      process: processBindings,
+    });
+  }
+
+  return {
+    argv: argvBindings,
+    exit: exitBindings,
+    exitCode: exitCodeBindings,
+    process: processBindings,
+  };
+}
+
+/** Add local bindings from one `node:process` import declaration. */
+function addNodeProcessBindings(
+  statement: ts.Statement,
+  bindings: {
+    readonly process: Set<string>;
+    readonly argv: Set<string>;
+    readonly exit: Set<string>;
+    readonly exitCode: Set<string>;
+  },
+): void {
+  const importClause = nodeProcessImportClause(statement);
+  if (importClause === undefined) {
+    return;
+  }
+
+  if (importClause?.name !== undefined) {
+    bindings.process.add(importClause.name.text);
+  }
+
+  if (importClause?.namedBindings === undefined || !ts.isNamedImports(importClause.namedBindings)) {
+    return;
+  }
+
+  for (const element of importClause.namedBindings.elements) {
+    addNamedProcessBinding(element, "argv", bindings.argv);
+    addNamedProcessBinding(element, "exit", bindings.exit);
+    addNamedProcessBinding(element, "exitCode", bindings.exitCode);
+  }
+}
+
+/** Return the import clause for a `node:process` import declaration. */
+function nodeProcessImportClause(statement: ts.Statement): ts.ImportClause | undefined {
+  return nodeModuleImportClause(statement, "node:process");
+}
+
+/** Add a local binding for one named process import when present. */
+function addNamedProcessBinding(
+  element: ts.ImportSpecifier,
+  importedName: "argv" | "exit" | "exitCode",
+  bindings: Set<string>,
+): void {
+  if (importSpecifierName(element) === importedName) {
+    bindings.add(element.name.text);
+  }
 }

@@ -3,7 +3,6 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { readdirSync, readFileSync } from "node:fs";
 import { expectSharedCliEntrypointSeam } from "./cli-entrypoint-test-support";
 import { expectSharedCliWriterSeam } from "./cli-support-test-support";
 
@@ -223,6 +222,24 @@ describe("expectSharedCliEntrypointSeam", () => {
     });
   });
 
+  it("accepts a nested shared entrypoint helper call", () => {
+    expectSharedCliEntrypointSeam({
+      importPath: "./cli-support",
+      source: `
+        import { runCliEntrypoint } from "./cli-support";
+
+        const observe = (value: unknown): void => {
+          void value;
+        };
+
+        observe(runCliEntrypoint({
+          moduleUrl: import.meta.url,
+          run: () => 0,
+        }));
+      `,
+    });
+  });
+
   it("rejects a CLI missing the shared entrypoint import", () => {
     expect(() =>
       expectSharedCliEntrypointSeam({
@@ -308,11 +325,51 @@ describe("expectSharedCliEntrypointSeam", () => {
       }),
     ).toThrow("build-gate CLI must not inline the run-and-exit guard");
   });
+
+  it("rejects named process imports that clone run-and-exit orchestration", () => {
+    expect(() =>
+      expectSharedCliEntrypointSeam({
+        importPath: "./cli-support",
+        source: `
+          import { argv, exit } from "node:process";
+          import { runCliEntrypoint } from "./cli-support";
+
+          if (argv[1] === "cli.ts") {
+            exit(runCli());
+          }
+        `,
+      }),
+    ).toThrow("build-gate CLI must not inline the run-and-exit guard");
+  });
+
+  it("rejects aliased process imports that clone run-and-exit orchestration", () => {
+    expect(() =>
+      expectSharedCliEntrypointSeam({
+        importPath: "./cli-support",
+        source: `
+          import proc from "node:process";
+          import { runCliEntrypoint } from "./cli-support";
+
+          if (proc.argv[1] === "cli.ts") {
+            proc.exit(runCli());
+          }
+        `,
+      }),
+    ).toThrow("build-gate CLI must not inline the run-and-exit guard");
+  });
 });
 
 describe("build-gate CLI entrypoint seams", () => {
-  it("uses the shared entrypoint seam for every discovered build-gate CLI", () => {
-    const cliSources = discoveredCliEntrypointSources();
+  it("uses the shared entrypoint seam for every discovered build-gate CLI", async () => {
+    const cliSources = [
+      "branch-freshness-git.ts",
+      "review-evidence-artefact-cli.ts",
+      "review-evidence-cli.ts",
+      "whitespace-hygiene.ts",
+    ].map((fileName) => ({
+      fileName,
+      source: Bun.file(new URL(fileName, import.meta.url)).text(),
+    }));
 
     expect(cliSources.map(({ fileName }) => fileName)).toEqual([
       "branch-freshness-git.ts",
@@ -324,37 +381,8 @@ describe("build-gate CLI entrypoint seams", () => {
     for (const { source } of cliSources) {
       expectSharedCliEntrypointSeam({
         importPath: "./cli-support",
-        source,
+        source: await source,
       });
     }
   });
 });
-
-type CliSource = {
-  readonly fileName: string;
-  readonly source: string;
-};
-
-/** Return build-gate source files that look like direct CLI entrypoints. */
-function discoveredCliEntrypointSources(): readonly CliSource[] {
-  return readdirSync(new URL("./", import.meta.url), { withFileTypes: true })
-    .filter(
-      (entry) => entry.isFile() && entry.name.endsWith(".ts") && !entry.name.endsWith(".test.ts"),
-    )
-    .map((entry) => ({
-      fileName: entry.name,
-      source: readFileSync(new URL(entry.name, import.meta.url), "utf8"),
-    }))
-    .filter(({ source }) => isCliEntrypointSource(source))
-    .sort((left, right) => left.fileName.localeCompare(right.fileName));
-}
-
-/** Identify current and legacy direct-entrypoint modules for seam checks. */
-function isCliEntrypointSource(source: string): boolean {
-  return (
-    source.includes("import.meta.url") &&
-    (source.includes("runCliEntrypoint") ||
-      source.includes("process.argv[1]") ||
-      source.includes("process.exitCode ="))
-  );
-}

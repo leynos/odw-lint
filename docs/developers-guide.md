@@ -356,9 +356,13 @@ gates share one command-result contract. Keep feature-specific policy in the
 corresponding gate module, such as file-size path filtering, whitespace scan
 rules, branch-freshness classification, and review-evidence classification.
 Build-gate command-line writer resolution, default `stdout` and `stderr`
-streams, and single-report dispatch live in
-`tests/build-gate/cli-support.ts`. Gate modules keep their own report
-formatting and exit-code mapping.
+streams, run-and-exit orchestration, and single-report dispatch live in
+`tests/build-gate/cli-support.ts`. Gate entrypoints call `runCliEntrypoint`
+from that module so direct-execution detection, process exit assignment, and
+exception handling stay behind one shared seam. Gate modules keep entrypoint
+ownership of their command grammar, report formatting, and exit-code mapping;
+they should return the code to `runCliEntrypoint` rather than setting
+`process.exitCode` or calling `process.exit` directly.
 
 Run `make markdownlint` as well when Markdown files change.
 
@@ -399,9 +403,12 @@ review-evidence exit code.
 Run `make review-evidence-artefact` after recording. The target reads the
 resolved artefact path, verifies that it is a completed review-evidence report,
 verifies that it is bound to the current reviewed tree, and prints the recorded
-status. The tree object is the authoritative match key; the commit is recorded
-for traceability in diagnostics. The underlying CLI exits 0 when a completed
-report is present and bound to the current tree, 1 when the artefact is missing,
+status. It checks `.review-evidence/report.txt` by default, or the artefact
+selected with `ODW_LINT_REVIEW_EVIDENCE_PATH=<path>` or
+`bun run tests/build-gate/review-evidence-artefact-cli.ts --evidence-path=<path>`.
+The tree object is the authoritative match key; the commit is recorded for
+traceability in diagnostics. The underlying CLI exits 0 when a completed report
+is present and bound to the current tree, 1 when the artefact is missing,
 unreadable, empty, not a completed report, unbound, or bound to a different
 tree, and 2 for malformed artefact-check flags or an unreadable current tree
 state. The Makefile target fails non-zero when the CLI rejects the artefact.
