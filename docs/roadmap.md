@@ -546,11 +546,11 @@ statically. It unlocks metadata rules and body parsing. See
       first-message access behind diagnostics-layer helpers before
       parser-backed diagnostics multiply catalogue access patterns.
       Lightweight addendum pass.
-  - [ ] 2.1.6.5. Add released-rule emission invariant coverage.
+  - [x] 2.1.6.5. Add released-rule emission invariant coverage.
     - Addendum (from audit:3.1.3; medium). Cross-check `RELEASED_RULE_IDS`
       against the production-emitted rule set so released-but-unemitted rules
       fail before catalogue drift reaches users. Lightweight addendum pass.
-  - [ ] 2.1.6.6. Add rule-page failing-example emission coverage.
+  - [x] 2.1.6.6. Add rule-page failing-example emission coverage.
     - Addendum (from review:3.1.7; low). Lint released rule-page failing
       examples and assert that the documented diagnostic appears. Lightweight
       addendum pass.

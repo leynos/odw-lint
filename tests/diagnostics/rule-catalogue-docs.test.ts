@@ -5,7 +5,8 @@
 import { describe, expect, it } from "bun:test";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { RULE_CATALOGUE, type RuleDefinition } from "odw-lint";
+import { RULE_CATALOGUE, type RuleDefinition, type RuleId } from "odw-lint";
+import { lintWorkflowSource } from "../../src/static-analysis/workflow-lint";
 
 const EXPECTED_METADATA_FIELDS = [
   "Rule ID",
@@ -182,20 +183,52 @@ const documentedRulePageSlugs = (): readonly string[] => {
 
 /** Reports whether a released rule page includes one named example section. */
 const hasRuleExampleSection = ({ rule, heading }: RuleExampleSection): boolean => {
+  const section = ruleExampleSection({ rule, heading });
+
+  return section !== undefined && jsCodeBlocksInSection(section).length > 0;
+};
+
+/** Extracts one example section from a rule page. */
+const ruleExampleSection = ({ rule, heading }: RuleExampleSection): string | undefined => {
   const markdown = readMarkdown(rulePagePath(rule));
   const headingStart = markdown.indexOf(heading);
 
   if (headingStart < 0) {
-    return false;
+    return undefined;
   }
 
   const nextHeadingStart = markdown.indexOf("\n## ", headingStart + heading.length);
-  const section =
-    nextHeadingStart < 0
-      ? markdown.slice(headingStart)
-      : markdown.slice(headingStart, nextHeadingStart);
 
-  return section.includes("\n```js\n");
+  return nextHeadingStart < 0
+    ? markdown.slice(headingStart)
+    : markdown.slice(headingStart, nextHeadingStart);
+};
+
+/** Extracts JavaScript fences from one deliberately constrained doc section. */
+const jsCodeBlocksInSection = (section: string): readonly string[] => {
+  return [...section.matchAll(/```js\n([\s\S]*?)\n```/gu)].map((match) => match[1] ?? "");
+};
+
+/** Extracts the first failing example source from a released rule page. */
+const failingExampleSourceForRule = (rule: RuleDefinition): string => {
+  const section = ruleExampleSection({ rule, heading: "## Failing example" });
+  const sourceText = section === undefined ? undefined : jsCodeBlocksInSection(section)[0];
+
+  if (sourceText === undefined) {
+    throw new Error(`${rulePagePath(rule)} must include a JavaScript failing example`);
+  }
+
+  return sourceText;
+};
+
+/** Returns emitted rule identifiers for a documented failing example. */
+const emittedRuleIdsForFailingExample = (rule: RuleDefinition): readonly RuleId[] => {
+  const result = lintWorkflowSource({
+    filePath: rulePagePath(rule),
+    sourceText: failingExampleSourceForRule(rule),
+  });
+
+  return result.diagnostics.map((diagnostic) => diagnostic.rule);
 };
 
 describe("rule catalogue documentation", () => {
@@ -244,5 +277,13 @@ describe("rule catalogue documentation", () => {
     });
 
     expect(missingExamples).toEqual([]);
+  });
+
+  it("keeps released rule failing examples aligned with emitted diagnostics", () => {
+    for (const rule of RULE_CATALOGUE.filter(
+      (candidate) => candidate.releaseStatus === "released",
+    )) {
+      expect(emittedRuleIdsForFailingExample(rule), rulePagePath(rule)).toContain(rule.id);
+    }
   });
 });
