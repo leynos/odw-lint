@@ -308,6 +308,13 @@ package, dependency, source or test changes.
   - Success: `docs/repository-layout.md` agrees with the technical design,
     developers' guide, and scanner ExecPlan about region-loop ownership,
     permitted callers, and wrapper usage.
+- [ ] 4.4.1.5. Document CLI and configuration source boundaries.
+  - Source: audit:3.3.1; severity medium.
+  - Scope: add `src/cli/` and `src/config/` ownership notes to the canonical
+    repository layout guide so it matches the shipped configuration loader,
+    option parser, and check-command source boundaries.
+  - Success: `docs/repository-layout.md` agrees with the users guide and
+    developers guide about the current CLI and configuration module homes.
 
 ## Context and orientation
 

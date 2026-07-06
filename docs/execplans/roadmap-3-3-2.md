@@ -282,6 +282,25 @@ the four-case semantics in the Decision Log: read failures fail, non-warning
 diagnostics fail, warnings fail only when they exceed the supplied budget, and
 the no-policy call preserves the original "any diagnostic fails" rule.
 
+## Addenda
+
+- [ ] 3.3.2.1. Normalize valued `check` option parsing.
+  - Source: review:3.3.1, review:3.3.2, and audit:3.3.2; severity medium.
+  - Scope: align missing-value, equals-form, and option-like token handling
+    for valued `check` options, including `--config`, `--output-format`, and
+    `--max-warnings`, then route the common scaffolding through the shared
+    parser table where contracts match.
+  - Success: split and equals spellings produce consistent usage errors,
+    option tokens are not silently consumed as values, and adding a new valued
+    option does not require cloning the parser dispatch pattern.
+- [ ] 3.3.2.2. Add process-level warning-budget coverage.
+  - Source: review:3.3.2; severity low.
+  - Scope: add real-process corpus coverage for `--max-warnings` so the path
+    from `main.ts` through `runCheckCli` to the warning-budget exit policy is
+    pinned.
+  - Success: the e2e corpus suite proves warning budgets propagate to process
+    exit codes without relying only on injected-reader CLI tests.
+
 ## Context and orientation
 
 `odw-lint` is a Bun + TypeScript project. The explicit-path `check` command is

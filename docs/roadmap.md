@@ -1237,10 +1237,32 @@ It informs CI usage and later plugin integration. See
   - See [technical-design.md](technical-design.md) §§7.2 and 10.
   - Success: unknown rule identifiers fail configuration validation, and
     `strictClaude` feeds the strict-Claude promotion mechanism from 3.1.3.
+  - [ ] 3.3.1.1. Add default configuration CLI discovery coverage.
+    - Addendum (from review:3.3.1; low). Prove `runCheckCli` applies the
+      cwd-joined discovered `odw-lint.json` path through the injected config
+      reader. Lightweight addendum pass.
+  - [ ] 3.3.1.2. Harden validated configuration immutability.
+    - Addendum (from review:3.3.1; low). Return a read-only or otherwise
+      mutation-proof validated rules map consistently with the frozen config
+      container. Lightweight addendum pass.
+  - [ ] 3.3.1.3. Deduplicate configuration-load finalization.
+    - Addendum (from audit:3.3.1; low). Single-source config parse/validate
+      tails, move whole-report severity application out of the per-file loop,
+      and cover explicit config read failures at the CLI boundary.
+      Lightweight addendum pass.
 - [x] 3.3.2. Implement `--max-warnings`.
   - Requires 3.3.1.
   - See [technical-design.md](technical-design.md) §7.3.
   - Success: the command exits code 1 when warning count exceeds the threshold.
+  - [ ] 3.3.2.1. Normalize valued `check` option parsing.
+    - Addendum (from review:3.3.1, review:3.3.2, and audit:3.3.2; medium).
+      Align missing, equals, and option-like value handling for valued options,
+      including `--config` and `--max-warnings`, behind the shared parser
+      table. Lightweight addendum pass.
+  - [ ] 3.3.2.2. Add process-level warning-budget coverage.
+    - Addendum (from review:3.3.2; low). Cover `--max-warnings` in the real
+      process corpus path so `main.ts` to exit-code propagation is pinned.
+      Lightweight addendum pass.
 - [ ] 3.3.3. Add pairwise CLI-mode coverage for format, strict mode, warning
   threshold, config, and stdin.
   - Requires 3.3.1 and 3.3.2.
@@ -1372,6 +1394,11 @@ types" and [developers-guide.md](developers-guide.md) "Documentation Upkeep".
     - Addendum (from audit:2.1.14; low). Add
       `source-scanner-regions.ts` and primitive wrapper-versus-direct-import
       guidance to `docs/repository-layout.md`. Lightweight addendum pass.
+  - [ ] 4.4.1.5. Document CLI and configuration source boundaries.
+    - Addendum (from audit:3.3.1; medium). Add `src/cli/` and `src/config/`
+      ownership notes to `docs/repository-layout.md` so the layout guide
+      matches the shipped configuration and command surfaces. Lightweight
+      addendum pass.
 
 ## 5. Deferred extensions
 
