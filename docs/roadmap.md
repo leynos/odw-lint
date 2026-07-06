@@ -1104,7 +1104,7 @@ reported clearly in one command. The result informs strict-mode policy. See
     info diagnostics through the merged pipeline, `strictClaude` leaves them
     informational, and the released rule catalogue no longer advertises an
     unemitted rule.
-- [ ] 3.1.8. Assess and widen ODW-only validate callee detection.
+- [x] 3.1.8. Assess and widen ODW-only validate callee detection.
   - Assess the false-positive risk for alias, namespace/member, and computed
     callee forms around the ODW-only `validate(source)` primitive, then extend
     the scanner where the primitive identity can be proven or document the

@@ -19,6 +19,13 @@ import { expectScannedEnvelope } from "./workflow-envelope-support";
 
 const DEFAULT_META = 'export const meta = { name: "validate-check", description: "ok" };';
 const ODW_ONLY_VALIDATE_RULE = makeRuleId("odw/no-odw-only-validate");
+const VALIDATE_ALIAS_IDENTIFIER = fc.constantFrom(
+  "v",
+  "checkSource",
+  "validateSource",
+  "sourceValidator",
+  "_validate",
+);
 const NON_VALIDATE_IDENTIFIER = fc
   .tuple(
     fc.constantFrom("check", "validateFoo", "myValidate", "source", "Validate", "validator"),
@@ -59,14 +66,18 @@ const expectSingleDiagnostic = (diagnostics: readonly Diagnostic[]): Diagnostic 
 };
 
 /** Asserts the fixed catalogue fields for one validate diagnostic. */
-const expectValidateDiagnostic = (diagnostic: Diagnostic, sourceText: string): void => {
+const expectValidateDiagnostic = (
+  diagnostic: Diagnostic,
+  sourceText: string,
+  expectedSpanText = "validate",
+): void => {
   const rule = ruleDefinitionFor(ODW_ONLY_VALIDATE_RULE);
 
   expect(diagnostic.rule).toBe(ODW_ONLY_VALIDATE_RULE);
   expect(diagnostic.severity).toBe("info");
   expect(diagnostic.message).toBe(firstReviewedRuleMessage(rule));
-  expect(decodeSpanText(sourceText, diagnostic.span)).toBe("validate");
-  expectSpanToMatchSource(sourceText, diagnostic.span, "validate");
+  expect(decodeSpanText(sourceText, diagnostic.span)).toBe(expectedSpanText);
+  expectSpanToMatchSource(sourceText, diagnostic.span, expectedSpanText);
 };
 
 describe("scanOdwOnlyValidateNotes", () => {
@@ -92,6 +103,41 @@ describe("scanOdwOnlyValidateNotes", () => {
     ]);
   });
 
+  it("reports single-hop validate aliases with an alias span", () => {
+    const { sourceText, diagnostics } = scanBody(
+      "const v = validate;\nconst out = v(args.source);",
+      "positive-alias",
+    );
+
+    expectValidateDiagnostic(expectSingleDiagnostic(diagnostics), sourceText, "v");
+  });
+
+  it("emits one diagnostic per validate alias call in source order", () => {
+    const { sourceText, diagnostics } = scanBody(
+      "const v = validate;\nv(args.first);\nv(args.second);",
+      "multiple-alias",
+    );
+
+    expect(diagnostics).toHaveLength(2);
+    expect(diagnostics.map((diagnostic) => decodeSpanText(sourceText, diagnostic.span))).toEqual([
+      "v",
+      "v",
+    ]);
+  });
+
+  it("keeps alias and bare validate call diagnostics in source order", () => {
+    const { sourceText, diagnostics } = scanBody(
+      "const v = validate;\nv(args.first);\nvalidate(args.second);",
+      "alias-and-bare",
+    );
+
+    expect(diagnostics).toHaveLength(2);
+    expect(diagnostics.map((diagnostic) => decodeSpanText(sourceText, diagnostic.span))).toEqual([
+      "v",
+      "validate",
+    ]);
+  });
+
   it("ignores validate calls shadowed in the current lexical scope", () => {
     const { diagnostics } = scanBody(
       "const validate = () => ok;\nvalidate(args.source);",
@@ -110,10 +156,38 @@ describe("scanOdwOnlyValidateNotes", () => {
     expect(diagnostics).toHaveLength(1);
   });
 
+  it("ignores aliases whose validate initializer is workflow-local", () => {
+    const { diagnostics } = scanBody(
+      "const validate = makeValidator();\nconst v = validate;\nv(args.source);",
+      "shadowed-alias-initializer",
+    );
+
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("lets call-site alias shadows suppress only the nested alias call", () => {
+    const { sourceText, diagnostics } = scanBody(
+      "const v = validate;\nif (args.local) {\n  const v = other;\n  v(args.source);\n}\nv(args.after);",
+      "shadowed-alias-call-site",
+    );
+
+    expectValidateDiagnostic(expectSingleDiagnostic(diagnostics), sourceText, "v");
+  });
+
+  it("does not follow chained validate aliases", () => {
+    const { diagnostics } = scanBody(
+      "const v = validate;\nconst w = v;\nw(args.source);",
+      "chained-alias",
+    );
+
+    expect(diagnostics).toEqual([]);
+  });
+
   it("ignores member, computed, and non-call validate references", () => {
     const bodies = [
       "schema.validate(args.source);",
-      'obj["validate"](args.source);',
+      'registry["validate"](args.source);',
+      "globalThis.validate(args.source);",
       "const fn = validate;",
     ] as const;
 
@@ -145,6 +219,20 @@ describe("scanOdwOnlyValidateNotes", () => {
     fc.assert(
       fc.property(NON_VALIDATE_IDENTIFIER, (name) => {
         expect(scanBody(`${name}(args.source);`, "generated-name").diagnostics).toEqual([]);
+      }),
+      SOURCE_SPAN_PROPERTY_RUNNER,
+    );
+  });
+
+  it("reports generated valid single-hop validate aliases", () => {
+    fc.assert(
+      fc.property(VALIDATE_ALIAS_IDENTIFIER, (name) => {
+        const { sourceText, diagnostics } = scanBody(
+          `const ${name} = validate;\n${name}(args.source);`,
+          "generated-alias",
+        );
+
+        expectValidateDiagnostic(expectSingleDiagnostic(diagnostics), sourceText, name);
       }),
       SOURCE_SPAN_PROPERTY_RUNNER,
     );

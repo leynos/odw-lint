@@ -29,6 +29,13 @@ const result = validate(args.generatedWorkflowSource);
 await agent(`Summarize validation result: ${JSON.stringify(result)}.`);
 ```
 
+The scanner also reports a single-hop alias of the injected primitive:
+
+```js
+const checkWorkflow = validate;
+const result = checkWorkflow(args.generatedWorkflowSource);
+```
+
 ## Fixed example
 
 ```js
@@ -44,7 +51,13 @@ await agent(`Summarize validation result: ${JSON.stringify(args.validationResult
 ## Limitations
 
 The scanner detects direct calls to a lexically unshadowed bare `validate`
-identifier, such as `validate(source)`. It does not detect aliases such as
-`const v = validate; v(source)`, member forms such as
-`namespace.validate(source)`, or dynamic and computed callees such as
-`registry["validate"](source)` in this release.
+identifier, such as `validate(source)`, and single-hop aliases of that
+primitive, such as `const v = validate; v(source)`.
+
+The remaining conservative limits are member forms such as
+`namespace.validate(source)`, dynamic and computed callees such as
+`registry["validate"](source)`, global forms such as
+`globalThis.validate(source)`, and chained aliases such as
+`const v = validate; const w = v; w(source)`. These forms stay intentionally
+undetected because the scanner cannot prove that they reference ODW's injected
+primitive.

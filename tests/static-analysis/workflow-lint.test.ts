@@ -215,6 +215,32 @@ describe("lintWorkflowSource", () => {
     expectSpanToMatchSource(result.sourceFile.sourceText, diagnostic.span, "validate");
   });
 
+  it("routes ODW-only validate alias notes through the merged pipeline", () => {
+    const sourceText = [
+      "export const meta = { name: 'example', description: 'ok' };",
+      "const v = validate;",
+      "const result = v(args.source);",
+    ].join("\n");
+    const result = lintSource(sourceText);
+    const rule = ruleDefinitionFor(ODW_ONLY_VALIDATE_RULE);
+
+    expect(result.classification.diagnostics).toEqual([]);
+    expect(result.bodySyntax).toEqual([]);
+    expect(diagnosticRules(result.claudeCompatibility)).toEqual([ODW_ONLY_VALIDATE_RULE]);
+    expect(result.diagnostics).toEqual(result.claudeCompatibility);
+
+    const diagnostic = result.claudeCompatibility[0];
+    expect(diagnostic).toBeDefined();
+    if (diagnostic === undefined) {
+      throw new Error("expected one ODW-only validate alias diagnostic");
+    }
+
+    expect(diagnostic.severity).toBe("info");
+    expect(diagnostic.message).toBe(firstReviewedRuleMessage(rule));
+    expect(diagnostic.docs).toBe("docs/rules/no-odw-only-validate.md");
+    expectSpanToMatchSource(result.sourceFile.sourceText, diagnostic.span, "v");
+  });
+
   it("reports body syntax once and silences deterministic-time warnings", () => {
     const result = lintSource(
       [

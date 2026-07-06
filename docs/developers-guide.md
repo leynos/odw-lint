@@ -196,8 +196,10 @@ The body parser runs once for this pipeline; `odw/body-syntax` owns syntax
 failures, and Claude compatibility checks consume the same successful parse
 result. The Claude compatibility stage currently runs the deterministic-time
 scanner and the ODW-only `validate(source)` scanner over that shared parse
-result. The package entry re-exports `lintWorkflowSource` and
-`WorkflowLintResult` for future CLI and public-consumer work.
+result. The validate scanner covers direct bare-identifier calls and
+single-hop-alias callees such as `const v = validate; v(source)`. The package
+entry re-exports `lintWorkflowSource` and `WorkflowLintResult` for future CLI
+and public-consumer work.
 
 `promoteStrictClaudeSeverity` is the library mechanism behind strict Claude
 portability mode. It reads the rule catalogue, promotes diagnostics whose rule
