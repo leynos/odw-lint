@@ -2,6 +2,7 @@
  * @file Human-readable diagnostic text formatting.
  */
 
+import { DIAGNOSTIC_SEVERITIES, type DiagnosticSeverity } from "./severity";
 import type { Diagnostic, DiagnosticReport, DiagnosticSummary } from "./types";
 
 type SummaryPart = {
@@ -11,15 +12,25 @@ type SummaryPart = {
 };
 
 const SUMMARY_PARTS = [
-  { countKey: "errors", singular: "error", plural: "errors" },
-  { countKey: "warnings", singular: "warning", plural: "warnings" },
-  { countKey: "infos", singular: "info", plural: "infos" },
-  { countKey: "hints", singular: "hint", plural: "hints" },
-] as const satisfies readonly {
+  ...DIAGNOSTIC_SEVERITIES.map((severity) => ({
+    countKey: severitySummaryKeyFor(severity),
+    singular: severity,
+    plural: `${severity}s`,
+  })),
+] as const satisfies readonly SummaryPartMetadata[];
+
+type SummaryPartMetadata = {
   readonly countKey: keyof Pick<DiagnosticSummary, "errors" | "warnings" | "infos" | "hints">;
-  readonly singular: string;
+  readonly singular: DiagnosticSeverity;
   readonly plural: string;
-}[];
+};
+
+/** Derives the report summary counter for one severity value. */
+function severitySummaryKeyFor(
+  severity: DiagnosticSeverity,
+): keyof Pick<DiagnosticSummary, "errors" | "warnings" | "infos" | "hints"> {
+  return `${severity}s` as keyof Pick<DiagnosticSummary, "errors" | "warnings" | "infos" | "hints">;
+}
 
 /** Checks for control whitespace that can break one-line text diagnostics. */
 const isControlWhitespace = (character: string): boolean => {

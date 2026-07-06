@@ -799,18 +799,18 @@ ExecPlan complete. Skills and documents used: `grepai`, `leta`, `execplans`,
 
 ## Addenda
 
-- [ ] 2.4.2.1. Add process-level text-footer coverage.
+- [x] 2.4.2.1. Add process-level text-footer coverage.
   - Source: review:2.4.2; severity: low.
   - Scope: add spawned `bun run src/cli/main.ts check` coverage that asserts
     the `Found ...` footer and blank-line separation through the real process
     output path.
-- [ ] 2.4.2.2. Consolidate check text-output residues.
+- [x] 2.4.2.2. Consolidate check text-output residues.
   - Source: audit:2.4.2; severity: low.
   - Scope: deduplicate the thrown-value message helper, freeze
     `createDiagnosticReport` output consistently with sibling result shapes,
     simplify check request construction, and derive text summary severity
     labels from one ordering source.
-- [ ] 2.4.2.3. Close mixed-output coverage and documentation gaps.
+- [x] 2.4.2.3. Close mixed-output coverage and documentation gaps.
   - Source: audit:2.4.2; severity: low.
   - Scope: cover mixed diagnostic-and-read-failure `runCheckCli` invocations
     across stdout and stderr, and clarify in user-facing documentation that

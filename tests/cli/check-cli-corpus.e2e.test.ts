@@ -131,6 +131,21 @@ describe("explicit-path check CLI corpus process contract", () => {
     expect(result.stderr).toBe("");
   });
 
+  it("prints the text footer through the real process output path", () => {
+    const fixture = findInvalidWorkflowFixture({
+      family: "missing-metadata",
+      fileName: "missing-meta.js",
+    });
+    const result = runCheckProcess([
+      fixturePathArgument(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath),
+    ]);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain("error odw/meta-required");
+    expect(result.stdout).toEndWith("\n\nFound 1 error.\n");
+  });
+
   it("prints JSON diagnostics for an invalid explicit path", () => {
     const fixture = findInvalidWorkflowFixture({
       family: "missing-metadata",

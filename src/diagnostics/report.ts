@@ -55,20 +55,20 @@ export const countDiagnostics = (input: {
 
 /** Clones a source position so reports do not retain caller-owned objects. */
 const cloneSourcePosition = (position: SourcePosition): SourcePosition => {
-  return { ...position };
+  return Object.freeze({ ...position });
 };
 
 /** Clones a source span so reports do not retain caller-owned nested objects. */
 const cloneSourceSpan = (span: SourceSpan): SourceSpan => {
-  return {
+  return Object.freeze({
     start: cloneSourcePosition(span.start),
     end: cloneSourcePosition(span.end),
-  };
+  });
 };
 
 /** Clones a suggestion so report diagnostics are detached from caller state. */
 const cloneSuggestion = (suggestion: DiagnosticSuggestion): DiagnosticSuggestion => {
-  return { ...suggestion };
+  return Object.freeze({ ...suggestion });
 };
 
 /** Clones a diagnostic payload before report summary and envelope creation. */
@@ -84,8 +84,13 @@ const cloneDiagnostic = (diagnostic: Diagnostic): Diagnostic => {
 
   return {
     ...clone,
-    suggestions: diagnostic.suggestions.map(cloneSuggestion),
+    suggestions: Object.freeze(diagnostic.suggestions.map(cloneSuggestion)),
   };
+};
+
+/** Freezes the report summary so consumers cannot mutate derived counts. */
+const freezeDiagnosticSummary = (summary: DiagnosticSummary): DiagnosticSummary => {
+  return Object.freeze(summary);
 };
 
 /**
@@ -101,13 +106,13 @@ export const createDiagnosticReport = (input: {
 }): DiagnosticReport => {
   const diagnostics = input.diagnostics.map(cloneDiagnostic);
 
-  return {
+  return Object.freeze({
     schemaVersion: DIAGNOSTIC_SCHEMA_VERSION,
-    tool: {
+    tool: Object.freeze({
       name: TOOL_NAME,
       version: input.version,
-    },
-    summary: countDiagnostics({ files: input.files, diagnostics }),
-    diagnostics,
-  };
+    }),
+    summary: freezeDiagnosticSummary(countDiagnostics({ files: input.files, diagnostics })),
+    diagnostics: Object.freeze(diagnostics),
+  });
 };

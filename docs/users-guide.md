@@ -113,9 +113,10 @@ The default human text report is derived from the same diagnostic objects and
 summary counts as JSON output. Each diagnostic is printed as one
 `file:line:column severity rule message` line, followed by a blank line and a
 `Found …` severity summary such as `Found 1 error.` or
-`Found 2 errors, 1 warning.` Clean runs print nothing. Use a machine-readable
-output format in Continuous Integration (CI) or editor integrations when
-callers need stable field names.
+`Found 2 errors, 1 warning.` Clean runs print nothing. This text is a human
+report, not a machine-parseable stream; use a machine-readable output format in
+Continuous Integration (CI) or editor integrations when callers need stable
+field names.
 
 ## Rule reference
 

@@ -946,14 +946,14 @@ unlocks CI adoption and user feedback. See
   - See [technical-design.md](technical-design.md) §8.
   - Success: human output contains enough location information to fix a
     fixture without opening JSON.
-  - [ ] 2.4.2.1. Add process-level text-footer coverage.
+  - [x] 2.4.2.1. Add process-level text-footer coverage.
     - Addendum (from review:2.4.2; low). Add spawned `check` coverage for the
       text footer and blank-line separation. Lightweight addendum pass.
-  - [ ] 2.4.2.2. Consolidate check text-output residues.
+  - [x] 2.4.2.2. Consolidate check text-output residues.
     - Addendum (from audit:2.4.2; low). Deduplicate thrown-value formatting,
       freeze diagnostic reports, simplify request construction, and derive the
       severity summary mapping. Lightweight addendum pass.
-  - [ ] 2.4.2.3. Close mixed-output coverage and documentation gaps.
+  - [x] 2.4.2.3. Close mixed-output coverage and documentation gaps.
     - Addendum (from audit:2.4.2; low). Cover mixed diagnostics and read
       failures, and document that text reports are human-facing rather than
       machine-parseable. Lightweight addendum pass.

@@ -111,6 +111,35 @@ describe("diagnostic reports", () => {
     });
   });
 
+  it("freezes the report envelope and cloned payloads", () => {
+    const report = createDiagnosticReport({
+      version: "0.1.0",
+      files: 1,
+      diagnostics: [
+        {
+          ...diagnosticForSeverity("warning"),
+          suggestions: [{ message: "Add exported metadata." }],
+        },
+      ],
+    });
+
+    expect(Object.isFrozen(report)).toBe(true);
+    expect(Object.isFrozen(report.tool)).toBe(true);
+    expect(Object.isFrozen(report.summary)).toBe(true);
+    expect(Object.isFrozen(report.diagnostics)).toBe(true);
+
+    const diagnostic = report.diagnostics[0];
+    if (diagnostic === undefined) {
+      throw new Error("Expected diagnostic fixture.");
+    }
+
+    expect(Object.isFrozen(diagnostic.span)).toBe(true);
+    expect(Object.isFrozen(diagnostic.span.start)).toBe(true);
+    expect(Object.isFrozen(diagnostic.span.end)).toBe(true);
+    expect(Object.isFrozen(diagnostic.suggestions)).toBe(true);
+    expect(Object.isFrozen(diagnostic.suggestions?.[0])).toBe(true);
+  });
+
   it("snapshots nested diagnostic payloads before caller-owned objects can change", () => {
     const diagnostic = {
       ...diagnosticForSeverity("warning"),

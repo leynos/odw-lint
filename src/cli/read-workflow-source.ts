@@ -4,6 +4,7 @@
 
 import { readFileSync } from "node:fs";
 import type { WorkflowSource } from "../static-analysis";
+import { messageForThrownValue } from "./thrown-value-message";
 
 export type WorkflowSourceReadFailure = {
   readonly filePath: string;
@@ -23,15 +24,6 @@ type WorkflowSourceReadOptions = {
 
 /** Reads a workflow file as UTF-8 text using the host filesystem. */
 const defaultReadFileText: ReadFileText = (filePath) => readFileSync(filePath, "utf8");
-
-/** Converts unknown thrown values to user-visible text at the filesystem boundary. */
-const messageForThrownValue = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return String(error);
-};
 
 /** Extracts the POSIX-style error code surfaced by Node filesystem errors. */
 const errnoCodeFor = (error: unknown): string | undefined => {

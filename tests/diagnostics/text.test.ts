@@ -5,7 +5,12 @@
 import { describe, expect, it } from "bun:test";
 import * as fc from "fast-check";
 import type { Diagnostic, DiagnosticSeverity, DiagnosticSummary } from "odw-lint";
-import { countDiagnostics, createDiagnosticReport, formatTextDiagnostics } from "odw-lint";
+import {
+  countDiagnostics,
+  createDiagnosticReport,
+  DIAGNOSTIC_SEVERITIES,
+  formatTextDiagnostics,
+} from "odw-lint";
 import { formatTextReport } from "../../src/diagnostics/text";
 import { diagnosticForSeverity, severitySummaryKeys } from "./fixtures";
 
@@ -36,13 +41,7 @@ const summaryCases = [
   readonly expected: string;
 }[];
 
-const severityOrder = ["error", "warning", "info", "hint"] as const;
-const severityLabels = {
-  error: ["error", "errors"],
-  warning: ["warning", "warnings"],
-  info: ["info", "infos"],
-  hint: ["hint", "hints"],
-} as const satisfies Record<DiagnosticSeverity, readonly [string, string]>;
+const severityOrder = DIAGNOSTIC_SEVERITIES;
 
 /** Builds the independently expected footer from report summary counts. */
 const expectedSummaryLine = (summary: DiagnosticSummary): string => {
@@ -53,8 +52,7 @@ const expectedSummaryLine = (summary: DiagnosticSummary): string => {
       return [];
     }
 
-    const [singular, plural] = severityLabels[severity];
-    return [`${count} ${count === 1 ? singular : plural}`];
+    return [`${count} ${count === 1 ? severity : `${severity}s`}`];
   });
 
   return `Found ${parts.join(", ")}.`;

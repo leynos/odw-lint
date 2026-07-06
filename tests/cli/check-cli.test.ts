@@ -205,6 +205,19 @@ describe("explicit-path check CLI runner", () => {
     expect(result.stderr).toContain("error: cannot read missing-workflow.js: missing test fixture");
   });
 
+  it("keeps mixed text diagnostics and read failures on their own streams", () => {
+    const fixture = errorFixture();
+    const result = runCapturedCheckCli(
+      ["check", fixture.filePath, "missing-workflow.js"],
+      [fixture],
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toContain(`${fixture.filePath}:1:1 error odw/meta-required`);
+    expect(result.stdout).toContain("Found 1 error.");
+    expect(result.stderr).toContain("error: cannot read missing-workflow.js: missing test fixture");
+  });
+
   it("keeps read failures on stderr when JSON output is selected", () => {
     const result = runCapturedCheckCli(["check", "--output-format", "json", "missing-workflow.js"]);
     const report = parseCapturedJsonReport(result.stdout);
@@ -212,6 +225,20 @@ describe("explicit-path check CLI runner", () => {
     expect(result.exitCode).toBe(1);
     expect(report.schemaVersion).toBe(1);
     expect(report.diagnostics).toEqual([]);
+    expect(result.stderr).toContain("error: cannot read missing-workflow.js: missing test fixture");
+  });
+
+  it("keeps mixed JSON diagnostics and read failures on their own streams", () => {
+    const fixture = errorFixture();
+    const result = runCapturedCheckCli(
+      ["check", "--output-format", "json", fixture.filePath, "missing-workflow.js"],
+      [fixture],
+    );
+    const report = parseCapturedJsonReport(result.stdout);
+
+    expect(result.exitCode).toBe(1);
+    expect(report.diagnostics?.[0]?.rule).toBe("odw/meta-required");
+    expect(report.summary?.errors).toBe(1);
     expect(result.stderr).toContain("error: cannot read missing-workflow.js: missing test fixture");
   });
 

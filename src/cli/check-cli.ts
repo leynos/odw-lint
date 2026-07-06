@@ -9,6 +9,7 @@ import { formatTextReport } from "../diagnostics/text";
 import type { DiagnosticReport } from "../diagnostics/types";
 import type { ReadFileText, WorkflowSourceReadFailure } from "./read-workflow-source";
 import { checkDiagnosticsExitCode, runCheck } from "./run-check";
+import { messageForThrownValue } from "./thrown-value-message";
 
 export type CheckCliExitCode = 0 | 1 | 2;
 
@@ -158,15 +159,6 @@ const parseOutputFormatOperand = (
   };
 };
 
-/** Convert unexpected thrown values to stable CLI text. */
-const messageForThrownValue = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return String(error);
-};
-
 /** Emit the current minimal text diagnostics contract. */
 const writeTextDiagnostics = (writers: CheckCliWriters, diagnosticsText: string): void => {
   if (diagnosticsText.length === 0) {
@@ -217,20 +209,12 @@ export const runCheckCli = (args: readonly string[], io: CheckCliIo = {}): Check
   }
 
   try {
-    const request =
-      io.readFileText === undefined
-        ? {
-            paths: parsedArgs.paths,
-            version: io.version ?? packageJson.version,
-          }
-        : {
-            paths: parsedArgs.paths,
-            version: io.version ?? packageJson.version,
-            readFileText: io.readFileText,
-          };
-    const outcome = runCheck({
-      ...request,
-    });
+    const request = {
+      paths: parsedArgs.paths,
+      version: io.version ?? packageJson.version,
+      ...(io.readFileText === undefined ? {} : { readFileText: io.readFileText }),
+    };
+    const outcome = runCheck(request);
 
     writeReport(writers, parsedArgs.outputFormat, outcome.report);
     writeReadFailures(writers, outcome.readFailures);
