@@ -1149,6 +1149,13 @@ rule page.
     users.
   - Success: a rule cannot remain `released` unless production diagnostics can
     emit it, or the catalogue test fails with the missing rule identifier.
+- [ ] 2.1.6.6. Add rule-page failing-example emission coverage.
+  - Source: review:3.1.7; severity low.
+  - Scope: parse released rule documentation pages, lint each `## Failing
+    example` block through the production pipeline, and assert that the
+    advertised rule diagnostic is emitted.
+  - Success: a released rule page cannot show a failing example that does not
+    produce its documented diagnostic.
 
 ## Revision note
 

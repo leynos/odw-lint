@@ -654,6 +654,18 @@ New/changed internal interfaces at completion:
 
 No new external dependencies. No public package surface change.
 
+## Addenda
+
+- [ ] 5.4.1.1. Extract parser-backed body-scanner harness helpers.
+  - Source: audit:3.1.7; severity low.
+  - Scope: extract the shared normalized-span diagnostic constructor used by
+    parser-backed body scanners, and introduce a shared body-match collection
+    helper where the scanner contracts align.
+  - Success: existing parser-backed scanners share one reviewed
+    normalized-span diagnostic path, future bounded-loop, bounded-fanout, and
+    `Promise.race` scanners have a single harness to reuse, and no production
+    diagnostic output changes.
+
 ## Signposting: documentation read and skills to load
 
 Documentation treated as source of truth for this plan:

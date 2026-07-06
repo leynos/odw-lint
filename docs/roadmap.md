@@ -550,6 +550,10 @@ statically. It unlocks metadata rules and body parsing. See
     - Addendum (from audit:3.1.3; medium). Cross-check `RELEASED_RULE_IDS`
       against the production-emitted rule set so released-but-unemitted rules
       fail before catalogue drift reaches users. Lightweight addendum pass.
+  - [ ] 2.1.6.6. Add rule-page failing-example emission coverage.
+    - Addendum (from review:3.1.7; low). Lint released rule-page failing
+      examples and assert that the documented diagnostic appears. Lightweight
+      addendum pass.
 - [x] 2.1.7. Add rule-catalogue parity checks for fixture diagnostics.
   - Requires 2.1.6 and step 1.3.
   - Check fixture manifest expectations against the typed rule catalogue so
@@ -1100,6 +1104,16 @@ reported clearly in one command. The result informs strict-mode policy. See
     info diagnostics through the merged pipeline, `strictClaude` leaves them
     informational, and the released rule catalogue no longer advertises an
     unemitted rule.
+- [ ] 3.1.8. Assess and widen ODW-only validate callee detection.
+  - Assess the false-positive risk for alias, namespace/member, and computed
+    callee forms around the ODW-only `validate(source)` primitive, then extend
+    the scanner where the primitive identity can be proven or document the
+    remaining conservative detection bounds.
+  - Requires 3.1.7.
+  - Success: alias and member/computed `validate` examples have intentional
+    lint outcomes, rule-page limitations match the shipped coverage, and
+    `odw/no-odw-only-validate` still reports clearly through the one-command
+    Claude compatibility pipeline.
 
 ### 3.2. Add first orchestration-risk rules
 
@@ -1163,6 +1177,10 @@ See [technical-design.md](technical-design.md) §9.3.
       allowlist with shape-based cloned-narrower detection and fold the
       scope-own-facts `isExpression` copy back onto `swc-ast.ts`. Lightweight
       addendum pass.
+  - [ ] 3.2.5.5. Hoist call-expression narrowing onto the SWC seam.
+    - Addendum (from audit:3.1.7; medium). Route duplicated
+      `CallExpression` narrowers through `swc-ast.ts` and harden the seam guard
+      against bare `.type` discriminant clones. Lightweight addendum pass.
 - [x] 3.2.6. Complete SWC traversal-driver adoption for parser-backed
   collectors.
   - Requires 3.2.5, 3.1.5, and 3.2.5.1.
@@ -1418,6 +1436,11 @@ work by keeping shared helpers documented, tested, and owned once.
   - Success: one reviewed helper owns each duplicated contract, focused tests
     pin unchanged diagnostics, and no production rule output changes.
   - Completed by [roadmap-5-4-1.md](execplans/roadmap-5-4-1.md).
+  - [ ] 5.4.1.1. Extract parser-backed body-scanner harness helpers.
+    - Addendum (from audit:3.1.7; low). Share normalized-span diagnostic
+      construction, and body-match collection where contracts align, before
+      further parser-backed scanners copy the same scaffolding. Lightweight
+      addendum pass.
 
 ### 5.5. Reconcile dormant body-syntax span narrowing
 
