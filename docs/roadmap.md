@@ -1237,7 +1237,7 @@ It informs CI usage and later plugin integration. See
   - See [technical-design.md](technical-design.md) §§7.2 and 10.
   - Success: unknown rule identifiers fail configuration validation, and
     `strictClaude` feeds the strict-Claude promotion mechanism from 3.1.3.
-- [ ] 3.3.2. Implement `--max-warnings`.
+- [x] 3.3.2. Implement `--max-warnings`.
   - Requires 3.3.1.
   - See [technical-design.md](technical-design.md) §7.3.
   - Success: the command exits code 1 when warning count exceeds the threshold.

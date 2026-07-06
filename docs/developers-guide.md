@@ -43,16 +43,20 @@ Ruff-style policy in technical design sections
 [7.0](technical-design.md#70-ux-precedent) and
 [7.4](technical-design.md#74-exit-codes):
 
-| Code | Meaning                                                                                             |
-| ---- | --------------------------------------------------------------------------------------------------- |
-| 0    | The command completed and no diagnostics remain.                                                    |
-| 1    | Any diagnostic remains, regardless of severity, or at least one input file could not be read.       |
-| 2    | The invocation was invalid, such as a missing path or unknown flag, or an internal analyser failed. |
+| Code | Meaning                                                                                                                                                                   |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | The command completed and no diagnostics remain, or only warning-severity diagnostics within the `--max-warnings` budget remain.                                          |
+| 1    | Any error, informational, or hint diagnostic remains; warnings exceed the `--max-warnings` budget (any warning by default); or at least one input file could not be read. |
+| 2    | The invocation was invalid, such as a missing path or unknown flag, or an internal analyser failed.                                                                       |
 
 Source snippets, output formats beyond `full` and `json`, `--output-file`,
 configured discovery, glob expansion, and the wider Ruff-compatible flag
-surface remain deferred. That includes `--exit-zero`, `--max-warnings`, and
-`--strict-claude`.
+surface remain deferred. That includes `--exit-zero` and `--strict-claude`.
+
+`--max-warnings <n>` tolerates up to `n` warning-severity diagnostics. Warnings
+within the budget no longer fail the run, while errors, informational
+diagnostics, hints, and read failures still do. A warning count above `n` exits
+1, and an invalid `--max-warnings` value exits 2.
 
 The first implementation owns the static-analysis implementation inside this
 repository. v1 vendors the pure-literal parser behaviour from ODW's

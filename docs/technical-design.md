@@ -311,15 +311,17 @@ File-discovery rules:
 
 ### 7.4. Exit codes
 
-| Code | Meaning                                                                                                  |
-| ---- | -------------------------------------------------------------------------------------------------------- |
-| 0    | No diagnostics remain, or all diagnostics were fixed automatically.                                      |
-| 1    | Diagnostics remain, warning threshold was exceeded, or fixes were applied with `--exit-non-zero-on-fix`. |
-| 2    | Invalid configuration, invalid CLI options, unreadable required inputs, or internal analyser failure.    |
+| Code | Meaning                                                                                                                      |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 0    | No diagnostics remain, only warnings within the `--max-warnings` budget remain, or all diagnostics were fixed automatically. |
+| 1    | Diagnostics remain, warning threshold was exceeded, or fixes were applied with `--exit-non-zero-on-fix`.                     |
+| 2    | Invalid configuration, invalid CLI options, unreadable required inputs, or internal analyser failure.                        |
 
 `--exit-zero` forces exit code 0 for diagnostics, but never for abnormal
 termination. `--fix-only` follows Ruff's posture: apply fixes and do not report
 or exit non-zero for remaining diagnostics.
+`--max-warnings n` tolerates up to `n` warnings and only fails when the warning
+count strictly exceeds `n`.
 
 ## 8. Diagnostic contract
 

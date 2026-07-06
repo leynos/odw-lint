@@ -54,7 +54,8 @@ The planned options follow `ruff check` where the concepts map cleanly:
 - `--fix`, `--unsafe-fixes`, `--diff`, and `--fix-only` control future fix
   support. Rules without fix support still report diagnostics only.
 - `--strict-claude` promotes Claude Code portability warnings to errors.
-- `--max-warnings <n>` fails the run when warning counts exceed the threshold.
+- `--max-warnings <n>` fails the run when warning counts exceed the threshold;
+  warnings within the budget no longer fail the run.
 - `--config <path-or-override>` selects a configuration file or applies an
   inline override. `--isolated` ignores configuration files.
 - `--exclude`, `--extend-exclude`, `--force-exclude`,
@@ -69,7 +70,7 @@ The planned options follow `ruff check` where the concepts map cleanly:
 
 | Code | Meaning                                                                                                                                     |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0    | No diagnostics remain, or all diagnostics were fixed automatically.                                                                         |
+| 0    | No diagnostics remain, only warnings within the `--max-warnings` budget remain, or all diagnostics were fixed automatically.                |
 | 1    | Diagnostics remain, warning thresholds were exceeded, fixes were applied with `--exit-non-zero-on-fix`, or an input file could not be read. |
 | 2    | Invalid configuration, invalid CLI options, or internal analyser failure.                                                                   |
 

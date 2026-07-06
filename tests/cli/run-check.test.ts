@@ -157,6 +157,31 @@ describe("explicit-path check aggregation", () => {
     expect(checkDiagnosticsExitCode(outcome)).toBe(exitCode);
   });
 
+  it.each([
+    ["one warning within budget", [sourceFor("warning")], 1, 0],
+    ["one warning over zero budget", [sourceFor("warning")], 0, 1],
+    [
+      "two warnings over one-warning budget",
+      [sourceFor("warning", 1), sourceFor("warning", 2)],
+      1,
+      1,
+    ],
+    ["two warnings exactly at budget", [sourceFor("warning", 1), sourceFor("warning", 2)], 2, 0],
+    ["error ignores warning budget", [sourceFor("error")], 9, 1],
+    ["read failure ignores warning budget", [], 9, 1],
+  ] as const)("applies max-warning exit policy for %s", (_caseName, sources, maxWarnings, exitCode) => {
+    const paths =
+      sources.length === 0 ? ["missing-workflow.js"] : sources.map((source) => source.filePath);
+
+    const outcome = runCheck({
+      paths,
+      version: VERSION,
+      readFileText: readFrom(sources),
+    });
+
+    expect(checkDiagnosticsExitCode(outcome, { maxWarnings })).toBe(exitCode);
+  });
+
   it("counts readable files and concatenates diagnostics in path order", () => {
     const first = sourceFor("error", 1);
     const second = sourceFor("warning", 2);
@@ -233,6 +258,25 @@ describe("explicit-path check aggregation", () => {
 
           expect(checkDiagnosticsExitCode(outcome)).toBe(
             hasFailingCheckInput({ labels, hasReadFailure }) ? 1 : 0,
+          );
+        },
+      ),
+    );
+  });
+
+  it("exits 1 exactly when warning count exceeds the configured warning budget", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 8 }),
+        fc.integer({ min: 0, max: 8 }),
+        (warningCount, maxWarnings) => {
+          const sources = Array.from({ length: warningCount }, (_value, index) =>
+            sourceFor("warning", index),
+          );
+          const outcome = runFixtureCheck(sources);
+
+          expect(checkDiagnosticsExitCode(outcome, { maxWarnings })).toBe(
+            warningCount > maxWarnings ? 1 : 0,
           );
         },
       ),

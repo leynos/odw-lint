@@ -203,6 +203,66 @@ describe("explicit-path check CLI runner", () => {
     expect(result.stdout).toContain("Found 1 warning.");
   });
 
+  it("returns 0 for warnings within the explicit warning budget", () => {
+    const fixture = warningFixture();
+    const result = runCapturedCheckCli(
+      ["check", "--max-warnings", "1", fixture.filePath],
+      [fixture],
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain(
+      `${fixture.filePath}:3:16 warning odw/meta-statically-unprovable`,
+    );
+    expect(result.stdout).toContain("Found 1 warning.");
+  });
+
+  it("returns 1 for warnings above the explicit warning budget", () => {
+    const fixture = warningFixture();
+    const result = runCapturedCheckCli(
+      ["check", "--max-warnings", "0", fixture.filePath],
+      [fixture],
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain("Found 1 warning.");
+  });
+
+  it("accepts the equals spelling for the warning budget", () => {
+    const fixture = warningFixture();
+    const result = runCapturedCheckCli(["check", "--max-warnings=1", fixture.filePath], [fixture]);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain("Found 1 warning.");
+  });
+
+  it("returns 1 for errors even when a warning budget is present", () => {
+    const fixture = errorFixture();
+    const result = runCapturedCheckCli(
+      ["check", "--max-warnings", "5", fixture.filePath],
+      [fixture],
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain("Found 1 error.");
+  });
+
+  it("returns 0 for a clean workflow when a warning budget is present", () => {
+    const fixture = cleanFixture();
+
+    expect(
+      runCapturedCheckCli(["check", "--max-warnings", "1", fixture.filePath], [fixture]),
+    ).toEqual({
+      exitCode: 0,
+      stdout: "",
+      stderr: "",
+    });
+  });
+
   it("reports unreadable paths on stderr and returns 1", () => {
     const result = runCapturedCheckCli(["check", "missing-workflow.js"]);
 
@@ -256,6 +316,22 @@ describe("explicit-path check CLI runner", () => {
       "unknown output format",
       ["check", "--output-format", "json-lines", "workflow.js"],
       "unsupported output format: json-lines",
+    ],
+    ["missing max warnings", ["check", "--max-warnings"], "missing value for --max-warnings"],
+    [
+      "non-integer max warnings",
+      ["check", "--max-warnings", "abc", "workflow.js"],
+      "invalid value for --max-warnings: abc",
+    ],
+    [
+      "negative max warnings",
+      ["check", "--max-warnings", "-1", "workflow.js"],
+      "invalid value for --max-warnings: -1",
+    ],
+    [
+      "fractional max warnings",
+      ["check", "--max-warnings", "1.5", "workflow.js"],
+      "invalid value for --max-warnings: 1.5",
     ],
     ["wrong subcommand", ["lint", "workflow.js"], "unknown command: lint"],
   ] as const)("returns 2 for %s", (_caseName, args, expectedError) => {

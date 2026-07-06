@@ -14,8 +14,14 @@ import {
 import { formatJsonReport } from "../diagnostics/report-json";
 import { formatTextReport } from "../diagnostics/text";
 import type { DiagnosticReport } from "../diagnostics/types";
+import { type CheckOutputFormat, type ParsedCheckArgs, parseCheckArgs } from "./check-cli-args";
 import type { ReadFileText, WorkflowSourceReadFailure } from "./read-workflow-source";
-import { type CheckRequest, checkDiagnosticsExitCode, runCheck } from "./run-check";
+import {
+  type CheckExitPolicy,
+  type CheckRequest,
+  checkDiagnosticsExitCode,
+  runCheck,
+} from "./run-check";
 import { messageForThrownValue } from "./thrown-value-message";
 
 export type CheckCliExitCode = 0 | 1 | 2;
@@ -33,211 +39,12 @@ type CheckCliWriters = {
   readonly writeErr: (message: string) => void;
 };
 
-type CheckOutputFormat = "full" | "json";
-
-type ParsedCheckArgs =
-  | {
-      readonly ok: true;
-      readonly outputFormat: CheckOutputFormat;
-      readonly paths: readonly string[];
-      readonly configPath?: string;
-      readonly isolated: boolean;
-    }
-  | { readonly ok: false; readonly usageError: string };
-
-type ParsedCheckArgState = {
-  readonly outputFormat: CheckOutputFormat;
-  readonly paths: readonly string[];
-  readonly configPath?: string;
-  readonly isolated: boolean;
-  readonly nextIndex: number;
-};
-
-type ParseCheckTokenResult =
-  | { readonly ok: true; readonly state: ParsedCheckArgState }
-  | { readonly ok: false; readonly usageError: string };
-
-type ParsedCheckOption =
-  | { readonly ok: true; readonly handled: true; readonly state: ParsedCheckArgState }
-  | { readonly ok: true; readonly handled: false }
-  | { readonly ok: false; readonly usageError: string };
-
-const USAGE = "usage: odw-lint check <workflow.js ...>";
-
 /** Resolve optional writer seams to the real process streams. */
 const resolveWriters = (io: CheckCliIo): CheckCliWriters => {
   return {
     writeOut: io.writeOut ?? ((message) => void stdout.write(message)),
     writeErr: io.writeErr ?? ((message) => void stderr.write(message)),
   };
-};
-
-/** Builds the successful parser result without retaining mutable arrays. */
-const parsedCheckArgsFromState = (state: ParsedCheckArgState): ParsedCheckArgs => {
-  return state.configPath === undefined
-    ? {
-        ok: true,
-        outputFormat: state.outputFormat,
-        paths: Object.freeze([...state.paths]),
-        isolated: state.isolated,
-      }
-    : {
-        ok: true,
-        outputFormat: state.outputFormat,
-        paths: Object.freeze([...state.paths]),
-        configPath: state.configPath,
-        isolated: state.isolated,
-      };
-};
-
-/** Parse the minimal explicit-path `check` command shape. */
-const parseCheckArgs = (args: readonly string[]): ParsedCheckArgs => {
-  const [subcommand, ...tokens] = args;
-
-  if (subcommand === undefined) {
-    return { ok: false, usageError: USAGE };
-  }
-
-  if (subcommand !== "check") {
-    return { ok: false, usageError: `unknown command: ${subcommand}` };
-  }
-
-  let state: ParsedCheckArgState = {
-    outputFormat: "full",
-    paths: [],
-    isolated: false,
-    nextIndex: 0,
-  };
-
-  while (state.nextIndex < tokens.length) {
-    const parsedToken = parseCheckToken(tokens, state);
-    if (!parsedToken.ok) {
-      return parsedToken;
-    }
-
-    state = parsedToken.state;
-  }
-
-  if (state.paths.length === 0) {
-    return { ok: false, usageError: USAGE };
-  }
-
-  return parsedCheckArgsFromState(state);
-};
-
-/** Parses one option or positional token from the `check` argument tail. */
-const parseCheckToken = (
-  tokens: readonly string[],
-  state: ParsedCheckArgState,
-): ParseCheckTokenResult => {
-  const token = tokens[state.nextIndex];
-  if (token === undefined) {
-    return { ok: true, state };
-  }
-
-  const parsedOption = parseCheckOption(tokens, state, token);
-  if (!parsedOption.ok) {
-    return parsedOption;
-  }
-  if (parsedOption.handled) {
-    return { ok: true, state: parsedOption.state };
-  }
-
-  return token.startsWith("-")
-    ? { ok: false, usageError: `unknown option: ${token}` }
-    : {
-        ok: true,
-        state: {
-          ...state,
-          paths: [...state.paths, token],
-          nextIndex: state.nextIndex + 1,
-        },
-      };
-};
-
-/** Parses recognised `check` options while leaving operands to the caller. */
-const parseCheckOption = (
-  tokens: readonly string[],
-  state: ParsedCheckArgState,
-  token: string,
-): ParsedCheckOption => {
-  if (token === "--isolated") {
-    return {
-      ok: true,
-      handled: true,
-      state: { ...state, isolated: true, nextIndex: state.nextIndex + 1 },
-    };
-  }
-
-  if (token === "--config") {
-    const value = tokens[state.nextIndex + 1];
-    return value === undefined
-      ? { ok: false, usageError: "missing value for --config" }
-      : {
-          ok: true,
-          handled: true,
-          state: { ...state, configPath: value, nextIndex: state.nextIndex + 2 },
-        };
-  }
-
-  if (token === "--output-format") {
-    const value = tokens[state.nextIndex + 1];
-    const parsedFormat = parseOutputFormatValue(value);
-    return parsedFormat.ok
-      ? {
-          ok: true,
-          handled: true,
-          state: {
-            ...state,
-            outputFormat: parsedFormat.outputFormat,
-            nextIndex: state.nextIndex + 2,
-          },
-        }
-      : parsedFormat;
-  }
-
-  if (token.startsWith("--output-format=")) {
-    const parsedFormat = parseOutputFormatValue(token.slice("--output-format=".length));
-    return parsedFormat.ok
-      ? {
-          ok: true,
-          handled: true,
-          state: {
-            ...state,
-            outputFormat: parsedFormat.outputFormat,
-            nextIndex: state.nextIndex + 1,
-          },
-        }
-      : parsedFormat;
-  }
-
-  return { ok: true, handled: false };
-};
-
-/** Parse the implemented output formats from the wider planned flag surface. */
-const parseOutputFormat = (
-  value: string,
-):
-  | { readonly ok: true; readonly outputFormat: CheckOutputFormat }
-  | { readonly ok: false; readonly usageError: string } => {
-  if (value === "full" || value === "json") {
-    return { ok: true, outputFormat: value };
-  }
-
-  return { ok: false, usageError: `unsupported output format: ${value}` };
-};
-
-/** Parse a required output-format option value. */
-const parseOutputFormatValue = (
-  value: string | undefined,
-):
-  | { readonly ok: true; readonly outputFormat: CheckOutputFormat }
-  | { readonly ok: false; readonly usageError: string } => {
-  if (value === undefined) {
-    return { ok: false, usageError: "unsupported output format: " };
-  }
-
-  return parseOutputFormat(value);
 };
 
 /** Emit the current minimal text diagnostics contract. */
@@ -339,6 +146,13 @@ const checkRequestFor = (
       };
 };
 
+/** Builds optional warning-budget policy without changing the default branch. */
+const checkExitPolicyFor = (
+  parsedArgs: Extract<ParsedCheckArgs, { readonly ok: true }>,
+): CheckExitPolicy => {
+  return parsedArgs.maxWarnings === undefined ? {} : { maxWarnings: parsedArgs.maxWarnings };
+};
+
 /**
  * Run the explicit-path `check` command over parsed command-line arguments.
  *
@@ -370,7 +184,7 @@ export const runCheckCli = (args: readonly string[], io: CheckCliIo = {}): Check
     writeReport(writers, parsedArgs.outputFormat, outcome.report);
     writeReadFailures(writers, outcome.readFailures);
 
-    return checkDiagnosticsExitCode(outcome);
+    return checkDiagnosticsExitCode(outcome, checkExitPolicyFor(parsedArgs));
   } catch (error) {
     writers.writeErr(`internal error: ${messageForThrownValue(error)}\n`);
     return 2;

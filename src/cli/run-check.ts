@@ -24,6 +24,10 @@ export type CheckOutcome = {
   readonly readFailures: readonly WorkflowSourceReadFailure[];
 };
 
+export type CheckExitPolicy = {
+  readonly maxWarnings?: number;
+};
+
 export type CheckRequest = {
   readonly paths: readonly string[];
   readonly version: string;
@@ -80,21 +84,34 @@ export const runCheck = (request: CheckRequest): CheckOutcome => {
   });
 };
 
-/** Returns whether diagnostics or read failures should fail the check. */
-const hasRemainingCheckFindings = (outcome: CheckOutcome): boolean => {
-  return outcome.report.diagnostics.length > 0 || outcome.readFailures.length > 0;
-};
-
 /**
  * Derives the default `check` process status for diagnostics/read failures.
  *
  * Ruff parity means every remaining diagnostic fails the check, regardless of
  * severity. Warning-only, info-only, and hint-only reports therefore still
- * return exit code 1 until later policy flags explicitly opt out.
+ * return exit code 1 unless a warning-budget policy explicitly tolerates the
+ * final warning count.
  *
  * @param outcome - Aggregated check outcome.
+ * @param policy - Optional exit policy overrides for warning diagnostics.
  * @returns 0 for a clean readable run, otherwise 1.
  */
-export const checkDiagnosticsExitCode = (outcome: CheckOutcome): 0 | 1 => {
-  return hasRemainingCheckFindings(outcome) ? 1 : 0;
+export const checkDiagnosticsExitCode = (
+  outcome: CheckOutcome,
+  policy: CheckExitPolicy = {},
+): 0 | 1 => {
+  if (outcome.readFailures.length > 0) {
+    return 1;
+  }
+
+  const { errors, warnings, infos, hints } = outcome.report.summary;
+  if (errors + infos + hints > 0) {
+    return 1;
+  }
+
+  if (policy.maxWarnings === undefined) {
+    return warnings > 0 ? 1 : 0;
+  }
+
+  return warnings > policy.maxWarnings ? 1 : 0;
 };
