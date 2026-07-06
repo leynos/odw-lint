@@ -129,6 +129,8 @@ entry; that index enumerates every current rule page.
   SWC traversal-driver adoption.
 - [Audit 3.2.7](issues/audit-3.2.7.md) records review findings for
   scope-owned and public binding fact reconciliation.
+- [Audit 5.5.1](issues/audit-5.5.1.md) records review findings for body-syntax
+  span-narrowing quarantine.
 
 ## Execution plans
 
