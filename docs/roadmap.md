@@ -935,7 +935,7 @@ This step answers whether the checker can run as a normal repository gate. It
 unlocks CI adoption and user feedback. See
 [technical-design.md](technical-design.md) §§7 and 15.
 
-- [ ] 2.4.1. Implement `odw-lint check` for explicit file paths.
+- [x] 2.4.1. Implement `odw-lint check` for explicit file paths.
   - Requires steps 2.1-2.3.
   - See [technical-design.md](technical-design.md) §7.
   - Success: the command returns the designed exit codes for valid and invalid

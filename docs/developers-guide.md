@@ -24,6 +24,30 @@ ODW-integrated `odw check` command is deferred to future ODW integration. The
 standalone checker is path/glob-first and does not resolve bare ODW workflow
 names by default.
 
+The current minimal checker accepts explicit workflow file paths through the
+Bun entrypoint while the published package has no `bin` field:
+
+```bash
+bun run src/cli/main.ts check <workflow.js> [more-workflows.js ...]
+```
+
+This slice implements only explicit path operands. Text output is the existing
+one-diagnostic-per-line formatter, read failures are written to stderr as
+`error: cannot read <path>: <message>`, and wider output/discovery behaviour is
+deferred to later roadmap items. The exit codes follow the Ruff-style policy in
+technical design sections [7.0](technical-design.md#70-ux-precedent) and
+[7.4](technical-design.md#74-exit-codes):
+
+| Code | Meaning                                                                                             |
+| ---- | --------------------------------------------------------------------------------------------------- |
+| 0    | The command completed and no diagnostics remain.                                                    |
+| 1    | Any diagnostic remains, regardless of severity, or at least one input file could not be read.       |
+| 2    | The invocation was invalid, such as a missing path or unknown flag, or an internal analyser failed. |
+
+JSON output, richer text formatting, configured discovery, glob expansion, and
+the wider Ruff-compatible flag surface remain deferred. That includes
+`--exit-zero`, `--max-warnings`, and `--strict-claude`.
+
 The first implementation owns the static-analysis implementation inside this
 repository. v1 vendors the pure-literal parser behaviour from ODW's
 `dual-compat.ts` into `odw-lint` as its own source of truth, and production

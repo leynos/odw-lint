@@ -237,6 +237,8 @@ entry; that index enumerates every current rule page.
   workflow-body loader rejection characterization.
 - [Roadmap 2.3.5 ExecPlan](execplans/roadmap-2-3-5.md) plans consolidated
   fixture corpus and parity projection ownership.
+- [Roadmap 2.4.1 ExecPlan](execplans/roadmap-2-4-1.md) plans the minimal
+  explicit-path `check` command.
 - [Roadmap 3.1.1 ExecPlan](execplans/roadmap-3-1-1.md) plans pure-literal
   metadata compatibility checks.
 - [Roadmap 3.1.2 ExecPlan](execplans/roadmap-3-1-2.md) plans
