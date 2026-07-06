@@ -6,6 +6,16 @@
  * Named exports expected from the root package entry.
  */
 export const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
+  "CONFIGURED_RULE_SEVERITIES",
+  "ConfigFileReader",
+  "ConfigLoadError",
+  "ConfigLoadResult",
+  "ConfigReadFailureReason",
+  "ConfigValidationError",
+  "ConfigValidationResult",
+  "ConfigValidationWarning",
+  "ConfiguredRuleSeverity",
+  "DEFAULT_CONFIG_FILENAME",
   "DIAGNOSTIC_REPORT_SCHEMA",
   "DIAGNOSTIC_SCHEMA_VERSION",
   "DIAGNOSTIC_SEVERITIES",
@@ -18,6 +28,8 @@ export const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
   "InvalidRuleIdError",
   "InvalidRuleIdReason",
   "LexicalBindingFacts",
+  "LinterConfig",
+  "LoadLinterConfigOptions",
   "MaskedSource",
   "MessageTemplate",
   "MessageTemplateValues",
@@ -66,6 +78,7 @@ export const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
   "WorkflowMetadataPortability",
   "WorkflowSource",
   "WorkflowSuppressionMasks",
+  "applyConfiguredRuleSeverities",
   "classifyWorkflowMetadata",
   "collectWorkflowAstFacts",
   "countDiagnostics",
@@ -80,6 +93,7 @@ export const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
   "isIndexInInertRegion",
   "isRuleId",
   "lintWorkflowSource",
+  "loadLinterConfig",
   "makeRuleId",
   "maskNonCodeSource",
   "messageMatchesTemplate",
@@ -101,4 +115,5 @@ export const EXPECTED_PUBLIC_PACKAGE_EXPORTS = [
   "sliceSourceSpan",
   "snippetForSpan",
   "spanFromOffsets",
+  "validateLinterConfig",
 ] as const;

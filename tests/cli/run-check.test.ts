@@ -6,7 +6,12 @@ import { describe, expect, it } from "bun:test";
 import { fileURLToPath } from "node:url";
 import fc from "fast-check";
 import { checkDiagnosticsExitCode, runCheck } from "../../src/cli/run-check";
+import { makeRuleId } from "../../src/diagnostics/rule-id";
 import { fixtureSourceUrl, readFixtureSource } from "../static-analysis/fixtures/corpus-support";
+import {
+  DUAL_COMPAT_FIXTURE_CORPUS,
+  findDualCompatFixture,
+} from "../static-analysis/fixtures/dual-compat/corpus";
 import {
   findInvalidWorkflowFixture,
   INVALID_WORKFLOW_FIXTURE_CORPUS,
@@ -66,6 +71,20 @@ const warningSource = (): SourceFixture => {
   return {
     filePath,
     sourceText: readFixtureSource(INVALID_WORKFLOW_FIXTURE_CORPUS, fixture.fixturePath),
+  };
+};
+
+/** Returns a Claude-compatibility warning fixture for strict-mode tests. */
+const claudeWarningSource = (): SourceFixture => {
+  const fixture = findDualCompatFixture({
+    family: "deterministic-time",
+    fileName: "date-now.js",
+  });
+  const filePath = fixtureFilePath(DUAL_COMPAT_FIXTURE_CORPUS, fixture.fixturePath);
+
+  return {
+    filePath,
+    sourceText: readFixtureSource(DUAL_COMPAT_FIXTURE_CORPUS, fixture.fixturePath),
   };
 };
 
@@ -153,6 +172,43 @@ describe("explicit-path check aggregation", () => {
       "odw/meta-required",
       "odw/meta-statically-unprovable",
     ]);
+  });
+
+  it("applies configured severities before strict Claude promotion", () => {
+    const fixture = claudeWarningSource();
+    const outcome = runCheck({
+      paths: [fixture.filePath],
+      version: VERSION,
+      readFileText: readFrom([fixture]),
+      config: {
+        strictClaude: true,
+        rules: new Map([[makeRuleId("odw/no-date-now"), "warning"]]),
+      },
+    });
+
+    expect(outcome.report.summary.errors).toBe(1);
+    expect(outcome.report.summary.warnings).toBe(0);
+    expect(outcome.report.diagnostics).toHaveLength(1);
+    expect(outcome.report.diagnostics[0]?.severity).toBe("error");
+    expect(String(outcome.report.diagnostics[0]?.rule)).toBe("odw/no-date-now");
+  });
+
+  it("keeps configured-off rules suppressed under strict Claude promotion", () => {
+    const fixture = claudeWarningSource();
+    const outcome = runCheck({
+      paths: [fixture.filePath],
+      version: VERSION,
+      readFileText: readFrom([fixture]),
+      config: {
+        strictClaude: true,
+        rules: new Map([[makeRuleId("odw/no-date-now"), "off"]]),
+      },
+    });
+
+    expect(outcome.report.summary.errors).toBe(0);
+    expect(outcome.report.summary.warnings).toBe(0);
+    expect(outcome.report.diagnostics).toEqual([]);
+    expect(checkDiagnosticsExitCode(outcome)).toBe(0);
   });
 
   it("exits 1 exactly when diagnostics or read failures remain", () => {

@@ -471,7 +471,10 @@ Each heuristic rule needs a rule-quality gate before release:
 
 ## 10. Configuration
 
-The first configuration file should be optional:
+The first configuration file is optional and is named `odw-lint.json` by
+default. Unless a caller supplies an explicit configuration path or disables
+configuration discovery with `--isolated`, the standalone checker looks for
+that file in the current working directory.
 
 ```json
 {
@@ -491,6 +494,12 @@ Configuration rules:
 - Unknown rule identifiers are errors.
 - Unknown configuration keys are warnings in pre-1.0 releases and errors after
   the configuration schema is stable.
+- `rules` values use the diagnostic severities `error`, `warning`, `info`, and
+  `hint`, plus the configuration-only value `off` to suppress diagnostics from
+  that rule.
+- `include` and `exclude` are validated now as arrays of non-empty glob-pattern
+  strings. Their application during source discovery remains deferred to the
+  later configured-discovery and glob-expansion work.
 - `--config "key = value"` inline overrides take precedence over every
   configuration file.
 - `--isolated` disables configuration-file discovery.

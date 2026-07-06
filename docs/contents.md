@@ -263,6 +263,8 @@ entry; that index enumerates every current rule page.
   traversal-driver adoption for parser-backed collectors.
 - [Roadmap 3.2.7 ExecPlan](execplans/roadmap-3-2-7.md) plans scope-owned and
   public binding fact reconciliation.
+- [Roadmap 3.3.1 ExecPlan](execplans/roadmap-3-3-1.md) plans optional
+  configuration loading with include, exclude, strictness and rule severities.
 - [Roadmap 4.4.1 ExecPlan](execplans/roadmap-4-4-1.md) plans the documentation
   contents and repository-layout scaffolding work.
 - [Roadmap 5.4.1 ExecPlan](execplans/roadmap-5-4-1.md) plans duplicated

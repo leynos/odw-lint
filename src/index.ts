@@ -7,6 +7,25 @@
  * ODW runtime code.
  */
 
+export { applyConfiguredRuleSeverities } from "./config/apply-config-severities";
+export {
+  CONFIGURED_RULE_SEVERITIES,
+  type ConfiguredRuleSeverity,
+  type ConfigValidationError,
+  type ConfigValidationResult,
+  type ConfigValidationWarning,
+  type LinterConfig,
+  validateLinterConfig,
+} from "./config/linter-config";
+export {
+  type ConfigFileReader,
+  type ConfigLoadError,
+  type ConfigLoadResult,
+  type ConfigReadFailureReason,
+  DEFAULT_CONFIG_FILENAME,
+  type LoadLinterConfigOptions,
+  loadLinterConfig,
+} from "./config/load-config";
 export {
   createMessageTemplate,
   type MessageTemplate,

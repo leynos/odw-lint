@@ -6,6 +6,9 @@
  * Package-entry module specifiers expected from `src/index.ts`.
  */
 export const EXPECTED_PACKAGE_ENTRY_MODULE_SPECIFIERS = [
+  "./config/apply-config-severities",
+  "./config/linter-config",
+  "./config/load-config",
   "./diagnostics/message-template",
   "./diagnostics/report",
   "./diagnostics/report-json",
@@ -98,6 +101,8 @@ export const EXPECTED_STATIC_ANALYSIS_MODULE_FILES = [
  */
 export const EXPECTED_PARSEABLE_SOURCE_FILES = [
   "src/index.ts",
+  "src/config/linter-config.ts",
+  "src/config/load-config.ts",
   "src/diagnostics/message-template.ts",
   "src/diagnostics/report.ts",
   "src/diagnostics/report-json.ts",

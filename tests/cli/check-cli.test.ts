@@ -96,6 +96,11 @@ const readFrom = (sources: readonly SourceFixture[]) => {
   };
 };
 
+/** Simulates optional default configuration discovery finding no file. */
+const readNoConfig = (): string => {
+  throw Object.assign(new Error("missing test config"), { code: "ENOENT" });
+};
+
 /** Runs the CLI with captured writers and an injected fixture reader. */
 const runCapturedCheckCli = (
   args: readonly string[],
@@ -106,6 +111,7 @@ const runCapturedCheckCli = (
   const exitCode = runCheckCli(args, {
     version: VERSION,
     readFileText: readFrom(sources),
+    readConfigFile: readNoConfig,
     writeOut: (message) => {
       stdout += message;
     },
@@ -270,6 +276,7 @@ describe("explicit-path check CLI runner", () => {
       readFileText: () => {
         throw { detail: "not an Error" };
       },
+      readConfigFile: readNoConfig,
       writeOut: (message) => {
         stdout += message;
       },

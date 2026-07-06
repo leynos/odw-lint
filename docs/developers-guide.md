@@ -202,6 +202,52 @@ pipeline stage's default-severity findings. The parsed `--strict-claude` CLI
 flag and `strictClaude` configuration key that toggle this mechanism are owned
 by the CLI tasks in roadmap 2.4 and configuration tasks in roadmap 3.3.
 
+### Configuration schema
+
+The optional linter configuration file is named `odw-lint.json` by default.
+Configuration validation lives in `src/config/linter-config.ts` and accepts an
+inert JSON object with these optional keys:
+
+- `include`: an array of non-empty glob-pattern strings.
+- `exclude`: an array of non-empty glob-pattern strings.
+- `strictClaude`: a boolean that later feeds the strict Claude promotion
+  mechanism.
+- `rules`: an object whose keys are catalogued rule identifiers and whose
+  values are `error`, `warning`, `info`, `hint`, or the configuration-only
+  value `off`.
+
+The validator parses unknown JSON into a project-owned discriminated result and
+collects all observed issues. Unknown rule identifiers are validation errors
+because silently ignoring a misspelled rule would hide diagnostics. Unknown
+top-level keys are warnings in pre-1.0 releases so early adopters can carry
+future-looking keys without breaking the current checker.
+
+Configured rule severities are applied by
+`src/config/apply-config-severities.ts` after the lint pipeline emits
+diagnostics and before strict Claude promotion. A configured severity replaces
+the diagnostic severity for that rule, while `off` removes matching
+diagnostics from the stream entirely. The ordering is intentional:
+configuration suppression must not be revived by strict Claude promotion, but a
+Claude-compatibility rule configured to `warning` can still promote to `error`
+when strict Claude mode is enabled.
+
+The `check` command accepts `--config <path>` to load an explicit JSON
+configuration file and `--isolated` to ignore configuration discovery. Invalid
+configuration, unreadable explicit configuration files, malformed JSON, and
+using `--config` together with `--isolated` are usage/configuration failures and
+exit with code 2. Validation warnings, such as unknown pre-1.0 top-level keys,
+are written to standard error and do not prevent linting.
+
+The current `--config` implementation accepts file paths only. Inline
+`--config "key = value"` overrides, the parsed `--strict-claude` CLI flag, and
+glob-based include/exclude discovery remain deferred to their owning CLI and
+configured-discovery roadmap tasks.
+
+`include` and `exclude` are validated as string arrays before the checker uses
+them. Their glob expansion, directory traversal, and `.gitignore` behaviour are
+still part of the deferred configured-discovery work; the current explicit-path
+pipeline must not duplicate that discovery surface.
+
 `parseWorkflowBody` remains available for standalone parser-span tests and
 callers that need only body-syntax diagnostics. Callers that need full workflow
 diagnostics should use `lintWorkflowSource` so the body-syntax and Claude

@@ -1213,7 +1213,7 @@ This step answers whether teams can adopt the rules without forking defaults.
 It informs CI usage and later plugin integration. See
 [technical-design.md](technical-design.md) §§7.2, 7.3, and 10.
 
-- [ ] 3.3.1. Implement optional configuration loading with include, exclude,
+- [x] 3.3.1. Implement optional configuration loading with include, exclude,
   strictness, and rule severity settings.
   - Requires 2.4.1.
   - See [technical-design.md](technical-design.md) §§7.2 and 10.

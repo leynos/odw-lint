@@ -7,7 +7,10 @@
  * layers.
  */
 
+import { applyConfiguredRuleSeverities } from "../config/apply-config-severities";
+import type { LinterConfig } from "../config/linter-config";
 import { createDiagnosticReport } from "../diagnostics/report";
+import { promoteStrictClaudeSeverity } from "../diagnostics/strict-claude";
 import type { Diagnostic, DiagnosticReport } from "../diagnostics/types";
 import { lintWorkflowSource } from "../static-analysis/workflow-lint";
 import {
@@ -25,6 +28,19 @@ export type CheckRequest = {
   readonly paths: readonly string[];
   readonly version: string;
   readonly readFileText?: ReadFileText;
+  readonly config?: LinterConfig;
+};
+
+/** Applies configured rule settings, then strict-Claude promotion. */
+const applyCheckConfiguration = (
+  diagnostics: readonly Diagnostic[],
+  config?: LinterConfig,
+): readonly Diagnostic[] => {
+  const configuredDiagnostics = applyConfiguredRuleSeverities(diagnostics, config?.rules);
+
+  return config?.strictClaude === true
+    ? promoteStrictClaudeSeverity(configuredDiagnostics)
+    : configuredDiagnostics;
 };
 
 /**
@@ -49,7 +65,9 @@ export const runCheck = (request: CheckRequest): CheckOutcome => {
     }
 
     readFileCount += 1;
-    diagnostics.push(...lintWorkflowSource(readResult.source).diagnostics);
+    diagnostics.push(
+      ...applyCheckConfiguration(lintWorkflowSource(readResult.source).diagnostics, request.config),
+    );
   }
 
   return Object.freeze({
