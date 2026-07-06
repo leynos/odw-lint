@@ -478,7 +478,7 @@ documentation change was made for that future fixture-refresh item.
   - Success: a future roadmap agent can tell which review was deferred, which
     fix-round review completed, and which findings were intentionally skipped
     without cross-reading unrelated notes.
-- [ ] 1.2.4.3. Add source-position validator coverage.
+- [x] 1.2.4.3. Add source-position validator coverage.
   - Source: audit:1.5.10.
   - Severity: low.
   - Scope: add focused behavioural tests for `validateSourceSpan` rejection

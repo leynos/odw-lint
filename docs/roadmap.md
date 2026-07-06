@@ -136,7 +136,7 @@ shape. The result informs every parser, rule, and reporter task. See
     - Addendum (from review:1.2.4; low). Reconcile the task 1.2.4 ExecPlan
       outcomes and revision notes so review status is unambiguous. Lightweight
       addendum pass.
-  - [ ] 1.2.4.3. Add source-position validator coverage.
+  - [x] 1.2.4.3. Add source-position validator coverage.
     - Addendum (from audit:1.5.10; low). Add direct behavioural coverage for
       `validateSourceSpan` rejection branches and `spanFromTextIndexes`
       production use. Lightweight addendum pass.
