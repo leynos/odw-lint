@@ -124,6 +124,60 @@ type ConfigValidationPart = {
   readonly errors: readonly ConfigValidationError[];
 };
 
+/** A frozen read-only facade over validated rule settings. */
+class ImmutableRulesMap implements ReadonlyMap<RuleId, ConfiguredRuleSeverity> {
+  readonly #rules: ReadonlyMap<RuleId, ConfiguredRuleSeverity>;
+  public readonly [Symbol.toStringTag] = "Map";
+
+  public constructor(entries: Iterable<readonly [RuleId, ConfiguredRuleSeverity]>) {
+    this.#rules = new Map(entries);
+    Object.freeze(this);
+  }
+
+  public get size(): number {
+    return this.#rules.size;
+  }
+
+  public entries(): ReturnType<ReadonlyMap<RuleId, ConfiguredRuleSeverity>["entries"]> {
+    return this.#rules.entries();
+  }
+
+  public forEach(
+    callbackfn: (
+      value: ConfiguredRuleSeverity,
+      key: RuleId,
+      map: ReadonlyMap<RuleId, ConfiguredRuleSeverity>,
+    ) => void,
+    thisArg?: unknown,
+  ): void {
+    this.#rules.forEach((value, key) => {
+      callbackfn.call(thisArg, value, key, this);
+    });
+  }
+
+  public get(key: RuleId): ConfiguredRuleSeverity | undefined {
+    return this.#rules.get(key);
+  }
+
+  public has(key: RuleId): boolean {
+    return this.#rules.has(key);
+  }
+
+  public keys(): ReturnType<ReadonlyMap<RuleId, ConfiguredRuleSeverity>["keys"]> {
+    return this.#rules.keys();
+  }
+
+  public values(): ReturnType<ReadonlyMap<RuleId, ConfiguredRuleSeverity>["values"]> {
+    return this.#rules.values();
+  }
+
+  public [Symbol.iterator](): ReturnType<
+    ReadonlyMap<RuleId, ConfiguredRuleSeverity>[typeof Symbol.iterator]
+  > {
+    return this.entries();
+  }
+}
+
 /**
  * Validates an unknown JSON value as an `odw-lint` configuration object.
  *
@@ -325,7 +379,7 @@ const validateRules = (
     return { ok: false, errors: Object.freeze(errors) };
   }
 
-  return { ok: true, value: rules };
+  return { ok: true, value: new ImmutableRulesMap(rules) };
 };
 
 /** Checks whether a value is in the configured severity vocabulary. */

@@ -77,16 +77,16 @@ export const runCheck = (request: CheckRequest): CheckOutcome => {
     }
 
     readFileCount += 1;
-    diagnostics.push(
-      ...applyCheckConfiguration(lintWorkflowSource(readResult.source).diagnostics, request.config),
-    );
+    diagnostics.push(...lintWorkflowSource(readResult.source).diagnostics);
   }
+
+  const configuredDiagnostics = applyCheckConfiguration(diagnostics, request.config);
 
   return Object.freeze({
     report: createDiagnosticReport({
       version: request.version,
       files: readFileCount,
-      diagnostics,
+      diagnostics: configuredDiagnostics,
       ioErrors: readFailures.map(ioErrorFromReadFailure),
     }),
     readFailures: Object.freeze(readFailures),

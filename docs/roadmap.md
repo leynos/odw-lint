@@ -1268,15 +1268,15 @@ It informs CI usage and later plugin integration. See
   - See [technical-design.md](technical-design.md) §§7.2 and 10.
   - Success: unknown rule identifiers fail configuration validation, and
     `strictClaude` feeds the strict-Claude promotion mechanism from 3.1.3.
-  - [ ] 3.3.1.1. Add default configuration CLI discovery coverage.
+  - [x] 3.3.1.1. Add default configuration CLI discovery coverage.
     - Addendum (from review:3.3.1; low). Prove `runCheckCli` applies the
       cwd-joined discovered `odw-lint.json` path through the injected config
       reader. Lightweight addendum pass.
-  - [ ] 3.3.1.2. Harden validated configuration immutability.
+  - [x] 3.3.1.2. Harden validated configuration immutability.
     - Addendum (from review:3.3.1; low). Return a read-only or otherwise
       mutation-proof validated rules map consistently with the frozen config
       container. Lightweight addendum pass.
-  - [ ] 3.3.1.3. Deduplicate configuration-load finalization.
+  - [x] 3.3.1.3. Deduplicate configuration-load finalization.
     - Addendum (from audit:3.3.1; low). Single-source config parse/validate
       tails, move whole-report severity application out of the per-file loop,
       and cover explicit config read failures at the CLI boundary.

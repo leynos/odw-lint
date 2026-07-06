@@ -3,8 +3,11 @@
  */
 
 import { describe, expect, it } from "bun:test";
+import { join } from "node:path";
+import { cwd } from "node:process";
 import { fileURLToPath } from "node:url";
 import { runCheckCli } from "../../src/cli/check-cli";
+import { DEFAULT_CONFIG_FILENAME } from "../../src/config/load-config";
 import { fixtureSourceUrl, readFixtureSource } from "../static-analysis/fixtures/corpus-support";
 import {
   DUAL_COMPAT_FIXTURE_CORPUS,
@@ -163,6 +166,21 @@ describe("configuration-aware check CLI runner", () => {
     expect(result.stdout).toContain(`${fixture.filePath}:10:19 warning odw/no-date-now`);
   });
 
+  it("discovers the default configuration through the CLI runner seam", () => {
+    const fixture = claudeWarningFixture();
+    const result = runCapturedCheckCli({
+      args: ["check", fixture.filePath],
+      sources: [fixture],
+      configs: {
+        [join(cwd(), DEFAULT_CONFIG_FILENAME)]: JSON.stringify({ strictClaude: true }),
+      },
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain(`${fixture.filePath}:10:19 error odw/no-date-now`);
+  });
+
   it("suppresses configured-off rule diagnostics", () => {
     const fixture = claudeWarningFixture();
     const result = runCapturedCheckCli({
@@ -258,6 +276,19 @@ describe("configuration-aware check CLI runner", () => {
     expect(result.exitCode).toBe(2);
     expect(result.stdout).toBe("");
     expect(result.stderr).not.toBe("");
+  });
+
+  it("returns 2 when an explicit configuration file cannot be read", () => {
+    const fixture = claudeWarningFixture();
+    const result = runCapturedCheckCli({
+      args: ["check", fixture.filePath, "--config", "missing.json"],
+      sources: [fixture],
+    });
+
+    expect(result.exitCode).toBe(2);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toContain("error: configuration: cannot read missing.json");
+    expect(result.stderr).toContain("missing test config");
   });
 
   it("returns 2 for malformed configuration JSON", () => {

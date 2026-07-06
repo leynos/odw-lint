@@ -408,14 +408,14 @@ small private helpers are the right default for future CLI flags.
 
 ## Addenda
 
-- [ ] 3.3.1.1. Add default configuration CLI discovery coverage.
+- [x] 3.3.1.1. Add default configuration CLI discovery coverage.
   - Source: review:3.3.1; severity low.
   - Scope: add a focused `runCheckCli` test that injects a config reader keyed
     by the cwd-joined discovered `odw-lint.json` path and proves the discovered
     default configuration affects diagnostics.
   - Success: default discovery is proven through the CLI runner seam, not only
     through the lower-level configuration loader.
-- [ ] 3.3.1.2. Harden validated configuration immutability.
+- [x] 3.3.1.2. Harden validated configuration immutability.
   - Source: review:3.3.1; severity low.
   - Scope: return a read-only or otherwise mutation-proof validated rules map
     consistently with the frozen `LinterConfig` container and frozen array
@@ -423,7 +423,7 @@ small private helpers are the right default for future CLI flags.
   - Success: callers cannot mutate validated rule settings after
     `validateLinterConfig` returns, and tests pin the chosen immutability
     contract.
-- [ ] 3.3.1.3. Deduplicate configuration-load finalization.
+- [x] 3.3.1.3. Deduplicate configuration-load finalization.
   - Source: audit:3.3.1; severity low.
   - Scope: single-source the repeated config read/parse/validate tail, move
     whole-report severity application out of the per-file read loop where the

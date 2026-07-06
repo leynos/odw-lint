@@ -30,9 +30,28 @@ describe("linter configuration validation", () => {
     expect(result.config.include).toEqual([".odw/workflows/**/*.js", "workflows/**/*.js"]);
     expect(result.config.exclude).toEqual(["**/node_modules/**", "**/dist/**"]);
     expect(result.config.strictClaude).toBeFalse();
-    expect(result.config.rules).toBeInstanceOf(Map);
     expect(result.config.rules?.get("odw/bounded-loop" as RuleId)).toBe("warning");
     expect(result.config.rules?.get("odw/schema-for-structured-agent" as RuleId)).toBe("off");
+  });
+
+  it("returns validated rule settings without a runtime mutation surface", () => {
+    const result = validateLinterConfig({
+      rules: {
+        "odw/bounded-loop": "warning",
+      },
+    });
+
+    expect(result.ok).toBeTrue();
+    if (!result.ok) {
+      throw new Error("Expected rules config to validate.");
+    }
+
+    const rules = result.config.rules;
+    expect(rules).toBeDefined();
+    expect(Object.isFrozen(rules)).toBeTrue();
+    expect(rules?.get("odw/bounded-loop" as RuleId)).toBe("warning");
+    expect("set" in (rules as object)).toBeFalse();
+    expect((rules as { set?: unknown }).set).toBeUndefined();
   });
 
   it("validates an empty object to an empty configuration", () => {

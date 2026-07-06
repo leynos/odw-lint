@@ -198,6 +198,15 @@ const validateParsedConfig = (filePath: string, value: unknown): ConfigLoadResul
   return { ok: true, config: validation.config, warnings: validation.warnings };
 };
 
+/** Parses and validates text from a successfully read configuration file. */
+const finalizeConfigText = (filePath: string, text: string): ConfigLoadResult => {
+  const parsed = parseConfigJson(filePath, text);
+
+  return parsed.ok
+    ? validateParsedConfig(filePath, parsed.value)
+    : { ok: false, error: parsed.error };
+};
+
 /** Loads and validates a configuration file that is required to exist. */
 const loadConfigFile = (filePath: string, readConfigFile: ConfigFileReader): ConfigLoadResult => {
   const readResult = readConfigText(filePath, readConfigFile);
@@ -205,10 +214,7 @@ const loadConfigFile = (filePath: string, readConfigFile: ConfigFileReader): Con
     return { ok: false, error: readResult.error };
   }
 
-  const parsed = parseConfigJson(filePath, readResult.text);
-  return parsed.ok
-    ? validateParsedConfig(filePath, parsed.value)
-    : { ok: false, error: parsed.error };
+  return finalizeConfigText(filePath, readResult.text);
 };
 
 /** Loads the optional default configuration file from the working directory. */
@@ -221,10 +227,7 @@ const loadDefaultConfigFile = (cwd: string, readConfigFile: ConfigFileReader): C
       : { ok: false, error: readResult.error };
   }
 
-  const parsed = parseConfigJson(filePath, readResult.text);
-  return parsed.ok
-    ? validateParsedConfig(filePath, parsed.value)
-    : { ok: false, error: parsed.error };
+  return finalizeConfigText(filePath, readResult.text);
 };
 
 /** Builds the usage error for contradictory configuration loading modes. */
