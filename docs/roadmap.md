@@ -946,19 +946,41 @@ unlocks CI adoption and user feedback. See
   - See [technical-design.md](technical-design.md) §8.
   - Success: human output contains enough location information to fix a
     fixture without opening JSON.
+  - [ ] 2.4.2.1. Add process-level text-footer coverage.
+    - Addendum (from review:2.4.2; low). Add spawned `check` coverage for the
+      text footer and blank-line separation. Lightweight addendum pass.
+  - [ ] 2.4.2.2. Consolidate check text-output residues.
+    - Addendum (from audit:2.4.2; low). Deduplicate thrown-value formatting,
+      freeze diagnostic reports, simplify request construction, and derive the
+      severity summary mapping. Lightweight addendum pass.
+  - [ ] 2.4.2.3. Close mixed-output coverage and documentation gaps.
+    - Addendum (from audit:2.4.2; low). Cover mixed diagnostics and read
+      failures, and document that text reports are human-facing rather than
+      machine-parseable. Lightweight addendum pass.
 - [x] 2.4.3. Add JSON output and a JSON contract fixture.
   - Requires 1.2.1, 2.1.10, and 2.4.1.
   - See [technical-design.md](technical-design.md) §8.
   - Success: JSON output is stable under snapshot tests and includes the
     versioned envelope.
-- [ ] 2.4.4. Add Ruff-compatible invocation semantics for output, config,
-  stdin, ignore handling, and exit-code policy.
+  - [ ] 2.4.3.1. Enforce the JSON schema and serializer contract.
+    - Addendum (from audit:2.4.3; medium). Reconcile schema-required fields
+      with guaranteed JSON output and add schema-conformance coverage across
+      severity, docs, and suggestions variants. Lightweight addendum pass.
+- [ ] 2.4.4. Add Ruff-compatible invocation semantics for output, help,
+  config, stdin, ignore handling, and exit-code policy.
   - Requires 2.4.1, 2.4.2, and 2.4.3.
   - See [technical-design.md](technical-design.md) §§7.0-7.4.
+  - Represent unreadable inputs consistently across human and
+    machine-readable output, either as catalogued IO diagnostics or an explicit
+    machine-readable error channel, so JSON consumers and summaries can
+    distinguish skipped files from clean runs.
+  - Include usage text, `--help`/`--version`, and missing option-value
+    diagnostics for implemented flags.
   - Success: fixtures cover `--output-format`, `--output-file`,
     `--stdin-filename`, `--strict-claude`, `--config`, `--isolated`,
     `--respect-gitignore`, `--force-exclude`, `--exit-zero`, and
-    `--exit-non-zero-on-fix`.
+    `--exit-non-zero-on-fix`, plus unreadable-input machine-output parity and
+    basic usage/help/version behaviour.
 
 ## 3. Second vertical slice: portability and orchestration feedback
 

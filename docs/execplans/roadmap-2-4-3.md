@@ -781,3 +781,12 @@ helpers under `tests/static-analysis/fixtures/`.
   the guide-documentation work item, and recorded the completed documentation
   surface plus the `mdtablefix --in-place` deviation from the concrete command
   example.
+
+## Addenda
+
+- [ ] 2.4.3.1. Enforce the JSON schema and serializer contract.
+  - Source: audit:2.4.3; severity: medium.
+  - Scope: reconcile `DIAGNOSTIC_REPORT_SCHEMA` required fields with the
+    guaranteed `formatJsonReport` projection, and add a direct
+    schema-conformance test across severity, optional `docs`, and
+    `suggestions` variants without introducing a validator dependency.
