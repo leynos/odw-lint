@@ -53,7 +53,7 @@ unreadable-input requirement. Fix-mode flags (`--fix`, `--unsafe-fixes`,
 discovery, the extra output formats (`json-lines`, `github`, `gitlab`, `junit`,
 `sarif`), `--exclude`/`--extend-exclude`, colour and log-level flags, and any
 cache flags are explicitly out of scope and are deferred to roadmap 3.3.2,
-3.3.4, and later tasks. They are called out below so this slice does not
+3.3.6-3.3.8, and later tasks. They are called out below so this slice does not
 pre-empt them.
 
 ## Constraints
@@ -112,7 +112,7 @@ Hard invariants that must hold throughout implementation.
 - Discovery creep: if a work item starts implementing directory traversal, glob
   operand expansion, configured include-root discovery, `--exclude`/
   `--extend-exclude`, `--max-warnings`, or any fix-mode flag, stop — those are
-  roadmap 3.3.2/3.3.4 and later.
+  roadmap 3.3.2/3.3.6-3.3.8 and later.
 - Ambiguity: if `--respect-gitignore` or `--exit-non-zero-on-fix` cannot be
   given honest, observable v1 semantics on explicit paths without inventing
   discovery or fix behaviour, stop and present options (see the Decision Log
@@ -147,7 +147,7 @@ Hard invariants that must hold throughout implementation.
   Mitigation: the flag is recognised with correct semantics; because no rule has
   fix support yet, no fixes are ever applied, so it correctly never changes the
   exit code. It is pinned by an acceptance test and documented as activating
-  with the first safe fix (roadmap 3.3.4). Recorded in the Decision Log.
+  with the first safe fix (roadmap 3.3.8). Recorded in the Decision Log.
 - Risk: standard-input reading breaks the synchronous `runCheckCli` contract.
   Severity: medium. Likelihood: low.
   Mitigation: the default stdin seam is the synchronous
@@ -392,7 +392,7 @@ Hard invariants that must hold throughout implementation.
 - Decision: `--exit-non-zero-on-fix` is recognised with correct semantics but
   never changes the exit code in v1 because no rule has fix support.
   Rationale: `docs/technical-design.md` §7.3/§7.4 define it relative to applied
-  fixes; fix support is roadmap 3.3.4. Recognising it now with an acceptance
+  fixes; fix support is roadmap 3.3.8. Recognising it now with an acceptance
   test is forward-compatible and honest (it activates automatically when fixes
   exist), and avoids a later parser breaking change.
   Date/Author: 2026-07-06, planning agent.

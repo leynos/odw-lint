@@ -1308,13 +1308,44 @@ It informs CI usage and later plugin integration. See
   - See [technical-design.md](technical-design.md) §11.4.
   - Success: the highest-risk flag combinations are covered without an
     exhaustive test explosion.
-- [ ] 3.3.4. Add fix-mode coverage once the first safe fix lands.
-  - Requires 3.3.1 and one fixable rule.
+- [ ] 3.3.4. Add a safe-fix diagnostic contract.
+  - Requires 3.3.1.
+  - Extend diagnostics and JSON Schema to carry an optional applicable edit,
+    including replacement text, byte-span coordinates, and explicit safe or
+    unsafe applicability, without reusing message-only suggestions for edits.
+  - Success: diagnostic reports can express a safe fix, existing
+    diagnostics-only output remains compatible under the documented schema
+    policy, and contract tests pin the additive shape.
+- [ ] 3.3.5. Implement deterministic fix-engine seams.
+  - Requires 3.3.4.
+  - Add a non-executing source rewrite engine that applies non-overlapping
+    applicable edits deterministically, exposes write and diff seams for the
+    CLI, and rejects or orders conflicting edits by a documented policy.
+  - Success: engine tests prove deterministic rewrites, idempotent second
+    passes, diff rendering, and conflict handling without executing workflows.
+- [ ] 3.3.6. Wire fix-mode CLI flags and exit policy.
+  - Requires 3.3.5 and 3.3.2.
+  - Implement `--fix`, `--fix-only`, `--diff`, `--unsafe-fixes`,
+    `--no-unsafe-fixes`, `--show-fixes`, and `--exit-non-zero-on-fix` against
+    real fix-engine behaviour rather than near-miss option parsing.
+  - Success: the Ruff-compatible fix-mode exit matrix in
+    [technical-design.md](technical-design.md) §§7.0-7.4 is observable through
+    CLI tests.
+- [ ] 3.3.7. Ship the first catalogued safe fix.
+  - Requires 3.3.6.
+  - Give one released rule a conservative safe fix, document it on the rule
+    page, and cover fixed and non-fixed examples through the normal rule and
+    CLI paths.
+  - Success: `odw-lint check --fix` rewrites a real workflow to remove that
+    rule's diagnostic and a second run is clean or reports only unrelated
+    findings.
+- [ ] 3.3.8. Add fix-mode coverage once the first safe fix lands.
+  - Requires 3.3.7.
   - See [technical-design.md](technical-design.md) §§7.0-7.4.
   - Success: tests cover `--fix`, `--fix-only`, `--diff`, `--unsafe-fixes`,
     `--show-fixes`, and `--exit-non-zero-on-fix` with Ruff-compatible exit
     behaviour.
-- [ ] 3.3.5. Decide strict-Claude stage-view severity semantics.
+- [ ] 3.3.9. Decide strict-Claude stage-view severity semantics.
   - Requires 3.3.1 and 3.3.3.
   - Revisit whether structured pipeline sub-views should preserve default
     severities or reflect strict-Claude promotion once the CLI flag and
@@ -1322,7 +1353,7 @@ It informs CI usage and later plugin integration. See
   - Success: strict-mode reports, JSON output, and programmatic stage sub-views
     either expose one consistent promoted severity contract or document a typed
     default-versus-effective distinction with coverage for downstream callers.
-- [ ] 3.3.6. Apply configured discovery and ignore filtering.
+- [ ] 3.3.10. Apply configured discovery and ignore filtering.
   - Requires 2.4.4 and 3.3.1.
   - Implement directory and glob traversal for configured include roots and
     command operands, consuming the recorded `--respect-gitignore` and
