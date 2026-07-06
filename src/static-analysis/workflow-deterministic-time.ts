@@ -12,7 +12,7 @@ import { ruleDefinitionFor } from "../diagnostics/rule-catalogue";
 import type { RuleId } from "../diagnostics/rule-id";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic } from "../diagnostics/types";
-import { traverseAstSubtree } from "./swc-ast";
+import { isNewExpression, traverseAstSubtree } from "./swc-ast";
 import type { WorkflowEnvelope } from "./types";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import { enterScopeWithOwnFacts, rootScopeView, scopeOwnFacts } from "./workflow-ast-scopes";
@@ -185,11 +185,6 @@ const isGlobalMemberCall = (
     objectIdentityForExpression(member.object, bindings, aliases) === objectName &&
     resolveStaticMemberName(member.property) === propertyName
   );
-};
-
-/** Narrows nodes to SWC constructor expressions. */
-const isNewExpression = (node: Node): node is NewExpression => {
-  return node.type === "NewExpression";
 };
 
 /** Returns the preloaded rule definition for a deterministic-time rule. */

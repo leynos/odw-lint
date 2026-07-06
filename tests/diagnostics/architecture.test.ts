@@ -180,7 +180,11 @@ const hasClonedSwcSingleTypeNarrowerShape = (node: ts.Node): boolean => {
     return false;
   }
 
-  return isAstNodeCall(expression) || isAstNodeAndTypeDiscriminantCheck(expression);
+  return (
+    isAstNodeCall(expression) ||
+    isAstNodeAndTypeDiscriminantCheck(expression) ||
+    isTypeDiscriminantCheck(expression)
+  );
 };
 
 /** Returns a declaration's single return expression when it has one. */
@@ -349,12 +353,15 @@ describe("diagnostic architecture", () => {
       function isMemberExpression(value: unknown): value is MemberExpression {
         return "MemberExpression" === value.type && isAstNode(value);
       }
+      const isCallExpression = (value: Node): value is CallExpression =>
+        value.type === "CallExpression";
       const unrelatedPredicate = (value: unknown): boolean => {
         return Boolean(value);
       };
     `);
 
     expect(clonedSwcSingleTypeNarrowerDeclarationsFromSourceFile(sourceFile)).toEqual([
+      "isCallExpression",
       "isExpression",
       "isIdentifier",
       "isMemberExpression",

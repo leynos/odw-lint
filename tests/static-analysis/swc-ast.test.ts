@@ -8,9 +8,11 @@ import fc from "fast-check";
 import {
   astChildValues,
   isAstNode,
+  isCallExpression,
   isExpression,
   isIdentifier,
   isMemberExpression,
+  isNewExpression,
   isUnknownRecord as seamIsUnknownRecord,
   traverseAstSubtree,
 } from "../../src/static-analysis/swc-ast";
@@ -173,6 +175,12 @@ describe("SWC AST shape helpers", () => {
   it.each([
     ["expressions", isExpression, { type: "CallExpression" }, { span: {} }],
     [
+      "call expressions",
+      isCallExpression,
+      { type: "CallExpression", callee: {}, arguments: [] },
+      { type: "Identifier", value: "name" },
+    ],
+    [
       "identifiers",
       isIdentifier,
       { type: "Identifier", value: "name" },
@@ -183,6 +191,12 @@ describe("SWC AST shape helpers", () => {
       isMemberExpression,
       { type: "MemberExpression", object: {}, property: {} },
       { type: "Identifier", value: "name" },
+    ],
+    [
+      "constructor expressions",
+      isNewExpression,
+      { type: "NewExpression", callee: {}, arguments: [] },
+      { type: "CallExpression", callee: {}, arguments: [] },
     ],
   ])("narrows %s through the shared SWC node seam", (_name, narrower, accepted, rejected) => {
     expect(narrower(accepted)).toBe(true);

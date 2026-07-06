@@ -6,11 +6,11 @@
  * workflow-local shadows and never executes workflow source.
  */
 
-import type { CallExpression, Module, Node, Span } from "@swc/core";
+import type { Module, Node, Span } from "@swc/core";
 import { ruleDefinitionFor } from "../diagnostics/rule-catalogue";
 import { makeRuleId } from "../diagnostics/rule-id";
 import type { Diagnostic } from "../diagnostics/types";
-import { isIdentifier, traverseAstSubtree } from "./swc-ast";
+import { isCallExpression, isIdentifier, traverseAstSubtree } from "./swc-ast";
 import type { WorkflowEnvelope } from "./types";
 import type { LexicalBindingFacts } from "./workflow-ast-bindings";
 import { isIdentifierBound } from "./workflow-ast-bindings";
@@ -87,7 +87,7 @@ const matchOdwOnlyValidateCall = (
   node: Node,
   context: ValidateScanContext,
 ): OdwOnlyValidateMatch | undefined => {
-  if (!isValidateCallExpression(node) || !isIdentifier(node.callee)) {
+  if (!isCallExpression(node) || !isIdentifier(node.callee)) {
     return undefined;
   }
 
@@ -112,11 +112,6 @@ const enterValidateScanScope = (context: ValidateScanContext, node: Node): Valid
     aliases: enterValidateAliasScope(context.aliases, bindings, ownFacts),
   };
 };
-/** Narrows nodes to SWC call expressions. */
-const isValidateCallExpression = (node: Node): node is CallExpression => {
-  return node.type === "CallExpression";
-};
-
 /** Builds validate aliases owned by the parsed workflow body's root scope. */
 const rootValidateAliasView = (
   module: Module,

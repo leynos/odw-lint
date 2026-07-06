@@ -1194,11 +1194,11 @@ See [technical-design.md](technical-design.md) §9.3.
       allowlist with shape-based cloned-narrower detection and fold the
       scope-own-facts `isExpression` copy back onto `swc-ast.ts`. Lightweight
       addendum pass.
-  - [ ] 3.2.5.5. Hoist call-expression narrowing onto the SWC seam.
+  - [x] 3.2.5.5. Hoist call-expression narrowing onto the SWC seam.
     - Addendum (from audit:3.1.7; medium). Route duplicated
       `CallExpression` narrowers through `swc-ast.ts` and harden the seam guard
       against bare `.type` discriminant clones. Lightweight addendum pass.
-  - [ ] 3.2.5.6. Hoist constructor-expression narrowing onto the SWC seam.
+  - [x] 3.2.5.6. Hoist constructor-expression narrowing onto the SWC seam.
     - Addendum (from audit:3.1.8; low). Route duplicated `NewExpression`
       narrowers through `swc-ast.ts` where their contracts match the existing
       parser-backed narrower seam. Lightweight addendum pass.

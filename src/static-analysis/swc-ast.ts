@@ -2,7 +2,14 @@
  * @file Shared SWC AST shape helpers for parser-backed analysis rules.
  */
 
-import type { Expression, Identifier, MemberExpression, Node } from "@swc/core";
+import type {
+  CallExpression,
+  Expression,
+  Identifier,
+  MemberExpression,
+  NewExpression,
+  Node,
+} from "@swc/core";
 import { isUnknownRecord, type UnknownRecord } from "./value-guards";
 
 /**
@@ -55,6 +62,26 @@ export const isIdentifier = (value: unknown): value is Identifier => {
  */
 export const isMemberExpression = (value: unknown): value is MemberExpression => {
   return isAstNode(value) && value.type === "MemberExpression";
+};
+
+/**
+ * Narrows values to SWC call expressions.
+ *
+ * @param value - Candidate SWC node value.
+ * @returns Whether the value is a `CallExpression` node.
+ */
+export const isCallExpression = (value: unknown): value is CallExpression => {
+  return isAstNode(value) && value.type === "CallExpression";
+};
+
+/**
+ * Narrows values to SWC constructor expressions.
+ *
+ * @param value - Candidate SWC node value.
+ * @returns Whether the value is a `NewExpression` node.
+ */
+export const isNewExpression = (value: unknown): value is NewExpression => {
+  return isAstNode(value) && value.type === "NewExpression";
 };
 
 /**

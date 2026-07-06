@@ -322,7 +322,7 @@ and the public package entry points remained unchanged.
     `isIdentifier`, and `isMemberExpression` narrowers cannot re-enter
     parser-backed collectors without tripping the seam guard, and scope-owned
     facts reuse the documented SWC narrower seam.
-- [ ] 3.2.5.5. Hoist call-expression narrowing onto the SWC seam.
+- [x] 3.2.5.5. Hoist call-expression narrowing onto the SWC seam.
   - Source: audit:3.1.7; severity medium.
   - Scope: move duplicated `CallExpression` narrowers behind
     `src/static-analysis/swc-ast.ts` and extend the cloned single-type
@@ -331,7 +331,7 @@ and the public package entry points remained unchanged.
   - Success: parser-backed collectors share one reviewed call-expression
     narrower, and cloned `.type` single-node guards cannot bypass the SWC seam
     guard.
-- [ ] 3.2.5.6. Hoist constructor-expression narrowing onto the SWC seam.
+- [x] 3.2.5.6. Hoist constructor-expression narrowing onto the SWC seam.
   - Source: audit:3.1.8; severity low.
   - Scope: move duplicated `NewExpression` narrowers behind
     `src/static-analysis/swc-ast.ts` where their runtime and TypeScript
