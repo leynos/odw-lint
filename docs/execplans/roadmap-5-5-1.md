@@ -659,3 +659,11 @@ characterization/pinning test for the dormant contract and linked the internal
 span helper module to ADR 0003. The test passes on the current behaviour rather
 than driving a Red-Green production change because the selected disposition is
 to keep the shipped whole-body fallback unchanged.
+
+## Addenda
+
+- [x] 5.5.1.1. Consolidate SWC parser-error surface guard scaffolding.
+  - Extract one shared real-SWC parse-error capture helper and parser-options
+    constant, bind the structured-field surface guard to the production
+    allow-list, remove the redundant range assertion, and name the guard in the
+    SWC upgrade checklist.

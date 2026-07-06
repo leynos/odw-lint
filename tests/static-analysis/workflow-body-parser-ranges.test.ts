@@ -3,34 +3,19 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { parseSync } from "@swc/core";
 import { normalizeWorkflowBody, sliceSourceSpan } from "odw-lint";
 import {
   narrowedSpanForParserError,
   structuredNormalizedRangeFromParserError,
 } from "../../src/static-analysis/workflow-body-parser-spans";
 import { bodyRelativeRange, normalizedTokenRange } from "./normalized-byte-range-support";
+import { catchSwcParseError } from "./swc-parse-error-support";
 import { envelopeForBody } from "./workflow-envelope-support";
-
-/** Captures the thrown SWC parser error for a normalized source string. */
-const catchSwcParseError = (normalizedText: string): unknown => {
-  try {
-    parseSync(normalizedText, {
-      syntax: "ecmascript",
-      jsx: false,
-    });
-  } catch (error) {
-    return error;
-  }
-
-  throw new Error("Expected SWC to reject malformed normalized source.");
-};
 
 describe("parser-error ranges for body diagnostics", () => {
   it("resolves structured parser-error ranges without reading rendered prose", () => {
     const envelope = envelopeForBody('agent("draft"\n');
     const normalized = normalizeWorkflowBody(envelope);
-    const realError = catchSwcParseError(normalized.normalizedText);
     const syntheticError = {
       span: { base: "normalized", start: 7, end: 12 },
       get message(): string {
@@ -38,7 +23,6 @@ describe("parser-error ranges for body diagnostics", () => {
       },
     };
 
-    expect(structuredNormalizedRangeFromParserError(realError, normalized)).toBeUndefined();
     expect(structuredNormalizedRangeFromParserError(syntheticError, normalized)).toEqual({
       start: 7,
       end: 12,

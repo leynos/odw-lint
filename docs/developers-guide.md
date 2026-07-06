@@ -557,7 +557,10 @@ Re-observe the parser error object's structured range surface at the same time;
 ADR
 [0003-body-syntax-span-narrowing-quarantine.md](adr/0003-body-syntax-span-narrowing-quarantine.md)
 must be revisited before accepting a parser upgrade that could activate
-token-level narrowing.
+token-level narrowing. The named guard for that parser-error surface is
+`tests/static-analysis/swc-parse-error-surface.test.ts`; keep it bound to the
+production allow-list in
+`src/static-analysis/workflow-body-parser-spans.ts`.
 Also rerun `tests/static-analysis/workflow-body-dialect.test.ts` and preserve
 the TypeScript-in-body rejection set recorded by ADR
 [0002-workflow-body-parser-dialect-scope.md](adr/0002-workflow-body-parser-dialect-scope.md)

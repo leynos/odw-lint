@@ -19,7 +19,13 @@ import {
   originalSpanFromNormalizedOffsets,
 } from "./workflow-body-normalizer";
 
-const STRUCTURED_RANGE_FIELDS = ["span", "byteOffset", "pos", "start", "offset"] as const;
+export const PARSER_ERROR_STRUCTURED_RANGE_FIELDS = [
+  "span",
+  "byteOffset",
+  "pos",
+  "start",
+  "offset",
+] as const;
 const PARSER_COORDINATE_BASES = ["normalized", "body", "module"] as const;
 
 type ParserCoordinateBase = (typeof PARSER_COORDINATE_BASES)[number];
@@ -52,7 +58,7 @@ export const structuredNormalizedRangeFromParserError = (
     return undefined;
   }
 
-  for (const field of STRUCTURED_RANGE_FIELDS) {
+  for (const field of PARSER_ERROR_STRUCTURED_RANGE_FIELDS) {
     const range = normalizedRangeFromValue(error[field], normalized);
     if (range !== undefined) {
       return range;

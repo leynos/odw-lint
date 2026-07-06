@@ -6,16 +6,11 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { parseSync } from "@swc/core";
 import { createOriginalSourceFile, normalizeWorkflowBody, scanWorkflowEnvelope } from "odw-lint";
 import { isFiniteNumber, isUnknownRecord } from "../../src/static-analysis/value-guards";
+import { PARSER_ERROR_STRUCTURED_RANGE_FIELDS } from "../../src/static-analysis/workflow-body-parser-spans";
+import { catchSwcParseError } from "./swc-parse-error-support";
 import { expectScannedEnvelope } from "./workflow-envelope-support";
-
-const PARSE_OPTIONS = {
-  syntax: "ecmascript",
-  jsx: false,
-} as const;
-const STRUCTURED_OFFSET_FIELDS = ["span", "byteOffset", "pos", "start", "offset"] as const;
 
 /** Checks whether an unknown value is a numeric structured byte range. */
 const isStructuredNumericRange = (value: unknown): boolean => {
@@ -30,7 +25,7 @@ const isStructuredNumericRange = (value: unknown): boolean => {
 /** Describes allow-listed fields so future parser-surface drift is visible. */
 const structuredParserOffsetSurface = (error: unknown): Record<string, string> => {
   return Object.fromEntries(
-    STRUCTURED_OFFSET_FIELDS.map((field) => {
+    PARSER_ERROR_STRUCTURED_RANGE_FIELDS.map((field) => {
       const value = isUnknownRecord(error) ? error[field] : undefined;
 
       if (isFiniteNumber(value)) {
@@ -55,8 +50,8 @@ const hasStructuredParserOffset = (error: unknown): boolean => {
   );
 };
 
-/** Captures the thrown value from parsing one normalized malformed body. */
-const catchSwcParseError = (): unknown => {
+/** Builds one normalized malformed workflow body for SWC surface checks. */
+const malformedNormalizedBody = (): string => {
   const sourceFile = createOriginalSourceFile({
     filePath: "workflows/broken.js",
     sourceText:
@@ -65,18 +60,12 @@ const catchSwcParseError = (): unknown => {
   const envelope = expectScannedEnvelope(scanWorkflowEnvelope(sourceFile), sourceFile.filePath);
   const normalized = normalizeWorkflowBody(envelope);
 
-  try {
-    parseSync(normalized.normalizedText, PARSE_OPTIONS);
-  } catch (error) {
-    return error;
-  }
-
-  throw new Error("Expected SWC to reject the malformed normalized body.");
+  return normalized.normalizedText;
 };
 
 describe("SWC parse-error surface", () => {
   it("exposes rendered prose but no structured numeric byte offset", () => {
-    const error = catchSwcParseError();
+    const error = catchSwcParseError(malformedNormalizedBody());
 
     expect(error).toBeInstanceOf(Error);
     expect(error).toHaveProperty("message", expect.any(String));
