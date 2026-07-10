@@ -24,7 +24,7 @@ behaviour is that computed metadata, including hostile metadata, receives
 `odw/meta-statically-unprovable` and is never executed.
 
 This task deliberately does not implement the command-line interface, body
-normalisation, SWC body parsing, loader-parity execution, or
+normalization, SWC body parsing, loader-parity execution, or
 `odw/claude-pure-meta` emission. Roadmap task 3.1.1 owns the user-visible
 Claude pure-metadata diagnostic after the parser-backed dialect slice exists.
 This task still records metadata portability facts so 3.1.1 has a clear place
@@ -240,7 +240,7 @@ computed metadata to `odw/meta-statically-unprovable`.
 - [x] (2026-07-01) Follow-up review pass: addressed CodeRabbit findings for
   comment-aware metadata balancing, bounded block-comment scans, string line
   continuations, object-literal versus block-body classification, recursive
-  parser snapshots, numeric property-key normalisation, fixture status parity,
+  parser snapshots, numeric property-key normalization, fixture status parity,
   and portable ExecPlan paths.
 
 ## Surprises & discoveries
@@ -1138,7 +1138,7 @@ git stash push -m 'df12-stash v1 task=2.1.3 kind=discard reason="park unrelated 
 
 Do not use a bare `git stash`.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Important source paths:
 

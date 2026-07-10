@@ -972,7 +972,7 @@ exits 0. If the post-commit clean-tree guard reports stale work, repeat the
 same recovery and amend or add a follow-up close-out commit after the ordinary
 gates pass again.
 
-## Artifacts and notes
+## Artefacts and notes
 
 The local Git probe that informed this plan produced this representative stale
 roadmap diff:

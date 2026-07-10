@@ -639,7 +639,7 @@ tests/static-analysis/fixtures/loader-parity.ts` after verifying the path list)
 and use `git restore -- <tracked-paths>` only for tracked files; no external
 state is touched.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Tooling notes from implementation:
 

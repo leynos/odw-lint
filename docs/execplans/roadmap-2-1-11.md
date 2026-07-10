@@ -828,7 +828,7 @@ refresh JSON report and Git diff before committing generated changes.
 - Each work item commits independently and gates with `make all`, so a failed
   work item can be reset without disturbing earlier committed work.
 
-## Artifacts and notes
+## Artefacts and notes
 
 - The `meta-statically-unprovable` diagnostic message is the reviewed catalogue
   string `Workflow metadata must remain statically provable without evaluation.`

@@ -796,7 +796,7 @@ example `git clean -n` first to preview, then `git clean -fd -- <verified
 paths>`) and use `git restore -- <tracked-paths>` only for tracked files; no
 external state is touched.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Tooling notes for the implementer:
 

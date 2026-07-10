@@ -495,7 +495,7 @@ If a gate fails because the test would need to execute `bun install` for real,
 stop, document the conflict in `Decision Log`, and revise the test approach
 before proceeding.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Research commands already run during planning:
 

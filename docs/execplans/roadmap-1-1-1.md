@@ -899,7 +899,7 @@ and sanitized. It may expose fields such as `kind`, `message`, `syntax`, and
 exceptions. Any raw exception should stay in an internal, non-exported
 diagnostics detail as `unknown`.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Planning commands already run:
 

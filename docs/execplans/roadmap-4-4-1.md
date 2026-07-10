@@ -763,7 +763,7 @@ If a file is accidentally changed outside this plan's scope, inspect the diff
 and revert only the accidental change you made. Never revert unrelated user or
 workflow changes.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Keep the temporary validation logs from each work item until final close-out.
 At minimum, record in this ExecPlan whether these commands passed:

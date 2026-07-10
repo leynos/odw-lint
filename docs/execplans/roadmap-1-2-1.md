@@ -1073,13 +1073,13 @@ git stash push -m 'df12-stash v1 task=1.2.1 kind=discard reason="unrelated forma
 ```
 
 Do not use a bare `git stash`. Do not use `git reset --hard` or
-`git checkout --` unless explicitly authorised.
+`git checkout --` unless explicitly authorized.
 
 If a work item fails midway, leave the plan's `Progress`, `Surprises &
 Discoveries`, and `Decision Log` updated before stopping. The next agent must
 be able to resume from this file alone.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Important local research commands already run for this draft:
 

@@ -691,7 +691,7 @@ imported-from-seam-free state (the seam module from Work Item 1 is independent
 and can remain) and retry. No destructive or irreversible steps are involved;
 recovery is `git restore <file>` for the single file under edit.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Duplicate implementations targeted for consolidation (verified by inspection):
 

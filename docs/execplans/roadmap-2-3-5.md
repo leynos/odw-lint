@@ -718,7 +718,7 @@ work item mid-flight, `git restore` the touched files (no external state is
 mutated). If a stash is needed, name it per the run convention: `df12-stash v1
 task=2.3.5 kind=<discard|keep> reason="<short>"`.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Record here, as work proceeds, the red/green transcripts that prove each new
 test failed before its change and passed after (e.g. the `bun test` line for

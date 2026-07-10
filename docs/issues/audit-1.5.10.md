@@ -161,7 +161,7 @@ adopted the `exit()` form rather than the safer sibling pattern.
 
 Proposed fix:
 
-Standardise the module-main guards on `process.exitCode = run...()` (the form
+Standardize the module-main guards on `process.exitCode = run...()` (the form
 that preserves buffered output), or fold the guard into a shared run-and-exit
 helper in `cli-support.ts` so the exit contract is defined once. This is a
 natural sub-goal of roadmap task 1.5.11.
@@ -336,7 +336,7 @@ only.
 Rationale: task 1.5.10's new artefact CLI and recording module re-derived
 `parseFlagValue`, `errorMessage`, and an `assertNever` variant, and the four gate
 CLIs disagree on process-exit style. Lift these into `cli-support.ts` and
-`report-format-helpers.ts` and standardise the module-main guard (this audit,
+`report-format-helpers.ts` and standardize the module-main guard (this audit,
 Findings 1-4). This extends and overlaps roadmap task 1.5.11 and `audit-1.5.9.md`
 Finding 3.
 

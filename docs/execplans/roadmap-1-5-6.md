@@ -1087,7 +1087,7 @@ unrelated churn, name any stash precisely, for example `df12-stash v1
 task=1.5.6 kind=discard reason="formatter churn"`, and discard it. No
 destructive or irreversible operations are involved.
 
-## Artifacts and Notes
+## Artefacts and Notes
 
 Reference implementations to mirror (read before coding):
 

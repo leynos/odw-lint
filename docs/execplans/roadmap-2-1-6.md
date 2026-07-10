@@ -1098,7 +1098,7 @@ No new external dependencies are permitted. The implementation may use:
 - existing `RuleId`, `makeRuleId`, and `DiagnosticSeverity` exports; and
 - TypeScript `as const satisfies` for catalogue type checking.
 
-## Artifacts and notes
+## Artefacts and notes
 
 The first implementation commit should not mark roadmap 2.1.6 complete. The
 roadmap checkbox changes only in work item 4 after all tests, docs pages,

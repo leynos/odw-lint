@@ -415,7 +415,7 @@ conflict in `Decision Log`, and escalate.
   Impact: top-level statement scanning now checks significant characters around
   a line break before treating it as a statement end, covers multiline
   assignment and member-chain continuations, treats `export const meta =;` as a
-  missing value, recognises Unicode line separators in unsupported syntax
+  missing value, recognizes Unicode line separators in unsupported syntax
   boundary checks, and uses an explicit missing-metadata assertion instead of a
   broad snapshot.
 
@@ -592,7 +592,7 @@ subsequent review pass added same-line closing-brace boundary handling, tighter
 statement-boundary fallback tests, and a projected missing-metadata snapshot.
 A later ASI-focused pass replaced that projected snapshot with an explicit
 assertion, added multiline continuation handling to the statement scanner,
-treated a bare metadata semicolon as a missing value, and recognised Unicode
+treated a bare metadata semicolon as a missing value, and recognized Unicode
 line separators while checking unsupported import/export statement starts. The
 next review pass added arrow-body continuation handling and non-empty fixture
 corpus guards. The following pass added comma and comparison line-continuation
@@ -1043,7 +1043,7 @@ valid example:
 - assert that `bodySpan` is within the original file.
 
 Add a concise Bun snapshot only if it improves review quality. If added, the
-snapshot should normalise to stable file paths, metadata declaration text, and
+snapshot should normalize to stable file paths, metadata declaration text, and
 diagnostic summaries. Do not list the optional snapshot path in formatter or
 lint commands; rely on `make all` and `make markdownlint` after Bun creates or
 updates it.
@@ -1220,7 +1220,7 @@ git stash push -m 'df12-stash v1 task=2.1.2 kind=discard reason="formatter unrel
 
 Then restore the intended file set and use file-scoped formatting commands.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Useful source-backed evidence gathered for this plan:
 

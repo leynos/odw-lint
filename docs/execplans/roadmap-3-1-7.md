@@ -260,7 +260,7 @@ successfully. Scrutineer then reported `make check-fmt`, `make lint`,
   file.
   Impact: WI-1 includes a narrow `docs/contents.md` index update so the
   repository gate can pass without changing the work item's behavioural scope.
-- Observation: Biome's import/export organiser sorts
+- Observation: Biome's import/export organizer sorts
   `workflow-odw-only-validate` after `workflow-metadata`, even though the
   implementation plan asked to place it immediately beside
   `workflow-deterministic-time`.
@@ -780,7 +780,7 @@ migration. If wiring in WI-3 causes an unexpected corpus diagnostic, revert the
 one-line concatenation, reconsider the WI-2 match predicate, and escalate under
 Tolerance 4 before retrying.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Reviewed diagnostic message (single source of truth in the catalogue), one line:
 "Workflow calls ODW-only validate(source), which Claude Code cannot run because

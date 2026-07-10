@@ -258,7 +258,7 @@ format pass covered the changed files with `mdtablefix --in-place` and
   edge local and documented), and matches the roadmap wording "where contracts
   match". A single fused set would be wrong for regex, which must exclude `/`.
   Date/Author: 2026-07-06, planning agent.
-- Decision: do not generalise the position copy into an untyped
+- Decision: do not generalize the position copy into an untyped
   `frozenCopy<T>`; keep it typed to `SourcePosition`.
   Rationale: AGENTS.md prefers narrow domain types; `sourceLine` and the
   suggestion copy remain their own concerns and are out of this task's scope.
@@ -479,12 +479,12 @@ contracts match' exception" convention.
    while `=>{` (arrow body) is still not. Run it; observe failure.
 2. Green: add exported
    `EXPRESSION_LEADING_PREVIOUS_CHARACTERS: ReadonlySet<string>` to
-   `source-scanner-primitives.ts` initialised from the 19-character base
+   `source-scanner-primitives.ts` initialized from the 19-character base
    `"([{,;:=!&|?+-*%<>~^"`, with a doc comment explaining it is the set of
    single characters after which a `/` may begin a regex or a `{` may begin an
    object literal. Add its name to the `source-scanner-primitives.ts` block in
    `source-file-architecture.test.ts`.
-3. Green: in `source-mask-regex.ts`, initialise
+3. Green: in `source-mask-regex.ts`, initialize
    `REGEX_ALLOWED_PREVIOUS_CHARACTERS` from the base
    (`new Set(EXPRESSION_LEADING_PREVIOUS_CHARACTERS)`), keeping the exported
    name so its pin is unchanged. Confirm membership is byte-identical to today.
@@ -600,7 +600,7 @@ touches state outside the repository. Do not `git stash` without a named
 message per the run's stash-naming rule. Commit each work item only when its
 `make all` is green.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Verified set difference (object-literal minus regex previous-character sets):
 

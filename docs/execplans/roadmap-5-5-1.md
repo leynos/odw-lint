@@ -605,7 +605,7 @@ test cannot be written to pass because SWC now exposes a structured offset,
 stop and escalate per the Tolerances "Discovery" trigger rather than weakening
 the assertion.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Planning-session tool notes (per the standing rules): `firecrawl_search`
 required interactive approval and was denied in this non-interactive session, so

@@ -112,19 +112,19 @@ Task 1.5.12 added `review-evidence-provenance.ts`, which reads `HEAD` and
 `assertGitCommandSucceeded`. The two now disagree on shape and detail: the
 provenance copy returns a `string | undefined` result and wraps every field with
 `singleLine(...)`, whereas the older `git-support.ts` copy throws and does not
-sanitise multi-line `stderr`. The same "how do we phrase a failed git command"
+sanitize multi-line `stderr`. The same "how do we phrase a failed git command"
 decision is therefore encoded twice, in two error-handling idioms, and only one
-of them normalises whitespace.
+of them normalizes whitespace.
 
 Proposed fix:
 
 Export `renderGitCommand` from `tests/build-gate/git-support.ts` and have
 `review-evidence-provenance.ts` import it. Factor the error / status / signal
 classification into one shared `gitCommandFailure(command, result)` helper that
-returns a normalised `string | undefined`; let `assertGitCommandSucceeded` throw
+returns a normalized `string | undefined`; let `assertGitCommandSucceeded` throw
 on its non-`undefined` result and let the provenance reader return it. This
 collapses the two copies to one and gives both call sites the `singleLine`
-sanitisation.
+sanitization.
 
 ## Finding 3: `recordedReportContent` is a query that writes to stderr
 
@@ -228,7 +228,7 @@ object literal.
 Proposed fix:
 
 Extract the span/position/suggestion copy into one shared helper (for example
-`src/diagnostics/diagnostic-copy.ts`) parameterised on whether to freeze — for
+`src/diagnostics/diagnostic-copy.ts`) parameterized on whether to freeze — for
 instance `copySourceSpan(span, { freeze })` — and have both modules consume it.
 Align `cloneDiagnostic` with the inline optional-field ternary already used by
 `createRuleDiagnostic` so both spell the optional `suggestions` field the same
@@ -343,7 +343,7 @@ review-evidence modules already follow.
 Adding roadmap items is reserved to the root agent; the following are proposals
 only.
 
-### Centralise the SWC traversal narrowing vocabulary
+### Centralize the SWC traversal narrowing vocabulary
 
 Rationale: the 3.2.6 traversal-adoption change routed the collectors through the
 shared `swc-ast.ts` driver but left each collector re-implementing its own node

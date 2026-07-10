@@ -665,7 +665,7 @@ files, discard it with a named stash
 (`git stash push -m 'df12-stash v1 task=3.1.6 kind=discard reason="formatter
 churn"'`) rather than committing it.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Baseline before implementation (illustrative — capture the real output in
 `Outcomes`): running `scanDeterministicTimeWarnings` on defect (1) currently

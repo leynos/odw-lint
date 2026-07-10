@@ -212,7 +212,7 @@ Hard invariants that must hold throughout implementation.
   unchanged: any diagnostic or read failure exits 1.
   Rationale: warnings already fail by default, so a flag that only *added* a
   failure condition would be a no-op and could never be observed. The
-  recognised meaning of `--max-warnings` (ESLint) is a tolerance budget, and it
+  recognized meaning of `--max-warnings` (ESLint) is a tolerance budget, and it
   is the only interpretation under which
   [technical-design.md](../technical-design.md) §7.3 ("Exit non-zero when
   warning count exceeds `n`") and [users-guide.md](../users-guide.md) ("fails
@@ -308,15 +308,15 @@ the no-policy call preserves the original "any diagnostic fails" rule.
   - Scope: delete the unwired `src/cli/check-cli-args.ts` parser duplicate and
     update any stale references that still identify it as the live parser home.
   - Success: the live `src/cli/check-args.ts` parser remains the only
-    recognised `check` argument parser, and import or inventory coverage keeps
+    recognized `check` argument parser, and import or inventory coverage keeps
     future parser work from landing on an unwired duplicate.
 - [x] 3.3.2.4. List `--max-warnings` in check help.
   - Source: audit:2.4.4; severity medium.
   - Scope: add the shipped warning-budget flag to `check --help` and derive or
-    cross-check help coverage from the recognised option set where that can be
+    cross-check help coverage from the recognized option set where that can be
     done without making help text unreadable.
   - Success: the help text exposes `--max-warnings`, and tests fail when a
-    recognised user-facing flag has no help row.
+    recognized user-facing flag has no help row.
 
 ## Context and orientation
 

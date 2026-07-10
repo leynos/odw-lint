@@ -814,7 +814,7 @@ observed real span. The scratch SWC probe lives under a gitignored `tmp/`
 path and is deleted before commit, so it leaves no trace. No destructive
 operations are involved.
 
-## Artifacts and notes
+## Artefacts and notes
 
 - WI1 installed `@swc/core` 1.15.43 with caret range `^1.15.43`.
 - WI1 probe result: valid body parse succeeded with

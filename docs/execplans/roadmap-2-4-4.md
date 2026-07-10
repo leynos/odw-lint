@@ -144,7 +144,7 @@ Hard invariants that must hold throughout implementation.
 - Risk: `--exit-non-zero-on-fix` has no fixes to react to in v1, so it looks
   like dead code.
   Severity: low. Likelihood: medium.
-  Mitigation: the flag is recognised with correct semantics; because no rule has
+  Mitigation: the flag is recognized with correct semantics; because no rule has
   fix support yet, no fixes are ever applied, so it correctly never changes the
   exit code. It is pinned by an acceptance test and documented as activating
   with the first safe fix (roadmap 3.3.8). Recorded in the Decision Log.
@@ -212,7 +212,7 @@ Hard invariants that must hold throughout implementation.
   `package-entry.test.ts`, and `public-consumer.test.ts` until the fixtures were
   updated.
   Impact: WI-2 keeps `tests/diagnostics/architecture-fixtures.ts` and the
-  public-API fixtures synchronised when it adds the IO-error type and exports.
+  public-API fixtures synchronized when it adds the IO-error type and exports.
 - Observation: exporting `parseCheckArgs` from the new parser module made its
   JSDoc subject to the repository's public-symbol lint rule.
   Evidence: the first scrutineer gate run failed `make all`/`make lint` with
@@ -370,7 +370,7 @@ Hard invariants that must hold throughout implementation.
   There is no `--no-strict-claude` in the 2.4.4 success list, so only the
   promote direction is added.
   Date/Author: 2026-07-06, planning agent.
-- Decision: `--respect-gitignore`/`--no-respect-gitignore` are recognised
+- Decision: `--respect-gitignore`/`--no-respect-gitignore` are recognized
   value-less flags that record a discovery posture with no path-filtering effect
   on explicit paths in v1.
   Rationale: `docs/technical-design.md` §7.2 scopes ignore-file handling to
@@ -389,10 +389,10 @@ Hard invariants that must hold throughout implementation.
   a discovery task and are out of scope here. Excluded paths are skipped
   silently — neither read, counted in `files`, nor reported as `ioErrors`.
   Date/Author: 2026-07-06, planning agent.
-- Decision: `--exit-non-zero-on-fix` is recognised with correct semantics but
+- Decision: `--exit-non-zero-on-fix` is recognized with correct semantics but
   never changes the exit code in v1 because no rule has fix support.
   Rationale: `docs/technical-design.md` §7.3/§7.4 define it relative to applied
-  fixes; fix support is roadmap 3.3.8. Recognising it now with an acceptance
+  fixes; fix support is roadmap 3.3.8. Recognizing it now with an acceptance
   test is forward-compatible and honest (it activates automatically when fixes
   exist), and avoids a later parser breaking change.
   Date/Author: 2026-07-06, planning agent.
@@ -409,7 +409,7 @@ Hard invariants that must hold throughout implementation.
   Rationale: WI-8 explicitly requires consistent missing-option-value
   diagnostics for implemented flags. Unsupported values still use the
   output-format validator's existing `unsupported output format: <value>`
-  diagnostic, so users can distinguish omission from a recognised-but-invalid
+  diagnostic, so users can distinguish omission from a recognized-but-invalid
   value.
   Date/Author: 2026-07-06, build agent for WI-8.
 - Decision: the equals-form string-value parser treats an empty suffix as a
@@ -490,7 +490,7 @@ warning output remains unchanged.
 
 Focused tests cover parser acceptance, missing-value rejection, JSON report file
 redirection, and full text report file redirection. The implementation kept the
-parser under the complexity gate by splitting recognised value-taking options
+parser under the complexity gate by splitting recognized value-taking options
 into two-token and equals-form helpers. The delegated scrutineer gate run passed
 `make all`, `make check-fmt`, `make typecheck`, `make lint`, and `make test`
 before this progress update was recorded.
@@ -684,7 +684,7 @@ until the current one's validation passes. WI-1 lands first because it removes
 the file-size obstacle for every later flag. WI-2 is independent of the flags
 and can follow immediately. WI-3 through WI-7 add one flag group each. WI-8 adds
 `--help`/`--version` and the consolidated usage text once the full flag set
-exists. WI-9 adds process-level coverage and finalises the guides.
+exists. WI-9 adds process-level coverage and finalizes the guides.
 
 ### WI-1: Extract the check argument parser into a dedicated module
 
@@ -1000,7 +1000,7 @@ Read first: `docs/technical-design.md` §§7.1, 7.3; `src/cli/check-args.ts`,
 
 Work:
 
-1. Recognise `--help`/`-h` and `--version`/`-V` early in parsing (before the
+1. Recognize `--help`/`-h` and `--version`/`-V` early in parsing (before the
    "no paths" usage error), returning a distinct parsed outcome.
 2. In `src/cli/check-cli.ts`, on `--version` write the package version and return
    `0`; on `--help` write a usage block listing the flags implemented by this
@@ -1306,7 +1306,7 @@ No new runtime or dev dependencies. Reuse `JSON.stringify`, the existing
 - [x] 2.4.4.1. Harden informational-flag value handling.
   - Source: review:2.4.4; severity low.
   - Scope: make `--help`, `-h`, `--version`, and `-V` detection aware of
-    recognised value-taking options and operands so a filename or option value
+    recognized value-taking options and operands so a filename or option value
     equal to an informational flag is not misread as the requested action.
   - Success: parser or CLI coverage proves informational flags still work when
     supplied as options, while value and operand collisions are parsed as

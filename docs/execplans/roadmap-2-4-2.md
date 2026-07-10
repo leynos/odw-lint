@@ -726,7 +726,7 @@ report builders, so they leave no residue. The formatter reads no files and
 writes no workflow source. If a work item's gate fails, fix forward and rerun
 `make all`; nothing here is destructive or requires rollback.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Reference the existing minimal formatter and its snapshot when shaping the new
 output:

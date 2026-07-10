@@ -1160,7 +1160,7 @@ git stash push -m 'df12-stash v1 task=1.2.2 kind=discard reason="formatter-churn
 Do not use a bare `git stash`. Do not modify or restore files in the root
 control worktree.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Planning commands already run:
 

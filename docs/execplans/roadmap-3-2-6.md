@@ -326,7 +326,7 @@ The reader needs no prior plan. The relevant files, all under
   (`collectChildOwnNames`/`collectOwnNamesFromValue`) which deliberately stops at
   nested scope-opening nodes (the `currentScope` guard and `isScopeOpeningNode`).
 - `workflow-ast-bindings.ts` — `collectLexicalBindings` dispatches by node type
-  through `STATEMENT_BINDING_COLLECTORS`; unrecognised nodes fall back to
+  through `STATEMENT_BINDING_COLLECTORS`; unrecognized nodes fall back to
   `collectChildBindings`, which iterates `Object.values(node)` (including
   `span`/`type`/`ctxt`) and recurses via `collectStatementBindings`.
 - `workflow-ast-binding-patterns.ts` — binding-pattern-position dispatch
@@ -692,7 +692,7 @@ introduced in Work Item 1 is inert until a collector calls it, so reverting a
 later adoption never breaks Work Item 1. Keep the working tree clean between
 work items.
 
-## Artifacts and notes
+## Artefacts and notes
 
 - The driver is a thin generic fold over the existing `astChildValues`
   primitive; it introduces no new SWC-shape assumption.

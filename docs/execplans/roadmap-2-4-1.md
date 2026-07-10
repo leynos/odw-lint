@@ -703,7 +703,7 @@ residue. The CLI reads files read-only and never writes workflow source. If a
 work item's gate fails, fix forward and rerun `make all`; nothing here is
 destructive or requires rollback.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Reference shapes to mirror (build-gate, not to be imported by production):
 

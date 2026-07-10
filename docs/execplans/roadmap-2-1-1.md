@@ -915,7 +915,7 @@ git stash push -m 'df12-stash v1 task=2.1.1 kind=discard reason="formatter churn
 
 Do not use a bare or default stash message.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Research commands already run for this planning round:
 

@@ -903,7 +903,7 @@ repeatable. If a rewire turns a parity suite red, revert that single work item's
 commit (each is atomic) and re-examine the frozen oracle versus the primitive
 before retrying. No destructive or migration steps are involved.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Key call sites confirmed during planning (for the implementer's orientation):
 

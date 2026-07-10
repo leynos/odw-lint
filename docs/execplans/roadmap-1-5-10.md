@@ -184,7 +184,7 @@ escalation, not a workaround.
   Evidence: CodeRabbit review after WI1 deterministic gates; shared
   `REVIEW_EVIDENCE_REPORT_PREFIX` now feeds the formatter and parser.
   Impact: future report heading changes have one source of truth.
-- Observation: blank or padded artefact paths need normalisation before default
+- Observation: blank or padded artefact paths need normalization before default
   fallback resolution.
   Evidence: CodeRabbit review after WI1 deterministic gates; unit coverage now
   covers blank and padded flag/environment values.

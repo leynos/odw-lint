@@ -717,7 +717,7 @@ configuration through the CLI. Implements
 Changes:
 
 - Extend `parseCheckArgs` in
-  [src/cli/check-cli.ts](../../src/cli/check-cli.ts) to recognise `--config
+  [src/cli/check-cli.ts](../../src/cli/check-cli.ts) to recognize `--config
   <path>` (consuming the following token; missing value → usage error) and
   `--isolated` (boolean), separating them from positional paths. Preserve the
   existing rules: first token must be `check`; unknown `--…` options are usage

@@ -1300,7 +1300,7 @@ It informs CI usage and later plugin integration. See
       home. Lightweight addendum pass.
   - [x] 3.3.2.4. List `--max-warnings` in check help.
     - Addendum (from audit:2.4.4; medium). Add the warning-budget flag to
-      `check --help` and pin recognised-option parity for future flags.
+      `check --help` and pin recognized-option parity for future flags.
       Lightweight addendum pass.
 - [ ] 3.3.3. Add pairwise CLI-mode coverage for format, strict mode, warning
   threshold, config, and stdin.

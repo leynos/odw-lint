@@ -90,7 +90,7 @@ Proposed fix:
 
 Delete `src/cli/check-cli-args.ts` outright. Nothing imports it, so removal is
 non-breaking; confirm with a repository search and a full `make all` run.
-Ironically, the deleted file's `advanceBy`-parameterised
+Ironically, the deleted file's `advanceBy`-parameterized
 `parsedOutputFormatState`/`parsedMaxWarningsState` helpers factor the
 separate/equals forms more cleanly than the live parser does (see Finding 3) —
 capture that idea before deleting so the better factoring is not lost.
@@ -126,7 +126,7 @@ Add a `--max-warnings <n>` row to `CHECK_USAGE_TEXT` in `check-help.ts`
 wording in `docs/users-guide.md`. Add `"--max-warnings"` to
 `IMPLEMENTED_HELP_FLAGS` in `check-cli-help.test.ts` so the help output is
 pinned to the real option surface. Consider strengthening the test to assert
-that every recognised option key from `check-option-tables.ts` (plus the
+that every recognized option key from `check-option-tables.ts` (plus the
 hand-coded `--output-format`/`--max-warnings`) appears in the help text, so a
 future option cannot silently miss its help row again.
 
@@ -164,7 +164,7 @@ Fold `--output-format` and `--max-warnings` into the same table-plus-helper
 pattern the string options use. A small typed-value-option table keyed by flag,
 each entry pairing a `parse(value)` function with the target field, lets one
 `applyParsedValue(state, field, parsed, advanceBy)` helper serve both the
-separate and equals arms — mirroring the `advanceBy`-parameterised
+separate and equals arms — mirroring the `advanceBy`-parameterized
 `parsedOutputFormatState`/`parsedMaxWarningsState` helpers in the now-dead
 `check-cli-args.ts` (Finding 1). This removes the four near-identical blocks and
 makes all five value options obey one mechanism.
@@ -182,7 +182,7 @@ Location:
 
 Description:
 
-`--config <path>` (separate form) is recognised via `STRING_VALUE_OPTIONS`
+`--config <path>` (separate form) is recognized via `STRING_VALUE_OPTIONS`
 (`check-option-tables.ts:25`), but the `--config=<path>` equals form is not:
 `EQUALS_STRING_VALUE_OPTIONS` (`check-option-tables.ts:34`) contains only
 `--output-file=` and `--stdin-filename=`. Because `parseEqualsStringValueOption`

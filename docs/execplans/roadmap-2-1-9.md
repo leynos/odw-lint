@@ -1116,7 +1116,7 @@ If `make build` refreshes `node_modules`, do not commit `node_modules`. If
 `bun.lock` changes unexpectedly during this refactor, stop and investigate
 before continuing because this task does not require dependency changes.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Useful research commands and outputs from planning round 1:
 

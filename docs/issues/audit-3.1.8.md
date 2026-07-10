@@ -79,7 +79,7 @@ every copy.
 Proposed fix:
 
 Extract a generic scope-alias tracker into a shared module (for example
-`workflow-ast-alias-scopes.ts`) parametrised by a `classify(initializer,
+`workflow-ast-alias-scopes.ts`) parametrized by a `classify(initializer,
 bindings) => TAlias | undefined` callback and returning an immutable
 `ReadonlyMap<string, TAlias>`. Have both scanners build their views on it: the
 validate scanner uses a classifier that returns a marker for a single-hop
@@ -143,7 +143,7 @@ Location:
 
 Description:
 
-`swc-ast.ts` centralises `isAstNode`, `isExpression`, `isIdentifier`, and
+`swc-ast.ts` centralizes `isAstNode`, `isExpression`, `isIdentifier`, and
 `isMemberExpression`, but the call- and constructor-expression narrowers are
 still defined locally. 3.1.8 added a third copy of the call narrower under a
 scanner-specific name, `isValidateCallExpression`

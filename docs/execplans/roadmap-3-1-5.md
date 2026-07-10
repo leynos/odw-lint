@@ -466,8 +466,8 @@ Log.
 
 Extract the destructuring/parameter pattern collectors and the small AST helpers
 into a new internal module `src/static-analysis/workflow-ast-binding-patterns.ts`
-(not re-exported). The extracted surface, parameterised by an injected
-"recurse into an initialiser expression" callback so each caller supplies its own
+(not re-exported). The extracted surface, parameterized by an injected
+"recurse into an initializer expression" callback so each caller supplies its own
 recursion policy:
 
 ```ts
@@ -597,7 +597,7 @@ directly (`Fn`-based `FunctionDeclaration`/`FunctionExpression`/
 `PrivateMethod` (reuse the existing `asNode(node.function) ?? node` unwrap), and
 `collectPatternBindings(node.param, …)` for the singular `param` field on
 `SetterProperty` and `CatchClause` (`GetterProperty` has no params).
-Exclude `WORKFLOW_BODY_WRAP_FUNCTION_NAME`. Materialise each view as a frozen,
+Exclude `WORKFLOW_BODY_WRAP_FUNCTION_NAME`. Materialize each view as a frozen,
 sorted, unique `LexicalBindingFacts` so it is a drop-in for
 `resolveGlobalObjectIdentity`. `rootScopeView(module)` unwraps the synthetic
 wrapper (mirroring `collectLexicalBindings`' `userBodyStatements`) so top-level
@@ -723,7 +723,7 @@ Skills: `leta`, `biomejs`, `en-gb-oxendict`.
   (the same first-char/rest-char construction as `VALID_IDENTIFIER` but
   *without* the `fc.constant("Date")` arm and with a `.filter`-free guard so no
   generated name equals `Date` — build it by construction from the
-  lower-case/`_`/`$` first-character set, which cannot produce that capitalised
+  lower-case/`_`/`$` first-character set, which cannot produce that capitalized
   root, to avoid the fast-check filtering trap per
   `AGENTS.md` and the 2.2.4 whitespace counter-example). The invariant this
   property pins is therefore:
@@ -1092,11 +1092,11 @@ No ODW runtime or static-helper symbol may appear in any new file.
   aliases would widen the change materially; it is recorded as a possible future
   refinement and documented in the rule-doc limitations.
   Date/Author: 2026-07-04, planning agent.
-- Decision: extract shared pattern collectors into a new module (WI1) parameterised
+- Decision: extract shared pattern collectors into a new module (WI1) parameterized
   by an injected recursion callback, rather than duplicating them in the scope
   module or growing `workflow-ast-bindings.ts` past 400 lines.
   Rationale: the flat and scope collectors share destructuring/param extraction
-  but differ only in the "recurse into initialisers" policy (descend into
+  but differ only in the "recurse into initializers" policy (descend into
   functions vs stop at them); dependency-injecting that one policy keeps the
   collectors DRY and each file small (`AGENTS.md` abstraction policy and 400-line
   limit).
@@ -1122,12 +1122,12 @@ No ODW runtime or static-helper symbol may appear in any new file.
   Red→Green tests.
   Date/Author: 2026-07-04, planning agent (round 2).
 - Decision (round 2): the WI3 two-scope `fast-check` property draws `name` from
-  a generator that excludes the recognised `Date` root.
+  a generator that excludes the recognized `Date` root.
   Rationale: with `name === "Date"` the body `const ${name} = Date.now();`
   becomes a root-scope shadow that suppresses the top-level use, so the
   "exactly one, independent of `name`" invariant is false for that value. The
   generator excludes the root by construction (lower-case/`_`/`$` first
-  character can never produce the capitalised root), avoiding the fast-check
+  character can never produce the capitalized root), avoiding the fast-check
   filtering trap. The invariant is restated as holding for any non-`Date`
   identifier.
   Date/Author: 2026-07-04, planning agent (round 2).
@@ -1212,7 +1212,7 @@ top-level `Date.now()` still reports `odw/no-date-now`.
 Fix round 2 closed the inward class-expression gap: named class expression
 members now inherit the class expression's own binding view, so member-local
 `Date.now()`, `Math.random()`, and `globalThis.Date.now()` references stay
-suppressed when those recognised global names resolve to the class expression
+suppressed when those recognized global names resolve to the class expression
 name rather than the JavaScript global.
 
 ## Addenda

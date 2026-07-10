@@ -118,7 +118,7 @@ Description:
 `collectLexicalBindings` (flat, whole-body) and the scope-precise
 `collectOwnNamesFromNode` family in `workflow-ast-scopes.ts` implement two
 structurally parallel recursive walks over the same node shapes — variable
-declarations, declarator initialisers, class declarations, catch clauses, and
+declarations, declarator initializers, class declarations, catch clauses, and
 function parameters — differing only in whether they stop at a function-scope
 boundary. `scanDeterministicTimeWarnings` runs both: `collectLexicalBindings`
 feeds the alias pass while `rootScopeView`/`enterScope` drives the hazard walk,
@@ -128,7 +128,7 @@ the "which nodes introduce bindings" policy is now encoded twice.
 
 Proposed fix:
 
-Unify the two collectors behind one parametrised walk whose only variation is a
+Unify the two collectors behind one parametrized walk whose only variation is a
 `stopAtFunctionScope` (or equivalent) flag, so the node-shape knowledge lives in
 one place and the flat view is expressed as the scope view without the boundary
 stop. This is a larger, higher-risk refactor than Findings 1 and 2; gate it on
@@ -258,7 +258,7 @@ and reflect the collector duplication described in Finding 3.
 Proposed fix:
 
 Treat this as motivation for the Finding 3 unification rather than a standalone
-change: once one parametrised collector produces both the flat and scope views,
+change: once one parametrized collector produces both the flat and scope views,
 the root-scope seed and the alias binding set can share a single pass. No
 behavioural change is required; record the decision if the passes are kept
 separate for clarity.

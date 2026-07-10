@@ -860,7 +860,7 @@ Do not introduce a new abstraction under `src/` for this task. The fixture
 corpus is test data until parser and CLI slices need production source-reader
 behaviour.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Research command used to prove current ODW example status:
 

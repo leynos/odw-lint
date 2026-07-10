@@ -721,7 +721,7 @@ tracked whitespace, do not disable the target. Treat the finding as evidence
 that the task has uncovered real hygiene debt and follow the escalation rule in
 `Tolerances`.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Primary branch-local surfaces verified during planning:
 

@@ -886,7 +886,7 @@ git stash push -m 'df12-stash v1 task=1.3.4 kind=discard reason="formatter-churn
 Then re-apply only intended changes if necessary and rerun file-scoped
 formatting.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Important command logs for this plan should use these paths:
 

@@ -1208,7 +1208,7 @@ The plan is safe to resume after interruption because every work item ends in a
 gate-passing commit. If resuming mid-item, inspect `git status --short`,
 `sem diff`, and the `Progress` section before editing.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Research commands run during planning:
 

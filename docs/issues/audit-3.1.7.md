@@ -136,7 +136,7 @@ parameter is already typed `Node`. That form matches neither `isAstNodeCall`
 nor `isAstNodeAndTypeDiscriminantCheck`, so both `CallExpression` narrowers sail
 past the guard and the suite stays green while duplicate narrowers live outside
 the seam. The detector already owns a standalone `isTypeDiscriminantCheck`
-predicate (`architecture.test.ts:266`), so it recognises the shape internally
+predicate (`architecture.test.ts:266`), so it recognizes the shape internally
 but never asserts on it in isolation. This is the same class of gap 3.2.7
 Finding 2 documented — a guard that keys on the specific shapes it has seen
 rather than the full family of single-type narrowers — recurring one shape
