@@ -724,7 +724,7 @@ and lint-clean with module-level `@file` JSDoc under the existing Biome/Oxlint
 configuration, stop, document the conflict in `Decision log`, and escalate
 before adding ignores.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Research commands already run during planning:
 

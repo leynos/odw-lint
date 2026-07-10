@@ -99,7 +99,7 @@ each visited node in two independent calls. `enterScope`
 `ownNames`, and `enterAliasScope` (`workflow-deterministic-time-aliases.ts:82`)
 then calls `scopeOwnFacts(node)` again for the same node to read both `ownNames`
 and `ownInitializers`. `scopeOwnFacts` performs a full own-facts collection walk
-of the node's immediate subtree with no memoisation
+of the node's immediate subtree with no memoization
 (`workflow-ast-scopes.ts:97`), so every scope-opening node in the body is
 collected twice on the single hazard traversal. This is a fresh redundancy
 introduced by 3.1.6: before the alias pass moved onto the scope model, only the
@@ -194,7 +194,7 @@ post-3.1.6 divergence made concrete.
 
 Proposed fix:
 
-Unify the two collectors behind one parametrised walk whose only variation is a
+Unify the two collectors behind one parametrized walk whose only variation is a
 scope-boundary stop flag, exactly as roadmap task 3.2.6 already proposes, so the
 node-shape knowledge and the function-like set live in one place and the flat
 view is the scope view without the boundary stop. Until that lands, either add

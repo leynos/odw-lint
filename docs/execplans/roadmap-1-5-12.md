@@ -158,7 +158,7 @@ Hard invariants that must hold throughout implementation.
   `execplans/roadmap-1-5-12.md`.
   Impact: No content change was needed for that stale finding; the focused
   validation keeps the index requirement enforced.
-- Observation: The artefact CLI already centralised all reviewer-facing output
+- Observation: The artefact CLI already centralized all reviewer-facing output
   in `review-evidence-artefact-report.ts`.
   Evidence: `runReviewEvidenceArtefactCli` classifies once and passes every
   result through `formatRecordedEvidenceResult`.

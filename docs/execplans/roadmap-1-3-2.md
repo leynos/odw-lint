@@ -1185,7 +1185,7 @@ If span tests fail, prefer fixing the manifest span or the fixture text so the
 span still points at the smallest reviewer-useful region. Do not weaken the
 span assertion to make tests pass.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Important command logs for this plan should use these paths:
 

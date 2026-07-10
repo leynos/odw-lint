@@ -74,11 +74,11 @@ next character, return `index + 1` on the closing delimiter, and fall back to
 `sourceText.length` when unterminated. `scanQuotedStringEnd` adds two behaviours
 the shared helper lacks: it terminates at an unescaped line terminator and it
 treats `\` followed by CRLF as a three-character line continuation. The escape
-walk is therefore reimplemented rather than parameterised.
+walk is therefore reimplemented rather than parameterized.
 
 Proposed fix:
 
-Parameterise the shared walk in `source-mask-delimiters.ts` with an optional
+Parameterize the shared walk in `source-mask-delimiters.ts` with an optional
 "stop on line terminator" predicate and an escape-advance function, then have
 `scanQuotedStringEnd` supply the line-terminator and CRLF-continuation rules.
 This keeps the single escape-handling contract that the module header already
@@ -110,7 +110,7 @@ also awkward enough to require a double guard in the property test
 
 Proposed fix:
 
-Standardise the review-evidence feature on the tagged `{ ok }` result shape
+Standardize the review-evidence feature on the tagged `{ ok }` result shape
 (or a shared `Parsed<T>` helper type), so failure discrimination is explicit and
 cannot be confused with a legitimately string-typed success value.
 
@@ -220,13 +220,13 @@ proposals only.
 
 Rationale: the masking family reimplements the identifier-run walk in three
 modules (Finding 1) and the escape-aware delimiter walk in two (Finding 2).
-Centralising both into `source-mask-delimiters.ts` (or a dedicated scan-helper
+Centralizing both into `source-mask-delimiters.ts` (or a dedicated scan-helper
 module) removes the risk of the copies drifting when the identifier alphabet or
 escape rules change, and it is a low-risk, test-backed refactor.
 
 Severity: medium
 
-### Standardise review-evidence error signalling on a tagged result
+### Standardize review-evidence error signalling on a tagged result
 
 Rationale: the review-evidence feature mixes a tagged `{ ok }` result with an
 untagged `Value | string` failure convention (Finding 3). Converging on one

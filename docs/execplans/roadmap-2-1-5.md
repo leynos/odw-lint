@@ -578,7 +578,7 @@ Validation commands (path-safe; rely on repository gates):
 - If `make all` fails on an unrelated pre-existing issue, stop and escalate
   (Tolerances) rather than editing unrelated code.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Reference pattern for the in-process assertions (existing, do not duplicate
 verbatim — the new file is fixture-driven over the whole family):

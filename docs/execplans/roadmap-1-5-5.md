@@ -969,7 +969,7 @@ changed by the current work item. If a stash is unavoidable, name it using:
 git stash push -m 'df12-stash v1 task=1.5.5 kind=discard reason="park unrelated formatter churn"'
 ```
 
-## Artifacts and Notes
+## Artefacts and Notes
 
 Current planning-round discovery commands and outcomes:
 

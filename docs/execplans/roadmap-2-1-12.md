@@ -503,7 +503,7 @@ Tests:
 Red-Green-Refactor substitute: this is a pure refactor of test-support code.
 Run the parity suite before the edit (Green baseline), refactor, run again
 (still Green, identical output). Capture both transcripts in
-"Artifacts and notes".
+"Artefacts and notes".
 
 Validation: `make all`; `make markdownlint`; `make nixie`. Format the touched
 Markdown first with `mdtablefix docs/developers-guide.md` then
@@ -608,7 +608,7 @@ the parity refactor drifts any assertion, revert the single test-helper change
 and escalate (do not adjust assertions to match). No destructive operations are
 involved.
 
-## Artifacts and notes
+## Artefacts and notes
 
 - WI1 Red: `bun test tests/static-analysis/workflow-lint.test.ts` failed after
   `make build` with

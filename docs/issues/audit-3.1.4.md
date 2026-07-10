@@ -1,7 +1,7 @@
 # Audit after roadmap task 3.1.4
 
 This post-step audit was run after roadmap task 3.1.4, which taught the
-deterministic-time scanner to recognise `globalThis` and string-key member
+deterministic-time scanner to recognize `globalThis` and string-key member
 forms, merged into `origin/main` at commit `c344083`. The audit used `grepai`
 against the canonical
 `main` index for intent search, then verified every branch-local fact in a fresh
@@ -30,7 +30,7 @@ Skills and tools used:
 
 The 3.1.4 change extracted global-object resolution out of the
 deterministic-time scanner into a new `workflow-global-object-reference.ts`
-module and taught it to recognise `globalThis` chains, string-key member access,
+module and taught it to recognize `globalThis` chains, string-key member access,
 and lexical shadowing. The findings below concentrate on that newly merged
 surface, with a small number of adjacent observations in the shared traversal
 and guard helpers it depends on.
@@ -58,7 +58,7 @@ through `scanDeterministicTimeWarnings` in
 Because the coverage is indirect, one non-trivial behaviour of the module is
 completely unexercised: the transparent-wrapper unwrapping in
 `innerTransparentExpression`/`isTransparentWrapperExpression`. No test drives a
-parenthesised global such as `(Date).now()`, `(globalThis).Date.now()`, or a
+parenthesized global such as `(Date).now()`, `(globalThis).Date.now()`, or a
 shadow interacting through parentheses such as
 `const Date = x;\n(Date).now();`. The recursive `resolveGlobalObjectIdentity`
 call that peels wrappers is therefore never entered by the suite, so a
@@ -68,7 +68,7 @@ Proposed fix:
 
 Add `tests/static-analysis/workflow-global-object-reference.test.ts` that calls
 the two exported functions directly against small SWC expression fixtures.
-Cover: parenthesised roots (`(Date)`, `(globalThis).Date`), nested `globalThis`
+Cover: parenthesized roots (`(Date)`, `(globalThis).Date`), nested `globalThis`
 chains, computed string-literal keys (`globalThis["Date"]`), a shadowed
 identifier seen through a wrapper (must resolve to `undefined`), and computed
 non-string keys (must resolve to `undefined`). Retain the end-to-end cases in
@@ -182,7 +182,7 @@ Proposed fix:
 
 Extract a shared `forEachChildNode(node, visit)` traversal primitive into a
 small helper module (alongside the guard from Finding 3) and express both the
-hazard walk and the binding collector as visitors over it. This localises the
+hazard walk and the binding collector as visitors over it. This localizes the
 knowledge of which SWC fields carry child nodes to one place.
 
 ## Finding 5: `childValues` is a redundant pass-through wrapper
@@ -238,7 +238,7 @@ Proposed fix:
 
 Keep the sorted array on the public `LexicalBindingFacts` for stable output,
 but back `isIdentifierBound` with a `Set<string>` built once (either stored
-alongside the array on the frozen facts object, or memoised inside the module)
+alongside the array on the frozen facts object, or memoized inside the module)
 so membership checks are `O(1)`. This is a small change with no behavioural
 effect.
 

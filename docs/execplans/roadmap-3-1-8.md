@@ -469,7 +469,7 @@ meaningful functions").
 
 Tests (Red first): extend
 [tests/static-analysis/workflow-odw-only-validate.test.ts](../../tests/static-analysis/workflow-odw-only-validate.test.ts).
-Add a `spanText`-parameterised assertion helper (generalise
+Add a `spanText`-parameterized assertion helper (generalize
 `expectValidateDiagnostic` to accept the expected callee text, defaulting to
 `"validate"`), then cover at minimum:
 
@@ -637,11 +637,11 @@ diagnostic, revert the alias branch, reconsider the match predicate, and
 escalate under Tolerance 4 before retrying. No destructive operations; no data
 migration.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Alias-view shadowing algorithm to mirror (from `aliasViewForOwnFacts` in
 [workflow-deterministic-time-aliases.ts](../../src/static-analysis/workflow-deterministic-time-aliases.ts)),
-specialised to a `ReadonlySet<string>` of validate aliases:
+specialized to a `ReadonlySet<string>` of validate aliases:
 
 ```typescript
 const validateAliasesForOwnFacts = (

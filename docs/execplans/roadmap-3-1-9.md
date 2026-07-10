@@ -569,7 +569,7 @@ inspect the diff first; an unexpected snapshot change is a tolerance breach
 use the `rebase` skill before the final commit. Do not run a repo-global
 formatter; format only the specific markdown file touched in WI-3.
 
-## Artifacts and notes
+## Artefacts and notes
 
 The load-bearing production edit is confined to
 `src/static-analysis/workflow-odw-only-validate.ts`, specifically the

@@ -150,7 +150,7 @@ automatic run-and-record behaviour.
 
 Stop and escalate rather than improvise when any of these is reached:
 
-- Mechanism ambiguity: this plan realises "adopt in the roadmap review or audit
+- Mechanism ambiguity: this plan realizes "adopt in the roadmap review or audit
   workflow" as a **required, test-pinned instruction** in the AGENTS.md
   quality-gate contract that the df12-build audit obeys. If a stakeholder
   instead requires a machine-enforced hosted-CI job that re-executes the gates,
@@ -732,7 +732,7 @@ Quality method: run the repository gates listed above from the worktree; inspect
   the AGENTS.md section, revert the documentation edits and the roadmap tick; no
   generated artefacts persist.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Representative *expected happy-path* `make review-evidence` output (from
 `tests/build-gate/review-evidence-report.ts`), which the review/audit path
@@ -816,7 +816,7 @@ is present (so the gate reports `verified`, exit 0), and pinned by a new
 build-gate test. The scheduled workflow, its wiring test, the degraded-tolerant
 exit policy, wiring-test invariant 6, and the `Bun.YAML.parse` dependency are
 removed; Constraints, Tolerances, Risks, Surprises, Decision Log, Acceptance,
-Artifacts, and the work items are re-derived to match this reality.
+Artefacts, and the work items are re-derived to match this reality.
 
 Round 4 revision (2026-07-03). Design review flagged that a plan variant which
 provisioned merman only (`cargo install merman-cli … --locked`) and asserted a

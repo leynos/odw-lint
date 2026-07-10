@@ -194,7 +194,7 @@ Location:
 Description:
 
 The severity ordering `["error", "warning", "info", "hint"]` and its mapping to
-the pluralised summary keys (`errors`, `warnings`, `infos`, `hints`) is restated
+the pluralized summary keys (`errors`, `warnings`, `infos`, `hints`) is restated
 independently in four places: the `DIAGNOSTIC_SEVERITIES` tuple
 (`severity.ts:10`, described as "the source of truth"), the `counts` object and
 its key-to-summary mapping in `countDiagnostics` (`report.ts:36`), the
@@ -315,7 +315,7 @@ Location:
 Description:
 
 `formatTextDiagnostics` joins fields with single spaces
-(`file:line:column severity rule message`) and normalises only control
+(`file:line:column severity rule message`) and normalizes only control
 whitespace (`normalizeTextField` collapses CR, LF, tabs, NEL, LS, and PS), not
 ordinary spaces. A file path or message containing an ordinary space therefore
 yields a line that cannot be split back into fields unambiguously — the format

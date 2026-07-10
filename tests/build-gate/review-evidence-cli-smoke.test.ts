@@ -9,6 +9,20 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
+const reviewerAvailabilityVariables = [
+  "ODW_LINT_REVIEW_SCRUTINEER",
+  "ODW_LINT_REVIEW_CODERABBIT",
+  "ODW_LINT_REVIEW_LOCAL_SELF_RUN",
+] as const;
+
+/** Build a clean reviewer environment before applying a test case's overrides. */
+const reviewerEnvironment = (overrides: NodeJS.ProcessEnv): NodeJS.ProcessEnv => {
+  const environment = { ...process.env };
+  for (const variable of reviewerAvailabilityVariables) {
+    Reflect.deleteProperty(environment, variable);
+  }
+  return { ...environment, ...overrides };
+};
 
 /** Run the review-evidence CLI entrypoint as a real Bun child process. */
 const runCliProcess = (env: NodeJS.ProcessEnv = {}) => {
@@ -26,9 +40,8 @@ const runCliProcess = (env: NodeJS.ProcessEnv = {}) => {
       cmd: ["bun", "run", "tests/build-gate/review-evidence-cli.ts"],
       cwd: repositoryRoot,
       env: {
-        ...process.env,
+        ...reviewerEnvironment(env),
         PATH: `${makeBinDir}:${inheritedEnvironment.PATH ?? ""}`,
-        ...env,
       },
       stdout: "pipe",
       stderr: "pipe",

@@ -48,7 +48,7 @@ calls `Object.freeze` on each copy while the report pair does not. The near-copy
 hides that meaningful freeze difference and invites divergence.
 
 Proposed fix: move span/position copying into one shared diagnostics helper
-module exposing a single, documented copy (parameterised on freezing, or two
+module exposing a single, documented copy (parameterized on freezing, or two
 clearly named variants), then reuse it in both call sites so the freeze contract
 is stated once.
 

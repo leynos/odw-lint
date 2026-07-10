@@ -205,6 +205,10 @@
 ## Markdown Guidance
 
 - Validate Markdown files using `bunx markdownlint-cli2 "**/*.md"`.
+- Run `make spelling` to refresh the shared en-GB-oxendict base, regenerate
+  `typos.toml`, and check maintained Markdown with the pinned `typos` release.
+  Put narrow repository-only exceptions in `typos.local.toml`; never edit the
+  generated configuration by hand.
 - Run `bun fmt` after any documentation changes to format all Markdown
   files and fix table markup.
 - Validate Mermaid diagrams in Markdown files by running `nixie --no-sandbox`.

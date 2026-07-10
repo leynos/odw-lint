@@ -1039,7 +1039,7 @@ If `make all` fails because of existing unrelated branch state, verify with
 Do not repair unrelated work inside this task unless the failing gate directly
 blocks the source-helper split and the fix is part of the same responsibility.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Planning evidence collected before implementation:
 

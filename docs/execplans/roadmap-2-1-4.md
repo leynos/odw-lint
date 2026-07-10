@@ -1106,7 +1106,7 @@ require is discovered, do not fix it in this task. Record the offender and
 stop. A production import boundary breach is a separate implementation or
 design-review decision.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Initial research commands used for this plan:
 

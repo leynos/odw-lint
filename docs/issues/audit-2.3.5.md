@@ -270,7 +270,7 @@ metadata assertions").
 
 Proposed fix:
 
-Generalise the wording to "all manifest-driven diagnostic parity suites"
+Generalize the wording to "all manifest-driven diagnostic parity suites"
 (covering parser, envelope, metadata, invalid-workflow, and dual-compat
 deterministic-time), and update the module docstring to match, so the policy's
 scope is unambiguous and future suites inherit it by default. Sequence this

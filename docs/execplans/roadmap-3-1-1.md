@@ -77,9 +77,9 @@ Hard invariants that must hold throughout implementation. Violation requires
 escalation, not a workaround.
 
 - **Do not execute workflow source.** The metadata classifier, parser, and the
-  new closed-constant recogniser must never call `new Function`, `eval`, ODW's
+  new closed-constant recognizer must never call `new Function`, `eval`, ODW's
   runtime loader, `checkMeta`, `scanDualCompat`, `validate(source)`, or any path
-  that evaluates metadata or the workflow body. Recognising a closed-constant
+  that evaluates metadata or the workflow body. Recognizing a closed-constant
   expression is a *structural* classification of source tokens (for example
   "binary `+` over two string literals"); it must never compute the value. This
   is the core security boundary of the project (`docs/technical-design.md` §6.4;
@@ -151,11 +151,11 @@ escalation, not a workaround.
   `tests/static-analysis/workflow-metadata-parser-edge.test.ts` lines 130-160,
   plus its snapshot) while keeping *classifier* output byte-identical, so all
   classifier-, fixture-, and parity-level tests stay green in WI-1.
-- Risk: the closed-constant recogniser accepts a form that can actually throw or
+- Risk: the closed-constant recognizer accepts a form that can actually throw or
   reference free scope, so `odw/claude-pure-meta` fires for metadata ODW would
   reject (a soundness defect that misleads task 3.1.3 strict mode).
   Severity: high. Likelihood: medium.
-  Mitigation: the recogniser accepts only an explicitly enumerated allow-list of
+  Mitigation: the recognizer accepts only an explicitly enumerated allow-list of
   total, side-effect-free forms over number/string/boolean/`null` literals (see
   the "Closed-constant expressions" Decision Log entry); every other form,
   including `bigint`, calls, identifiers, member access, spreads, template
@@ -172,10 +172,10 @@ escalation, not a workaround.
   tests regardless of how they are produced. A hand-authoring fallback is
   documented.
 - Risk: file-size limit breach when adding impurity handling and the
-  closed-constant recogniser to two already large modules.
+  closed-constant recognizer to two already large modules.
   Severity: low. Likelihood: medium.
   Mitigation: extract the total-parse impurity walk and the closed-constant
-  recogniser into new small modules
+  recognizer into new small modules
   (`workflow-metadata-impurity.ts`,
   `workflow-metadata-constant-expr.ts`,
   `workflow-metadata-required-fields.ts`); verify with
@@ -211,7 +211,7 @@ escalation, not a workaround.
   `bigint` arithmetic, and scanner-unaccepted string atoms stay
   `odw/meta-statically-unprovable`.
 - WI-2 gate note: the file-size and complexity gates required splitting the
-  closed-constant recogniser support into
+  closed-constant recognizer support into
   `workflow-metadata-constant-expr.ts`,
   `workflow-metadata-constant-results.ts`, and
   `workflow-metadata-expression.ts`, and moving the new WI-2 boundary cases into
@@ -326,7 +326,7 @@ escalation, not a workaround.
   literal → `valid`. If `name`/`description` are literal-but-invalid (empty,
   wrong type) → the existing dialect errors (`odw/meta-name` /
   `odw/meta-description`), unchanged. Metadata values the envelope scanner does
-  not prove to be object literals (ternary, parenthesised, logical, additive,
+  not prove to be object literals (ternary, parenthesized, logical, additive,
   call, identifier at top level) remain `odw/meta-statically-unprovable`.
   Rationale: `docs/technical-design.md` §6.3 (the taxonomy the roadmap task
   cites first) defines "Claude-incompatible" as "ODW *can* accept the workflow,
@@ -339,7 +339,7 @@ escalation, not a workaround.
   evaluability** (a structural closed-constant check, which never evaluates). A
   closed-constant expression loads under *every* possible slice-scoping model
   because it references nothing and cannot throw, so this boundary is sound
-  regardless of ODW's exact slice extent — neutralising any residual
+  regardless of ODW's exact slice extent — neutralizing any residual
   uncertainty about `extractMeta`'s scoping. §9.2 states the rule condition as
   the summary "`meta` is not a pure literal"; that summary is read within §6.3's
   "ODW can accept" gate, and WI-4 adds a one-clause cross-reference so the two
@@ -356,7 +356,7 @@ escalation, not a workaround.
   where both operands are closed-constant strings; an array literal whose
   elements are all closed-constant (no elisions, no spread); an object literal
   whose keys are literal or closed-constant computed keys and whose values are
-  all closed-constant (no spread); or a parenthesised closed-constant. Number
+  all closed-constant (no spread); or a parenthesized closed-constant. Number
   arithmetic and string concatenation never throw in JavaScript, so these forms
   provably evaluate without throwing and without touching free scope. **Every
   other form is *open***: identifiers, member access, calls, `new`, IIFEs,
@@ -391,7 +391,7 @@ escalation, not a workaround.
   provide. This is the "static lenient parse mode" anticipated by
   `docs/technical-design.md` §6.4. The closed-constant-vs-open sub-classification
   is deliberately *not* computed in the parser (WI-1 keeps classifier output
-  byte-identical); it is derived in WI-2 by a dedicated recogniser over the
+  byte-identical); it is derived in WI-2 by a dedicated recognizer over the
   recorded impure spans.
   Date/Author: 2026-07-06, planning agent (round 2).
 - Decision: **Claude-pure-meta span points at the first impure content.**
@@ -401,7 +401,7 @@ escalation, not a workaround.
   highlights the computed value).
   Date/Author: 2026-07-06, planning agent (round 2).
 - Decision: **Grammar-sensitive exponentiation under-emits.** The
-  closed-constant recogniser treats direct unary-left exponentiation as open,
+  closed-constant recognizer treats direct unary-left exponentiation as open,
   which may also under-emit for some parenthesized variants. This keeps the
   `odw/claude-pure-meta` branch sound for JavaScript's exponentiation grammar;
   broader acceptance can be added later with targeted tests if needed.
@@ -492,7 +492,7 @@ Definitions:
 - **Open expression**: any impure expression that is not closed-constant. Open
   expressions may throw or reference free scope under ODW's isolated
   `new Function` evaluation, so `odw-lint` cannot prove ODW would load them.
-- **Provable literal string**: a value the parser recognises as a quoted string
+- **Provable literal string**: a value the parser recognizes as a quoted string
   literal (for `name`, additionally non-empty), decided without evaluation.
 
 Verified external behaviour and the tooling-availability record:
@@ -510,7 +510,7 @@ Verified external behaviour and the tooling-availability record:
   workflow bodies" (`docs/execplans/roadmap-1-3-4.md` lines 473-475). `odw-lint`'s
   vendored parser (`workflow-metadata-parser.ts`) implements this pure-literal
   subset; this task widens it to keep parsing after the first impurity and adds
-  a closed-constant recogniser on top.
+  a closed-constant recognizer on top.
 - Tooling-availability failure (recorded per the standing rule): `ls`/`Read` of
   `/data/leynos/Projects/open-dynamic-workflows/**` are blocked in this agent
   session ("may only list files in the allowed working directories"). Fallback
@@ -567,7 +567,7 @@ Concrete edits:
    `[…]` key, then the `:`, then the value, recording the key span as an
    impurity and the value as normal); change `parseObject`/`parseArray` to keep
    iterating rather than abort. Compute the first-impure span. Preserve
-   numeric-key normalisation, string decoding, and comment/trivia handling
+   numeric-key normalization, string decoding, and comment/trivia handling
    exactly.
 3. Extract the impurity walk into a new module
    (`src/static-analysis/workflow-metadata-impurity.ts`) if
@@ -617,7 +617,7 @@ Skills: `leta` for references of `classifyWorkflowMetadata` and the catalogue
 helpers; `sem` for how 3.1.2 wired `no-date-now` as a precedent.
 
 Goal: implement the Asymmetric provable-load boundary (see Decision Log). Add
-the reviewed message to the catalogue, add a closed-constant recogniser, and
+the reviewed message to the catalogue, add a closed-constant recognizer, and
 emit `odw/claude-pure-meta` for object-literal metadata whose `name` and
 `description` are provable string literals and whose every other value/key is a
 pure literal or closed-constant, with at least one non-literal; keep every other
@@ -952,7 +952,7 @@ Quality criteria ("done"):
   with a `never` guard for the new classification/value kinds).
 - Files: no source file exceeds 400 lines.
 - Security: hostile-metadata fixtures stay passive; no evaluation path is added;
-  the closed-constant recogniser computes no values.
+  the closed-constant recognizer computes no values.
 
 ## Idempotence and recovery
 
@@ -1042,12 +1042,12 @@ Round 3 (2026-07-06). No content change to the boundary, work items, or tests.
 This revision resolves the sole round-3 blocking point — **ExecPlan
 durability**: the round-2 plan was never committed because the host declined
 salvage while the worktree held one uncommitted path *beyond* the plan file — the
-untracked round-1 review artifact `docs/execplans/roadmap-3-1-1.review-r1.md`.
+untracked round-1 review artefact `docs/execplans/roadmap-3-1-1.review-r1.md`.
 Git is hard-denied in this planning agent's session (verified: every `git`
 invocation, including via a bypass-mode subagent, is blocked), so the plan is
 committed by the host's salvage path, which requires the plan file to be the
 *only* uncommitted change. This revision therefore removes the stray untracked
-review artifact so the worktree holds nothing but the plan-file modification,
+review artefact so the worktree holds nothing but the plan-file modification,
 unblocking the durable commit. The round-1 review's substance is not lost: its
 blocking defects (B1–B3) and advisories (A1–A3) are quoted and answered verbatim
 in the round-2 entries of this Revision note above.
@@ -1093,7 +1093,7 @@ message-contract addition is still needed and additive;
 close, confirming the WI-1/WI-2 helper-extraction constraints stand; the
 round-4 snapshot target
 `tests/static-analysis/__snapshots__/fixture-metadata-refresh-manifest-source.test.ts.snap`
-and its test both exist, so WI-3 step 6 is grounded. No stray review artifact
+and its test both exist, so WI-3 step 6 is grounded. No stray review artefact
 is present in `docs/execplans/`, so the worktree holds only the plan-file
 modification and the durable commit is unblocked. Git remains hard-denied in
 this planning session, so the plan is committed by the host salvage path.

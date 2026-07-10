@@ -913,7 +913,7 @@ rerun once to rule out transient tooling failure. If it still fails, record the
 exact command and failure in `Surprises & Discoveries`; do not broaden the
 implementation patch to unrelated documentation.
 
-## Artifacts and Notes
+## Artefacts and Notes
 
 Planning-round-2 commands and evidence:
 

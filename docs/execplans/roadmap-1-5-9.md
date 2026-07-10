@@ -976,7 +976,7 @@ by the current work item. If a stash is unavoidable, name it:
 git stash push -m 'df12-stash v1 task=1.5.9 kind=discard reason="park unrelated formatter churn"'
 ```
 
-## Artifacts and Notes
+## Artefacts and Notes
 
 Locked dependency ranges from `bun.lock` relevant to this task:
 

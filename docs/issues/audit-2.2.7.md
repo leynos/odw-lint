@@ -39,7 +39,7 @@ change.
 
 The findings below are pre-existing housekeeping issues surfaced by the audit.
 The most material one is that roadmap task 2.1.12.5 — marked complete — claimed
-to centralise the string-delimiter and whitespace predicates and "remove
+to centralize the string-delimiter and whitespace predicates and "remove
 duplicated local helpers", yet a shared `isWhitespaceCharacter` helper is
 adopted in only one module while eleven raw call sites across six modules keep
 the inline idiom, and three modules keep an identical type-guard wrapper. None
@@ -93,7 +93,7 @@ different predicates.
 
 The gap between the roadmap item's stated completion ("remove duplicated local
 helpers") and the code is the reason this is ranked medium rather than low: the
-centralisation was only partially applied, and the residual raw idiom invites
+centralization was only partially applied, and the residual raw idiom invites
 further copies.
 
 Proposed fix:
@@ -134,7 +134,7 @@ const isStringDelimiter = (character: string): character is "'" | '"' | "`" => {
 The wrapper exists because callers (for example `scanDelimitedEnd`) benefit from
 the narrowed `"'" | '"' | "`"` type, which the shared `isStringLikeDelimiter`
 does not provide (it returns plain `boolean`). The result is a small but exact
-triplication that the earlier consolidation missed because it centralised only
+triplication that the earlier consolidation missed because it centralized only
 the non-narrowing predicate.
 
 Proposed fix:

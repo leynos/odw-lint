@@ -12,7 +12,7 @@ Status: COMPLETE
 The reviewer-run audit gate `make review-evidence` re-runs the repository
 gates and then names which "dual-review path" backed the review: the
 independent `scrutineer` reviewer, the `coderabbit` fallback, or a degraded
-`local-self-run`. Today an unparameterised run defaults every path to
+`local-self-run`. Today an unparameterized run defaults every path to
 `available` (see `defaultPathAvailability` in
 `tests/build-gate/review-evidence-cli.ts:64`). That optimism lets an automated
 review print `dual-review path: scrutineer (primary; scrutineer available)`
@@ -54,7 +54,7 @@ root:
 
   Exit code `0`.
 
-This satisfies the roadmap 1.5.8 success criterion: "an unparameterised
+This satisfies the roadmap 1.5.8 success criterion: "an unparameterized
 automated review cannot claim a scrutineer review when the harness knows only
 coderabbit or local-self-run evidence is available."
 
@@ -641,7 +641,7 @@ Work item 2 (derive from harness state; behaviour change):
       (pessimistic default) rather than the ambient `process.env`.
 
    b. Add the new behaviour tests (each passes an explicit `env`):
-      - unparameterised (`env: {}`, no availability flags) → exit 3, output
+      - unparameterized (`env: {}`, no availability flags) → exit 3, output
         contains `dual-review path: local-self-run (degraded fallback` and does
         **not** contain `scrutineer (primary`;
       - `env: { ODW_LINT_REVIEW_SCRUTINEER: "available" }` → selects
@@ -745,7 +745,7 @@ Work item 3 (docs):
 Red-Green-Refactor evidence to record as work proceeds:
 
 - Work item 2 Red: `bun test tests/build-gate/review-evidence-cli.test.ts`
-  fails on the new "unparameterised cannot claim scrutineer" test because the
+  fails on the new "unparameterized cannot claim scrutineer" test because the
   current default still selects `scrutineer (primary …)`.
 - Work item 2 Green: the same command passes after
   `deriveHarnessPathAvailability` and the pessimistic default are in place.

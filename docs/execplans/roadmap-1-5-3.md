@@ -932,7 +932,7 @@ only as supplementary branch context. The recovery path is to rebase or refresh
 the branch onto `origin/main`, rerun the ancestry check, and only then continue
 with package-entry or roadmap close-out edits.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Research evidence gathered during the planning pass:
 

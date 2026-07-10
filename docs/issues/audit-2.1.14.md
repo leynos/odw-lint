@@ -69,7 +69,7 @@ balanced-expression backbone now owned by
 `source-scanner-regions.ts:163` (`scanBalancedExpressionEnd`) and
 `source-scanner-regions.ts:100` (`scanDelimitedRegionEnd`).
 
-The reason it survived is real: the template scanner additionally recognises
+The reason it survived is real: the template scanner additionally recognizes
 regex literals inside interpolation expressions (`isTemplateRegexStart`), which
 the shared `nextInertRegionEnd` primitive does not model, so a naive delegation
 would drop regex handling and mis-mask `` `${ a / b /g }` ``-style content. The
@@ -82,7 +82,7 @@ Proposed fix:
 Extend the shared balanced walker to accept an optional inert-region resolver,
 for example `scanBalancedExpressionEnd(text, start, end, { open, close,
 resolveInertRegion })`, defaulting to `nextInertRegionEnd`. Have
-`source-mask-templates.ts` supply a resolver that also recognises its regex
+`source-mask-templates.ts` supply a resolver that also recognizes its regex
 literals, then express the outer template scan as a delimited-region scan whose
 interpolation follows the shared balanced walker. Keep the template-mask
 snapshot tests as the guard for the consolidation. If the contracts are judged
@@ -216,7 +216,7 @@ Description:
 `const` arrow function is not declared until line 202, near the bottom of the
 module. The code is correct at run time — `delimitedRegionSkipEnd` is only
 invoked after module evaluation completes, by which point the binding is
-initialised — but the forward reference reads awkwardly, obscures the mutual
+initialized — but the forward reference reads awkwardly, obscures the mutual
 dependency between the delimited and balanced walkers, and would trip a
 `no-use-before-define`-style lint if one were enabled. It is a small readability
 cost in a module that is otherwise the documented scanner seam.

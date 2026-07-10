@@ -1,8 +1,9 @@
-.PHONY: help all clean build lint biomejs oxlint fmt check-fmt typecheck test refresh-fixtures whitespace-hygiene branch-freshness review-evidence review-evidence-artefact markdownlint nixie
+.PHONY: help all clean build lint biomejs oxlint fmt check-fmt typecheck test refresh-fixtures whitespace-hygiene branch-freshness review-evidence review-evidence-artefact markdownlint spelling nixie
 
 .DEFAULT_GOAL := all
 
 all: build check-fmt whitespace-hygiene lint typecheck test
+	+$(MAKE) spelling
 
 node_modules: package.json bun.lock
 	bun install
@@ -12,6 +13,7 @@ build: node_modules ## Install dependencies
 
 clean: ## Remove build artifacts
 	rm -rf dist node_modules .bun
+	rm -f .typos-oxendict-base.json .typos-oxendict-base.toml
 
 fmt: build ## Format sources
 	bun run fmt
@@ -50,6 +52,15 @@ review-evidence-artefact: ## Check recorded review evidence artefact
 
 markdownlint: ## Lint Markdown files
 	bunx markdownlint-cli2 '**/*.md'
+	+$(MAKE) spelling
+
+TYPOS_VERSION ?= 1.48.0
+TYPOS := uv tool run typos@$(TYPOS_VERSION)
+
+spelling: ## Enforce en-GB-oxendict spelling in Markdown prose
+	uv run scripts/generate_typos_config.py
+	find . -type f -name '*.md' -not -path './node_modules/*' -print0 | \
+		xargs -0 -r $(TYPOS) --config typos.toml --force-exclude
 
 nixie: ## Validate Mermaid diagrams in Markdown files
 	nixie --no-sandbox

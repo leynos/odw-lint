@@ -133,7 +133,7 @@ requires escalation, not a workaround.
   live only inside string literals (using `\u...`/`\r\n` escapes) evaluated
   at runtime, never as bytes on disk. This preserves the ASCII invariant at
   `tests/static-analysis/invalid-workflow-fixtures.test.ts:302` and avoids
-  git line-ending normalisation (the repository ships no `.gitattributes`).
+  git line-ending normalization (the repository ships no `.gitattributes`).
 - **en-GB Oxford spelling** ("-ize"/"-yse"/"-our") in all prose, comments,
   and commit messages (`AGENTS.md`; `docs/documentation-style-guide.md`).
 - **File size < 400 lines** for every code file touched (`AGENTS.md`). If
@@ -161,7 +161,7 @@ requires escalation, not a workaround.
 
 - Risk: a constructed body parses successfully (no diagnostic) because the
   trailing failure token is not actually a syntax error after
-  normalisation (the body is wrapped in `async function ... { ... \n}`).
+  normalization (the body is wrapped in `async function ... { ... \n}`).
   Severity: medium. Likelihood: medium.
   Mitigation: reuse the proven failure tail
   `if (args.ready) {\n` (an unclosed block, already used by
@@ -169,9 +169,9 @@ requires escalation, not a workaround.
   and the 2.2.1 property test) after the feature-bearing statements; assert
   `result.ok === false` and the rule id in every case before snapshotting.
 - Risk: a raw CR byte or non-ASCII byte leaks into a committed `.snap` or
-  test file and is normalised by git or an editor, making the snapshot
+  test file and is normalized by git or an editor, making the snapshot
   non-deterministic across machines. Severity: medium. Likelihood: low.
-  Mitigation: serialise the snapshot snippet through `JSON.stringify`, which
+  Mitigation: serialize the snapshot snippet through `JSON.stringify`, which
   escapes `\r`, `\n`, U+2028, and U+2029 to ASCII escape sequences; keep
   test source ASCII-only (`Constraints`); verify with the existing
   `make whitespace-hygiene` gate inside `make all`.
@@ -310,13 +310,13 @@ requires escalation, not a workaround.
   `tests/static-analysis/invalid-workflow-fixtures.test.ts:302`, to
   `make refresh-fixtures` SHA-256/`spanText` manifest coupling
   (`docs/developers-guide.md` lines 383-408), and to git line-ending
-  normalisation (no `.gitattributes` ships). In-memory literals with
+  normalization (no `.gitattributes` ships). In-memory literals with
   `\r\n`/`\u...` escapes are deterministic, ASCII-safe on disk, and
   isolated from the manifest tooling. The existing
   `workflow-body-parser.test.ts` already builds bodies in memory via an
   `envelopeForBody` helper, so this is the established pattern.
   Date/Author: 2026-07-02, planning agent.
-- Decision: snapshot snippets are serialised with `JSON.stringify`, paired
+- Decision: snapshot snippets are serialized with `JSON.stringify`, paired
   with an independent UTF-8 byte-oracle semantic assertion.
   Rationale: `JSON.stringify` escapes line terminators to ASCII, keeping the
   `.snap` free of raw CR bytes and making terminators/Unicode visible to
@@ -682,7 +682,7 @@ after confirming the failure represents an intentional contract change").
 - Leave the worktree clean: no `_probe`/scratch test files (the planning
   probe file was removed).
 
-## Artifacts and notes
+## Artefacts and notes
 
 Existing recorded contract for the sibling parser-backed diagnostic
 (`tests/static-analysis/__snapshots__/workflow-body-parser.test.ts.snap`)

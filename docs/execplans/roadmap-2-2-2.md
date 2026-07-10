@@ -864,7 +864,7 @@ No `syntax-error` manifest edit is expected; if one is unavoidable,
 revert and re-derive if a refresh looks wrong. No destructive operations are
 involved.
 
-## Artifacts and notes
+## Artefacts and notes
 
 - WI1 implementation evidence (2026-07-02):
   `bun test tests/static-analysis/workflow-body-normalizer.test.ts` passed

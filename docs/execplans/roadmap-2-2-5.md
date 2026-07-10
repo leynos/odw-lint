@@ -437,7 +437,7 @@ Skills: `execplans`, `en-gb-oxendict`.
     throws.
   - Return `""` for `null`, `undefined`, generic object throws without an own
     string `message`, and values whose coercion would throw. This avoids
-    exposing unreviewed object serialisations such as `[object Object]`.
+    exposing unreviewed object serializations such as `[object Object]`.
   - Split usable text on line terminators and take the first non-empty, trimmed
     line.
   - Strip a leading miette/SWC marker if present (a leading `×`/`x` glyph, or a

@@ -193,7 +193,7 @@ conflict in `Decision Log`, and escalate before proceeding.
   passed after adding the support helpers and again after path-scoped Biome
   formatting.
 - [x] (2026-06-30T10:28Z) Addressed work item 1 deterministic gate findings:
-  path-scoped Biome organised imports, and focused JSDoc updates satisfied the
+  path-scoped Biome organized imports, and focused JSDoc updates satisfied the
   repository's `df12` Oxlint rules for public and private helper functions.
 - [x] (2026-06-30T10:28Z) Ran `coderabbit review --agent` for work item 1
   after deterministic gates passed. The review completed without rate
@@ -857,7 +857,7 @@ If `git ls-files` fails in the Bun test, the failure should include the command
 and stderr for non-zero exits, or the command and `error.message` for spawn
 failures. Fix the environment or Git invocation before changing scanner scope.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Research commands already run during planning:
 
@@ -962,5 +962,5 @@ commits.
 Fix round 1 revision. Corrected stale branch-local evidence for the tracked
 TypeScript source and test count from 71 to 74 after review found that the
 completed task's three new TypeScript files were not reflected in the
-ExecPlan's context and artifact notes. This does not reopen implementation
+ExecPlan's context and artefact notes. This does not reopen implementation
 work; it keeps the completed plan aligned with the current branch.

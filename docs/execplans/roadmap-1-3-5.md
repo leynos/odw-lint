@@ -1078,7 +1078,7 @@ not keep the churn. Restore those raw fixture bytes from the source-backed
 reference or the previous commit, then rerun only file-scoped formatting on
 changed TypeScript and Markdown files.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Use these log paths when capturing validation output:
 

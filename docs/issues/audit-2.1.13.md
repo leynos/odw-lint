@@ -59,7 +59,7 @@ delimiter, honouring backslash escapes" loop. `scanEscapedDelimitedEnd` uses
 `scanDelimitedEnd` takes an explicit `endIndex` and does handle interpolation
 via `templateExpressionEnd`; and `stringLikeRegionEnd` re-implements the same
 loop a third time inside the primitive itself. The maintainers already
-recognise the parallelism: a differential property test at
+recognize the parallelism: a differential property test at
 `tests/static-analysis/delimited-end-parity.property.test.ts` pins both
 production scanners against frozen pre-refactor oracles.
 
@@ -71,7 +71,7 @@ layer created precisely to prevent this still hosts one of the copies.
 
 Proposed fix:
 
-Promote a single parametrised `delimitedRegionEnd(text, start, delimiter, end,
+Promote a single parametrized `delimitedRegionEnd(text, start, delimiter, end,
 options)` into `source-scanner-primitives.ts`, where `options` selects whether
 `${` interpolation is followed. Express `scanDelimitedEnd` and
 `scanEscapedDelimitedEnd` as thin adapters over it, and have
@@ -136,7 +136,7 @@ Finding 5 in `audit-2.1.12`, recurring in a different module.
 
 Proposed fix:
 
-Standardise on importing the primitives directly at call sites and delete the
+Standardize on importing the primitives directly at call sites and delete the
 pass-through wrappers, or, if a domain-named seam is genuinely wanted, apply it
 uniformly across both scanner families and document the convention in the
 developers' guide.
@@ -230,7 +230,7 @@ string- or comment-skipping logic must be applied in each.
 
 Proposed fix:
 
-Consider a shared balanced-scan primitive parametrised by a depth model or
+Consider a shared balanced-scan primitive parametrized by a depth model or
 terminator predicate, so the string- and comment-skipping backbone lives once.
 This is a watch item rather than an urgent change: the depth models differ
 enough that over-abstraction is a real risk, so weigh the shared backbone

@@ -1334,7 +1334,7 @@ If `make build` updates `node_modules`, no commit action is needed because
 `node_modules` is ignored. If it updates `bun.lock`, stop and investigate before
 committing; this plan does not include dependency changes.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Planning evidence gathered by direct branch-local inspection (advisory tools
 were unavailable in this session, see `Surprises & Discoveries`):

@@ -98,7 +98,7 @@ and make CI annotations or log parsing ambiguous.
 
 The existing tests cover empty output, simple output, ordering, and snapshot
 alignment with JSON reports, but they do not cover multi-line messages or
-path/message sanitisation.
+path/message sanitization.
 
 Proposed fix:
 

@@ -15,7 +15,7 @@ The audit verified every branch-local fact in a fresh worktree off
 `origin/main` (branch `worktree-df12-audit-2.3.3`, base commit `fb2b73b`) with
 targeted file inspection, `grep`, and `git show` entity history.
 
-The 2.3.3 change is a clean, net-positive consolidation: it centralised the
+The 2.3.3 change is a clean, net-positive consolidation: it centralized the
 invalid-workflow corpus location that had been copied into five test files, and
 replaced a brittle parser snapshot with assertions driven from the reviewed
 manifest. The findings below concentrate on the follow-on consistency work the
@@ -223,7 +223,7 @@ module then references the shared lookup by its canonical name.
 ## Confirmation
 
 No production (`src/`) code was implicated by this audit; all findings are
-follow-on test-infrastructure consolidation opportunities localised to the
+follow-on test-infrastructure consolidation opportunities localized to the
 static-analysis fixture suites. No `TODO`, `FIXME`, `@ts-ignore`, or
 `biome-ignore` markers were found in `src/` or `tests/`. The manifest-driven
 parity surface, hostile-metadata passivity guards, and fixture SHA-256 and
