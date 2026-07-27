@@ -1,9 +1,8 @@
 # Implement original-source line indexes and spans
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -26,8 +25,8 @@ round-trip the span back to the exact original source substring. Unit and
 property tests prove that LF, CRLF, Unicode code points, and trailing-newline
 variants keep the diagnostic contract from `docs/technical-design.md` section
 8: offsets are zero-based UTF-8 byte offsets, lines and columns are one-based
-display positions, and columns count Unicode code points rather than UTF-16 code
-units.
+display positions, and columns count Unicode code points rather than UTF-16
+code units.
 
 This task deliberately does not read files from disk, discover workflow paths,
 parse ODW envelopes, normalize bodies for SWC, run rules, implement the command
@@ -78,8 +77,8 @@ tasks must call.
   imports include `loadWorkflowScript`, `createPrimitives`, runtime
   `validate(source)`, worker paths, launcher paths, or any path that evaluates
   metadata, compiles workflow bodies, starts runs, or dispatches agents. This
-  implements ADR 0001 and `docs/technical-design.md` sections 5, 6.4, 11.3,
-  and 12.1.
+  implements ADR 0001 and `docs/technical-design.md` sections 5, 6.4, 11.3, and
+  12.1.
 - Do not add `@swc/core` in this roadmap task. `docs/developers-guide.md`
   assigns the SWC parser adapter to roadmap task 2.2.1.
 - The only new package dependency permitted by this plan is `fast-check` as a
@@ -131,12 +130,11 @@ conflict in `Decision Log`, and escalate.
   loader, primitive, scheduler, launcher, worker, or agent import.
 - Error contract: stop and escalate if invalid offsets need to become user
   diagnostics in this task. The planned helper contract may throw a
-  project-owned `SourceOffsetError` for programmer misuse and expose
-  validation helpers for tests, but command-facing read or parse diagnostics
-  are later tasks.
+  project-owned `SourceOffsetError` for programmer misuse and expose validation
+  helpers for tests, but command-facing read or parse diagnostics are later
+  tasks.
 - Iterations: if `make all` still fails after three focused fix attempts in a
-  work item, record the failure and options in `Decision Log` before
-  continuing.
+  work item, record the failure and options in `Decision Log` before continuing.
 - Formatting: if a formatter rewrites unrelated files, park that churn in a
   named discard stash using
   `df12-stash v1 task=1.2.2 kind=discard reason="<short>"`, restore the
@@ -151,9 +149,8 @@ conflict in `Decision Log`, and escalate.
   offsets with `TextEncoder` UTF-8 byte lengths.
 
 - Risk: CRLF handling can create an invisible display position between `\r`
-  and `\n`.
-  Severity: medium. Likelihood: medium. Mitigation: define that CRLF is a
-  single display terminator, reject the interior CRLF offset for position
+  and `\n`. Severity: medium. Likelihood: medium. Mitigation: define that CRLF
+  is a single display terminator, reject the interior CRLF offset for position
   lookup, and test the behaviour explicitly.
 
 - Risk: a convenient snippet helper could grow into the future text reporter.
@@ -169,11 +166,10 @@ conflict in `Decision Log`, and escalate.
   fast-check's `Date.now()` seed default.
 
 - Risk: exposing every helper through the public package entry could freeze a
-  premature API.
-  Severity: medium. Likelihood: medium. Mitigation: export only the source
-  model and helper names needed by later roadmap tasks, document their original
-  source contract in JSDoc, and pin package-entry assertions so accidental
-  wildcard exports do not appear.
+  premature API. Severity: medium. Likelihood: medium. Mitigation: export only
+  the source model and helper names needed by later roadmap tasks, document
+  their original source contract in JSDoc, and pin package-entry assertions so
+  accidental wildcard exports do not appear.
 
 - Risk: public snippet helpers could return misleading text if they accept a
   caller-constructed `SourceSpan` whose offsets and positions disagree.
@@ -182,10 +178,9 @@ conflict in `Decision Log`, and escalate.
   `spanFromOffsets` and test invalid manually constructed spans directly.
 
 - Risk: current ODW runtime helper behaviour can tempt production imports for
-  parity.
-  Severity: high. Likelihood: low. Mitigation: use sibling ODW source only as
-  research evidence. Production code remains self-contained, and work item 5
-  keeps architecture tests focused on `odw-lint` boundaries.
+  parity. Severity: high. Likelihood: low. Mitigation: use sibling ODW source
+  only as research evidence. Production code remains self-contained, and work
+  item 5 keeps architecture tests focused on `odw-lint` boundaries.
 
 ## Progress
 
@@ -202,9 +197,9 @@ conflict in `Decision Log`, and escalate.
   verified with `leta` and direct document inspection.
 - [x] (2026-06-28T09:22Z) Verified with
   `sem diff --from origin/main --to HEAD --format json` that the branch now
-  carries pre-existing committed changes in
-  `docs/execplans/roadmap-1-2-3.md`, `docs/roadmap.md`,
-  `src/diagnostics/schema.ts`, `tests/diagnostics/architecture.test.ts`, and
+  carries pre-existing committed changes in `docs/execplans/roadmap-1-2-3.md`,
+  `docs/roadmap.md`, `src/diagnostics/schema.ts`,
+  `tests/diagnostics/architecture.test.ts`, and
   `tests/diagnostics/schema.test.ts`, plus this ExecPlan. These are
   carry-forward branch facts that must be reconciled before the 1.2.2 source
   helper commit series starts.
@@ -212,9 +207,9 @@ conflict in `Decision Log`, and escalate.
   documentation-style, scripting, and complexity documents relevant to task
   1.2.2. No `docs/users-guide.md` exists in this worktree.
 - [x] (2026-06-28T09:07Z) Verified current branch-local diagnostic and
-  static-analysis symbols with `leta`, including `SourcePosition`,
-  `SourceSpan`, `WorkflowSource`, `DIAGNOSTIC_REPORT_SCHEMA`,
-  `createDiagnosticReport`, and the existing static-analysis exports.
+  static-analysis symbols with `leta`, including `SourcePosition`, `SourceSpan`,
+  `WorkflowSource`, `DIAGNOSTIC_REPORT_SCHEMA`, `createDiagnosticReport`, and
+  the existing static-analysis exports.
 - [x] (2026-06-28T09:07Z) Verified sibling ODW loader, dual-compat, and
   primitive validation behaviour from
   `/data/leynos/Projects/open-dynamic-workflows/src`.
@@ -241,8 +236,8 @@ conflict in `Decision Log`, and escalate.
 - [x] (2026-06-28T10:07Z) Work item 3 offset-position implementation is
   ready for deterministic gates and CodeRabbit review.
 - [x] (2026-06-28T10:16Z) Work item 3 committed and gated. `make all`,
-  `make markdownlint`, and `make nixie` passed after addressing one
-  CodeRabbit finding.
+  `make markdownlint`, and `make nixie` passed after addressing one CodeRabbit
+  finding.
 - [x] (2026-06-28T10:24Z) Work item 4 span and snippet implementation is
   ready for deterministic gates and CodeRabbit review.
 - [x] (2026-06-28T10:29Z) Work item 4 committed and gated. `make all`,
@@ -251,19 +246,19 @@ conflict in `Decision Log`, and escalate.
 - [x] (2026-06-28T10:33Z) Work item 5 diagnostic integration coverage is
   ready for deterministic gates and CodeRabbit review.
 - [x] (2026-06-28T10:37Z) Work item 5 committed and gated. `make all`,
-  `make markdownlint`, and `make nixie` passed after addressing one
-  CodeRabbit finding.
+  `make markdownlint`, and `make nixie` passed after addressing one CodeRabbit
+  finding.
 - [x] (2026-06-28T10:35Z) Post-commit review found
   `src/static-analysis/source-file.ts` had grown to 418 lines, exceeding the
   400-line file-size rule.
 - [x] (2026-06-28T10:35Z) Committed a separate refactor,
-  `Split source-file public types`, moving passive public source-file shapes
-  and `SourceOffsetError` into `src/static-analysis/types.ts`. The refactor
-  reduced `src/static-analysis/source-file.ts` to 367 lines and passed
-  `make all`, `make markdownlint`, `make nixie`, and CodeRabbit review.
+  `Split source-file public types`, moving passive public source-file shapes and
+  `SourceOffsetError` into `src/static-analysis/types.ts`. The refactor reduced
+  `src/static-analysis/source-file.ts` to 367 lines and passed `make all`,
+  `make markdownlint`, `make nixie`, and CodeRabbit review.
 - [x] (2026-06-28T10:35Z) Work item 6 committed and gated. `make all`,
-  `make markdownlint`, `make nixie`, and CodeRabbit review passed after
-  closing roadmap task 1.2.2.
+  `make markdownlint`, `make nixie`, and CodeRabbit review passed after closing
+  roadmap task 1.2.2.
 - [x] (2026-06-28T11:01Z) Fix round 1 for blocking review item 1 committed
   as `4f10862`. Split oversized source-file test tables and property-test
   oracle helpers into focused modules under `tests/static-analysis/`, reducing
@@ -271,15 +266,14 @@ conflict in `Decision Log`, and escalate.
   `tests/static-analysis/source-file.property.test.ts` to 220 lines.
 - [x] (2026-06-28T11:01Z) Fix round 1 validation passed with `make all` and
   CodeRabbit review. The first CodeRabbit pass requested bare-CR position and
-  span table coverage; those cases were added before the final 0-finding
-  review.
+  span table coverage; those cases were added before the final 0-finding review.
 - [x] (2026-06-28T15:20Z) Fix round 2 reconciled the branch with current
   `origin/main` by merging `origin/main` into `roadmap-1-2-2` with
-  `--no-commit`. The merge applied cleanly and restored the newer 1.3.1
-  fixture corpus, audit documentation, developer-guide material,
-  Biome/Oxlint exclusions, 1.2.3 addendum updates, and roadmap entries that
-  the pre-merge `sem diff --from origin/main --to HEAD` reported as
-  branch-local deletions or reversions.
+  `--no-commit`. The merge applied cleanly and restored the newer 1.3.1 fixture
+  corpus, audit documentation, developer-guide material, Biome/Oxlint
+  exclusions, 1.2.3 addendum updates, and roadmap entries that the pre-merge
+  `sem diff --from origin/main --to HEAD` reported as branch-local deletions or
+  reversions.
 - [x] (2026-06-28T15:29Z) Fix round 2 reconciliation committed as `4002109`
   after `make all`, `make markdownlint`, `make nixie`, and
   `coderabbit review --agent` all passed. CodeRabbit reported zero findings.
@@ -287,60 +281,53 @@ conflict in `Decision Log`, and escalate.
 ## Surprises & discoveries
 
 - Observation: the canonical GrepAI index had no useful code hits for the
-  first source-span query.
-  Evidence: the query "line index source span helpers original files
-  diagnostics mapping" returned `[0]`.
-  Impact: the plan relies on branch-local `leta` verification and source-file
-  inspection for current code shape.
+  first source-span query. Evidence: the query "line index source span helpers
+  original files diagnostics mapping" returned `[0]`. Impact: the plan relies
+  on branch-local `leta` verification and source-file inspection for current
+  code shape.
 
 - Observation: there is no `docs/users-guide.md` in this worktree.
-  Evidence: `test -f docs/users-guide.md` reported no file.
-  Impact: user-facing source-span behaviour is governed by
-  `docs/terms-of-reference.md`, `docs/technical-design.md`,
-  `docs/developers-guide.md`, and `AGENTS.md` until a user's guide exists.
+  Evidence: `test -f docs/users-guide.md` reported no file. Impact: user-facing
+  source-span behaviour is governed by `docs/terms-of-reference.md`,
+  `docs/technical-design.md`, `docs/developers-guide.md`, and `AGENTS.md` until
+  a user's guide exists.
 
 - Observation: `SourcePosition` and `SourceSpan` already exist as public
   diagnostic types, but no branch-local helper builds them from original source
-  offsets.
-  Evidence: `leta show SourcePosition`, `leta show SourceSpan`, and
+  offsets. Evidence: `leta show SourcePosition`, `leta show SourceSpan`, and
   `leta refs SourceSpan` found only the diagnostic types, clone helpers, schema
-  references, public exports, and architecture tests.
-  Impact: task 1.2.2 should add focused source helpers without changing the
-  diagnostic shape.
+  references, public exports, and architecture tests. Impact: task 1.2.2 should
+  add focused source helpers without changing the diagnostic shape.
 
 - Observation: `STATIC_ANALYSIS_COMPONENTS` already includes `"source-reader"`
   and `"span-mapper"`, but `src/static-analysis/` currently contains only the
-  passive boundary constants and `WorkflowSource`.
-  Evidence: `leta show WorkflowSource` and
-  `leta show STATIC_ANALYSIS_COMPONENTS`.
+  passive boundary constants and `WorkflowSource`. Evidence:
+  `leta show WorkflowSource` and `leta show STATIC_ANALYSIS_COMPONENTS`.
   Impact: the helper module belongs under `src/static-analysis/`, not under
   `src/diagnostics/`.
 
 - Observation: this branch is not a clean topic branch against fresh
-  `origin/main`.
-  Evidence: after `git fetch origin main`, the baseline semantic diff lists
-  `docs/execplans/roadmap-1-2-3.md`, `docs/roadmap.md`,
+  `origin/main`. Evidence: after `git fetch origin main`, the baseline semantic
+  diff lists `docs/execplans/roadmap-1-2-3.md`, `docs/roadmap.md`,
   `src/diagnostics/schema.ts`, `tests/diagnostics/architecture.test.ts`,
-  `tests/diagnostics/schema.test.ts`, and this ExecPlan.
-  Impact: implementation must begin with an explicit carry-forward
-  reconciliation item. Future 1.2.2 commits must be attributable on top of that
-  baseline and must not silently absorb the existing 1.2.3 or diagnostic
-  cleanup changes.
+  `tests/diagnostics/schema.test.ts`, and this ExecPlan. Impact: implementation
+  must begin with an explicit carry-forward reconciliation item. Future 1.2.2
+  commits must be attributable on top of that baseline and must not silently
+  absorb the existing 1.2.3 or diagnostic cleanup changes.
 
 - Observation: CodeRabbit found that item 2's first source-line tests missed
   newline-only sources, that readonly TypeScript source records were not frozen
-  at runtime, and that lone carriage returns could be mishandled.
-  Evidence: CodeRabbit review on 2026-06-28T10:01Z returned one major finding
-  for runtime immutability and two minor findings for newline-only and lone-CR
-  line splitting.
-  Impact: item 2 now freezes the source-file record, the line array, and each
-  line record, and tests cover single LF, single CRLF, and single CR inputs.
+  at runtime, and that lone carriage returns could be mishandled. Evidence:
+  CodeRabbit review on 2026-06-28T10:01Z returned one major finding for runtime
+  immutability and two minor findings for newline-only and lone-CR line
+  splitting. Impact: item 2 now freezes the source-file record, the line array,
+  and each line record, and tests cover single LF, single CRLF, and single CR
+  inputs.
 
 - Observation: CodeRabbit found that item 3's first monotonicity property
   exercised only the independent expected-position oracle instead of the
-  production mapper.
-  Evidence: CodeRabbit review on 2026-06-28T10:14Z returned one major finding
-  for `tests/static-analysis/source-file.property.test.ts`.
+  production mapper. Evidence: CodeRabbit review on 2026-06-28T10:14Z returned
+  one major finding for `tests/static-analysis/source-file.property.test.ts`.
   Impact: the monotonicity property now builds an `OriginalSourceFile`, maps
   every generated valid offset through `positionAtOffset`, and checks those
   production positions for monotonic ordering.
@@ -348,95 +335,86 @@ conflict in `Decision Log`, and escalate.
 - Observation: CodeRabbit found that item 5's schema-minimum assertion helper
   checked the start-position schema branch for both start and end positions.
   Evidence: CodeRabbit review on 2026-06-28T10:36Z returned one minor finding
-  for `tests/static-analysis/source-diagnostic.test.ts`.
-  Impact: the helper now receives the specific position schema branch, so the
-  end-position assertion exercises `sourceSpanSchema.properties.end`.
+  for `tests/static-analysis/source-diagnostic.test.ts`. Impact: the helper now
+  receives the specific position schema branch, so the end-position assertion
+  exercises `sourceSpanSchema.properties.end`.
 
 - Observation: the first fix-round review correctly identified that the moved
   fixture matrices still lacked bare-CR position and span round-trip cases.
   Evidence: CodeRabbit review on 2026-06-28T10:58Z returned two trivial
   findings for `tests/static-analysis/source-file-position-cases.ts` and
-  `tests/static-analysis/source-file-span-cases.ts`.
-  Impact: the split fixture modules now preserve the original coverage and add
-  explicit lone-carriage-return position and multiline span examples.
+  `tests/static-analysis/source-file-span-cases.ts`. Impact: the split fixture
+  modules now preserve the original coverage and add explicit
+  lone-carriage-return position and multiline span examples.
 
 - Observation: fix round 2 confirmed that the branch tip had not incorporated
-  current `origin/main`.
-  Evidence: before reconciliation,
+  current `origin/main`. Evidence: before reconciliation,
   `sem diff --from origin/main --to HEAD` reported branch-local deletions for
   `docs/execplans/roadmap-1-3-1.md`, `docs/issues/audit-1.3.1.md`,
   `tests/static-analysis/fixtures/odw-examples/**`,
   `tests/static-analysis/odw-example-fixtures.test.ts`, and reversions in
-  `docs/developers-guide.md`, `biome.jsonc`, and `.oxlintrc.json`.
-  Impact: the correct fix is a real merge of `origin/main`, not a selective
-  documentation note or a justification for deleting newer main-branch work.
+  `docs/developers-guide.md`, `biome.jsonc`, and `.oxlintrc.json`. Impact: the
+  correct fix is a real merge of `origin/main`, not a selective documentation
+  note or a justification for deleting newer main-branch work.
 
 ## Decision log
 
 - Decision: implement line-index and span helpers as an `odw-lint` owned
-  static-analysis module rather than delegating to ODW.
-  Rationale: ADR 0001 and `docs/technical-design.md` sections 5, 6.4, 11.3,
-  and 12.1 make the static-analysis boundary a security boundary. Sibling ODW
-  `primitives.ts` shows `validate(source)` calls `loadWorkflowScript`, and
-  `loader.ts` compiles workflow bodies with `new AsyncFunction`, so those paths
-  are not safe production dependencies for host-side lint.
-  Date/Author: 2026-06-28, Codex.
+  static-analysis module rather than delegating to ODW. Rationale: ADR 0001 and
+  `docs/technical-design.md` sections 5, 6.4, 11.3, and 12.1 make the
+  static-analysis boundary a security boundary. Sibling ODW `primitives.ts`
+  shows `validate(source)` calls `loadWorkflowScript`, and `loader.ts` compiles
+  workflow bodies with `new AsyncFunction`, so those paths are not safe
+  production dependencies for host-side lint. Date/Author: 2026-06-28, Codex.
 
 - Decision: use `fast-check` property tests for offset and span invariants.
   Rationale: `AGENTS.md` says invariant testing should use `fast-check` when a
   change introduces behaviour over a range of inputs. Source offset mapping is
   exactly that kind of invariant, and official fast-check docs plus the 4.8.0
-  declaration file confirm the needed APIs.
-  Date/Author: 2026-06-28, Codex.
+  declaration file confirm the needed APIs. Date/Author: 2026-06-28, Codex.
 
 - Decision: columns remain Unicode code point counts, not UTF-16 code units,
-  terminal cells, or grapheme clusters.
-  Rationale: `docs/technical-design.md` section 8 explicitly says columns are
-  counted in Unicode code points. Implementing grapheme or terminal-cell width
-  would change the public diagnostic contract and require extra dependencies.
-  Date/Author: 2026-06-28, Codex.
+  terminal cells, or grapheme clusters. Rationale: `docs/technical-design.md`
+  section 8 explicitly says columns are counted in Unicode code points.
+  Implementing grapheme or terminal-cell width would change the public
+  diagnostic contract and require extra dependencies. Date/Author: 2026-06-28,
+  Codex.
 
 - Decision: define CRLF as one display line terminator and reject the offset
-  between the CR and LF bytes for position lookup.
-  Rationale: editors and diagnostic formats present CRLF as one line break.
-  Accepting an interior display position would produce a line and column that
-  users cannot point to visually.
-  Date/Author: 2026-06-28, Codex.
+  between the CR and LF bytes for position lookup. Rationale: editors and
+  diagnostic formats present CRLF as one line break. Accepting an interior
+  display position would produce a line and column that users cannot point to
+  visually. Date/Author: 2026-06-28, Codex.
 
 - Decision: keep the already-committed 1.2.3 and diagnostic cleanup work as
   carry-forward branch state instead of rebasing or rewriting it during this
-  planning revision.
-  Rationale: the worktree is clean, and the task is to revise the 1.2.2 plan,
-  not to edit or re-parent earlier completed commits. A dedicated baseline
-  reconciliation work item now forces the implementer to fetch `origin/main`,
-  then verify or rebase that state before adding 1.2.2 source helper commits.
-  Date/Author: 2026-06-28, Codex.
+  planning revision. Rationale: the worktree is clean, and the task is to
+  revise the 1.2.2 plan, not to edit or re-parent earlier completed commits. A
+  dedicated baseline reconciliation work item now forces the implementer to
+  fetch `origin/main`, then verify or rebase that state before adding 1.2.2
+  source helper commits. Date/Author: 2026-06-28, Codex.
 
 - Decision: reconcile fix round 2 by merging `origin/main` into the topic
-  branch before shipping.
-  Rationale: the blocking review finding is about merge safety against current
-  main, not a source-helper bug. A merge commit preserves 1.2.2 implementation
-  history while making main's newer fixture corpus, audit notes,
-  documentation, and tool exclusions part of this branch's tested tree.
-  Date/Author: 2026-06-28, Codex.
+  branch before shipping. Rationale: the blocking review finding is about merge
+  safety against current main, not a source-helper bug. A merge commit
+  preserves 1.2.2 implementation history while making main's newer fixture
+  corpus, audit notes, documentation, and tool exclusions part of this branch's
+  tested tree. Date/Author: 2026-06-28, Codex.
 
 - Decision: keep `sliceSourceSpan` and `snippetForSpan` public, but make them
-  validating APIs rather than thin slicing helpers.
-  Rationale: later diagnostics and package consumers need exact
-  original-source snippets, and `docs/technical-design.md` section 11.5 makes
-  span mapping a correctness invariant. Validation inside the public helpers
-  prevents caller-constructed spans with stale or inconsistent positions from
-  producing misleading text.
+  validating APIs rather than thin slicing helpers. Rationale: later
+  diagnostics and package consumers need exact original-source snippets, and
+  `docs/technical-design.md` section 11.5 makes span mapping a correctness
+  invariant. Validation inside the public helpers prevents caller-constructed
+  spans with stale or inconsistent positions from producing misleading text.
   Date/Author: 2026-06-28, Codex.
 
 - Decision: validate diagnostic integration tests by direct assertions against
   the existing `DIAGNOSTIC_REPORT_SCHEMA` object, not by adding Ajv, Zod, or
-  another JSON Schema validator.
-  Rationale: the repository currently exposes a schema object and has no JSON
-  Schema validator dependency. The dependency tolerance permits only
-  `fast-check`, so work item 5 must stay within existing schema tests and
-  package-entry assertions.
-  Date/Author: 2026-06-28, Codex.
+  another JSON Schema validator. Rationale: the repository currently exposes a
+  schema object and has no JSON Schema validator dependency. The dependency
+  tolerance permits only `fast-check`, so work item 5 must stay within existing
+  schema tests and package-entry assertions. Date/Author: 2026-06-28, Codex.
 
 ## Outcomes & retrospective
 
@@ -446,12 +424,11 @@ diagnostic text and audit hits, while branch-local `leta` verification
 confirmed the current `SourcePosition`, `SourceSpan`, `WorkflowSource`,
 `DIAGNOSTIC_REPORT_SCHEMA`, and `createDiagnosticReport` contracts. The
 semantic diff against `origin/main` still contains only the expected
-carry-forward files plus this ExecPlan:
-`docs/execplans/roadmap-1-2-2.md`,
+carry-forward files plus this ExecPlan: `docs/execplans/roadmap-1-2-2.md`,
 `docs/execplans/roadmap-1-2-3.md`, `docs/roadmap.md`,
 `src/diagnostics/schema.ts`, `tests/diagnostics/architecture.test.ts`, and
-`tests/diagnostics/schema.test.ts`. No source helper implementation has
-started yet.
+`tests/diagnostics/schema.test.ts`. No source helper implementation has started
+yet.
 
 Work item 2 added `src/static-analysis/source-file.ts` with
 `OriginalSourceFile`, `SourceLine`, `SourceSnippet`, `SourceOffsetError`, and
@@ -479,9 +456,8 @@ out-of-range offsets, CRLF-interior offsets, multibyte-interior offsets, and
 mismatched line or column values fail with `SourceOffsetError`. Table tests
 cover ASCII, LF, CRLF, Unicode, zero-length EOF, and trailing-newline spans;
 property tests compare generated valid spans against an independent original
-substring oracle and check reversed and mutated generated spans.
-CodeRabbit review passed with no findings after the deterministic gates were
-green.
+substring oracle and check reversed and mutated generated spans. CodeRabbit
+review passed with no findings after the deterministic gates were green.
 
 Work item 5 added a package-entry integration test that builds an original
 source span, inserts it into a `Diagnostic`, clones it through
@@ -512,13 +488,13 @@ first pass requested bare-CR table coverage, and the second pass reported zero
 findings after those cases were added.
 
 Fix round 2 resolved the blocking review finding that the branch was not
-reconciled with current `origin/main`. The branch now incorporates main's
-1.3.1 fixture corpus, fixture manifest tests, audit document, developer-guide
-fixture guidance, Biome and Oxlint fixture exclusions, 1.2.3 addendum updates,
-and roadmap additions instead of presenting them as deletions or reversions
+reconciled with current `origin/main`. The branch now incorporates main's 1.3.1
+fixture corpus, fixture manifest tests, audit document, developer-guide fixture
+guidance, Biome and Oxlint fixture exclusions, 1.2.3 addendum updates, and
+roadmap additions instead of presenting them as deletions or reversions
 relative to main. The 1.2.2 source-span helper work remains the branch-local
-implementation scope. The reconciliation commit is `4002109`; validation
-passed with `make all`, `make markdownlint`, `make nixie`, and a zero-finding
+implementation scope. The reconciliation commit is `4002109`; validation passed
+with `make all`, `make markdownlint`, `make nixie`, and a zero-finding
 CodeRabbit review.
 
 ## Addenda
@@ -567,10 +543,10 @@ CodeRabbit review.
 
 The repository is a private TypeScript and Bun package. `src/index.ts` is the
 public package entry point and currently re-exports diagnostic types and the
-static-analysis boundary. `src/diagnostics/types.ts` defines
-`SourcePosition` and `SourceSpan`; `src/diagnostics/schema.ts` pins the JSON
-Schema minimums for `offset`, `line`, and `column`; `src/diagnostics/report.ts`
-clones spans when building report envelopes.
+static-analysis boundary. `src/diagnostics/types.ts` defines `SourcePosition`
+and `SourceSpan`; `src/diagnostics/schema.ts` pins the JSON Schema minimums for
+`offset`, `line`, and `column`; `src/diagnostics/report.ts` clones spans when
+building report envelopes.
 
 The static-analysis area is currently passive. `src/static-analysis/types.ts`
 defines `WorkflowSource` with `filePath` and `sourceText`, plus component and
@@ -623,8 +599,7 @@ The local project evidence is:
   snippets round-trip for LF, CRLF, Unicode, and trailing-newline fixtures.
 - `sem diff --from origin/main --to HEAD --format json` on
   2026-06-28T09:38Z, after `git fetch origin main`, showed this branch already
-  carries changes in
-  `docs/execplans/roadmap-1-2-3.md`, `docs/roadmap.md`,
+  carries changes in `docs/execplans/roadmap-1-2-3.md`, `docs/roadmap.md`,
   `src/diagnostics/schema.ts`, `tests/diagnostics/architecture.test.ts`,
   `tests/diagnostics/schema.test.ts`, and this ExecPlan. This plan treats those
   as carry-forward baseline state that must be verified before 1.2.2 source
@@ -643,8 +618,7 @@ The local project evidence is:
   static-analysis implementation and must not import executable ODW runtime
   paths in production code.
 
-The sibling ODW evidence from
-`/data/leynos/Projects/open-dynamic-workflows` is:
+The sibling ODW evidence from `/data/leynos/Projects/open-dynamic-workflows` is:
 
 - `src/loader.ts` documents that ODW extracts `meta`, strips `export`, wraps
   the body, and compiles with `new AsyncFunction`. It also performs
@@ -668,8 +642,8 @@ The external dependency evidence is:
   required APIs: `Parameters<T>` at line 786 with `seed?: number` and
   `numRuns?: number`, `property` at line 1197, `assert` at lines 1254, 1267,
   and 1282, `constantFrom` at lines 1610 and 1621, `integer` at line 2047,
-  `string` at line 2904, `option` at line 3334, `record` at line 3385,
-  `tuple` at line 3556, and `stringMatching` at line 4739.
+  `string` at line 2904, `option` at line 3334, `record` at line 3385, `tuple`
+  at line 3556, and `stringMatching` at line 4739.
 - The official fast-check "Properties" page
   `https://fast-check.dev/docs/core-blocks/properties/` says synchronous
   properties are declared with `fc.property(...arbitraries, predicate)`, and
@@ -689,13 +663,13 @@ The external dependency evidence is:
 
 ### Work item 1: Reconcile the carried-forward branch baseline
 
-Read `AGENTS.md` sections "Branches", "Plans", "Commands", and "Change
-Quality & Committing"; `docs/roadmap.md` section 1.2;
-`docs/developers-guide.md` sections "Static-Analysis Boundary" and "Commit
-Gate"; `docs/documentation-style-guide.md` sections "Spelling", "Markdown
-rules", and "Formatting"; `docs/execplans/roadmap-1-2-3.md` sections
-"Purpose / big picture", "Outcomes & retrospective", and "Revision note"; and
-the `execplans`, `grepai`, `leta`, `sem`, and `commit-message` skills.
+Read `AGENTS.md` sections "Branches", "Plans", "Commands", and "Change Quality
+& Committing"; `docs/roadmap.md` section 1.2; `docs/developers-guide.md`
+sections "Static-Analysis Boundary" and "Commit Gate";
+`docs/documentation-style-guide.md` sections "Spelling", "Markdown rules", and
+"Formatting"; `docs/execplans/roadmap-1-2-3.md` sections "Purpose / big
+picture", "Outcomes & retrospective", and "Revision note"; and the `execplans`,
+`grepai`, `leta`, `sem`, and `commit-message` skills.
 
 This item is a plan-and-baseline reconciliation item. It does not add source
 helpers. It implements the branch, plan, command, and commit-gate constraints
@@ -745,13 +719,14 @@ Expected commit title: `Record source-span branch baseline`.
 Read `AGENTS.md` sections "Code Style and Structure", "Change Quality &
 Committing", and "TypeScript Guidance"; `docs/roadmap.md` task 1.2.2;
 `docs/technical-design.md` sections 6.1, 8, 11.1, and 11.5;
-`docs/developers-guide.md` sections "Static-Analysis Boundary", "Commit
-Gate", "Tests", and "Markdown"; `docs/documentation-style-guide.md` sections
+`docs/developers-guide.md` sections "Static-Analysis Boundary", "Commit Gate",
+"Tests", and "Markdown"; `docs/documentation-style-guide.md` sections
 "Spelling", "Markdown rules", and "Formatting"; and
-`docs/complexity-antipatterns-and-refactoring-strategies.md` sections 2, 4,
-and 5. Load the `execplans`, `leta`, `sem`, and `biome-typescript` skills.
-There is no installed TypeScript router skill in this session; use
-`biome-typescript` for TypeScript tooling guidance.
+`docs/complexity-antipatterns-and-refactoring-strategies.md` sections 2, 4, and
+
+1. Load the `execplans`, `leta`, `sem`, and `biome-typescript` skills. There is
+no installed TypeScript router skill in this session; use `biome-typescript`
+for TypeScript tooling guidance.
 
 This item implements the source-reader line-index responsibility from
 `docs/technical-design.md` section 6.1, the diagnostic span shape from
@@ -762,11 +737,11 @@ from `docs/technical-design.md` section 11.1, the source-span invariant from
 Add `src/static-analysis/source-file.ts` with the module JSDoc and the
 immutable types `OriginalSourceFile`, `SourceLine`, `SourceSnippet`, and
 `SourceOffsetError`. Implement `createOriginalSourceFile`. The first
-implementation must calculate
-`byteLength`, split source into display lines, record each line's start offset,
-content end offset, terminator end offset, and line text, and preserve the
-original `filePath` and `sourceText`. It must not yet expose offset lookup or
-span slicing beyond the metadata needed by later work items.
+implementation must calculate `byteLength`, split source into display lines,
+record each line's start offset, content end offset, terminator end offset, and
+line text, and preserve the original `filePath` and `sourceText`. It must not
+yet expose offset lookup or span slicing beyond the metadata needed by later
+work items.
 
 Export the new types and `createOriginalSourceFile` through
 `src/static-analysis/index.ts` and `src/index.ts`. Update
@@ -858,20 +833,20 @@ Expected commit title: `Map source offsets to positions`.
 Read `docs/technical-design.md` sections 6.1, 8, 11.1, and 11.5;
 `docs/roadmap.md` task 1.2.2; `AGENTS.md` sections "Testing" and "Error
 Handling"; and `docs/complexity-antipatterns-and-refactoring-strategies.md`
-sections 4 and 5. Load the `execplans`, `leta`, `sem`, and
-`biome-typescript` skills.
+sections 4 and 5. Load the `execplans`, `leta`, `sem`, and `biome-typescript`
+skills.
 
 This item implements the span-mapper responsibility from
-`docs/technical-design.md` section 6.1, the public diagnostic span contract
-from `docs/technical-design.md` section 8, and the original-source snippet
+`docs/technical-design.md` section 6.1, the public diagnostic span contract from
+`docs/technical-design.md` section 8, and the original-source snippet
 invariant from `docs/technical-design.md` section 11.5.
 
 Implement `spanFromOffsets`, `sliceSourceSpan`, and `snippetForSpan`.
 `spanFromOffsets` must require valid start and end offsets and reject reversed
 spans with `SourceOffsetError`.
 
-`sliceSourceSpan` and `snippetForSpan` are public helpers, so they must validate
-the entire caller-supplied `SourceSpan` before slicing. They must:
+`sliceSourceSpan` and `snippetForSpan` are public helpers, so they must
+validate the entire caller-supplied `SourceSpan` before slicing. They must:
 
 - validate `span.start.offset` and `span.end.offset` through
   `positionAtOffset`, which rejects negative, non-integer, out-of-range,
@@ -916,24 +891,23 @@ Expected commit title: `Build source spans and snippets`.
 
 Read `docs/technical-design.md` sections 8, 11.5, 12.1, and 15;
 `docs/adr/0001-static-analysis-boundary.md` sections "Decision" and
-"Consequences"; `docs/developers-guide.md` sections "Static-Analysis
-Boundary", "Linting", and "Type Checking"; and `AGENTS.md` sections "Runtime
-Validation & Types", "Observability", and "Linting & Formatting". Load the
-`execplans`, `leta`, `sem`, `biome-typescript`, and `odw-authoring` skills.
-The ODW authoring skill is relevant only as context for the workflow dialect
-and trust boundary; do not write or run ODW workflows in this task.
+"Consequences"; `docs/developers-guide.md` sections "Static-Analysis Boundary",
+"Linting", and "Type Checking"; and `AGENTS.md` sections "Runtime Validation &
+Types", "Observability", and "Linting & Formatting". Load the `execplans`,
+`leta`, `sem`, `biome-typescript`, and `odw-authoring` skills. The ODW
+authoring skill is relevant only as context for the workflow dialect and trust
+boundary; do not write or run ODW workflows in this task.
 
 This item implements the diagnostic contract from `docs/technical-design.md`
 section 8, the original-source span invariant from section 11.5, the trust
 boundary from section 12.1, the release acceptance direction from section 15,
 and ADR 0001 sections "Decision" and "Consequences".
 
-Add integration tests proving that a `SourceSpan` built from
-`spanFromOffsets` can be used in a `Diagnostic`, cloned through
-`createDiagnosticReport`, checked directly against the existing
-`DIAGNOSTIC_REPORT_SCHEMA` object, and formatted through
-`formatTextDiagnostics` without changing the original span. Keep these as
-package-entry tests that import from `odw-lint`, not relative source paths.
+Add integration tests proving that a `SourceSpan` built from `spanFromOffsets`
+can be used in a `Diagnostic`, cloned through `createDiagnosticReport`, checked
+directly against the existing `DIAGNOSTIC_REPORT_SCHEMA` object, and formatted
+through `formatTextDiagnostics` without changing the original span. Keep these
+as package-entry tests that import from `odw-lint`, not relative source paths.
 
 Do not add a JSON Schema validator dependency. The exact validation mechanism
 for this item is direct assertion against the exported schema object and the
@@ -1107,9 +1081,9 @@ The full roadmap task is accepted when all of the following are true:
 - `spanFromOffsets`, `sliceSourceSpan`, and `snippetForSpan` build half-open
   original-source spans and return exact original source slices.
 - `sliceSourceSpan` and `snippetForSpan` validate caller-supplied spans before
-  slicing: invalid offsets, reversed spans, EOF-bound violations,
-  CRLF-interior offsets, multibyte-interior offsets, and mismatched
-  line/column positions throw `SourceOffsetError`.
+  slicing: invalid offsets, reversed spans, EOF-bound violations, CRLF-interior
+  offsets, multibyte-interior offsets, and mismatched line/column positions
+  throw `SourceOffsetError`.
 - Property tests using `fast-check` exercise generated source variants and pin
   offset, monotonicity, EOF, and span-slice invariants. Every `fc.assert` call
   in `tests/static-analysis/source-file.property.test.ts` passes
@@ -1148,8 +1122,7 @@ confirming the counterexample represents an intended contract edge.
 
 If `bun add --dev fast-check@^4.8.0` changes unrelated dependency versions,
 inspect `bun.lock` before continuing. If the change is unrelated and cannot be
-explained by lockfile resolution, stop and record the options in
-`Decision Log`.
+explained by lockfile resolution, stop and record the options in `Decision Log`.
 
 If formatting creates unrelated churn, park only that churn with a named stash:
 
@@ -1208,9 +1181,8 @@ npm view fast-check version dist.tarball --json
 ```
 
 The most important branch-local symbols verified with `leta` were
-`SourcePosition`, `SourceSpan`, `WorkflowSource`,
-`DIAGNOSTIC_REPORT_SCHEMA`, `createDiagnosticReport`, and
-`STATIC_ANALYSIS_COMPONENTS`.
+`SourcePosition`, `SourceSpan`, `WorkflowSource`, `DIAGNOSTIC_REPORT_SCHEMA`,
+`createDiagnosticReport`, and `STATIC_ANALYSIS_COMPONENTS`.
 
 Firecrawl verification of
 `https://fast-check.dev/docs/api/interfaces/Parameters/` confirmed that

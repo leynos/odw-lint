@@ -1,9 +1,8 @@
 # Extract a shared scanner primitive layer
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -68,10 +67,10 @@ parser, or metadata classification semantics.
 3. A set of new per-concern suites proves each extracted primitive directly —
    `tests/static-analysis/source-scanner-classification.test.ts`,
    `source-scanner-escape.test.ts`, `source-scanner-comments.test.ts`,
-   `source-scanner-delimited.test.ts`, and `source-scanner-identifiers.test.ts`
-   — and a dedicated differential property test
-   `tests/static-analysis/delimited-end-parity.property.test.ts` proves the two
-   delimited-end orchestrators behave identically to their pre-refactor
+   `source-scanner-delimited.test.ts`, and
+   `source-scanner-identifiers.test.ts` — and a dedicated differential property
+   test `tests/static-analysis/delimited-end-parity.property.test.ts` proves
+   the two delimited-end orchestrators behave identically to their pre-refactor
    implementations over generated source. The unit tests are split per concern
    (one file per work item) and the parity oracle lives in its own file so no
    single test file approaches the 400-line source-and-test size gate.
@@ -113,8 +112,8 @@ parser, or metadata classification semantics.
   (`make all`, plus `make markdownlint` and `make nixie` when Markdown
   changes). Refactors that move declarations between modules must update the
   module-inventory and architecture guards in the **same** commit, because
-  those guards fail the moment a file's declaration set or the directory listing
-  changes.
+  those guards fail the moment a file's declaration set or the directory
+  listing changes.
 
 ### Tooling constraints and observed availability
 
@@ -176,8 +175,7 @@ parser, or metadata classification semantics.
   `scanDelimitedEnd` in `workflow-metadata-comment-scan.ts`) have genuinely
   different contracts (template `${...}` interpolation handling, an `endIndex`
   bound, and different unterminated-return values), so a naive merge would
-  change masked ranges or metadata parses.
-  Severity: high. Likelihood: medium.
+  change masked ranges or metadata parses. Severity: high. Likelihood: medium.
   Mitigation: do not force a single orchestrator. Share only the lower-level
   escape-skip and delimiter-detection primitives, keep the two orchestrators
   distinct, and pin each with a differential property test that compares the
@@ -187,40 +185,37 @@ parser, or metadata classification semantics.
   (`LINE_TERMINATORS` / `isLineTerminator` in `source-scan.ts` and
   `isLineTerminatorCharacter` in `source-mask-delimiters.ts`); consolidating
   them could subtly change which code points are treated as terminators.
-  Severity: medium. Likelihood: low.
-  Mitigation: the canonical set is exactly `\n`, `\r`, U+2028, and U+2029 in
-  both places (verified in `source-scan.ts:13` and
-  `source-mask-delimiters.ts:23-27`); a table-driven unit test enumerates all
-  four plus negatives before migration.
+  Severity: medium. Likelihood: low. Mitigation: the canonical set is exactly
+  `\n`, `\r`, U+2028, and U+2029 in both places (verified in
+  `source-scan.ts:13` and `source-mask-delimiters.ts:23-27`); a table-driven
+  unit test enumerates all four plus negatives before migration.
 - Risk: the architecture and inventory guards
   (`tests/static-analysis/source-file-architecture.test.ts`,
   `tests/diagnostics/architecture.test.ts` via
   `tests/diagnostics/architecture-fixtures.ts`) pin exact per-module
-  declaration sets and the `src/static-analysis` directory listing, so any
-  move breaks them unless updated in the same commit.
-  Severity: medium. Likelihood: high.
-  Mitigation: every structural work item updates those guards in the same
+  declaration sets and the `src/static-analysis` directory listing, so any move
+  breaks them unless updated in the same commit. Severity: medium. Likelihood:
+  high. Mitigation: every structural work item updates those guards in the same
   commit and re-runs `make test` before committing.
 - Risk: file-size guard (400 lines) trips on **either** the primitive module
   **or** an accumulating test file. `tests/build-gate/file-size.test.ts`
   enforces `SOURCE_AND_TEST_LINE_LIMIT` (400 physical lines, verified at
   `tests/build-gate/file-size-support.ts:7`) over every tracked TypeScript file
-  under both `src/` and `tests/`
-  (`isSourceOrTestTypeScriptPath`, `file-size-support.ts:41-46`;
-  `.property.test.ts` files match the `.ts` extension and are therefore in
-  scope). A single accumulating primitive test file would gather table-driven
-  cases for roughly ten primitives across Work items 1-5 plus, in Work item 4, a
-  frozen inline oracle that replicates the mutually-recursive
-  `scanDelimitedEnd` / `scanTemplateExpressionEnd` / `scanCommentEnd` /
-  `scanLineCommentEnd` / `scanBlockCommentEnd` cluster; that concentration would
-  push a late work item past 400 lines and force an unplanned restructure.
-  Severity: medium. Likelihood: medium (for a single-file layout).
-  Mitigation (committed, not deferred): the test suite is split per concern —
-  one focused unit-test file created by the work item that introduces each
-  primitive group
-  (`source-scanner-classification.test.ts`, `-escape.test.ts`,
-  `-comments.test.ts`, `-delimited.test.ts`, `-identifiers.test.ts`) — and the
-  Work item 4 differential parity oracle lives in its **own** dedicated file,
+  under both `src/` and `tests/` (`isSourceOrTestTypeScriptPath`,
+  `file-size-support.ts:41-46`; `.property.test.ts` files match the `.ts`
+  extension and are therefore in scope). A single accumulating primitive test
+  file would gather table-driven cases for roughly ten primitives across Work
+  items 1-5 plus, in Work item 4, a frozen inline oracle that replicates the
+  mutually-recursive `scanDelimitedEnd` / `scanTemplateExpressionEnd` /
+  `scanCommentEnd` / `scanLineCommentEnd` / `scanBlockCommentEnd` cluster; that
+  concentration would push a late work item past 400 lines and force an
+  unplanned restructure. Severity: medium. Likelihood: medium (for a
+  single-file layout). Mitigation (committed, not deferred): the test suite is
+  split per concern — one focused unit-test file created by the work item that
+  introduces each primitive group (`source-scanner-classification.test.ts`,
+  `-escape.test.ts`, `-comments.test.ts`, `-delimited.test.ts`,
+  `-identifiers.test.ts`) — and the Work item 4 differential parity oracle
+  lives in its **own** dedicated file,
   `tests/static-analysis/delimited-end-parity.property.test.ts`, never inlined
   into a shared file. No single file accumulates across work items, so each
   file stays comfortably under 400 lines. The primitive module
@@ -232,18 +227,18 @@ parser, or metadata classification semantics.
   `tests/diagnostics/architecture-fixtures.ts`), so adding these files trips no
   inventory assertion.
 - Risk: lint flags a newly introduced module whose only consumers are tests, or
-  flags an unused re-export during a transitional commit.
-  Severity: low. Likelihood: medium.
-  Mitigation: each work item both defines and migrates real consumers so no
-  dead code lands; run `make lint` before each commit.
+  flags an unused re-export during a transitional commit. Severity: low.
+  Likelihood: medium. Mitigation: each work item both defines and migrates real
+  consumers so no dead code lands; run `make lint` before each commit.
 
 ## Progress
 
 - [x] (2026-07-04T13:48:13Z) Work item 1: Introduce the primitive module and
   consolidate line-terminator, CRLF, and full-code-point classification.
-  Evidence: `bun test
-  tests/static-analysis/source-scanner-classification.test.ts` passed with 3
-  tests; `bun test tests/static-analysis/source-scanner-classification.test.ts
+  Evidence:
+  `bun test tests/static-analysis/source-scanner-classification.test.ts` passed
+  with 3 tests;
+  `bun test tests/static-analysis/source-scanner-classification.test.ts
   tests/static-analysis/source-mask-fixtures.test.ts
   tests/static-analysis/source-mask.property.test.ts
   tests/static-analysis/source-mask-internals.test.ts
@@ -252,36 +247,40 @@ parser, or metadata classification semantics.
   tests/static-analysis/workflow-metadata.test.ts
   tests/static-analysis/workflow-metadata-parser-edge.test.ts
   tests/diagnostics/architecture.test.ts
-  tests/static-analysis/source-file-architecture.test.ts` passed with 134 tests
-  and 2 snapshots unchanged after migration.
+  tests/static-analysis/source-file-architecture.test.ts`
+  passed with 134 tests and 2 snapshots unchanged after migration.
 - [x] (2026-07-04T16:55:06Z) Work item 2: Consolidate backslash escape-skip
-  primitives. Evidence: `bun test
-  tests/static-analysis/source-scanner-escape.test.ts` passed with 3 tests;
+  primitives. Evidence:
+  `bun test tests/static-analysis/source-scanner-escape.test.ts` passed with 3
+  tests;
   `bun test tests/static-analysis/source-mask-strings.test.ts
   tests/static-analysis/source-mask-templates.test.ts
   tests/static-analysis/source-mask-regex.test.ts
   tests/static-analysis/source-mask.property.test.ts
   tests/static-analysis/workflow-metadata-comment-scan.test.ts
   tests/static-analysis/masking-fixtures.test.ts
-  tests/static-analysis/source-file-architecture.test.ts` passed with 37 tests
-  after migrating the escape advances.
+  tests/static-analysis/source-file-architecture.test.ts`
+  passed with 37 tests after migrating the escape advances.
 - [x] (2026-07-04T18:31:59Z) Work item 3: Consolidate comment-boundary
-  scanners and the duplicated comment dispatch. Evidence: `bun test
-  tests/static-analysis/source-scanner-comments.test.ts` passed with 4 tests;
+  scanners and the duplicated comment dispatch. Evidence:
+  `bun test tests/static-analysis/source-scanner-comments.test.ts` passed with
+  4 tests;
   `bun test tests/static-analysis/source-scanner-comments.test.ts
   tests/static-analysis/workflow-metadata-comment-scan.test.ts
   tests/static-analysis/source-mask-comments.test.ts
   tests/static-analysis/workflow-metadata.test.ts
   tests/static-analysis/workflow-metadata-parser-edge.test.ts
   tests/static-analysis/masking-fixtures.test.ts
-  tests/static-analysis/source-file-architecture.test.ts` passed with 71 tests
-  and 1 snapshot unchanged after migration.
+  tests/static-analysis/source-file-architecture.test.ts`
+  passed with 71 tests and 1 snapshot unchanged after migration.
 - [x] (2026-07-04T18:50:29Z) Work item 4: Consolidate the escape-aware
   delimited-string walks behind shared primitives, pinned by a differential
-  property test. Evidence: `bun test
+  property test. Evidence:
+  `bun test
   tests/static-analysis/source-scanner-delimited.test.ts
-  tests/static-analysis/delimited-end-parity.property.test.ts` passed with 6
-  tests; `bun test tests/static-analysis/source-scanner-delimited.test.ts
+  tests/static-analysis/delimited-end-parity.property.test.ts`
+  passed with 6 tests;
+  `bun test tests/static-analysis/source-scanner-delimited.test.ts
   tests/static-analysis/delimited-end-parity.property.test.ts
   tests/static-analysis/workflow-metadata-comment-scan.test.ts
   tests/static-analysis/source-mask.property.test.ts
@@ -289,12 +288,13 @@ parser, or metadata classification semantics.
   tests/static-analysis/workflow-metadata.test.ts
   tests/static-analysis/masking-fixtures.test.ts
   tests/static-analysis/source-mask-internals.test.ts
-  tests/static-analysis/source-file-architecture.test.ts` passed with 83 tests
-  and 1 snapshot unchanged after migration.
+  tests/static-analysis/source-file-architecture.test.ts`
+  passed with 83 tests and 1 snapshot unchanged after migration.
 - [x] (2026-07-04T19:06:54Z) Work item 5: Consolidate identifier-run scanners
-  (forward Unicode, forward and backward ASCII). Evidence: `bun test
-  tests/static-analysis/source-scanner-identifiers.test.ts` passed with 3
-  tests; `bun test tests/static-analysis/source-scanner-identifiers.test.ts
+  (forward Unicode, forward and backward ASCII). Evidence:
+  `bun test tests/static-analysis/source-scanner-identifiers.test.ts` passed
+  with 3 tests;
+  `bun test tests/static-analysis/source-scanner-identifiers.test.ts
   tests/static-analysis/source-mask-regex.test.ts
   tests/static-analysis/source-mask-templates.test.ts
   tests/static-analysis/source-mask-internals.test.ts
@@ -302,8 +302,8 @@ parser, or metadata classification semantics.
   tests/static-analysis/workflow-metadata-parser-edge.test.ts
   tests/static-analysis/javascript-identifiers.test.ts
   tests/static-analysis/masking-fixtures.test.ts
-  tests/static-analysis/source-file-architecture.test.ts` passed with 58 tests
-  and 2 snapshots unchanged after migration.
+  tests/static-analysis/source-file-architecture.test.ts`
+  passed with 58 tests and 2 snapshots unchanged after migration.
 - [x] (2026-07-04T19:09:45Z) Work item 6: Document the shared scanner
   primitive layer in the technical design and developer guide. Evidence:
   `make markdownlint` and `make nixie` passed after updating the documentation
@@ -316,41 +316,39 @@ parser, or metadata classification semantics.
   the work item: `workflow-envelope-statement.ts`,
   `workflow-envelope-unsupported.ts`, and `workflow-envelope-meta-value.ts`.
   Evidence: exact text search for `isLineTerminatorCharacter` after removing
-  the delimiter export found those import sites.
-  Impact: they were migrated to `isSourceLineTerminator` in the same work item,
-  preserving one source of truth and avoiding a temporary compatibility alias.
+  the delimiter export found those import sites. Impact: they were migrated to
+  `isSourceLineTerminator` in the same work item, preserving one source of
+  truth and avoiding a temporary compatibility alias.
 - Observation: the final CodeRabbit confirmation pass for Work item 1 was
   quota-blocked after the last completed CodeRabbit finding was fixed.
   Evidence: after the `codePointStringAt` JSDoc correction, `make all`,
   `make markdownlint`, and `make nixie` passed, but the final
   `coderabbit review --agent` attempt returned `errorType:"rate_limit"` with
-  wait times of 8 and 20 minutes before analysis began.
-  Impact: Work item 1 has green deterministic gates and all completed
-  CodeRabbit findings addressed; the remaining review issue is a deferred
-  final confirmation pass caused by service quota, not an unresolved finding.
+  wait times of 8 and 20 minutes before analysis began. Impact: Work item 1 has
+  green deterministic gates and all completed CodeRabbit findings addressed;
+  the remaining review issue is a deferred final confirmation pass caused by
+  service quota, not an unresolved finding.
 
 ## Decision log
 
 - Decision: introduce one new internal module
   `src/static-analysis/source-scanner-primitives.ts` rather than growing
-  `source-mask-delimiters.ts` or `source-scan.ts`.
-  Rationale: `source-mask-delimiters.ts` owns mask-range concepts
-  (`SourceMaskRange`, `blankMaskedRange`, `createMaskedRange`) that the
-  metadata family must not depend on; `source-scan.ts` owns the single
-  production line/offset scan. A dedicated primitive module keeps the shared
-  grammar free of family-specific concerns and gives it one documented home, as
-  `AGENTS.md` "Abstraction / adapter / helper policy" requires.
-  Date/Author: 2026-07-04, planning agent.
+  `source-mask-delimiters.ts` or `source-scan.ts`. Rationale:
+  `source-mask-delimiters.ts` owns mask-range concepts (`SourceMaskRange`,
+  `blankMaskedRange`, `createMaskedRange`) that the metadata family must not
+  depend on; `source-scan.ts` owns the single production line/offset scan. A
+  dedicated primitive module keeps the shared grammar free of family-specific
+  concerns and gives it one documented home, as `AGENTS.md` "Abstraction /
+  adapter / helper policy" requires. Date/Author: 2026-07-04, planning agent.
 - Decision: keep the two delimited-string-end orchestrators
   (`scanEscapedDelimitedEnd`, `scanDelimitedEnd`) separate; share only the
-  escape-skip and delimiter-detection primitives beneath them.
-  Rationale: their unterminated-return values and template `${...}` handling
-  differ (verified at `source-mask-delimiters.ts:71-91` and
+  escape-skip and delimiter-detection primitives beneath them. Rationale: their
+  unterminated-return values and template `${...}` handling differ (verified at
+  `source-mask-delimiters.ts:71-91` and
   `workflow-metadata-comment-scan.ts:18-39`); a merged, over-parameterized
   scanner would be the "Excessive Parameters" smell and risks changing masked
   ranges. This is a firm decision, pinned by a differential property test in
-  Work item 4 — not an open fork.
-  Date/Author: 2026-07-04, planning agent.
+  Work item 4 — not an open fork. Date/Author: 2026-07-04, planning agent.
 - Decision: move delimiter type aliases and delimiter guards into
   `source-scanner-primitives.ts` before extracting `templateExpressionEnd`.
   Rationale: Work item 1 makes `source-mask-delimiters.ts` consume
@@ -358,43 +356,42 @@ parser, or metadata classification semantics.
   item 4 then made `source-scanner-primitives.ts` import delimiter guards from
   `source-mask-delimiters.ts`, the two modules would form a cycle. Owning the
   delimiter guards in the primitive layer keeps the dependency direction
-  one-way while preserving the plan's shared grammar boundary.
-  Date/Author: 2026-07-04, implementation agent after CodeRabbit review.
+  one-way while preserving the plan's shared grammar boundary. Date/Author:
+  2026-07-04, implementation agent after CodeRabbit review.
 - Decision: split the primitive tests into per-concern files (one per work item)
   and place the Work item 4 differential parity oracle in its own dedicated file
   `tests/static-analysis/delimited-end-parity.property.test.ts`, rather than
   accumulating every case into a single `source-scanner-primitives.test.ts`.
   Rationale: `tests/build-gate/file-size.test.ts` enforces the 400-line limit
-  over `tests/` as well as `src/`
-  (`file-size-support.ts:7,41-46`); a single accumulating file gathering ~10
-  primitives' cases plus the mutually-recursive delimited-end oracle would risk
-  tripping the gate in a late work item and forcing an unplanned restructure.
-  Per-concern files keep every test file small and keep each work item's tests
-  self-contained. This resolves round-1 design-review blocking point 2.
-  Date/Author: 2026-07-04, planning agent (round 2).
+  over `tests/` as well as `src/` (`file-size-support.ts:7,41-46`); a single
+  accumulating file gathering ~10 primitives' cases plus the mutually-recursive
+  delimited-end oracle would risk tripping the gate in a late work item and
+  forcing an unplanned restructure. Per-concern files keep every test file
+  small and keep each work item's tests self-contained. This resolves round-1
+  design-review blocking point 2. Date/Author: 2026-07-04, planning agent
+  (round 2).
 - Decision: insert `"source-scanner-primitives.ts"` into
   `EXPECTED_STATIC_ANALYSIS_MODULE_FILES` **after** `"source-scan.ts"` and
-  **before** `"source-snippet.ts"`, not before `"source-scan.ts"`.
-  Rationale: `tests/diagnostics/architecture.test.ts:60` asserts
+  **before** `"source-snippet.ts"`, not before `"source-scan.ts"`. Rationale:
+  `tests/diagnostics/architecture.test.ts:60` asserts
   `sourceModuleFiles("src/static-analysis").toEqual(EXPECTED_...)`, and
   `sourceModuleFiles` returns a default `.sort()`ed listing
   (`architecture.test.ts:33-40`). Under the default UTF-16 code-unit sort,
   `"source-scan.ts"` < `"source-scanner-primitives.ts"` < `"source-snippet.ts"`
-  because after the shared prefix `"source-scan"` the next unit is `.`
-  (U+002E, in `source-scan.ts`) versus `n` (U+006E, in
-  `source-scanner-primitives.ts`), and `.` sorts first; then between
-  `source-scanner-primitives` and `source-snippet` the units are `c` (U+0063)
-  versus `n` (U+006E), and `c` sorts first. The earlier draft's slot (before
-  `source-scan.ts`) would make the fixture disagree with the sorted directory
-  listing and fail the guard. This resolves round-1 design-review blocking
-  point 1.
-  Date/Author: 2026-07-04, planning agent (round 2).
+  because after the shared prefix `"source-scan"` the next unit is `.` (U+002E,
+  in `source-scan.ts`) versus `n` (U+006E, in `source-scanner-primitives.ts`),
+  and `.` sorts first; then between `source-scanner-primitives` and
+  `source-snippet` the units are `c` (U+0063) versus `n` (U+006E), and `c`
+  sorts first. The earlier draft's slot (before `source-scan.ts`) would make
+  the fixture disagree with the sorted directory listing and fail the guard.
+  This resolves round-1 design-review blocking point 1. Date/Author:
+  2026-07-04, planning agent (round 2).
 - Decision: do not update ADR 0001 for the scanner primitive layer.
   Rationale: the change consolidates internal static-analysis helper ownership
   and does not alter the accepted static-analysis boundary, package exports, or
   ODW runtime-separation decision recorded by the ADR. The technical design and
-  developer guide are the right long-term documentation surfaces.
-  Date/Author: 2026-07-04, implementation agent.
+  developer guide are the right long-term documentation surfaces. Date/Author:
+  2026-07-04, implementation agent.
 
 ## Outcomes & retrospective
 
@@ -412,31 +409,31 @@ parser, or metadata classification semantics.
   workflow-envelope metadata-value scanners over them without changing
   behaviour. CodeRabbit reported no findings for the work item.
 - Work item 4 moved delimiter guards and the template-expression walker into
-  the primitive layer, migrated source-mask and workflow-metadata importers, and
-  added differential property coverage for both delimited scanners. CodeRabbit
-  reported no findings for the work item after one interrupted attempt was
-  replaced by a completed review.
+  the primitive layer, migrated source-mask and workflow-metadata importers,
+  and added differential property coverage for both delimited scanners.
+  CodeRabbit reported no findings for the work item after one interrupted
+  attempt was replaced by a completed review.
 - Work item 5 added shared identifier-run primitives, migrated regex flag
-  scanning, previous-token scanning, and metadata identifier scanning over them,
-  and addressed CodeRabbit's test-boundary finding. The confirmation review
-  reported no findings.
+  scanning, previous-token scanning, and metadata identifier scanning over
+  them, and addressed CodeRabbit's test-boundary finding. The confirmation
+  review reported no findings.
 - Work item 6 documented `source-scanner-primitives.ts` as the shared
   internal token-grammar layer in the technical design and developer guide, and
   recorded that ADR 0001 did not need to change because the static-analysis
   boundary stayed the same.
 - Work item 1 CodeRabbit review findings were addressed: the plan now avoids
   the future delimiter-guard import cycle, uses Oxford `-ize` spellings,
-  records the correct remaining-work state, lists all line-terminator importers,
-  clarifies `indexAfterEscapedUnit` EOF behaviour, and documents
+  records the correct remaining-work state, lists all line-terminator
+  importers, clarifies `indexAfterEscapedUnit` EOF behaviour, and documents
   `codePointStringAt` low-surrogate behaviour. The final confirmation review is
   deferred by CodeRabbit rate limiting after deterministic gates passed.
 
 ## Context and orientation
 
 The reader is assumed to know nothing about this repository. `odw-lint` is a
-TypeScript static checker for Open Dynamic Workflows (ODW) workflow files. It is
-built and tested with Bun and gated through a `Makefile`. All production source
-lives under `src/`; all tests under `tests/`.
+TypeScript static checker for Open Dynamic Workflows (ODW) workflow files. It
+is built and tested with Bun and gated through a `Makefile`. All production
+source lives under `src/`; all tests under `tests/`.
 
 The relevant subsystem is `src/static-analysis/`. Two scanner families share a
 JavaScript token grammar but each re-implement it. The concrete, verified
@@ -454,7 +451,8 @@ duplication (each fact confirmed by reading the cited file in this worktree):
 2. **CRLF-pair detection — repeated inline.**
    - `source-scan.ts:145` `isCrLfTerminator(text, index)`.
    - `source-mask-strings.ts:78-84` `isEscapedCrLfLineContinuation`.
-   - `source-mask-comments.ts:65` inline `text[i] === "\r" && text[i+1] === "\n"`.
+   - `source-mask-comments.ts:65` inline
+     `text[i] === "\r" && text[i+1] === "\n"`.
    - `workflow-metadata-string-scan.ts:114-122` `isCrLfContinuation`.
 
 3. **Full-code-point reader — duplicated.**
@@ -463,8 +461,8 @@ duplication (each fact confirmed by reading the cited file in this worktree):
    - `source-scan.ts:55-61` inlines `codePointAt` + `String.fromCodePoint`.
 
 4. **Backslash escape-skip — repeated in six scanners.**
-   `source-mask-delimiters.ts:80-83`, `source-mask-strings.ts:56-57` /
-   `73-84`, `source-mask-templates.ts:125-131`, `source-mask-regex.ts:237-250`,
+   `source-mask-delimiters.ts:80-83`, `source-mask-strings.ts:56-57` / `73-84`,
+   `source-mask-templates.ts:125-131`, `source-mask-regex.ts:237-250`,
    `workflow-metadata-comment-scan.ts:26-28`, and
    `workflow-metadata-string-scan.ts:70-95` each hand-roll "on `\\`, advance
    past the escaped unit".
@@ -501,21 +499,22 @@ responsibility" (lines 574-605) is the list that must gain the new module.
 
 - `tests/diagnostics/architecture-fixtures.ts`
   `EXPECTED_STATIC_ANALYSIS_MODULE_FILES` (lines 38-80) pins the exact
-  `src/static-analysis` directory listing; `tests/diagnostics/architecture.test.ts:60`
-  asserts it.
+  `src/static-analysis` directory listing;
+  `tests/diagnostics/architecture.test.ts:60` asserts it.
 - `tests/static-analysis/source-file-architecture.test.ts` pins the exact
-  top-level declaration set of each source-helper module (`SOURCE_HELPER_MODULES`
-  at lines 12-29, and the `expectModuleDeclarations` blocks at lines 154-363),
-  and asserts every listed module is at or under 400 lines.
+  top-level declaration set of each source-helper module
+  (`SOURCE_HELPER_MODULES` at lines 12-29, and the `expectModuleDeclarations`
+  blocks at lines 154-363), and asserts every listed module is at or under 400
+  lines.
 - `tests/build-gate/file-size.test.ts` enforces the 400-line limit repo-wide.
 
 ## Plan of work
 
 Each work item follows Red-Green-Refactor: add or extend the primitive unit
-tests first (Red — they fail because the primitive does not yet exist in its new
-home), implement the primitive and migrate the duplicate call sites (Green),
-then clean up and re-run the wider behaviour gates (Refactor). Because the
-behaviour suites already exist and must stay green, they are the standing
+tests first (Red — they fail because the primitive does not yet exist in its
+new home), implement the primitive and migrate the duplicate call sites
+(Green), then clean up and re-run the wider behaviour gates (Refactor). Because
+the behaviour suites already exist and must stay green, they are the standing
 safety net for every migration; the "Red" step for each item is the new
 primitive-level test that specifies the extracted contract.
 
@@ -544,19 +543,18 @@ Define, with JSDoc:
 Migrate consumers to these primitives and delete the duplicates:
 
 - `source-scan.ts`: replace the `LINE_TERMINATORS` set plus `isLineTerminator`
-  body and the `isCrLfTerminator` body, and the inline `codePointAt` at
-  lines 55-61, with delegations to the primitives. Keep the module's existing
-  public function names/exports stable where other modules import them;
-  re-export from the primitive where a name is shared.
+  body and the `isCrLfTerminator` body, and the inline `codePointAt` at lines
+  55-61, with delegations to the primitives. Keep the module's existing public
+  function names/exports stable where other modules import them; re-export from
+  the primitive where a name is shared.
 - `source-mask-delimiters.ts`: `isLineTerminatorCharacter` delegates to (or is
   replaced by an import of) `isSourceLineTerminator`. If the declaration is
-  removed, update every importer
-  (`source-mask-strings.ts`, `source-mask-templates.ts`,
-  `source-mask-comments.ts`, `workflow-metadata-comment-scan.ts`,
-  `workflow-metadata-string-scan.ts`, `workflow-envelope-statement.ts`,
-  `workflow-envelope-unsupported.ts`, and `workflow-envelope-meta-value.ts`) to
-  import the primitive, and update the `source-mask-delimiters.ts` declaration
-  list in
+  removed, update every importer (`source-mask-strings.ts`,
+  `source-mask-templates.ts`, `source-mask-comments.ts`,
+  `workflow-metadata-comment-scan.ts`, `workflow-metadata-string-scan.ts`,
+  `workflow-envelope-statement.ts`, `workflow-envelope-unsupported.ts`, and
+  `workflow-envelope-meta-value.ts`) to import the primitive, and update the
+  `source-mask-delimiters.ts` declaration list in
   `source-file-architecture.test.ts` (lines 204-219).
 - `source-mask-strings.ts` `isEscapedCrLfLineContinuation`,
   `source-mask-comments.ts` inline CRLF check, and
@@ -575,8 +573,8 @@ Update guards in the same commit:
   default-`.sort()` UTF-16 order the guard requires, because
   `tests/diagnostics/architecture.test.ts:60` asserts
   `sourceModuleFiles("src/static-analysis").toEqual(EXPECTED_...)` against a
-  `.sort()`ed directory listing (`architecture.test.ts:33-40`): after the shared
-  prefix `"source-scan"`, `"source-scan.ts"` sorts first (next unit `.`,
+  `.sort()`ed directory listing (`architecture.test.ts:33-40`): after the
+  shared prefix `"source-scan"`, `"source-scan.ts"` sorts first (next unit `.`,
   U+002E), then `"source-scanner-primitives.ts"` (next unit `n` beats
   `"source-snippet.ts"`'s later divergence at `c` vs `n`). Do **not** place it
   before `"source-scan.ts"` — that fails the guard. See the Decision Log entry
@@ -621,10 +619,10 @@ Add to `source-scanner-primitives.ts`:
 - `indexAfterEscapedUnit(text: string, backslashIndex: number): number` — the
   index just past a `\\`-escaped unit, i.e. `backslashIndex + 2`, defined once
   with the documented assumption that the caller has already matched `\\` at
-  `backslashIndex`, has excluded out-of-bounds EOF calls before invoking it, and
-  handles line-continuation specialization itself. The primitive does not clamp
-  to `text.length`; scanners that intentionally allow an escape at EOF preserve
-  the existing `backslashIndex + 2` advance.
+  `backslashIndex`, has excluded out-of-bounds EOF calls before invoking it,
+  and handles line-continuation specialization itself. The primitive does not
+  clamp to `text.length`; scanners that intentionally allow an escape at EOF
+  preserve the existing `backslashIndex + 2` advance.
 
 Migrate the plain escape-skips to the primitive while leaving genuinely
 specialized behaviour local and built on top of it:
@@ -635,9 +633,10 @@ specialized behaviour local and built on top of it:
   line-terminator rejection local; use the primitive for the advance.
 - `workflow-metadata-comment-scan.ts:26-28` (inside `scanDelimitedEnd`).
 - `source-mask-strings.ts` `nextEscapedQuotedStringIndex` and
-  `workflow-metadata-string-scan.ts` `scanStringEscape`/`scanLineContinuationEnd`
-  keep their CRLF-line-continuation specialization but compose `isCrLfAt`
-  (from Work item 1) and the escape primitive rather than open-coding offsets.
+  `workflow-metadata-string-scan.ts` `scanStringEscape`/
+  `scanLineContinuationEnd` keep their CRLF-line-continuation specialization
+  but compose `isCrLfAt` (from Work item 1) and the escape primitive rather
+  than open-coding offsets.
 
 Do not change any unterminated-return value or bound.
 
@@ -652,8 +651,7 @@ Tests:
 
 - New `tests/static-analysis/source-scanner-escape.test.ts` with
   `indexAfterEscapedUnit` cases (mid-string escape, escape before delimiter,
-  escape at EOF). A dedicated WI2 concern file, not an extension of WI1's
-  file.
+  escape at EOF). A dedicated WI2 concern file, not an extension of WI1's file.
 - Safety net: the string, template, and regex scanner suites
   (`source-mask-strings.test.ts`, `source-mask-templates.test.ts`,
   `source-mask-regex.test.ts`, `source-mask.property.test.ts`) plus
@@ -712,9 +710,8 @@ Tests:
   concern file.
 - Safety net: `workflow-metadata-comment-scan.test.ts`,
   `source-mask-comments.test.ts`, `workflow-metadata.test.ts`,
-  `workflow-metadata-parser-edge.test.ts`,
-  `fixtures/masking/comment-decoy.js` via `masking-fixtures.test.ts` — green,
-  no change.
+  `workflow-metadata-parser-edge.test.ts`, `fixtures/masking/comment-decoy.js`
+  via `masking-fixtures.test.ts` — green, no change.
 
 ### Work item 4 — Consolidate the delimited-string walks
 
@@ -724,12 +721,11 @@ the shared sub-scanners beneath them and proves equivalence.
 Add to `source-scanner-primitives.ts`:
 
 - the delimiter type aliases and guards currently owned by
-  `source-mask-delimiters.ts`:
-  `QuotedStringDelimiter`, `TemplateDelimiter`, `RegexDelimiter`,
-  `StringLikeDelimiter`, `isQuotedStringDelimiter`, `isRegexDelimiter`,
-  `isStringLikeDelimiter`, and `isTemplateDelimiter`. Migrate
-  `source-mask-delimiters.ts` and existing importers to consume these from the
-  primitive layer so dependency direction stays one-way:
+  `source-mask-delimiters.ts`: `QuotedStringDelimiter`, `TemplateDelimiter`,
+  `RegexDelimiter`, `StringLikeDelimiter`, `isQuotedStringDelimiter`,
+  `isRegexDelimiter`, `isStringLikeDelimiter`, and `isTemplateDelimiter`.
+  Migrate `source-mask-delimiters.ts` and existing importers to consume these
+  from the primitive layer so dependency direction stays one-way:
   scanner-family modules → `source-scanner-primitives.ts`. Do not make
   `source-scanner-primitives.ts` import `source-mask-delimiters.ts`; that would
   create a circular dependency because `source-mask-delimiters.ts` already uses
@@ -742,9 +738,9 @@ Add to `source-scanner-primitives.ts`:
   metadata `scanDelimitedEnd` and any future consumer share one interpolation
   walker.
 
-Refactor the two orchestrators to build on the shared escape primitive
-(Work item 2) and, for the metadata one, the shared `templateExpressionEnd`,
-keeping every observable output identical:
+Refactor the two orchestrators to build on the shared escape primitive (Work
+item 2) and, for the metadata one, the shared `templateExpressionEnd`, keeping
+every observable output identical:
 
 - `source-mask-delimiters.ts:71-91` `scanEscapedDelimitedEnd` (returns
   `text.length` when unterminated; no `${}` handling).
@@ -753,9 +749,9 @@ keeping every observable output identical:
 
 Verification is the gate here. Add a **differential property test** in its own
 dedicated file `tests/static-analysis/delimited-end-parity.property.test.ts`
-(mandatory — not inlined into a shared primitive test file, so the frozen oracle
-does not push any file toward the 400-line size gate). In that file, capture a
-frozen copy of each original function body — the mutually-recursive
+(mandatory — not inlined into a shared primitive test file, so the frozen
+oracle does not push any file toward the 400-line size gate). In that file,
+capture a frozen copy of each original function body — the mutually-recursive
 `scanDelimitedEnd` / `scanTemplateExpressionEnd` / `scanCommentEnd` /
 `scanLineCommentEnd` / `scanBlockCommentEnd` cluster — inline as a reference
 oracle, generate randomized source strings with `fast-check` (mixing quotes,
@@ -782,12 +778,11 @@ Tests:
   `templateExpressionEnd` cases (simple, nested, string-inside-expression,
   comment-inside-expression, unterminated). A dedicated WI4 unit concern file.
 - New differential property test in its own dedicated file
-  `tests/static-analysis/delimited-end-parity.property.test.ts` (mandatory — the
-  frozen oracle is never inlined into a shared unit-test file).
+  `tests/static-analysis/delimited-end-parity.property.test.ts` (mandatory —
+  the frozen oracle is never inlined into a shared unit-test file).
 - Safety net: `workflow-metadata-comment-scan.test.ts`,
   `source-mask.property.test.ts`, `source-mask-templates.test.ts`,
-  `workflow-metadata.test.ts`,
-  `fixtures/masking/template-literal-decoy.js` and
+  `workflow-metadata.test.ts`, `fixtures/masking/template-literal-decoy.js` and
   `template-interpolation-boundary-decoy.js` via `masking-fixtures.test.ts` —
   green, no change.
 
@@ -798,8 +793,7 @@ Add to `source-scanner-primitives.ts`, composed over the existing
 
 - `identifierRunEnd(text, start, end)` — forward full-code-point identifier run
   returning `undefined` when no identifier starts at `start` (replaces
-  `scanIdentifierEnd` core in
-  `workflow-metadata-parser-scan.ts:154-170`).
+  `scanIdentifierEnd` core in `workflow-metadata-parser-scan.ts:154-170`).
 - `asciiIdentifierRunEnd(text, start): number` — forward ASCII run (replaces
   the `scanRegexFlagsEnd` loop, `source-mask-regex.ts:334-342`).
 - `asciiIdentifierRunStart(text, end): number` — backward ASCII run returning
@@ -813,8 +807,8 @@ comment-skipping in `previousSignificantTemplateToken`). Keep the public
 declaration names of the migrated modules unless the architecture pins are
 updated in the same commit; update `source-file-architecture.test.ts`
 declaration lists for `source-mask.ts` (lines 189-198),
-`source-mask-templates.ts` (lines 231-254), and `source-mask-regex.ts`
-(lines 255-275) for any removed private helper.
+`source-mask-templates.ts` (lines 231-254), and `source-mask-regex.ts` (lines
+255-275) for any removed private helper.
 
 Design references: `docs/technical-design.md` §6.2; tasks 2.1.12.4 / 2.1.12.5 /
 2.1.12.8 established `javascript-identifiers.ts` as the predicate home — this
@@ -937,8 +931,8 @@ Per work item, substituting that work item's `$FOCUSED` file(s):
    and metadata suites stay green.
    ```
 
-Do not run a repo-global Markdown reformat (`make fmt` / `mdformat-all`); format
-only the specific files touched.
+Do not run a repo-global Markdown reformat (`make fmt` / `mdformat-all`);
+format only the specific files touched.
 
 ## Validation and acceptance
 
@@ -1054,25 +1048,27 @@ dependency direction remains scanner-family modules →
 Round 2 (2026-07-04) — resolves the two round-1 design-review blocking points.
 
 - What changed (blocking point 1): Work item 1's module-inventory insertion slot
-  was corrected. The new module `"source-scanner-primitives.ts"` is now inserted
-  into `EXPECTED_STATIC_ANALYSIS_MODULE_FILES` **after** `"source-scan.ts"` and
-  **before** `"source-snippet.ts"`, matching the default `.sort()` UTF-16 order
-  the guard asserts (`tests/diagnostics/architecture.test.ts:60` against the
-  `.sort()`ed listing at `architecture.test.ts:33-40`). The earlier "before
-  `source-scan.ts`" slot would have failed the guard. A Decision Log entry
-  records the full ordering derivation.
+  was corrected. The new module `"source-scanner-primitives.ts"` is now
+  inserted into `EXPECTED_STATIC_ANALYSIS_MODULE_FILES` **after**
+  `"source-scan.ts"` and **before** `"source-snippet.ts"`, matching the default
+  `.sort()` UTF-16 order the guard asserts
+  (`tests/diagnostics/architecture.test.ts:60` against the `.sort()`ed listing
+  at `architecture.test.ts:33-40`). The earlier "before `source-scan.ts`" slot
+  would have failed the guard. A Decision Log entry records the full ordering
+  derivation.
 - What changed (blocking point 2): the file-size Risk now explicitly covers the
   test files, citing `tests/build-gate/file-size.test.ts` and
   `file-size-support.ts:7,41-46` (400-line limit over `src/` **and** `tests/`,
-  `.property.test.ts` in scope). The plan now commits to a per-concern test-file
-  layout — one focused unit file per work item
+  `.property.test.ts` in scope). The plan now commits to a per-concern
+  test-file layout — one focused unit file per work item
   (`source-scanner-classification`/`-escape`/`-comments`/`-delimited`/
   `-identifiers`.test.ts) — and mandates the Work item 4 differential parity
   oracle in its own dedicated file
   `tests/static-analysis/delimited-end-parity.property.test.ts` (with a
-  documented split to a `-support.ts` helper if even that approaches the limit).
-  No single test file accumulates across work items, so the size gate cannot be
-  tripped late. A Decision Log entry records this layout as a firm decision.
+  documented split to a `-support.ts` helper if even that approaches the
+  limit). No single test file accumulates across work items, so the size gate
+  cannot be tripped late. A Decision Log entry records this layout as a firm
+  decision.
 - Why it changed: both points were verified against the real fixtures in the
   worktree before revising, so the plan is now implementable exactly as written.
 - Effect on remaining work: no work item was added or removed; the six work

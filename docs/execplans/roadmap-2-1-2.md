@@ -1,9 +1,8 @@
 # Implement static envelope extraction
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -37,13 +36,13 @@ review.
 2. The public `WorkflowEnvelope` contract is no longer exported before metadata
    value state is complete. Work item 1 keeps the scanner internal. Work item 2
    defines and exports a discriminated `WorkflowMetaValue` union that
-   distinguishes `"object"`, `"non-object-expression"`, `"unterminated-object"`,
-   and `"missing-value"` states before updating package exports.
+   distinguishes `"object"`, `"non-object-expression"`,
+   `"unterminated-object"`, and `"missing-value"` states before updating
+   package exports.
 3. Production scanner modules must use relative internal imports such as
-   `../diagnostics/rule-id` and `./source-file`. The package entry
-   `"odw-lint"` is reserved for public-consumer tests. This avoids a
-   package-entry cycle through `src/index.ts` and
-   `src/static-analysis/index.ts`.
+   `../diagnostics/rule-id` and `./source-file`. The package entry `"odw-lint"`
+   is reserved for public-consumer tests. This avoids a package-entry cycle
+   through `src/index.ts` and `src/static-analysis/index.ts`.
 
 ## Constraints
 
@@ -82,16 +81,16 @@ review.
   `loadWorkflowScript`, ODW `createPrimitives`, or the ODW runtime
   `validate(source)` primitive.
 - Do not copy or vendor ODW private loader helpers into production
-  `odw-lint` code. Use repository-owned scanner code whose observable
-  behaviour is pinned by tests and documented ODW source evidence.
+  `odw-lint` code. Use repository-owned scanner code whose observable behaviour
+  is pinned by tests and documented ODW source evidence.
 - Do not add dependencies. The current `bun.lock` resolves Biome 2.5.1, Bun
   types 1.3.14, Fast-check 4.8.0, Oxlint 1.71.0, and TypeScript 5.9.3. It does
   not include `@swc/core`; SWC parser work belongs to roadmap task 2.2.1.
 - Implement production code under `src/static-analysis/`. Keep work item 1
   internal to `src/static-analysis/workflow-envelope.ts`; update
   `src/static-analysis/index.ts`, `src/index.ts`, public API fixtures, and
-  package-boundary tests only in work item 2 when the metadata-state contract is
-  complete.
+  package-boundary tests only in work item 2 when the metadata-state contract
+  is complete.
 - The scanner must accept an `OriginalSourceFile` created by
   `createOriginalSourceFile`. It must not reconstruct source files
   structurally, because source-span helpers rely on private indexes recorded by
@@ -109,9 +108,8 @@ review.
 - Metadata field classification is out of scope. This task records whether the
   value after `export const meta =` is an object literal, a non-object
   expression, an unterminated object, or missing. It must not emit
-  `odw/meta-name`, `odw/meta-description`,
-  `odw/meta-statically-unprovable`, or `odw/claude-pure-meta`. Roadmap task
-  2.1.3 owns those diagnostics.
+  `odw/meta-name`, `odw/meta-description`, `odw/meta-statically-unprovable`, or
+  `odw/claude-pure-meta`. Roadmap task 2.1.3 owns those diagnostics.
 - The missing-meta diagnostic is in scope because no real
   `export const meta =` declaration means static extraction failed. Emit
   `odw/meta-required` at the empty span `0..0`.
@@ -131,8 +129,8 @@ review.
   mutating formatters such as `make fmt`, `bun fmt`, or `mdformat-all`.
 - Every work item updates this ExecPlan before its commit. At minimum, update
   `Progress`. Also update `Surprises & Discoveries`, `Decision Log`, `Risks`,
-  `Outcomes & Retrospective`, and the revision note when assumptions,
-  evidence, or scope change.
+  `Outcomes & Retrospective`, and the revision note when assumptions, evidence,
+  or scope change.
 - Because every work item updates this ExecPlan, every work item includes a
   Markdown change and must run file-scoped Markdown formatting for
   `docs/execplans/roadmap-2-1-2.md`.
@@ -182,52 +180,40 @@ conflict in `Decision Log`, and escalate.
 ## Risks
 
 - Risk: string-index scanning over masked source could produce byte-invalid
-  diagnostic spans when non-ASCII source appears before a token.
-  Severity: high.
-  Likelihood: medium.
-  Mitigation: all span construction flows through
+  diagnostic spans when non-ASCII source appears before a token. Severity:
+  high. Likelihood: medium. Mitigation: all span construction flows through
   `spanFromTextIndexes(sourceFile, startIndex, endIndex)`, and work item 1 adds
   non-ASCII-before-token tests for metadata declaration spans.
 
 - Risk: ODW's current runtime loader rejects any masked `import` or `export`
   token after blanking the metadata `export`, while the `odw-lint` design says
-  unsupported top-level imports or exports.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: implement the documented `odw-lint` top-level scanner, cover the
-  committed invalid fixtures exactly, and record the ODW loader difference as a
-  parity point for roadmap task 2.3.1 if nested cases appear.
+  unsupported top-level imports or exports. Severity: medium. Likelihood:
+  medium. Mitigation: implement the documented `odw-lint` top-level scanner,
+  cover the committed invalid fixtures exactly, and record the ODW loader
+  difference as a parity point for roadmap task 2.3.1 if nested cases appear.
 
 - Risk: A scanner could find a `{` later in the body after computed metadata
-  such as `export const meta = makeMeta();`.
-  Severity: high.
-  Likelihood: medium.
-  Mitigation: after the `=` token, inspect the next non-whitespace masked token
-  and record `"non-object-expression"` when it is not `{`; do not search ahead
-  for a later brace. Leave the diagnostic decision to task 2.1.3.
+  such as `export const meta = makeMeta();`. Severity: high. Likelihood:
+  medium. Mitigation: after the `=` token, inspect the next non-whitespace
+  masked token and record `"non-object-expression"` when it is not `{`; do not
+  search ahead for a later brace. Leave the diagnostic decision to task 2.1.3.
 
 - Risk: Unsupported syntax spans drift from fixture manifests.
-  Severity: high.
-  Likelihood: medium.
-  Mitigation: drive tests from
+  Severity: high. Likelihood: medium. Mitigation: drive tests from
   `tests/static-analysis/fixtures/invalid-workflows/manifests/unsupported-import-export.ts`
   and compare emitted `rule`, `severity`, `message`, `span`, and `spanText`
   against the manifest.
 
 - Risk: The envelope scanner duplicates source-mask logic and diverges from
-  task 2.1.1.
-  Severity: high.
-  Likelihood: low.
-  Mitigation: treat `maskNonCodeSource` as the only inert-region source, and
-  replace the test-only probe in
-  `tests/static-analysis/source-mask-fixtures.test.ts` with the production
-  scanner once the scanner has equivalent coverage.
+  task 2.1.1. Severity: high. Likelihood: low. Mitigation: treat
+  `maskNonCodeSource` as the only inert-region source, and replace the
+  test-only probe in `tests/static-analysis/source-mask-fixtures.test.ts` with
+  the production scanner once the scanner has equivalent coverage.
 
 - Risk: Public exports grow accidentally or hide a breaking change.
-  Severity: medium.
-  Likelihood: low.
-  Mitigation: update `tests/diagnostics/public-api-fixtures.ts` deliberately
-  only in work item 2 and run the public API surface tests plus `make all`.
+  Severity: medium. Likelihood: low. Mitigation: update
+  `tests/diagnostics/public-api-fixtures.ts` deliberately only in work item 2
+  and run the public API surface tests plus `make all`.
 
 ## Progress
 
@@ -247,8 +233,7 @@ conflict in `Decision Log`, and escalate.
   `odw/no-import-export` diagnostics and matched unsupported fixture manifests
   for rule, severity, message, span, and span text.
 - [x] (2026-07-01T13:42:00Z) Work item 4: Replaced fixture probes with
-  production envelope corpus
-  coverage.
+  production envelope corpus coverage.
 - [x] (2026-07-01T13:42:00Z) Work item 5: Documented the envelope scanner
   contract and closed roadmap task 2.1.2.
 
@@ -256,110 +241,101 @@ conflict in `Decision Log`, and escalate.
 
 - Observation: Leta initially failed with
   `error: unexpected argument 'tests' found` when multiple paths were passed to
-  `leta files`, after the worktree was already registered.
-  Evidence: `leta workspace add ... && leta files src tests docs` rejected the
-  extra path arguments. `leta files src` and `leta grep ...` then succeeded.
-  Impact: Leta is available for branch-local TypeScript navigation, but pass
-  one path at a time.
+  `leta files`, after the worktree was already registered. Evidence:
+  `leta workspace add ... && leta files src tests docs` rejected the extra path
+  arguments. `leta files src` and `leta grep ...` then succeeded. Impact: Leta
+  is available for branch-local TypeScript navigation, but pass one path at a
+  time.
 
 - Observation: Current `origin/main` and this branch have no semantic code
-  diff.
-  Evidence: `sem diff --from origin/main --to HEAD` reported
-  `No changes detected.`.
-  Impact: this plan starts from the main-branch source state.
+  diff. Evidence: `sem diff --from origin/main --to HEAD` reported
+  `No changes detected.`. Impact: this plan starts from the main-branch source
+  state.
 
 - Observation: The repository already has a test-only envelope probe in
-  `tests/static-analysis/source-mask-fixtures.test.ts`.
-  Evidence: the file defines `probeMaskedEnvelope`,
-  `META_EXPORT_PATTERN`, `IMPORT_EXPORT_PATTERN`, and helper functions that
-  use `maskNonCodeSource` and TypeScript only for masking fixture assertions.
-  Impact: the implementation should promote the production-worthy envelope
-  responsibility into `src/static-analysis/` and remove or shrink the duplicate
-  test-only probe.
+  `tests/static-analysis/source-mask-fixtures.test.ts`. Evidence: the file
+  defines `probeMaskedEnvelope`, `META_EXPORT_PATTERN`,
+  `IMPORT_EXPORT_PATTERN`, and helper functions that use `maskNonCodeSource`
+  and TypeScript only for masking fixture assertions. Impact: the
+  implementation should promote the production-worthy envelope responsibility
+  into `src/static-analysis/` and remove or shrink the duplicate test-only
+  probe.
 
 - Observation: `maskNonCodeSource` preserves UTF-16 string indexes, while
-  `spanFromOffsets` requires UTF-8 byte offsets.
-  Evidence: `src/static-analysis/source-mask.ts` builds `maskedText` with
+  `spanFromOffsets` requires UTF-8 byte offsets. Evidence:
+  `src/static-analysis/source-mask.ts` builds `maskedText` with
   `sourceText.split("")` and advances by JavaScript string indexes;
   `docs/developers-guide.md` "Source-span helpers" and
-  `docs/technical-design.md` §8 require zero-based UTF-8 byte offsets.
-  Impact: the scanner needs an explicit text-index-to-byte-offset conversion
-  helper and Unicode span tests before any diagnostic spans are trusted.
+  `docs/technical-design.md` §8 require zero-based UTF-8 byte offsets. Impact:
+  the scanner needs an explicit text-index-to-byte-offset conversion helper and
+  Unicode span tests before any diagnostic spans are trusted.
 
 - Observation: The locked project does not include `@swc/core`.
   Evidence: `package.json` lists no `@swc/core`; `bun.lock` resolves Biome
   2.5.1, Bun types 1.3.14, Fast-check 4.8.0, Oxlint 1.71.0, and TypeScript
-  5.9.3.
-  Impact: do not rely on SWC for task 2.1.2. Body parsing begins in task
+  5.9.3. Impact: do not rely on SWC for task 2.1.2. Body parsing begins in task
   2.2.1.
 
 - Observation: Current ODW loader source at sibling commit `ecc4867` extracts
   `export const meta` from masked source, slices the metadata literal from the
   original source, evaluates it with `new Function`, blanks only the metadata
   `export` keyword, and then rejects any remaining masked `import` or `export`
-  token.
-  Evidence: sibling checkout file `<open-dynamic-workflows>/src/loader.ts`
-  functions `extractMeta`, `matchBrace`, and `maskNonCode`.
-  Impact: `odw-lint` mirrors the non-executing masked-source extraction shape
-  and forbidden import/export intent, but it must not mirror ODW's metadata
-  evaluation or production imports.
+  token. Evidence: sibling checkout file
+  `<open-dynamic-workflows>/src/loader.ts` functions `extractMeta`,
+  `matchBrace`, and `maskNonCode`. Impact: `odw-lint` mirrors the non-executing
+  masked-source extraction shape and forbidden import/export intent, but it
+  must not mirror ODW's metadata evaluation or production imports.
 
 - Observation: Firecrawl verified official Bun and Biome command behaviour used
-  by this plan.
-  Evidence: Firecrawl scraped Bun's test runner docs showing `bun test`, file
-  filters, non-zero exit on failure, snapshot testing, and
+  by this plan. Evidence: Firecrawl scraped Bun's test runner docs showing
+  `bun test`, file filters, non-zero exit on failure, snapshot testing, and
   `--update-snapshots`; it scraped Biome's CLI reference showing `biome format`
   accepts paths and `biome check` / `biome ci` run formatting, linting, and
-  import sorting checks.
-  Impact: focused test and formatter commands are source-backed and
-  path-scoped.
+  import sorting checks. Impact: focused test and formatter commands are
+  source-backed and path-scoped.
 
 - Observation: `leta show createOriginalSourceFile` failed with
   `Error: EOF while parsing a value at line 1 column 0`, while `leta grep`,
-  `leta files`, and `leta show` for other symbols worked.
-  Evidence: branch-local helper code was then inspected directly in
-  `src/static-analysis/source-file.ts`, `source-position.ts`, and
-  `types.ts`.
+  `leta files`, and `leta show` for other symbols worked. Evidence:
+  branch-local helper code was then inspected directly in
+  `src/static-analysis/source-file.ts`, `source-position.ts`, and `types.ts`.
   Impact: implementation continued with bounded local evidence rather than
   treating the transient Leta display failure as a blocker.
 
 - Observation: Keeping all scanner helpers in
   `src/static-analysis/workflow-envelope.ts` exceeded the executable 400-line
-  TypeScript file-size gate.
-  Evidence: `wc -l src/static-analysis/workflow-envelope.ts` reported 509
-  lines before type extraction and 422 lines before moving text-index
-  conversion.
-  Impact: the workflow-specific type contract moved into the existing
+  TypeScript file-size gate. Evidence:
+  `wc -l src/static-analysis/workflow-envelope.ts` reported 509 lines before
+  type extraction and 422 lines before moving text-index conversion. Impact:
+  the workflow-specific type contract moved into the existing
   `src/static-analysis/types.ts`, and UTF-16 text-index to UTF-8 byte-offset
   conversion moved into the existing source-position helper module.
 
 - Observation: CodeRabbit caught that the missing-value body span used
-  `assignmentEndIndex` as a byte offset.
-  Evidence: `coderabbit review --agent` reported a high-severity finding for
-  `src/static-analysis/workflow-envelope.ts` lines 213-236.
-  Impact: `bodyStartOffset` now converts the empty missing-value text index
-  through `spanFromTextIndexes`, and
-  `tests/static-analysis/workflow-envelope.test.ts` covers a Unicode prefix
-  before `export const meta =`.
+  `assignmentEndIndex` as a byte offset. Evidence: `coderabbit review --agent`
+  reported a high-severity finding for
+  `src/static-analysis/workflow-envelope.ts` lines 213-236. Impact:
+  `bodyStartOffset` now converts the empty missing-value text index through
+  `spanFromTextIndexes`, and `tests/static-analysis/workflow-envelope.test.ts`
+  covers a Unicode prefix before `export const meta =`.
 
 - Observation: CodeRabbit also caught false positives in the unsupported
   import/export detector for top-level property access such as
-  `import.meta.url` and `workflow.export.value`.
-  Evidence: the follow-up `coderabbit review --agent` reported high-severity
-  findings for `src/static-analysis/workflow-envelope.ts` around lines 223 and
-  288.
-  Impact: unsupported detection now checks declaration/import-expression context
-  before reporting, and regression coverage asserts that top-level property
-  access is not reported.
+  `import.meta.url` and `workflow.export.value`. Evidence: the follow-up
+  `coderabbit review --agent` reported high-severity findings for
+  `src/static-analysis/workflow-envelope.ts` around lines 223 and 288. Impact:
+  unsupported detection now checks declaration/import-expression context before
+  reporting, and regression coverage asserts that top-level property access is
+  not reported.
 
 - Observation: Moving the unsupported import/export scanner into a colocated
-  feature module was necessary after the context-aware detector grew the scanner
-  past the file-size limit.
-  Evidence: `wc -l src/static-analysis/workflow-envelope.ts` reported 461 lines
-  before the split, then 324 lines after moving unsupported-syntax scanning into
-  `src/static-analysis/workflow-envelope-unsupported.ts`.
-  Impact: `workflow-envelope.ts` owns envelope assembly and metadata values,
-  while `workflow-envelope-unsupported.ts` owns unsupported syntax collection.
+  feature module was necessary after the context-aware detector grew the
+  scanner past the file-size limit. Evidence:
+  `wc -l src/static-analysis/workflow-envelope.ts` reported 461 lines before
+  the split, then 324 lines after moving unsupported-syntax scanning into
+  `src/static-analysis/workflow-envelope-unsupported.ts`. Impact:
+  `workflow-envelope.ts` owns envelope assembly and metadata values, while
+  `workflow-envelope-unsupported.ts` owns unsupported syntax collection.
 
 - Observation: CodeRabbit caught that ASI-style line boundaries were invisible
   to the unsupported import/export detector after whitespace skipping.
@@ -371,178 +347,164 @@ conflict in `Decision Log`, and escalate.
   reported.
 
 - Observation: CodeRabbit caught that `bodySpan` started at the metadata object
-  close brace instead of the end of the complete metadata statement.
-  Evidence: the final `coderabbit review --agent` pass reported a
-  medium-severity finding for `src/static-analysis/workflow-envelope.ts` line
-  76.
-  Impact: `bodySpan` now starts after the full top-level metadata statement,
-  and tests assert that the body does not include the metadata semicolon.
+  close brace instead of the end of the complete metadata statement. Evidence:
+  the final `coderabbit review --agent` pass reported a medium-severity finding
+  for `src/static-analysis/workflow-envelope.ts` line 76. Impact: `bodySpan`
+  now starts after the full top-level metadata statement, and tests assert that
+  the body does not include the metadata semicolon.
 
 - Observation: CodeRabbit caught that the metadata declaration search accepted
-  nested `export const meta =` declarations.
-  Evidence: the final `coderabbit review --agent` pass reported a major finding
-  for `src/static-analysis/workflow-envelope.ts` around lines 88-109.
-  Impact: metadata matching now walks masked source at top-level delimiter depth
-  only, and tests assert that a nested declaration is ignored in favour of the
-  real workflow top-level declaration.
+  nested `export const meta =` declarations. Evidence: the final
+  `coderabbit review --agent` pass reported a major finding for
+  `src/static-analysis/workflow-envelope.ts` around lines 88-109. Impact:
+  metadata matching now walks masked source at top-level delimiter depth only,
+  and tests assert that a nested declaration is ignored in favour of the real
+  workflow top-level declaration.
 
 - Observation: CodeRabbit caught that top-level `import.meta` was still treated
-  like an unsupported import statement.
-  Evidence: the final `coderabbit review --agent` pass reported a minor finding
-  for `src/static-analysis/workflow-envelope-unsupported.ts` around lines
-  94-105.
+  like an unsupported import statement. Evidence: the final
+  `coderabbit review --agent` pass reported a minor finding for
+  `src/static-analysis/workflow-envelope-unsupported.ts` around lines 94-105.
   Impact: the import detector now skips `import.meta` while still reporting
   top-level dynamic `import(...)`, with both cases covered in scanner tests.
 
 - Observation: The last CodeRabbit pass re-reported two already-fixed concerns
-  and identified three remaining test and scanner refinements.
-  Evidence: `bodyStartOffset` already converts the statement-end text index
-  through `spanFromTextIndexes`, and the decision log already records
+  and identified three remaining test and scanner refinements. Evidence:
+  `bodyStartOffset` already converts the statement-end text index through
+  `spanFromTextIndexes`, and the decision log already records
   `spanFromTextIndexes` ownership in `source-position.ts`; the same pass also
   flagged same-line `}` import/export boundaries, statement-end fallback
-  coverage, and over-broad missing-metadata snapshots.
-  Impact: no production or ownership change was needed, but unsupported
-  import/export diagnostic summaries now pin the message as well as rule,
-  severity, and span text, same-line closing braces count as top-level statement
-  starts, statement scanner tests cover end-of-string and empty input fallbacks,
-  and the missing-metadata snapshot uses a stable diagnostic projection.
+  coverage, and over-broad missing-metadata snapshots. Impact: no production or
+  ownership change was needed, but unsupported import/export diagnostic
+  summaries now pin the message as well as rule, severity, and span text,
+  same-line closing braces count as top-level statement starts, statement
+  scanner tests cover end-of-string and empty input fallbacks, and the
+  missing-metadata snapshot uses a stable diagnostic projection.
 
 - Observation: A further CodeRabbit pass caught that line-break fallback needed
-  to be ASI-aware.
-  Evidence: `coderabbit review --agent` reported a high-severity finding for
-  `src/static-analysis/workflow-envelope-statement.ts` lines 24-25 and follow-up
-  coverage gaps in statement-boundary tests.
-  Impact: top-level statement scanning now checks significant characters around
-  a line break before treating it as a statement end, covers multiline
-  assignment and member-chain continuations, treats `export const meta =;` as a
-  missing value, recognizes Unicode line separators in unsupported syntax
-  boundary checks, and uses an explicit missing-metadata assertion instead of a
-  broad snapshot.
+  to be ASI-aware. Evidence: `coderabbit review --agent` reported a
+  high-severity finding for
+  `src/static-analysis/workflow-envelope-statement.ts` lines 24-25 and
+  follow-up coverage gaps in statement-boundary tests. Impact: top-level
+  statement scanning now checks significant characters around a line break
+  before treating it as a statement end, covers multiline assignment and
+  member-chain continuations, treats `export const meta =;` as a missing value,
+  recognizes Unicode line separators in unsupported syntax boundary checks, and
+  uses an explicit missing-metadata assertion instead of a broad snapshot.
 
 - Observation: CodeRabbit caught one remaining ASI continuation case after the
-  first ASI fix.
-  Evidence: `coderabbit review --agent` reported that a line break after an
-  arrow token (`=>`) was still treated as a statement boundary, and asked for
-  fixture-corpus guards.
-  Impact: statement scanning now treats arrow bodies as continued statements,
-  regression tests cover that shape, and fixture corpus suites assert that the
-  manifest arrays are non-empty before their parameterized cases.
+  first ASI fix. Evidence: `coderabbit review --agent` reported that a line
+  break after an arrow token (`=>`) was still treated as a statement boundary,
+  and asked for fixture-corpus guards. Impact: statement scanning now treats
+  arrow bodies as continued statements, regression tests cover that shape, and
+  fixture corpus suites assert that the manifest arrays are non-empty before
+  their parameterized cases.
 
 - Observation: The next review pass found lower-severity boundary refinements
-  and one out-of-scope metadata-first suggestion.
-  Evidence: `coderabbit review --agent` asked for comma/comparison continuation
-  cases, non-zero statement-start coverage, code-point-aware unsupported keyword
-  boundaries, and a metadata-first top-level contract.
-  Impact: statement scanning now treats commas and comparison operators as
-  line-continuation markers, tests cover non-zero statement starts, unsupported
-  keyword boundary checks use whole Unicode code points, and metadata-first
-  enforcement remains deferred because this slice intentionally emits only
-  `odw/meta-required` and `odw/no-import-export` diagnostics.
+  and one out-of-scope metadata-first suggestion. Evidence:
+  `coderabbit review --agent` asked for comma/comparison continuation cases,
+  non-zero statement-start coverage, code-point-aware unsupported keyword
+  boundaries, and a metadata-first top-level contract. Impact: statement
+  scanning now treats commas and comparison operators as line-continuation
+  markers, tests cover non-zero statement starts, unsupported keyword boundary
+  checks use whole Unicode code points, and metadata-first enforcement remains
+  deferred because this slice intentionally emits only `odw/meta-required` and
+  `odw/no-import-export` diagnostics.
 
 - Observation: CodeRabbit's next pass found only low-severity maintainability
-  and continuation coverage gaps.
-  Evidence: `coderabbit review --agent` asked for leading-operator continuation
-  coverage, removal of redundant arrow-token special-casing, and a shared
-  unsupported-diagnostic expectation constant.
+  and continuation coverage gaps. Evidence: `coderabbit review --agent` asked
+  for leading-operator continuation coverage, removal of redundant arrow-token
+  special-casing, and a shared unsupported-diagnostic expectation constant.
   Impact: leading `&&` continuation is covered, arrow continuation now follows
   the same `>` continuation set entry as comparison expressions, and
   unsupported diagnostic assertions share one expected message/rule/severity
   object.
 
 - Observation: The following review pass found a performance risk in ASI
-  fallback scanning and a metadata expression span edge case.
-  Evidence: `coderabbit review --agent` reported repeated next-significant
-  rescans in `workflow-envelope-statement.ts`, a trailing semicolon in
-  non-object metadata expression spans, and missing helper coverage.
-  Impact: statement scanning now precomputes next-significant characters once,
-  tracks the previous significant character during the main scan, trims trailing
-  statement terminators from non-object metadata expression spans, and tests
-  cover unmatched `}` and `]` clamping plus exported depth helper behaviour.
+  fallback scanning and a metadata expression span edge case. Evidence:
+  `coderabbit review --agent` reported repeated next-significant rescans in
+  `workflow-envelope-statement.ts`, a trailing semicolon in non-object metadata
+  expression spans, and missing helper coverage. Impact: statement scanning now
+  precomputes next-significant characters once, tracks the previous significant
+  character during the main scan, trims trailing statement terminators from
+  non-object metadata expression spans, and tests cover unmatched `}` and `]`
+  clamping plus exported depth helper behaviour.
 
 ## Decision Log
 
 - Decision: Implement task 2.1.2 with an owned masked-text envelope scanner and
-  no new parser dependency.
-  Rationale: `docs/technical-design.md` §§5, 6.2, 6.4, and ADR 0001 require
-  non-executing `odw-lint` ownership. `@swc/core` is not locked yet and is
-  explicitly sequenced to task 2.2.1.
-  Date/Author: 2026-07-01T10:52:35Z / Codex.
+  no new parser dependency. Rationale: `docs/technical-design.md` §§5, 6.2,
+  6.4, and ADR 0001 require non-executing `odw-lint` ownership. `@swc/core` is
+  not locked yet and is explicitly sequenced to task 2.2.1. Date/Author:
+  2026-07-01T10:52:35Z / Codex.
 
 - Decision: Keep work item 1 internal and export the scanner only after work
-  item 2 defines complete metadata value states.
-  Rationale: exporting optional `metaValueSpan` or `bodySpan` before
-  distinguishing missing, non-object, and unterminated values would make the
-  public contract ambiguous for tests and downstream code.
-  Date/Author: 2026-07-01T11:03:53Z / Codex.
+  item 2 defines complete metadata value states. Rationale: exporting optional
+  `metaValueSpan` or `bodySpan` before distinguishing missing, non-object, and
+  unterminated values would make the public contract ambiguous for tests and
+  downstream code. Date/Author: 2026-07-01T11:03:53Z / Codex.
 
 - Decision: Convert masked-source text indexes to UTF-8 byte offsets inside
-  static-analysis source-position helpers.
-  Rationale: the scanner is the first consumer that starts from UTF-16
-  `maskedText` matches. Keeping the helper inside `source-position.ts` avoids
-  widening the public package facade while preserving one owner for source
-  offset conversion.
-  Date/Author: 2026-07-01T11:03:53Z / Codex.
+  static-analysis source-position helpers. Rationale: the scanner is the first
+  consumer that starts from UTF-16 `maskedText` matches. Keeping the helper
+  inside `source-position.ts` avoids widening the public package facade while
+  preserving one owner for source offset conversion. Date/Author:
+  2026-07-01T11:03:53Z / Codex.
 
 - Decision: Keep `spanFromTextIndexes` internal to the static-analysis source
   helper layer, but place it in `src/static-analysis/source-position.ts`
-  instead of `workflow-envelope.ts`.
-  Rationale: the helper belongs to source-position ownership, and moving it to
-  an existing helper module kept the new scanner below the 400-line source-file
-  gate without adding a second production scanner module or widening the
-  package facade.
-  Date/Author: 2026-07-01T13:42:00Z / Codex.
+  instead of `workflow-envelope.ts`. Rationale: the helper belongs to
+  source-position ownership, and moving it to an existing helper module kept
+  the new scanner below the 400-line source-file gate without adding a second
+  production scanner module or widening the package facade. Date/Author:
+  2026-07-01T13:42:00Z / Codex.
 
 - Decision: Production scanner code must use relative imports instead of
-  importing from `"odw-lint"`.
-  Rationale: `"odw-lint"` resolves through `src/index.ts`, which re-exports
-  `src/static-analysis/index.ts`. Self-importing through that package entry
-  would create an avoidable facade cycle. Public-consumer tests may still
-  import from `"odw-lint"`.
-  Date/Author: 2026-07-01T11:03:53Z / Codex.
+  importing from `"odw-lint"`. Rationale: `"odw-lint"` resolves through
+  `src/index.ts`, which re-exports `src/static-analysis/index.ts`.
+  Self-importing through that package entry would create an avoidable facade
+  cycle. Public-consumer tests may still import from `"odw-lint"`. Date/Author:
+  2026-07-01T11:03:53Z / Codex.
 
 - Decision: Emit only `odw/meta-required` and `odw/no-import-export`
-  diagnostics in this slice.
-  Rationale: task 2.1.2 owns finding the metadata declaration and unsupported
-  imports/exports. Metadata value diagnostics belong to task 2.1.3, and body
-  syntax belongs to task 2.2.1.
-  Date/Author: 2026-07-01T10:52:35Z / Codex.
+  diagnostics in this slice. Rationale: task 2.1.2 owns finding the metadata
+  declaration and unsupported imports/exports. Metadata value diagnostics
+  belong to task 2.1.3, and body syntax belongs to task 2.2.1. Date/Author:
+  2026-07-01T10:52:35Z / Codex.
 
 - Decision: Treat top-level dynamic `import(...)` as an unsupported import
-  token for now, but do not scan nested block depth.
-  Rationale: ODW's current loader rejects masked `import` tokens broadly, but
-  `docs/technical-design.md` §9.1 frames the rule as unsupported top-level
-  import/export. This catches top-level import hazards without pretending to
-  parse body semantics before task 2.2.1.
-  Date/Author: 2026-07-01T10:52:35Z / Codex.
+  token for now, but do not scan nested block depth. Rationale: ODW's current
+  loader rejects masked `import` tokens broadly, but `docs/technical-design.md`
+  §9.1 frames the rule as unsupported top-level import/export. This catches
+  top-level import hazards without pretending to parse body semantics before
+  task 2.2.1. Date/Author: 2026-07-01T10:52:35Z / Codex.
 
 - Decision: Keep unsupported import/export scanning in
-  `src/static-analysis/workflow-envelope-unsupported.ts` as an internal
-  feature module.
-  Rationale: context-aware unsupported detection is substantial enough to exceed
-  the 400-line gate if kept in `workflow-envelope.ts`, but it is still owned by
-  the workflow-envelope feature and should not become a generic source helper.
-  Date/Author: 2026-07-01T14:18:00Z / Codex.
+  `src/static-analysis/workflow-envelope-unsupported.ts` as an internal feature
+  module. Rationale: context-aware unsupported detection is substantial enough
+  to exceed the 400-line gate if kept in `workflow-envelope.ts`, but it is
+  still owned by the workflow-envelope feature and should not become a generic
+  source helper. Date/Author: 2026-07-01T14:18:00Z / Codex.
 
 - Decision: Keep machine-specific checkout paths out of this reusable ExecPlan.
   Rationale: the workflow runner supplies the concrete assigned worktree, while
   the plan should remain readable and portable for later agents and review
-  tooling.
-  Date/Author: 2026-07-01T14:43:00Z / Codex.
+  tooling. Date/Author: 2026-07-01T14:43:00Z / Codex.
 
 - Decision: Share top-level statement and delimiter-depth scanning through
-  `src/static-analysis/workflow-envelope-statement.ts`.
-  Rationale: metadata body spans and unsupported import/export diagnostics need
-  the same statement boundary semantics. A small workflow-envelope-owned helper
-  avoids duplicate boundary logic without making it a generic source helper.
-  Date/Author: 2026-07-01T15:06:00Z / Codex.
+  `src/static-analysis/workflow-envelope-statement.ts`. Rationale: metadata
+  body spans and unsupported import/export diagnostics need the same statement
+  boundary semantics. A small workflow-envelope-owned helper avoids duplicate
+  boundary logic without making it a generic source helper. Date/Author:
+  2026-07-01T15:06:00Z / Codex.
 
 ## Outcomes & Retrospective
 
-Implemented `scanWorkflowEnvelope` as a non-executing masked-source scanner.
-It finds the real `export const meta =` declaration outside inert source
-regions, records declaration and metadata value spans in original UTF-8 byte
-offsets, distinguishes object, non-object expression, unterminated object, and
-missing value states, emits `odw/meta-required` for missing metadata, and emits
+Implemented `scanWorkflowEnvelope` as a non-executing masked-source scanner. It
+finds the real `export const meta =` declaration outside inert source regions,
+records declaration and metadata value spans in original UTF-8 byte offsets,
+distinguishes object, non-object expression, unterminated object, and missing
+value states, emits `odw/meta-required` for missing metadata, and emits
 source-ordered `odw/no-import-export` diagnostics for unsupported top-level
 imports and extra exports.
 
@@ -563,9 +525,9 @@ Result: typecheck, Biome, Oxlint, and 46 focused tests passed.
 
 CodeRabbit follow-up addressed the missing-value body span byte/text mismatch,
 aligned the ExecPlan with `source-position.ts` ownership for
-`spanFromTextIndexes`, expanded unsupported import/export diagnostic
-assertions to include rule and severity, added a missing-metadata diagnostic
-snapshot, and extracted fixture scan setup helpers.
+`spanFromTextIndexes`, expanded unsupported import/export diagnostic assertions
+to include rule and severity, added a missing-metadata diagnostic snapshot, and
+extracted fixture scan setup helpers.
 
 A second CodeRabbit follow-up addressed property-access false positives in the
 unsupported detector, added focused snapshot coverage for unsupported
@@ -589,8 +551,8 @@ removed redundant diagnostic assertions where a snapshot already pins the
 shape, pinned envelope span-helper imports to `source-position.ts`, and added
 message assertions to unsupported import/export diagnostic summaries. The
 subsequent review pass added same-line closing-brace boundary handling, tighter
-statement-boundary fallback tests, and a projected missing-metadata snapshot.
-A later ASI-focused pass replaced that projected snapshot with an explicit
+statement-boundary fallback tests, and a projected missing-metadata snapshot. A
+later ASI-focused pass replaced that projected snapshot with an explicit
 assertion, added multiline continuation handling to the statement scanner,
 treated a bare metadata semicolon as a missing value, and recognized Unicode
 line separators while checking unsupported import/export statement starts. The
@@ -601,9 +563,9 @@ keyword boundary checks. Metadata-first enforcement remains outside this slice
 until the diagnostic catalogue has a dedicated rule for that public behaviour.
 The final low-severity follow-up added leading-operator continuation coverage,
 removed redundant arrow-token special-casing, and deduplicated unsupported
-diagnostic expectations in scanner tests.
-The subsequent follow-up made ASI fallback scanning linear, trimmed non-object
-metadata expression terminators, and added direct depth-helper regression tests.
+diagnostic expectations in scanner tests. The subsequent follow-up made ASI
+fallback scanning linear, trimmed non-object metadata expression terminators,
+and added direct depth-helper regression tests.
 
 Remaining scope is deliberately deferred: metadata field classification still
 belongs to roadmap task 2.1.3, hostile metadata side-effect regression coverage
@@ -619,12 +581,12 @@ re-exported by `src/index.ts`. Source-file construction lives in
 `src/static-analysis/source-snippet.ts`, and shared static-analysis types live
 in `src/static-analysis/types.ts`.
 
-The scanner adds `src/static-analysis/workflow-envelope.ts` for envelope assembly
-and `src/static-analysis/workflow-envelope-unsupported.ts` for unsupported
-syntax collection. It exposes one public entry point named `scanWorkflowEnvelope`
-that accepts
-`OriginalSourceFile` and returns an immutable result. Keep the implementation
-concrete and small; do not introduce a generic parser abstraction.
+The scanner adds `src/static-analysis/workflow-envelope.ts` for envelope
+assembly and `src/static-analysis/workflow-envelope-unsupported.ts` for
+unsupported syntax collection. It exposes one public entry point named
+`scanWorkflowEnvelope` that accepts `OriginalSourceFile` and returns an
+immutable result. Keep the implementation concrete and small; do not introduce
+a generic parser abstraction.
 
 Use these terms consistently:
 
@@ -658,8 +620,8 @@ The relevant fixture surfaces are:
 ## Interfaces and dependencies
 
 All production imports in `src/static-analysis/workflow-envelope.ts` must be
-relative internal imports. The module must not import from `"odw-lint"`.
-Use this shape:
+relative internal imports. The module must not import from `"odw-lint"`. Use
+this shape:
 
 ```ts
 import { makeRuleId } from "../diagnostics/rule-id";
@@ -673,8 +635,8 @@ Public-consumer tests such as `tests/static-analysis/boundary.test.ts` and
 `tests/diagnostics/public-api-surface.test.ts` should continue importing from
 `"odw-lint"` because they intentionally verify the package entry.
 
-Define these types in `src/static-analysis/types.ts` by the end of work item
-2, and export `scanWorkflowEnvelope` from
+Define these types in `src/static-analysis/types.ts` by the end of work item 2,
+and export `scanWorkflowEnvelope` from
 `src/static-analysis/workflow-envelope.ts`:
 
 ```ts
@@ -796,8 +758,8 @@ Load and follow these skills:
 
 Add `src/static-analysis/workflow-envelope.ts`, but do not export it from
 `src/static-analysis/index.ts` or `src/index.ts` yet. Define the internal
-`spanFromTextIndexes` source-position helper first. Then
-implement the first internal `scanWorkflowEnvelope(sourceFile)` behaviour:
+`spanFromTextIndexes` source-position helper first. Then implement the first
+internal `scanWorkflowEnvelope(sourceFile)` behaviour:
 
 - call `maskNonCodeSource(sourceFile)`;
 - find only a real masked `export const meta =` declaration;
@@ -843,8 +805,8 @@ make nixie
 
 Expected focused test result: the new workflow-envelope tests fail before
 production code for missing `scanWorkflowEnvelope` or byte-incorrect spans,
-then pass after the minimal implementation. `make all`, `make markdownlint`,
-and `make nixie` pass.
+then pass after the minimal implementation. `make all`, `make markdownlint`, and
+`make nixie` pass.
 
 ### Work item 2: Complete metadata value states and export the envelope API
 
@@ -882,8 +844,8 @@ Export `scanWorkflowEnvelope` and the public envelope types from
 `src/static-analysis/index.ts` and `src/index.ts`. Update
 `tests/diagnostics/public-api-fixtures.ts` and
 `tests/static-analysis/boundary.test.ts` in the same work item. Production code
-must continue using relative internal imports; only public-consumer tests should
-import the scanner from `"odw-lint"`.
+must continue using relative internal imports; only public-consumer tests
+should import the scanner from `"odw-lint"`.
 
 Update `tests/static-analysis/workflow-envelope.test.ts` with tests for:
 

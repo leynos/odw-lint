@@ -1,9 +1,8 @@
 # Consolidate fixture corpus and parity projection ownership (roadmap 2.3.5)
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -18,13 +17,13 @@ classification, and deterministic-time warnings (see
 corpus already has a single owner module
 (`tests/static-analysis/fixtures/invalid-workflows/corpus.ts`, exporting
 `INVALID_WORKFLOW_FIXTURE_CORPUS`), but the valid ODW-example corpus does not:
-six test files each hand-write their own `new URL("./fixtures/odw-examples/",
-import.meta.url)` location literal, and one file
-(`loader-parity.test.ts`) also re-inlines the invalid-corpus location instead of
-importing the existing owner. Separately, three suites each hand-roll a
-near-identical "project a diagnostic to a comparable `{rule, severity, message,
-docs, span, spanText}` shape" helper, so the manifest-to-comparison contract has
-forked three ways.
+six test files each hand-write their own
+`new URL("./fixtures/odw-examples/", import.meta.url)` location literal, and
+one file (`loader-parity.test.ts`) also re-inlines the invalid-corpus location
+instead of importing the existing owner. Separately, three suites each
+hand-roll a near-identical "project a diagnostic to a comparable
+`{rule, severity, message, docs, span, spanText}` shape" helper, so the
+manifest-to-comparison contract has forked three ways.
 
 After this change a reader can point at exactly one owner module per corpus and
 exactly one shared diagnostic-projection module, and a build-gated architecture
@@ -32,16 +31,17 @@ test fails if anyone reintroduces an inline corpus-location literal in a
 hand-written test. Observable success:
 
 - `make all` passes with every ODW-example and invalid-workflow corpus consumer
-  importing its owner module; `grep -rn 'new URL("./fixtures/odw-examples/'
-  tests` returns only the owner module and generated manifest.
+  importing its owner module;
+  `grep -rn 'new URL("./fixtures/odw-examples/' tests` returns only the owner
+  module and generated manifest.
 - A new architecture meta-test
   (`tests/static-analysis/fixture-corpus-ownership.test.ts`) fails before the
   routing is complete (proven against a crafted inline-literal sample) and
-  passes after, and it fails if a new inline corpus-location literal is added to
-  any hand-written corpus-consuming test.
+  passes after, and it fails if a new inline corpus-location literal is added
+  to any hand-written corpus-consuming test.
 - The three manifest-parity suites compare through one shared projection helper
-  in `tests/static-analysis/fixtures/diagnostic-projection.ts`, exercised by its
-  own unit tests.
+  in `tests/static-analysis/fixtures/diagnostic-projection.ts`, exercised by
+  its own unit tests.
 
 This is release-relevant plumbing: 2.3.5 is a prerequisite for shipping the
 `check` command test surface (roadmap step 2.4) on a single reviewed corpus
@@ -55,34 +55,35 @@ Hard invariants that must hold throughout implementation.
 
 - Static-analysis boundary ([ADR 0001](../adr/0001-static-analysis-boundary.md);
   [technical-design.md](../technical-design.md) §§5, 6.4, 11.3): no new module
-  may import, evaluate, execute, or format fixture workflow source. New owner and
-  projection modules read fixtures only as passive UTF-8 text via the existing
-  `readFixtureSource`/`fixtureSourceUrl` helpers in
-  `tests/static-analysis/fixtures/corpus-support.ts`. No production `src/` module
-  may import test fixtures; all new modules live under `tests/`.
+  may import, evaluate, execute, or format fixture workflow source. New owner
+  and projection modules read fixtures only as passive UTF-8 text via the
+  existing `readFixtureSource`/`fixtureSourceUrl` helpers in
+  `tests/static-analysis/fixtures/corpus-support.ts`. No production `src/`
+  module may import test fixtures; all new modules live under `tests/`.
 - The loader-parity harness inertness contract in `loader-parity.test.ts` (the
-  `discoverHarnessSourceFiles` import-edge audit and the hostile-metadata marker
-  assertions) must keep passing unchanged: any module newly imported into the
-  harness graph must itself contain no forbidden ODW import edges and no computed
-  dynamic imports.
+  `discoverHarnessSourceFiles` import-edge audit and the hostile-metadata
+  marker assertions) must keep passing unchanged: any module newly imported
+  into the harness graph must itself contain no forbidden ODW import edges and
+  no computed dynamic imports.
 - Do not modify the fixture-metadata generator
-  (`tests/static-analysis/fixtures/refresh-manifest-source.ts`) or the generated
-  manifest files `tests/static-analysis/fixtures/odw-examples.ts` and
+  (`tests/static-analysis/fixtures/refresh-manifest-source.ts`) or the
+  generated manifest files `tests/static-analysis/fixtures/odw-examples.ts` and
   `.../invalid-workflows/manifests/*.ts`. Those files are machine-owned and
-  snapshot-pinned by `fixture-metadata-refresh-manifest-source.test.ts`; changing
-  them forces a generator/snapshot churn that is out of scope for 2.3.5. See
-  Decision Log entry 2026-07-05-A.
+  snapshot-pinned by `fixture-metadata-refresh-manifest-source.test.ts`;
+  changing them forces a generator/snapshot churn that is out of scope for
+  2.3.5. See Decision Log entry 2026-07-05-A.
 - Preserve every existing fixture manifest value (paths, SHA-256 digests, spans,
-  `spanText`, expected diagnostics). This task moves *location* and *projection*
-  ownership only; it changes no expected diagnostic data.
+  `spanText`, expected diagnostics). This task moves *location* and
+  *projection* ownership only; it changes no expected diagnostic data.
 - No single code file exceeds 400 lines (AGENTS.md "Keep file size manageable").
-- en-GB Oxford spelling ("-ize"/"-yse"/"-our") in all prose, comments, and commit
-  messages (AGENTS.md; [documentation-style-guide.md](../documentation-style-guide.md)).
+- en-GB Oxford spelling ("-ize"/"-yse"/"-our") in all prose, comments, and
+  commit messages (AGENTS.md;
+  [documentation-style-guide.md](../documentation-style-guide.md)).
 - No trailing whitespace (the `whitespace-hygiene` gate inside `make all`).
 - Masking fixtures (`tests/static-analysis/fixtures/masking/`) are out of scope:
   they are `odw-lint`-owned synthetic decoys, not an ODW-parity corpus. The new
-  guard must be scoped to the `odw-examples` and `invalid-workflows` corpora and
-  must not flag the masking corpus. The guard achieves this with a single
+  guard must be scoped to the `odw-examples` and `invalid-workflows` corpora
+  and must not flag the masking corpus. The guard achieves this with a single
   URL-path-segment detector (no property-key pattern), so the masking corpus is
   exempt by construction and `make all` stays green at the WI-4 commit. See
   Decision Log entries 2026-07-05-B and 2026-07-05-D.
@@ -95,7 +96,8 @@ Stop and escalate rather than working around these.
   (excluding this ExecPlan and snapshots), stop and escalate.
 - Generator: if any work item appears to require editing
   `refresh-manifest-source.ts` or regenerating a `*.ts` manifest, stop and
-  escalate — that is a signal the design has drifted from Decision Log 2026-07-05-A.
+  escalate — that is a signal the design has drifted from Decision Log
+  2026-07-05-A.
 - Interface: if the shared `FixtureCorpusLocation` interface in
   `corpus-support.ts` must change shape (not merely be re-exported), stop and
   escalate.
@@ -117,32 +119,32 @@ Stop and escalate rather than working around these.
   `manifestRoot` the consumers used; a binding unit test asserts every
   `ODW_EXAMPLE_FIXTURE_SNAPSHOTS[i].fixturePath` starts with the owner
   `manifestRoot`, and `readFixtureSource` already tolerates both `fileName` and
-  `fixturePath` inputs (it only strips `manifestRoot` when present). Run the full
-  suite after each routing commit.
+  `fixturePath` inputs (it only strips `manifestRoot` when present). Run the
+  full suite after each routing commit.
 - Risk: adding the shared projection module to the loader-parity harness import
-  graph trips the inertness audit. Severity: medium. Likelihood: low. Mitigation:
-  the projection module is imported only by the three parity suites, not by
-  `loader-parity.test.ts`; keep it free of ODW runtime imports and verify the
-  inertness test still passes.
+  graph trips the inertness audit. Severity: medium. Likelihood: low.
+  Mitigation: the projection module is imported only by the three parity
+  suites, not by `loader-parity.test.ts`; keep it free of ODW runtime imports
+  and verify the inertness test still passes.
 - Risk: the new guard is either too broad (flags the masking corpus or owner
   modules) or too narrow (misses a real inline literal). Severity: medium.
-  Likelihood: low (was medium; reduced after Decision Log 2026-07-05-D). Mitigation:
-  the sole detector is a single URL-path-segment rule scoped to the two ODW-parity
-  corpus segments (`fixtures/odw-examples/`, `fixtures/invalid-workflows/`) inside
-  `new URL(...)` string-literal first arguments. This is broad enough to catch all
-  six real inline consumer literals (verified: envelope:19, odw-example:16,
-  deterministic:30, body-parser:58, loader-parity:22/26) yet narrow enough
-  that the masking `new URL("./fixtures/masking/", …)` and every
-  owner/support/generated/refresh module escape by construction — so no
-  property-key pattern and no corpus allowlist are needed. The guard's
-  in-memory self-check proves the detector flags a crafted corpus literal and
-  passes a crafted owner-style sample.
-- Risk: unifying three projection call sites onto one full-field comparable shape
-  changes a pinned expectation unexpectedly. Severity: medium. Likelihood: low.
-  Mitigation: manifest diagnostics already carry `docs` and `spanText`, and live
-  diagnostics carry `docs` with `spanText` derivable via `sliceSourceSpan`; pin
-  the projection with dedicated unit tests and re-derive expectations mechanically
-  (Decision Log 2026-07-05-C).
+  Likelihood: low (was medium; reduced after Decision Log 2026-07-05-D).
+  Mitigation: the sole detector is a single URL-path-segment rule scoped to the
+  two ODW-parity corpus segments (`fixtures/odw-examples/`,
+  `fixtures/invalid-workflows/`) inside `new URL(...)` string-literal first
+  arguments. This is broad enough to catch all six real inline consumer
+  literals (verified: envelope:19, odw-example:16, deterministic:30,
+  body-parser:58, loader-parity:22/26) yet narrow enough that the masking
+  `new URL("./fixtures/masking/", …)` and every owner/support/generated/refresh
+  module escape by construction — so no property-key pattern and no corpus
+  allowlist are needed. The guard's in-memory self-check proves the detector
+  flags a crafted corpus literal and passes a crafted owner-style sample.
+- Risk: unifying three projection call sites onto one full-field comparable
+  shape changes a pinned expectation unexpectedly. Severity: medium.
+  Likelihood: low. Mitigation: manifest diagnostics already carry `docs` and
+  `spanText`, and live diagnostics carry `docs` with `spanText` derivable via
+  `sliceSourceSpan`; pin the projection with dedicated unit tests and re-derive
+  expectations mechanically (Decision Log 2026-07-05-C).
 
 ## Progress
 
@@ -158,21 +160,22 @@ ExecPlan. Red/green evidence and review notes are recorded in
 `Artifacts and notes`.
 
 2026-07-05 WI-2 implementation note: routed all hand-written ODW-example and
-invalid-workflow corpus consumers through the owner modules. The focused suites,
-loader-parity inertness block, deterministic gates, and CodeRabbit review all
-passed after the required rate-limit backoff.
+invalid-workflow corpus consumers through the owner modules. The focused
+suites, loader-parity inertness block, deterministic gates, and CodeRabbit
+review all passed after the required rate-limit backoff.
 
 2026-07-05 WI-3 implementation note: extracted the shared diagnostic projection
-module, routed the metadata, envelope, and body-parser parity suites through it,
-and added runtime plus type-only contract coverage. CodeRabbit found several
-edge-case hardening items during review; the final retry completed with no
-findings after the focused tests and deterministic gates were green.
+module, routed the metadata, envelope, and body-parser parity suites through
+it, and added runtime plus type-only contract coverage. CodeRabbit found
+several edge-case hardening items during review; the final retry completed with
+no findings after the focused tests and deterministic gates were green.
 
 2026-07-05 WI-4 implementation note: added the architecture guard that scans
 hand-written static-analysis TypeScript files for inline `new URL(...)` corpus
-locations, excluding only its own crafted self-check. The guard derives protected
-segments from the two owner modules, positively covers both owned corpora,
-exempts masking fixtures by path segment, and pins the violation report shape.
+locations, excluding only its own crafted self-check. The guard derives
+protected segments from the two owner modules, positively covers both owned
+corpora, exempts masking fixtures by path segment, and pins the violation
+report shape.
 
 2026-07-05 WI-5 implementation note: documented corpus and projection ownership
 in the developers guide, marked roadmap task 2.3.5 complete, and recorded the
@@ -187,81 +190,83 @@ architecture-rule requirements accurately, so it was left unchanged.
   `refresh-manifest-source.ts::odwExampleTypesSource()` emits its
   `ODW_EXAMPLES_FIXTURE_ROOT`/`UPSTREAM_ODW_EXAMPLES_ROOT` literals verbatim;
   `fixture-metadata-refresh-manifest-source.test.ts` snapshots that output.
-  Impact: the manifest module cannot be hand-edited to import the owner
-  without a generator + snapshot change, so the owner module mirrors the
-  invalid-corpus pattern and a binding test ties the two together (Decision
-  Log 2026-07-05-A).
+  Impact: the manifest module cannot be hand-edited to import the owner without
+  a generator + snapshot change, so the owner module mirrors the invalid-corpus
+  pattern and a binding test ties the two together (Decision Log 2026-07-05-A).
 - Observation: `readFixtureSource(corpus, path)` strips `corpus.manifestRoot`
   only when defined, so one owner corpus with `manifestRoot` set works for both
-  `fileName` callers (no match, passthrough) and `fixturePath` callers (stripped).
-  Evidence: `corpus-support.ts::fixtureSourceUrl` line 58–61. Impact: a single
-  owner corpus object can replace both the bare `{ fixtureDirectory }` literals
-  and the `{ fixtureDirectory, manifestRoot }` literals.
+  `fileName` callers (no match, passthrough) and `fixturePath` callers
+  (stripped). Evidence: `corpus-support.ts::fixtureSourceUrl` line 58–61.
+  Impact: a single owner corpus object can replace both the bare
+  `{ fixtureDirectory }` literals and the `{ fixtureDirectory, manifestRoot }`
+  literals.
 
 ## Decision log
 
 - Decision (2026-07-05-A): Mirror the invalid-corpus owner pattern for the valid
-  corpus instead of threading the location through the generator.
-  Rationale: `odw-examples.ts` is generated and snapshot-pinned; routing the
-  generated manifest through a new owner would force generator edits, a snapshot
-  rewrite, and risk an import cycle (`corpus.ts` → manifest → `corpus.ts`). The
-  invalid corpus is the reviewed precedent and already tolerates the repo-relative
-  root living in both `manifest-types.ts` and `invalid-workflows/corpus.ts`. A
+  corpus instead of threading the location through the generator. Rationale:
+  `odw-examples.ts` is generated and snapshot-pinned; routing the generated
+  manifest through a new owner would force generator edits, a snapshot rewrite,
+  and risk an import cycle (`corpus.ts` → manifest → `corpus.ts`). The invalid
+  corpus is the reviewed precedent and already tolerates the repo-relative root
+  living in both `manifest-types.ts` and `invalid-workflows/corpus.ts`. A
   binding unit test (every snapshot `fixturePath` starts with the owner
   `manifestRoot`; every `upstreamPath` starts with the owner upstream root)
-  prevents silent divergence, giving verified single-sourcing for all *consumers*
-  without touching the generator. Rejected alternative: a leaf
-  `odw-examples/corpus-location.ts` imported by the generated manifest — rejected
-  for generator/snapshot churn and cycle risk (Tolerances "Generator").
+  prevents silent divergence, giving verified single-sourcing for all
+  *consumers* without touching the generator. Rejected alternative: a leaf
+  `odw-examples/corpus-location.ts` imported by the generated manifest —
+  rejected for generator/snapshot churn and cycle risk (Tolerances "Generator").
 - Decision (2026-07-05-B): Scope the guard to the `odw-examples` and
   `invalid-workflows` corpora only; leave the masking corpus out of scope.
-  Rationale: roadmap 2.3.5 names the "ODW-example fixture corpus" and the parity
-  suites; masking fixtures are `odw-lint`-owned synthetic decoys with a separate
-  ownership note in the developers guide. Folding masking in would be scope creep
-  beyond the roadmap task. Recorded as a follow-up candidate, not a blocker.
+  Rationale: roadmap 2.3.5 names the "ODW-example fixture corpus" and the
+  parity suites; masking fixtures are `odw-lint`-owned synthetic decoys with a
+  separate ownership note in the developers guide. Folding masking in would be
+  scope creep beyond the roadmap task. Recorded as a follow-up candidate, not a
+  blocker.
 - Decision (2026-07-05-C): The shared projection exposes one canonical
   `ComparableFixtureDiagnostic = { rule: string; severity; message; docs; span;
-  spanText }`, and all three parity consumers compare that full shape.
-  Rationale: the roadmap requires "one reviewed ... diagnostic-projection
-  contract, with architecture coverage preventing the contract from forking".
-  Keeping three field subsets would preserve the fork. Manifest diagnostics
-  already carry `docs` and `spanText`; live diagnostics carry `docs` and
-  `spanText` is derivable via `sliceSourceSpan`. This is a deliberate
-  strengthening (body-parser gains `spanText`, metadata-parity gains `docs`),
-  pinned by the projection module's own unit tests. If a call site cannot supply
-  a field honestly, that is an escalation (Tolerances "Ambiguity"), not a reason
-  to fork the shape.
+  spanText }`,
+  and all three parity consumers compare that full shape. Rationale: the
+  roadmap requires "one reviewed … diagnostic-projection contract, with
+  architecture coverage preventing the contract from forking". Keeping three
+  field subsets would preserve the fork. Manifest diagnostics already carry
+  `docs` and `spanText`; live diagnostics carry `docs` and `spanText` is
+  derivable via `sliceSourceSpan`. This is a deliberate strengthening
+  (body-parser gains `spanText`, metadata-parity gains `docs`), pinned by the
+  projection module's own unit tests. If a call site cannot supply a field
+  honestly, that is an escalation (Tolerances "Ambiguity"), not a reason to
+  fork the shape.
 - Decision (2026-07-05-D): The corpus-ownership guard uses exactly **one**
   detector — a `new URL(...)` whose first string-literal argument contains the
   path segment `fixtures/odw-examples/` or `fixtures/invalid-workflows/` — and
   does **not** additionally flag object-literal properties keyed
-  `fixtureDirectory`/`manifestRoot`.
-  Rationale: a property-key check cannot distinguish a masking corpus from an
-  ODW/invalid corpus, because the location value is an indirected variable or URL
-  (`masking-fixtures.test.ts:55` uses `{ fixtureDirectory: FIXTURE_DIRECTORY }`;
-  `source-mask-fixtures.test.ts:11` uses
-  `{ fixtureDirectory: new URL("./fixtures/masking/", …) }`) and is not resolvable
-  from the property key alone. A key-name pattern would therefore flag those two
-  hand-written masking test files, which are legitimately out of scope
-  (Decision 2026-07-05-B) and not allowlisted, making the guard's
-  "list is empty" assertion fail and breaking `make all` at the WI-4 commit —
+  `fixtureDirectory`/`manifestRoot`. Rationale: a property-key check cannot
+  distinguish a masking corpus from an ODW/invalid corpus, because the location
+  value is an indirected variable or URL (`masking-fixtures.test.ts:55` uses
+  `{ fixtureDirectory: FIXTURE_DIRECTORY }`; `source-mask-fixtures.test.ts:11`
+  uses `{ fixtureDirectory: new URL("./fixtures/masking/", …) }`) and is not
+  resolvable from the property key alone. A key-name pattern would therefore
+  flag those two hand-written masking test files, which are legitimately out of
+  scope (Decision 2026-07-05-B) and not allowlisted, making the guard's "list
+  is empty" assertion fail and breaking `make all` at the WI-4 commit —
   directly violating the masking-exclusion Constraint. The URL-path-segment
-  detector avoids this entirely: it matches all six real inline consumer literals
-  (verified in the worktree) and satisfies the roadmap's requirement that the
-  guard "fails if anyone reintroduces an inline corpus-location literal", while
-  `new URL("./fixtures/masking/", …)` and the owner modules'
+  detector avoids this entirely: it matches all six real inline consumer
+  literals (verified in the worktree) and satisfies the roadmap's requirement
+  that the guard "fails if anyone reintroduces an inline corpus-location
+  literal", while `new URL("./fixtures/masking/", …)` and the owner modules'
   `new URL("./", import.meta.url)` both escape it. Because nothing legitimate
-  matches the detector, no corpus allowlist is required beyond excluding the guard
-  file itself (whose self-check embeds a crafted corpus literal). Rejected
-  alternative: keep the property-key pattern and enlarge the allowlist to include
-  the two masking test files — rejected because it couples the guard to an
-  ever-growing hand-maintained masking allowlist and still cannot tell masking
-  from ODW corpora structurally. This Decision supersedes the earlier two-pattern
-  sketch in the round-1 draft and reconciles the WI-4 detector with Decision B.
+  matches the detector, no corpus allowlist is required beyond excluding the
+  guard file itself (whose self-check embeds a crafted corpus literal).
+  Rejected alternative: keep the property-key pattern and enlarge the allowlist
+  to include the two masking test files — rejected because it couples the guard
+  to an ever-growing hand-maintained masking allowlist and still cannot tell
+  masking from ODW corpora structurally. This Decision supersedes the earlier
+  two-pattern sketch in the round-1 draft and reconciles the WI-4 detector with
+  Decision B.
 - Decision (2026-07-05-E): Keep the `findOdwExampleFixture({ fileName })` query
-  object signature for WI-1 instead of accepting a bare string.
-  Rationale: the approved interface in this ExecPlan specifies the query object,
-  and the matching invalid-corpus helper already uses an object-shaped query.
+  object signature for WI-1 instead of accepting a bare string. Rationale: the
+  approved interface in this ExecPlan specifies the query object, and the
+  matching invalid-corpus helper already uses an object-shaped query.
   CodeRabbit suggested a bare string and a shared lookup helper; both were
   declined for this work item because they would diverge from the approved
   public test-helper shape or introduce abstraction before there is meaningful
@@ -273,10 +278,11 @@ architecture-rule requirements accurately, so it was left unchanged.
 Everything in this plan lives under
 `/data/leynos/Projects/odw-lint.worktrees/roadmap-2-3-5`. Run all commands from
 that worktree root. The project is TypeScript on Bun; the full commit gate is
-`make all` (which runs `build check-fmt whitespace-hygiene lint typecheck test`).
-Markdown changes additionally gate on `make markdownlint` and `make nixie`
-(AGENTS.md; [developers-guide.md](../developers-guide.md) "Workflow Fixture
-Corpus"). The `typescript` package is already a dev dependency (used by
+`make all` (which runs
+`build check-fmt whitespace-hygiene lint typecheck test`). Markdown changes
+additionally gate on `make markdownlint` and `make nixie` (AGENTS.md;
+[developers-guide.md](../developers-guide.md) "Workflow Fixture Corpus"). The
+`typescript` package is already a dev dependency (used by
 `invalid-fixture-diagnostic-source.test.ts` and
 `source-file-architecture.test.ts`).
 
@@ -284,9 +290,9 @@ Key existing files:
 
 - `tests/static-analysis/fixtures/corpus-support.ts` — defines the
   `FixtureCorpusLocation` interface and the passive readers `sha256`,
-  `copiedFixtureFileNames`, `fixtureSourceUrl`, `readFixtureSource`. This is the
-  shared read helper both corpora already use. Unchanged by this task except
-  possibly a re-exported type.
+  `copiedFixtureFileNames`, `fixtureSourceUrl`, `readFixtureSource`. This is
+  the shared read helper both corpora already use. Unchanged by this task
+  except possibly a re-exported type.
 - `tests/static-analysis/fixtures/invalid-workflows/corpus.ts` — the *existing*
   invalid-corpus owner: exports `INVALID_WORKFLOW_FIXTURE_CORPUS`
   (`FixtureCorpusLocation`) and `findInvalidWorkflowFixture`. The template to
@@ -295,11 +301,11 @@ Key existing files:
   (`ODW_EXAMPLE_FIXTURE_SNAPSHOTS`, `OdwExampleFixtureSnapshot`). Do not edit.
 - `tests/static-analysis/fixtures/loader-parity.ts` — the parity outcome reducer
   (`loaderParityOutcome`, `expectedInvalidFixtureOutcome`, …). This is the
-  *status/ruleClasses* projection and is already shared; it is distinct from the
-  per-diagnostic comparable projection this task extracts. Unchanged.
-- `tests/static-analysis/fixtures/manifest-freeze.ts` — `deepFreezeFixtureManifest`
-  used to runtime-freeze owner objects (mirror `INVALID_WORKFLOW_FIXTURE_CORPUS`,
-  which uses `Object.freeze`).
+  *status/ruleClasses* projection and is already shared; it is distinct from
+  the per-diagnostic comparable projection this task extracts. Unchanged.
+- `tests/static-analysis/fixtures/manifest-freeze.ts` —
+  `deepFreezeFixtureManifest` used to runtime-freeze owner objects (mirror
+  `INVALID_WORKFLOW_FIXTURE_CORPUS`, which uses `Object.freeze`).
 
 Inline corpus-location literals to remove (from `grep`):
 
@@ -318,10 +324,10 @@ Diagnostic-projection duplication to consolidate (three forks):
 
 - `invalid-workflow-metadata-parity.test.ts` — `ComparableDiagnostic` type plus
   `classifyInvalidFixture`/`comparableFixtureDiagnostics` and
-  `classifyBodySyntaxFixture`/`comparableBodySyntaxDiagnostics` (fields `rule,
-  severity, message, span, spanText`; no `docs`).
-- `workflow-envelope-fixtures.test.ts` — inline `.map` to `{rule, severity,
-  message, docs, span, spanText}`.
+  `classifyBodySyntaxFixture`/`comparableBodySyntaxDiagnostics` (fields
+  `rule, severity, message, span, spanText`; no `docs`).
+- `workflow-envelope-fixtures.test.ts` — inline `.map` to
+  `{rule, severity, message, docs, span, spanText}`.
 - `workflow-body-parser.test.ts` — `expectedBodySyntaxDiagnosticFor` and the
   inline live projection (fields `rule, severity, message, span, docs`; no
   `spanText`).
@@ -336,10 +342,10 @@ architecture rules of exactly this shape.
 ## Plan of work
 
 Each work item is an independent, gate-passable commit. Follow
-Red-Green-Refactor: add or extend the smallest failing test first, watch it fail
-for the intended reason, make it pass, then run the wider gate. Because every
-committed state must pass `make all`, the *guard* that forbids inline literals
-(WI-4) lands only after all consumers are routed (WI-2, WI-3).
+Red-Green-Refactor: add or extend the smallest failing test first, watch it
+fail for the intended reason, make it pass, then run the wider gate. Because
+every committed state must pass `make all`, the *guard* that forbids inline
+literals (WI-4) lands only after all consumers are routed (WI-2, WI-3).
 
 ### WI-1 — ODW-example corpus owner module + binding test
 
@@ -357,12 +363,14 @@ Create `tests/static-analysis/fixtures/odw-examples/corpus.ts`, mirroring
   `ODW_EXAMPLE_FIXTURE_SNAPSHOTS`, `type OdwExampleFixtureSnapshot` from
   `../odw-examples`;
 - export a runtime-frozen `ODW_EXAMPLE_FIXTURE_CORPUS` satisfying
-  `FixtureCorpusLocation` with `fixtureDirectory: new URL("./", import.meta.url)`
-  and `manifestRoot: "tests/static-analysis/fixtures/odw-examples/"`;
-- export `ODW_EXAMPLE_UPSTREAM_ROOT = "open-dynamic-workflows/examples"` (consumed
-  by the manifest-derivation assertion in `odw-example-fixtures.test.ts`);
-- export `findOdwExampleFixture({ fileName })` returning the matching snapshot or
-  throwing a clear `Missing ODW example fixture <fileName>.` error, mirroring
+  `FixtureCorpusLocation` with
+  `fixtureDirectory: new URL("./", import.meta.url)` and
+  `manifestRoot: "tests/static-analysis/fixtures/odw-examples/"`;
+- export `ODW_EXAMPLE_UPSTREAM_ROOT = "open-dynamic-workflows/examples"`
+  (consumed by the manifest-derivation assertion in
+  `odw-example-fixtures.test.ts`);
+- export `findOdwExampleFixture({ fileName })` returning the matching snapshot
+  or throwing a clear `Missing ODW example fixture <fileName>.` error, mirroring
   `findInvalidWorkflowFixture`.
 
 Interface to exist at end of WI-1:
@@ -375,9 +383,8 @@ export const findOdwExampleFixture: (query: { readonly fileName: string }) =>
   OdwExampleFixtureSnapshot;
 ```
 
-Tests (new file
-`tests/static-analysis/fixtures/odw-examples-corpus.test.ts` under
-`tests/static-analysis/` — keep it beside the invalid-corpus test
+Tests (new file `tests/static-analysis/fixtures/odw-examples-corpus.test.ts`
+under `tests/static-analysis/` — keep it beside the invalid-corpus test
 `invalid-workflow-corpus.test.ts` for discoverability; use a name that does not
 collide):
 
@@ -394,28 +401,29 @@ collide):
   path-shape agnostic — the invariant WI-2 relies on).
 - `Object.isFrozen(ODW_EXAMPLE_FIXTURE_CORPUS)` is true.
 
-Validation: `bun test tests/static-analysis/fixtures/odw-examples-corpus.test.ts`
-(red then green), then `make all`.
+Validation:
+`bun test tests/static-analysis/fixtures/odw-examples-corpus.test.ts` (red then
+green), then `make all`.
 
 ### WI-2 — Route inline corpus-location literals through the owner modules
 
 Docs to read: [developers-guide.md](../developers-guide.md) "Workflow Fixture
-Corpus"; AGENTS.md "Testing" (factories over ad hoc literals). Skills: `leta` to
-confirm the import edges and find every reference before editing.
+Corpus"; AGENTS.md "Testing" (factories over ad hoc literals). Skills: `leta`
+to confirm the import edges and find every reference before editing.
 
 Edit each consumer to delete its local corpus-location literal and import the
 owner instead. No behaviour change — only the source of the location object
 changes.
 
-- `tests/static-analysis/odw-example-fixtures.test.ts`: replace `FIXTURE_DIRECTORY`,
-  `FIXTURE_CORPUS`, `MANIFEST_FIXTURE_ROOT`, `UPSTREAM_EXAMPLE_ROOT` with imports
-  of `ODW_EXAMPLE_FIXTURE_CORPUS` and `ODW_EXAMPLE_UPSTREAM_ROOT`. The
-  `MANIFEST_FIXTURE_ROOT` assertion — which checks that each `fixturePath`
-  equals `MANIFEST_FIXTURE_ROOT` joined to the fixture `fileName` — becomes a
-  comparison against the owner `manifestRoot` (strip the trailing slash inline,
-  or assert `startsWith`), keeping the exact derivation semantics.
-  `copiedFixtureFileNames` and `fixtureSourceUrl`/`readFixtureSource` calls take
-  `ODW_EXAMPLE_FIXTURE_CORPUS`.
+- `tests/static-analysis/odw-example-fixtures.test.ts`: replace
+  `FIXTURE_DIRECTORY`, `FIXTURE_CORPUS`, `MANIFEST_FIXTURE_ROOT`,
+  `UPSTREAM_EXAMPLE_ROOT` with imports of `ODW_EXAMPLE_FIXTURE_CORPUS` and
+  `ODW_EXAMPLE_UPSTREAM_ROOT`. The `MANIFEST_FIXTURE_ROOT` assertion — which
+  checks that each `fixturePath` equals `MANIFEST_FIXTURE_ROOT` joined to the
+  fixture `fileName` — becomes a comparison against the owner `manifestRoot`
+  (strip the trailing slash inline, or assert `startsWith`), keeping the exact
+  derivation semantics. `copiedFixtureFileNames` and `fixtureSourceUrl`/
+  `readFixtureSource` calls take `ODW_EXAMPLE_FIXTURE_CORPUS`.
 - `tests/static-analysis/deterministic-time-spans.test.ts`: replace
   `FIXTURE_DIRECTORY`/`FIXTURE_CORPUS` with `ODW_EXAMPLE_FIXTURE_CORPUS`.
 - `tests/static-analysis/workflow-envelope-fixtures.test.ts`: replace
@@ -423,35 +431,35 @@ changes.
 - `tests/static-analysis/workflow-body-parser.test.ts`: replace the inline
   `ODW_EXAMPLE_FIXTURE_CORPUS` object with the imported owner constant (same
   name; delete the local `const`).
-- `tests/static-analysis/loader-parity.test.ts`: replace `TRUSTED_EXAMPLE_CORPUS`
-  with `ODW_EXAMPLE_FIXTURE_CORPUS`, and replace `INVALID_FIXTURE_CORPUS` with the
-  imported `INVALID_WORKFLOW_FIXTURE_CORPUS` from
-  `./fixtures/invalid-workflows/corpus`. After this edit, re-run the harness
-  inertness test explicitly (see below) because it audits `loader-parity.test.ts`
-  import edges: importing the two owner modules must not introduce forbidden ODW
-  import edges or computed dynamic imports.
+- `tests/static-analysis/loader-parity.test.ts`: replace
+  `TRUSTED_EXAMPLE_CORPUS` with `ODW_EXAMPLE_FIXTURE_CORPUS`, and replace
+  `INVALID_FIXTURE_CORPUS` with the imported `INVALID_WORKFLOW_FIXTURE_CORPUS`
+  from `./fixtures/invalid-workflows/corpus`. After this edit, re-run the
+  harness inertness test explicitly (see below) because it audits
+  `loader-parity.test.ts` import edges: importing the two owner modules must
+  not introduce forbidden ODW import edges or computed dynamic imports.
 
-Tests: no new expected values; the existing suites are the oracle. This work item
-is "green by construction" — it must leave every touched suite passing
+Tests: no new expected values; the existing suites are the oracle. This work
+item is "green by construction" — it must leave every touched suite passing
 unchanged. Do not weaken any assertion.
 
 Validation, in order:
 
-1. `bun test tests/static-analysis/odw-example-fixtures.test.ts
-   tests/static-analysis/deterministic-time-spans.test.ts
-   tests/static-analysis/workflow-envelope-fixtures.test.ts
-   tests/static-analysis/workflow-body-parser.test.ts
-   tests/static-analysis/loader-parity.test.ts` — all pass.
+1. `bun test tests/static-analysis/odw-example-fixtures.test.ts`
+   `tests/static-analysis/deterministic-time-spans.test.ts`
+   `tests/static-analysis/workflow-envelope-fixtures.test.ts`
+   `tests/static-analysis/workflow-body-parser.test.ts`
+   `tests/static-analysis/loader-parity.test.ts` — all pass.
 2. `make all` — full gate.
 
 ### WI-3 — Extract the shared manifest-to-comparison diagnostic projection
 
 Docs to read: [developers-guide.md](../developers-guide.md) "Workflow Fixture
 Corpus" (the manifest-as-single-source paragraph) and "Source-span helpers";
-[technical-design.md](../technical-design.md) §8 (diagnostic contract) and §11.5
-(span-mapping invariant); AGENTS.md "Abstraction / adapter / helper policy".
-Skills: `leta` for reference discovery. Sweep for any existing projection helper
-first (there is none shared today; three local forks exist).
+[technical-design.md](../technical-design.md) §8 (diagnostic contract) and
+§11.5 (span-mapping invariant); AGENTS.md "Abstraction / adapter / helper
+policy". Skills: `leta` for reference discovery. Sweep for any existing
+projection helper first (there is none shared today; three local forks exist).
 
 Create `tests/static-analysis/fixtures/diagnostic-projection.ts` exporting one
 canonical comparable shape and two projectors (Decision Log 2026-07-05-C):
@@ -475,11 +483,12 @@ export const liveDiagnosticToComparable:
     ComparableFixtureDiagnostic;
 ```
 
-`LiveComparableInput` is the structural minimum `{ rule: unknown; severity;
-message; docs; span }` satisfied by both the lint `Diagnostic` and the body
-parser adapter diagnostic. Import `sliceSourceSpan`, `type DiagnosticSeverity`,
-`type SourceSpan`, `type OriginalSourceFile`, `type RuleDocumentationPath` from
-`odw-lint`, and `type InvalidWorkflowFixtureDiagnostic` from
+`LiveComparableInput` is the structural minimum
+`{ rule: unknown; severity; message; docs; span }` satisfied by both the lint
+`Diagnostic` and the body parser adapter diagnostic. Import `sliceSourceSpan`,
+`type DiagnosticSeverity`, `type SourceSpan`, `type OriginalSourceFile`,
+`type RuleDocumentationPath` from `odw-lint`, and
+`type InvalidWorkflowFixtureDiagnostic` from
 `./invalid-workflows/manifest-types`. Keep the module free of ODW runtime
 imports (Constraints: static-analysis boundary).
 
@@ -515,9 +524,9 @@ Tests (new file `tests/static-analysis/diagnostic-projection.test.ts`):
 Validation, in order:
 
 1. `bun test tests/static-analysis/diagnostic-projection.test.ts` (red → green).
-2. `bun test tests/static-analysis/invalid-workflow-metadata-parity.test.ts
-   tests/static-analysis/workflow-envelope-fixtures.test.ts
-   tests/static-analysis/workflow-body-parser.test.ts` — all pass.
+2. `bun test tests/static-analysis/invalid-workflow-metadata-parity.test.ts`
+   `tests/static-analysis/workflow-envelope-fixtures.test.ts`
+   `tests/static-analysis/workflow-body-parser.test.ts` — all pass.
 3. `make all`.
 
 ### WI-4 — Corpus-ownership architecture guard meta-test
@@ -536,13 +545,13 @@ Create `tests/static-analysis/fixture-corpus-ownership.test.ts`. Using the
   self-check embeds a crafted corpus-location literal that would otherwise
   self-flag);
 - flags, in every non-excluded file, exactly **one** pattern: a `new URL(...)`
-  call-expression whose **first argument is a string literal (or no-substitution
-  template literal) whose text contains the path segment `fixtures/odw-examples/`
-  or `fixtures/invalid-workflows/`**. Report `{filePath, line, column, text}`
-  for each match and assert the collected list is empty. This is the
-  URL-path-segment detector mandated by Decision Log 2026-07-05-D; there is no
-  property-key pattern (see the Decision for why a `fixtureDirectory`/
-  `manifestRoot` key check is rejected);
+  call-expression whose **first argument is a string literal (or
+  no-substitution template literal) whose text contains the path segment
+  `fixtures/odw-examples/` or `fixtures/invalid-workflows/`**. Report
+  `{filePath, line, column, text}` for each match and assert the collected list
+  is empty. This is the URL-path-segment detector mandated by Decision Log
+  2026-07-05-D; there is no property-key pattern (see the Decision for why a
+  `fixtureDirectory`/ `manifestRoot` key check is rejected);
 - includes a self-check that runs the detector against two in-memory source
   strings (never written to disk): a crafted inline-literal sample
   (`new URL("./fixtures/odw-examples/", import.meta.url)`) that MUST be flagged
@@ -557,64 +566,65 @@ construction (Decision Log 2026-07-05-B, 2026-07-05-D):
 - After WI-2/WI-3 routing, the owner modules
   (`fixtures/odw-examples/corpus.ts`, `fixtures/invalid-workflows/corpus.ts`)
   build their directory URL as `new URL("./", import.meta.url)` and carry the
-  corpus path only inside a plain `manifestRoot` **string constant**, not inside
-  a `new URL(...)` first argument — so the URL-path-segment detector does not
-  match them (verified: no file under `tests/static-analysis/fixtures/` currently
-  holds a `new URL("…fixtures/odw-examples/…")` or `…invalid-workflows/…` string
+  corpus path only inside a plain `manifestRoot` **string constant**, not
+  inside a `new URL(...)` first argument — so the URL-path-segment detector
+  does not match them (verified: no file under
+  `tests/static-analysis/fixtures/` currently holds a
+  `new URL("…fixtures/odw-examples/…")` or `…invalid-workflows/…` string
   literal).
 - The generated manifests (`fixtures/odw-examples.ts`,
-  `fixtures/invalid-workflows/manifests/*.ts`) use repo-relative **strings**, not
-  `new URL(...)`, and the refresh support modules
-  (`fixtures/refresh-*.ts`, `fixtures/refresh-manifest-source.ts`) call
-  `new URL(<variable>, …)` with non-literal first arguments — neither form
-  matches the detector.
+  `fixtures/invalid-workflows/manifests/*.ts`) use repo-relative **strings**,
+  not `new URL(...)`, and the refresh support modules (`fixtures/refresh-*.ts`,
+  `fixtures/refresh-manifest-source.ts`) call `new URL(<variable>, …)` with
+  non-literal first arguments — neither form matches the detector.
 - The masking corpus is exempt for free: `masking-fixtures.test.ts:20` and
   `source-mask-fixtures.test.ts:11` use `new URL("./fixtures/masking/", …)`,
-  whose path segment is neither `odw-examples/` nor `invalid-workflows/`, so the
-  detector never flags them — even though those files carry
+  whose path segment is neither `odw-examples/` nor `invalid-workflows/`, so
+  the detector never flags them — even though those files carry
   `{ fixtureDirectory: … }` property literals (`masking-fixtures.test.ts:55`,
   `source-mask-fixtures.test.ts:11`). A property-key detector WOULD flag those
-  two masking files (they are not, and must not be, in scope), which is precisely
-  the contradiction Decision Log 2026-07-05-D removes. Because the sole detector
-  is path-segment-scoped, no masking allowlist entry is needed and none is added,
-  and `make all` passes at the WI-4 commit with the masking corpus untouched.
+  two masking files (they are not, and must not be, in scope), which is
+  precisely the contradiction Decision Log 2026-07-05-D removes. Because the
+  sole detector is path-segment-scoped, no masking allowlist entry is needed
+  and none is added, and `make all` passes at the WI-4 commit with the masking
+  corpus untouched.
 
 Validation: `bun test tests/static-analysis/fixture-corpus-ownership.test.ts`
-(passes only because WI-2/WI-3 routed every consumer; temporarily reintroduce one
-inline literal to observe a real failure, then revert), then `make all`.
+(passes only because WI-2/WI-3 routed every consumer; temporarily reintroduce
+one inline literal to observe a real failure, then revert), then `make all`.
 
 ### WI-5 — Documentation, roadmap note, and retrospective
 
 Docs to read/edit: [developers-guide.md](../developers-guide.md) "Workflow
-Fixture Corpus"; [documentation-style-guide.md](../documentation-style-guide.md);
-AGENTS.md "Documentation Maintenance". Skills: `en-gb-oxendict` for prose.
+Fixture Corpus";
+[documentation-style-guide.md](../documentation-style-guide.md); AGENTS.md
+"Documentation Maintenance". Skills: `en-gb-oxendict` for prose.
 
 - Update [developers-guide.md](../developers-guide.md) "Workflow Fixture Corpus"
-  to state that (1) each corpus has one owner module — `ODW_EXAMPLE_FIXTURE_CORPUS`
-  in `fixtures/odw-examples/corpus.ts` and `INVALID_WORKFLOW_FIXTURE_CORPUS` in
-  `fixtures/invalid-workflows/corpus.ts` — and consumers must import the location
-  rather than inline `new URL(...)`; (2)
+  to state that (1) each corpus has one owner module —
+  `ODW_EXAMPLE_FIXTURE_CORPUS` in `fixtures/odw-examples/corpus.ts` and
+  `INVALID_WORKFLOW_FIXTURE_CORPUS` in `fixtures/invalid-workflows/corpus.ts` —
+  and consumers must import the location rather than inline `new URL(...)`; (2)
   `tests/static-analysis/fixtures/diagnostic-projection.ts` is the single
   manifest-to-comparison diagnostic contract used by the parser, envelope, and
-  metadata parity suites; (3)
-  `fixture-corpus-ownership.test.ts` enforces both, and masking fixtures stay out
-  of that contract. Document ownership, permitted call sites, and composition
-  rules per AGENTS.md "Abstraction / adapter / helper policy". Keep prose wrapped
-  at 80 columns.
+  metadata parity suites; (3) `fixture-corpus-ownership.test.ts` enforces both,
+  and masking fixtures stay out of that contract. Document ownership, permitted
+  call sites, and composition rules per AGENTS.md "Abstraction / adapter /
+  helper policy". Keep prose wrapped at 80 columns.
 - Assess whether [technical-design.md](../technical-design.md) §11.2/§11.3
-  needs a sentence noting the single corpus-location and projection owners;
-  add only if it improves accuracy (the design already mandates the
-  architecture rule shape). Do not manufacture churn.
+  needs a sentence noting the single corpus-location and projection owners; add
+  only if it improves accuracy (the design already mandates the architecture
+  rule shape). Do not manufacture churn.
 - Mark roadmap task 2.3.5 complete in [roadmap.md](../roadmap.md) with a
   completion note pointing at this ExecPlan, matching the style of sibling
   completed tasks (e.g. 2.3.1, 2.3.3). Use the `mapsplice` skill only if
-  structural renumbering is needed; a checkbox flip plus a completion-note
-  line is a plain edit.
+  structural renumbering is needed; a checkbox flip plus a completion-note line
+  is a plain edit.
 - Fill in this ExecPlan's `Outcomes & retrospective` and flip `Status` to
   `COMPLETE`.
 
-Validation for Markdown edits: run the formatter on only the files touched, then
-gate:
+Validation for Markdown edits: run the formatter on only the files touched,
+then gate:
 
 ```sh
 bunx mdtablefix docs/execplans/roadmap-2-3-5.md docs/developers-guide.md docs/roadmap.md
@@ -625,8 +635,8 @@ make all
 ```
 
 (Adjust the file list to exactly the Markdown files this work item edits; if
-`technical-design.md` is left unchanged, omit it. Every listed path must exist at
-run time.)
+`technical-design.md` is left unchanged, omit it. Every listed path must exist
+at run time.)
 
 ## Concrete steps
 
@@ -665,12 +675,12 @@ generated manifest, which uses repo-relative strings, not `new URL`).
 ## Validation and acceptance
 
 Deterministic commit gate for every code work item: `make all` (runs `build`,
-`check-fmt`, `whitespace-hygiene`, `lint` = Biome + Oxlint, `typecheck` = `tsc
---noEmit`, `test` = `bun test`). AGENTS.md names `make test`, `make lint`, `make
-typecheck`, and `make check-fmt`; all are subsumed by `make all`, and the plan
-also runs the focused `bun test <file>` commands listed per work item to capture
-Red-Green evidence. Markdown work items additionally run `make markdownlint` and
-`make nixie`.
+`check-fmt`, `whitespace-hygiene`, `lint` = Biome + Oxlint, `typecheck` =
+`tsc --noEmit`, `test` = `bun test`). AGENTS.md names `make test`, `make lint`,
+`make typecheck`, and `make check-fmt`; all are subsumed by `make all`, and the
+plan also runs the focused `bun test <file>` commands listed per work item to
+capture Red-Green evidence. Markdown work items additionally run
+`make markdownlint` and `make nixie`.
 
 Acceptance (behaviour a human can verify):
 
@@ -685,15 +695,15 @@ Acceptance (behaviour a human can verify):
   corpus-location literal is added to a hand-written test (verify once by
   reintroducing and reverting a literal).
 - Projection single-sourcing: `invalid-workflow-metadata-parity.test.ts`,
-  `workflow-envelope-fixtures.test.ts`, and `workflow-body-parser.test.ts` import
-  their comparable diagnostics from
+  `workflow-envelope-fixtures.test.ts`, and `workflow-body-parser.test.ts`
+  import their comparable diagnostics from
   `tests/static-analysis/fixtures/diagnostic-projection.ts`; no local
   `ComparableDiagnostic`/`expectedBodySyntaxDiagnosticFor` remains.
 - Loader-parity inertness unchanged: the
   `loader-parity harness inertness` describe block still passes after WI-2.
-- Docs: [developers-guide.md](../developers-guide.md) describes the owner modules
-  and projection contract; [roadmap.md](../roadmap.md) marks 2.3.5 complete;
-  `make markdownlint` and `make nixie` pass.
+- Docs: [developers-guide.md](../developers-guide.md) describes the owner
+  modules and projection contract; [roadmap.md](../roadmap.md) marks 2.3.5
+  complete; `make markdownlint` and `make nixie` pass.
 
 Quality criteria ("done"):
 
@@ -702,21 +712,21 @@ Quality criteria ("done"):
 - Lint/typecheck: `make lint` and `make typecheck` clean (part of `make all`).
 - No file over 400 lines; no trailing whitespace; en-GB Oxford spelling.
 
-Quality method: `make all` after every commit; `make markdownlint` + `make
-nixie` after the documentation commit; the focused `bun test` red/green captures
-recorded in `Progress`/`Artifacts and notes`.
+Quality method: `make all` after every commit; `make markdownlint` +
+`make nixie` after the documentation commit; the focused `bun test` red/green
+captures recorded in `Progress`/`Artifacts and notes`.
 
 ## Idempotence and recovery
 
-Every step is a normal file edit under version control; re-running `make all` is
-safe and cache-friendly. If a routing edit breaks a suite, `git diff` the single
-touched consumer and compare against the owner module's `manifestRoot` — the most
-likely fault is a `fileName`-vs-`fixturePath` mismatch that the WI-1 binding test
-already characterizes. Never modify the generator or a generated manifest to
-"fix" a routing failure (Constraints); that indicates a wrong turn. To abandon a
-work item mid-flight, `git restore` the touched files (no external state is
-mutated). If a stash is needed, name it per the run convention: `df12-stash v1
-task=2.3.5 kind=<discard|keep> reason="<short>"`.
+Every step is a normal file edit under version control; re-running `make all`
+is safe and cache-friendly. If a routing edit breaks a suite, `git diff` the
+single touched consumer and compare against the owner module's `manifestRoot` —
+the most likely fault is a `fileName`-vs-`fixturePath` mismatch that the WI-1
+binding test already characterizes. Never modify the generator or a generated
+manifest to "fix" a routing failure (Constraints); that indicates a wrong turn.
+To abandon a work item mid-flight, `git restore` the touched files (no external
+state is mutated). If a stash is needed, name it per the run convention:
+`df12-stash v1 task=2.3.5 kind=<discard|keep> reason="<short>"`.
 
 ## Artefacts and notes
 
@@ -737,14 +747,16 @@ Keep transcripts short and focused on the assertion that proves the contract.
   uniqueness assertion and prose/path fixes; kept the object-shaped lookup
   signature per Decision 2026-07-05-E. Scrutineer reran the deterministic gates
   green after those fixes.
-- WI-2 focused green: `bun test tests/static-analysis/odw-example-fixtures.test.ts
-  tests/static-analysis/deterministic-time-spans.test.ts
-  tests/static-analysis/workflow-envelope-fixtures.test.ts
-  tests/static-analysis/workflow-body-parser.test.ts
-  tests/static-analysis/loader-parity.test.ts` passed with 128 tests and the
+- WI-2 focused green:
+  `bun test tests/static-analysis/odw-example-fixtures.test.ts`
+  `tests/static-analysis/deterministic-time-spans.test.ts`
+  `tests/static-analysis/workflow-envelope-fixtures.test.ts`
+  `tests/static-analysis/workflow-body-parser.test.ts`
+  `tests/static-analysis/loader-parity.test.ts` passed with 128 tests and the
   loader-parity inertness checks green.
-- WI-2 ownership scan: `rg -n 'new URL\("\./fixtures/(odw-examples|invalid-workflows)/'
-  tests/static-analysis` returned no matches after routing.
+- WI-2 ownership scan:
+  `rg -n 'new URL\("\./fixtures/(odw-examples|invalid-workflows)/' tests/static-analysis`
+  returned no matches after routing.
 - WI-2 gates: scrutineer reported `make all`, `make check-fmt`,
   `make typecheck`, `make lint`, and `make test` green. No Markdown files
   changed in the WI-2 patch before the ExecPlan update.
@@ -756,14 +768,16 @@ Keep transcripts short and focused on the assertion that proves the contract.
 - WI-3 red: `bun test tests/static-analysis/diagnostic-projection.test.ts`
   failed with `Cannot find module './fixtures/diagnostic-projection'` before
   the shared projection module existed.
-- WI-3 focused green: `bun test tests/static-analysis/diagnostic-projection.test.ts
-  tests/static-analysis/invalid-workflow-metadata-parity.test.ts
-  tests/static-analysis/workflow-envelope-fixtures.test.ts
-  tests/static-analysis/workflow-body-parser.test.ts` passed with 44 tests, one
-  snapshot, and 558 assertions after the projection routing and review hardening.
+- WI-3 focused green:
+  `bun test tests/static-analysis/diagnostic-projection.test.ts`
+  `tests/static-analysis/invalid-workflow-metadata-parity.test.ts`
+  `tests/static-analysis/workflow-envelope-fixtures.test.ts`
+  `tests/static-analysis/workflow-body-parser.test.ts` passed with 44 tests,
+  one snapshot, and 558 assertions after the projection routing and review
+  hardening.
 - WI-3 type contract: `bunx tsc --noEmit` passed with the type-only negative
-  contract in `tests/static-analysis/diagnostic-projection-contract.ts`,
-  proving `ComparableFixtureDiagnostic` still requires `docs`.
+  contract in `tests/static-analysis/diagnostic-projection-contract.ts`, proving
+  `ComparableFixtureDiagnostic` still requires `docs`.
 - WI-3 gates: scrutineer reported `make all`, `make check-fmt`, `make lint`,
   `make typecheck`, and `make test` green after the projection extraction and
   CodeRabbit follow-up fixes.
@@ -777,16 +791,19 @@ Keep transcripts short and focused on the assertion that proves the contract.
   `tests/static-analysis/tmp-inline-corpus-guard-check.test.ts` with
   `new URL("./fixtures/odw-examples/", import.meta.url)` made
   `bun test tests/static-analysis/fixture-corpus-ownership.test.ts` fail with
-  the temporary file reported at line 1, column 25; the scratch file was removed.
-- WI-4 focused green: `bun test tests/static-analysis/fixture-corpus-ownership.test.ts`
-  passed with 2 tests, one inline snapshot, and 8 assertions after the guard
-  derived protected segments from the owner modules and covered both corpora.
+  the temporary file reported at line 1, column 25; the scratch file was
+  removed.
+- WI-4 focused green:
+  `bun test tests/static-analysis/fixture-corpus-ownership.test.ts` passed with
+  2 tests, one inline snapshot, and 8 assertions after the guard derived
+  protected segments from the owner modules and covered both corpora.
 - WI-4 gates: scrutineer reported `make all`, `make check-fmt`,
   `make typecheck`, `make lint`, and `make test` green after the CodeRabbit
   follow-up fixes. No Markdown files changed before the ExecPlan update.
-- WI-4 ownership scan: `rg -n 'new URL\("\./fixtures/(odw-examples|invalid-workflows)/'
-  tests/static-analysis` returned only the guard's self-check literal, which is
-  excluded by `GUARD_FILE_PATH`.
+- WI-4 ownership scan:
+  `rg -n 'new URL\("\./fixtures/(odw-examples|invalid-workflows)/' tests/static-analysis`
+  returned only the guard's self-check literal, which is excluded by
+  `GUARD_FILE_PATH`.
 - WI-4 CodeRabbit: applied low-severity review feedback to normalize the guard
   path, snapshot the violation shape, document literal-only scope, derive
   protected segments from owner modules, and add invalid-workflow positive
@@ -797,9 +814,9 @@ Keep transcripts short and focused on the assertion that proves the contract.
   generated manifests, and refresh support remain valid.
 - WI-5 docs: updated the developers guide "Workflow Fixture Corpus" section,
   marked roadmap task 2.3.5 complete, and completed this retrospective. Leta
-  prose lookup was unavailable for one Markdown search with `Connection refused
-  (os error 111)`, so the documentation surfaces were verified by direct file
-  inspection.
+  prose lookup was unavailable for one Markdown search with
+  `Connection refused (os error 111)`, so the documentation surfaces were
+  verified by direct file inspection.
 
 ## Interfaces and dependencies
 
@@ -807,8 +824,9 @@ Modules to exist at completion (all under `tests/`, none in `src/`; static
 analysis boundary preserved):
 
 - `tests/static-analysis/fixtures/odw-examples/corpus.ts` —
-  `ODW_EXAMPLE_FIXTURE_CORPUS: FixtureCorpusLocation`, `ODW_EXAMPLE_UPSTREAM_ROOT:
-  string`, `findOdwExampleFixture({ fileName }): OdwExampleFixtureSnapshot`.
+  `ODW_EXAMPLE_FIXTURE_CORPUS: FixtureCorpusLocation`,
+  `ODW_EXAMPLE_UPSTREAM_ROOT: string`,
+  `findOdwExampleFixture({ fileName }): OdwExampleFixtureSnapshot`.
 - `tests/static-analysis/fixtures/diagnostic-projection.ts` —
   `ComparableFixtureDiagnostic`, `manifestDiagnosticToComparable`,
   `liveDiagnosticToComparable`.
@@ -850,15 +868,18 @@ them a separate owner pattern.
 
 Documentation consulted while drafting: [roadmap.md](../roadmap.md) task 2.3.5
 and siblings 2.3.1/2.3.3; [technical-design.md](../technical-design.md) §§6.1,
-6.4, 8, 11.1–11.3, 11.5; [adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md);
+6.4, 8, 11.1–11.3, 11.5;
+[adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md);
+
 [developers-guide.md](../developers-guide.md) "Workflow Fixture Corpus" and
 "Source-span helpers"; AGENTS.md (gate set, abstraction policy, testing rules,
-file-size and spelling conventions); [documentation-style-guide.md](../documentation-style-guide.md).
-Skills to load during implementation: `execplans` (this plan's format), `leta`
-(symbol navigation and reference discovery), `en-gb-oxendict` (prose in WI-5),
+file-size and spelling conventions);
+[documentation-style-guide.md](../documentation-style-guide.md). Skills to load
+during implementation: `execplans` (this plan's format), `leta` (symbol
+navigation and reference discovery), `en-gb-oxendict` (prose in WI-5),
 `mapsplice` (only if roadmap renumbering is needed). GrepAI reflects `main`
-only; all branch-local facts in this plan were verified by direct file inspection
-in the worktree.
+only; all branch-local facts in this plan were verified by direct file
+inspection in the worktree.
 
 ## Revision note
 
@@ -873,14 +894,14 @@ in the worktree.
   (any object-literal property keyed `fixtureDirectory`/`manifestRoot`) was
   over-broad and self-contradicted Decision 2026-07-05-B. It would have flagged
   the two non-allowlisted hand-written masking test files
-  (`masking-fixtures.test.ts:55`, `source-mask-fixtures.test.ts:11`), failing the
-  guard's empty-list assertion and breaking `make all` at the WI-4 commit.
-  Removed pattern (b) entirely; WI-4 now uses a single URL-path-segment detector
-  (former pattern (a)) scoped to the two ODW-parity corpus segments, which the
-  worktree confirms catches all six real inline consumer literals while the
-  masking `new URL("./fixtures/masking/", …)` and the owner modules'
-  `new URL("./", …)` escape by construction. Simplified the allowlist to just the
-  guard file itself (no corpus/masking allowlist needed), verified no
+  (`masking-fixtures.test.ts:55`, `source-mask-fixtures.test.ts:11`), failing
+  the guard's empty-list assertion and breaking `make all` at the WI-4 commit.
+  Removed pattern (b) entirely; WI-4 now uses a single URL-path-segment
+  detector (former pattern (a)) scoped to the two ODW-parity corpus segments,
+  which the worktree confirms catches all six real inline consumer literals
+  while the masking `new URL("./fixtures/masking/", …)` and the owner modules'
+  `new URL("./", …)` escape by construction. Simplified the allowlist to just
+  the guard file itself (no corpus/masking allowlist needed), verified no
   support/owner/generated/refresh module carries a matching `new URL` string
   literal, and recorded the change as Decision Log 2026-07-05-D. Updated the
   Constraints masking bullet and the "too broad" Risk accordingly.

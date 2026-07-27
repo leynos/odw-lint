@@ -1,9 +1,8 @@
 # Consolidate delimited and balanced scanner loops
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -13,11 +12,11 @@ workflow approves this plan.
 ## Purpose / big picture
 
 Roadmap task 2.1.14 finishes the scanner-consolidation arc started by 2.1.13.
-Task 2.1.13 extracted the shared low-level primitives (character classification,
-escape advancement, comment boundaries, identifier runs) into
-`src/static-analysis/source-scanner-primitives.ts`. Several **whole loops** that
-walk escaped-delimited regions and balanced expressions were left forked across
-the two scanner families, because 2.1.13 stopped at the character-level
+Task 2.1.13 extracted the shared low-level primitives (character
+classification, escape advancement, comment boundaries, identifier runs) into
+`src/static-analysis/source-scanner-primitives.ts`. Several **whole loops**
+that walk escaped-delimited regions and balanced expressions were left forked
+across the two scanner families, because 2.1.13 stopped at the character-level
 primitives. Task 2.1.14 removes those remaining forked loops.
 
 Two scanner families still each carry their own copies of the same two loop
@@ -54,11 +53,10 @@ shapes:
 
 This duplication is exactly the "Duplicated Code" refactoring smell named in
 `AGENTS.md` "Refactoring Heuristics & Workflow", and it violates
-`docs/technical-design.md` §6.2, which states that scanner-family modules
-"must not re-implement the shared UTF-16 grammar loops".
+`docs/technical-design.md` §6.2, which states that scanner-family modules "must
+not re-implement the shared UTF-16 grammar loops".
 
-After this plan, both loop shapes live once in
-`source-scanner-primitives.ts`:
+After this plan, both loop shapes live once in `source-scanner-primitives.ts`:
 
 - one parametrized delimited-region primitive
   (`scanDelimitedRegionEnd`) that expresses all four escaped-delimited scanners
@@ -114,10 +112,10 @@ is not an escaped-delimited or balanced loop — see the Decision Log).
 - No emitted diagnostic, mask range, metadata span, or parse-reason may change.
   This is behaviour-preserving.
 - `src/static-analysis/source-scanner-primitives.ts` must remain the documented
-  scanner seam (`docs/technical-design.md` §6.2,
-  `docs/developers-guide.md` primitives bullet). If a new sibling module is
-  introduced (see Tolerances), it must be re-exported through the primitives
-  module so the seam's import surface is preserved.
+  scanner seam (`docs/technical-design.md` §6.2, `docs/developers-guide.md`
+  primitives bullet). If a new sibling module is introduced (see Tolerances),
+  it must be re-exported through the primitives module so the seam's import
+  surface is preserved.
 - The primitives module must stay free of mask-range, parser-cursor,
   diagnostic, and public-package types (`docs/developers-guide.md`, primitives
   bullet; `docs/technical-design.md` §6.2).
@@ -166,8 +164,8 @@ is not an escaped-delimited or balanced loop — see the Decision Log).
   (net), stop and escalate.
 - File size: if adding the primitives would push
   `source-scanner-primitives.ts` beyond ~380 physical lines, do not exceed the
-  400-line gate. Instead extract the region scanners into a new internal
-  sibling `src/static-analysis/source-scanner-regions.ts` and re-export the new
+  400-line gate. Instead extract the region scanners into a new internal sibling
+  `src/static-analysis/source-scanner-regions.ts` and re-export the new
   symbols through `source-scanner-primitives.ts` to preserve the documented
   seam. Record the split in the Decision Log. (Baseline: the module is 339
   lines today; folding the four delimited and three balanced loops nets an
@@ -190,47 +188,39 @@ is not an escaped-delimited or balanced loop — see the Decision Log).
 ## Risks
 
 - Risk: `source-scanner-primitives.ts` exceeds the 400-line gate after folding
-  seven loops into it.
-  Severity: medium
-  Likelihood: medium
-  Mitigation: the File-size tolerance above pre-authorizes the
-  `source-scanner-regions.ts` sibling split with re-export through the seam.
-  Measure the line count after WI1 and WI4 before adding more.
+  seven loops into it. Severity: medium Likelihood: medium Mitigation: the
+  File-size tolerance above pre-authorizes the `source-scanner-regions.ts`
+  sibling split with re-export through the seam. Measure the line count after
+  WI1 and WI4 before adding more.
 - Risk: the parity oracle in
   `tests/static-analysis/delimited-end-parity.property.test.ts` currently pins
   only two of the four delimited contracts (source-mask escaped-delimited and
   metadata delimited). Folding the quoted-string and template contracts could
-  drift undetected.
-  Severity: medium
-  Likelihood: low
-  Mitigation: WI3 and WI4 extend the parity oracles with frozen copies of the
-  pre-refactor quoted-string and balanced loops before rewiring, so each
-  contract has a differential guard.
+  drift undetected. Severity: medium Likelihood: low Mitigation: WI3 and WI4
+  extend the parity oracles with frozen copies of the pre-refactor
+  quoted-string and balanced loops before rewiring, so each contract has a
+  differential guard.
 - Risk: mutual recursion between the delimited primitive and
   `templateExpressionEnd` (delimited → interpolation → balanced → delimited)
   hits a temporal-dead-zone error because module-scope `const` arrow functions
-  are not hoisted.
-  Severity: low
-  Likelihood: low
-  Mitigation: all cross-references occur at call time, not definition time, so
-  runtime recursion is safe; keep definitions in dependency order and rely on
-  the existing `source-scanner-delimited.test.ts` nested-template cases to
-  catch a TDZ regression immediately.
+  are not hoisted. Severity: low Likelihood: low Mitigation: all
+  cross-references occur at call time, not definition time, so runtime
+  recursion is safe; keep definitions in dependency order and rely on the
+  existing `source-scanner-delimited.test.ts` nested-template cases to catch a
+  TDZ regression immediately.
 - Risk: an exact top-level-declaration architecture assertion fails when a
   primitive or module-private helper is added **or removed** without updating
   the matching expected inventory, since `expectModuleDeclarations` asserts
-  `toEqual` over every named top-level declaration, not only exports. This bites
-  in two directions here: WI1/WI4 add names to the
-  `source-scanner-primitives.ts` inventory (`:176-201`), and WI3 removes the two
-  private helpers `isEscapedCrLfLineContinuation` and
+  `toEqual` over every named top-level declaration, not only exports. This
+  bites in two directions here: WI1/WI4 add names to the
+  `source-scanner-primitives.ts` inventory (`:176-201`), and WI3 removes the
+  two private helpers `isEscapedCrLfLineContinuation` and
   `nextEscapedQuotedStringIndex` from the `source-mask-strings.ts` inventory
-  (`:241-246`).
-  Severity: low
-  Likelihood: medium
-  Mitigation: each work item that adds or removes a top-level declaration updates
-  the matching expected array in the same commit; this is called out explicitly
-  per work item below (WI1, WI3, WI4), and the plan prefers inlining small
-  helpers over new module-private names to minimize inventory churn.
+  (`:241-246`). Severity: low Likelihood: medium Mitigation: each work item
+  that adds or removes a top-level declaration updates the matching expected
+  array in the same commit; this is called out explicitly per work item below
+  (WI1, WI3, WI4), and the plan prefers inlining small helpers over new
+  module-private names to minimize inventory churn.
 
 ## Progress
 
@@ -251,91 +241,86 @@ is not an escaped-delimited or balanced loop — see the Decision Log).
 - Observation: the balanced loops do not share one contract; `scanExpressionEnd`
   tracks all three delimiter families and trims trailing trivia, whereas
   `expressionEnd` and `scanBalancedEnd` track a single pair and return at the
-  matching close.
-  Evidence: `src/static-analysis/workflow-metadata-parser-scan.ts:71-130` and
-  the nested `expressionEnd` in `source-scanner-primitives.ts:252-276`.
-  Impact: shapes the "one primitive plus one shared skip step" design in WI4/WI5
-  rather than a single all-cases balanced function; matches the roadmap's "where
-  contracts match" wording.
+  matching close. Evidence:
+  `src/static-analysis/workflow-metadata-parser-scan.ts:71-130` and the nested
+  `expressionEnd` in `source-scanner-primitives.ts:252-276`. Impact: shapes the
+  "one primitive plus one shared skip step" design in WI4/WI5 rather than a
+  single all-cases balanced function; matches the roadmap's "where contracts
+  match" wording.
 - Observation: the check order for skipping strings versus comments differs
   between the three balanced loops, but is behaviourally irrelevant because a
   string delimiter (`'`, `"`, `` ` ``) can never also open a comment (`/`).
   Evidence: `scanExpressionEnd` checks string-like first
   (`workflow-metadata-parser-scan.ts:76-84`); `scanBalancedEnd` checks comments
-  first (`:110-118`).
-  Impact: a single `nextInertRegionEnd` step serves all three without changing
-  any result.
+  first (`:110-118`). Impact: a single `nextInertRegionEnd` step serves all
+  three without changing any result.
 - Observation: WI1's consolidated delimited primitive needed private predicate
   and skip helpers to satisfy Oxlint's complexity limit, even before the
-  balanced primitive lands.
-  Evidence: the first two `scrutineer` `make all` runs failed on
-  `source-scanner-primitives.ts` complexity, private JSDoc, public JSDoc, and
-  then the 400-line architecture guard. Focused tests passed after extracting
-  `escapedDelimitedContinuationEnd`, `isTemplateInterpolationStart`,
-  `delimitedRegionSkipEnd`, and `delimitedRegionEndIndex`.
-  Impact: WI1 kept `source-scanner-primitives.ts` under the hard line limit by
-  compacting comments; WI4 should expect to use the pre-authorized
-  `source-scanner-regions.ts` split if the balanced primitive would push this
-  module back over the guard.
+  balanced primitive lands. Evidence: the first two `scrutineer` `make all`
+  runs failed on `source-scanner-primitives.ts` complexity, private JSDoc,
+  public JSDoc, and then the 400-line architecture guard. Focused tests passed
+  after extracting `escapedDelimitedContinuationEnd`,
+  `isTemplateInterpolationStart`, `delimitedRegionSkipEnd`, and
+  `delimitedRegionEndIndex`. Impact: WI1 kept `source-scanner-primitives.ts`
+  under the hard line limit by compacting comments; WI4 should expect to use
+  the pre-authorized `source-scanner-regions.ts` split if the balanced
+  primitive would push this module back over the guard.
 - Observation: CodeRabbit reviewed WI1 only after one mandatory rate-limit
   backoff and returned two documentation-scope findings against this ExecPlan.
   Evidence: the initial `coderabbit review --agent` returned a recoverable
   `rate_limit` error with `waitTime: "6 minutes"`; the required randomized
   `vsleep` backoff selected 64 minutes; retry 1 completed with one `trivial`
-  hard-coded-worktree-path finding and one `major` ADR request.
-  Impact: both findings were dispositioned in the Decision Log because changing
-  the exact assigned worktree path would conflict with the df12-build standing
-  rules, and adding an ADR in WI1 would overstate an internal refactor that is
-  already governed by the existing technical design seam. WI6 remains
-  responsible for updating the design and developer documentation.
+  hard-coded-worktree-path finding and one `major` ADR request. Impact: both
+  findings were dispositioned in the Decision Log because changing the exact
+  assigned worktree path would conflict with the df12-build standing rules, and
+  adding an ADR in WI1 would overstate an internal refactor that is already
+  governed by the existing technical design seam. WI6 remains responsible for
+  updating the design and developer documentation.
 - Observation: WI4 needed the pre-authorized sibling split before adding the
   balanced primitive because `source-scanner-primitives.ts` had already reached
-  396 physical lines after WI3.
-  Evidence: the WI4 split leaves `source-scanner-primitives.ts` at 255 lines and
-  the new `source-scanner-regions.ts` at 208 lines, both under the 400-line
-  architecture guard.
-  Impact: region-level delimited and balanced loops now live in
-  `source-scanner-regions.ts` and are re-exported through
+  396 physical lines after WI3. Evidence: the WI4 split leaves
+  `source-scanner-primitives.ts` at 255 lines and the new
+  `source-scanner-regions.ts` at 208 lines, both under the 400-line
+  architecture guard. Impact: region-level delimited and balanced loops now
+  live in `source-scanner-regions.ts` and are re-exported through
   `source-scanner-primitives.ts`, preserving the documented seam while keeping
   both modules reviewable.
 - Observation: the first WI4 `make all` run caught the new sibling module in the
-  global static-analysis inventory before CodeRabbit ran.
-  Evidence: `tests/diagnostics/architecture.test.ts` rejected the unlisted
+  global static-analysis inventory before CodeRabbit ran. Evidence:
+  `tests/diagnostics/architecture.test.ts` rejected the unlisted
   `source-scanner-regions.ts`; adding it to
   `tests/diagnostics/architecture-fixtures.ts` made the focused architecture
-  tests and the subsequent `scrutineer` `make all` run pass.
-  Impact: the architecture inventories now pin the new module in both the
-  source-helper and diagnostic fixture suites.
+  tests and the subsequent `scrutineer` `make all` run pass. Impact: the
+  architecture inventories now pin the new module in both the source-helper and
+  diagnostic fixture suites.
 - Observation: the first WI4 CodeRabbit attempt was incomplete, but the retry
-  completed with no findings.
-  Evidence: the initial attempt exited 130 after `summarizing` with no usable
-  output and no rate-limit message; the retry exited 0 with
-  `review_completed` and `findings: 0`.
-  Impact: no code changes were needed after AI review, and the incomplete
-  attempt is counted as a review attempt rather than a deferred issue.
+  completed with no findings. Evidence: the initial attempt exited 130 after
+  `summarizing` with no usable output and no rate-limit message; the retry
+  exited 0 with `review_completed` and `findings: 0`. Impact: no code changes
+  were needed after AI review, and the incomplete attempt is counted as a
+  review attempt rather than a deferred issue.
 - Observation: WI5's frozen balanced parity test needed a real
   `ParserCursor.file` even though the scanner functions only read text indexes.
   Evidence: `scrutineer` caught a TypeScript failure because `ParserCursor`
   requires `file`; the helper now creates an `OriginalSourceFile` with
-  `createOriginalSourceFile`.
-  Impact: the property test uses the real parser cursor shape, so future cursor
-  contract changes will be visible to the scanner parity suite.
+  `createOriginalSourceFile`. Impact: the property test uses the real parser
+  cursor shape, so future cursor contract changes will be visible to the
+  scanner parity suite.
 - Observation: WI5 CodeRabbit was rate-limited once and then found one
-  test-strength issue on retry.
-  Evidence: the first review returned recoverable `rate_limit` with
-  `waitTime: "14 minutes"`; the required randomized `vsleep` selected
-  87 minutes. The retry completed with one trivial finding asking the balanced
-  parity generator to cover backslash escapes.
-  Impact: `SOURCE_FRAGMENT` now includes escaped single-quote, double-quote, and
+  test-strength issue on retry. Evidence: the first review returned recoverable
+  `rate_limit` with `waitTime: "14 minutes"`; the required randomized `vsleep`
+  selected 87 minutes. The retry completed with one trivial finding asking the
+  balanced parity generator to cover backslash escapes. Impact:
+  `SOURCE_FRAGMENT` now includes escaped single-quote, double-quote, and
   template-delimiter cases, and the follow-up `make all` run passed.
 - Observation: WI6 documentation changes were limited to the scanner seam
   ownership text in `docs/technical-design.md` and `docs/developers-guide.md`.
   Evidence: §6.2 now names delimited-region, balanced-expression, and
   inert-region primitives; the developer guide now documents
   `source-scanner-regions.ts` as an internal sibling re-exported through
-  `source-scanner-primitives.ts`.
-  Impact: the docs now match the implemented split without adding a new ADR for
-  an internal refactor covered by the existing static-analysis boundary.
+  `source-scanner-primitives.ts`. Impact: the docs now match the implemented
+  split without adding a new ADR for an internal refactor covered by the
+  existing static-analysis boundary.
 
 ## Decision log
 
@@ -344,96 +329,85 @@ is not an escaped-delimited or balanced loop — see the Decision Log).
   exactly two behavioural options — `allowTemplateInterpolation` (backtick `${`
   recursion) and `terminateAtLineTerminator` (unescaped line-terminator stop,
   which also enables escaped-CRLF line-continuation advancement) — plus an
-  `endIndex` bound (default `text.length`).
-  Rationale: the four loops differ only along these axes. The CRLF-continuation
-  `+1` in `scanQuotedStringEnd` is only meaningful when the scanner stops at
-  line terminators, so it folds into the same flag rather than needing a third
-  option. This keeps the primitive at two behavioural booleans, honouring the
-  Ambiguity tolerance and `AGENTS.md` "Clarity over cleverness".
-  Date/Author: 2026-07-05, planning agent.
+  `endIndex` bound (default `text.length`). Rationale: the four loops differ
+  only along these axes. The CRLF-continuation `+1` in `scanQuotedStringEnd` is
+  only meaningful when the scanner stops at line terminators, so it folds into
+  the same flag rather than needing a third option. This keeps the primitive at
+  two behavioural booleans, honouring the Ambiguity tolerance and `AGENTS.md`
+  "Clarity over cleverness". Date/Author: 2026-07-05, planning agent.
 - Decision: keep `scanExpressionEnd` as its own function rather than forcing it
-  into `scanBalancedExpressionEnd`.
-  Rationale: its terminator-set + trailing-trivia + three-family-depth contract
-  genuinely differs from the single-pair "return at matching close" contract.
-  The roadmap explicitly scopes the balanced primitive to "where contracts
-  match". `scanExpressionEnd` still de-forks by composing the shared
-  `nextInertRegionEnd` skip step.
+  into `scanBalancedExpressionEnd`. Rationale: its terminator-set +
+  trailing-trivia + three-family-depth contract genuinely differs from the
+  single-pair "return at matching close" contract. The roadmap explicitly
+  scopes the balanced primitive to "where contracts match". `scanExpressionEnd`
+  still de-forks by composing the shared `nextInertRegionEnd` skip step.
   Date/Author: 2026-07-05, planning agent.
 - Decision: leave `source-mask-regex.ts` untouched.
   Rationale: the regex scanner is a character-class state machine
   (`isInCharacterClass`, leading-`]` rules), not an escaped-delimited or
   balanced loop. It is out of scope for "delimited and balanced scanner loops"
-  and already consumes the shared character primitives.
-  Date/Author: 2026-07-05, planning agent.
+  and already consumes the shared character primitives. Date/Author:
+  2026-07-05, planning agent.
 - Decision: preserve the wrapper names `scanEscapedDelimitedEnd`,
   `scanQuotedStringEnd`, `scanDelimitedEnd`, `scanBalancedEnd`, and
-  `templateExpressionEnd` in their current modules.
-  Rationale: they are imported across five other modules and by the parity
-  oracle; keeping them as thin adapters over the primitives minimizes blast
-  radius and preserves the 2.1.13.5 "wrapper ownership" precedent. The parity
-  oracle continues to import them by name, so it keeps proving the unified
-  primitive matches each frozen contract.
-  Date/Author: 2026-07-05, planning agent.
+  `templateExpressionEnd` in their current modules. Rationale: they are
+  imported across five other modules and by the parity oracle; keeping them as
+  thin adapters over the primitives minimizes blast radius and preserves the
+  2.1.13.5 "wrapper ownership" precedent. The parity oracle continues to import
+  them by name, so it keeps proving the unified primitive matches each frozen
+  contract. Date/Author: 2026-07-05, planning agent.
 - Decision: keep the source-mask and metadata wrapper functions as the WI2
   integration points instead of importing `scanDelimitedRegionEnd` at every
-  caller.
-  Rationale: the wrappers carry scanner-family names and JSDoc contracts that
-  existing tests and metadata/source-mask call sites already use. WI2's parity
-  oracle stayed green after the wrappers delegated to the primitive, and the
-  CodeRabbit review reported zero findings.
-  Date/Author: 2026-07-05, implementation agent.
+  caller. Rationale: the wrappers carry scanner-family names and JSDoc
+  contracts that existing tests and metadata/source-mask call sites already
+  use. WI2's parity oracle stayed green after the wrappers delegated to the
+  primitive, and the CodeRabbit review reported zero findings. Date/Author:
+  2026-07-05, implementation agent.
 - Decision: keep quoted-string line-terminator semantics inside
-  `scanDelimitedRegionEnd` behind `terminateAtLineTerminator`.
-  Rationale: the focused source-mask string tests and the new frozen
-  quoted-string parity property prove the primitive preserves unescaped
-  terminator stops plus escaped CRLF and LF continuations. Removing the local
-  quoted-string helpers also shrank the pinned source-mask string inventory to
-  the two remaining scanner exports, as planned.
-  Date/Author: 2026-07-05, implementation agent.
+  `scanDelimitedRegionEnd` behind `terminateAtLineTerminator`. Rationale: the
+  focused source-mask string tests and the new frozen quoted-string parity
+  property prove the primitive preserves unescaped terminator stops plus
+  escaped CRLF and LF continuations. Removing the local quoted-string helpers
+  also shrank the pinned source-mask string inventory to the two remaining
+  scanner exports, as planned. Date/Author: 2026-07-05, implementation agent.
 - Decision: keep the exact assigned worktree path in this ExecPlan's
-  Constraints and Concrete Steps.
-  Rationale: this plan is not a reusable public guide; it is an executable
-  df12-build task document for a git-donkey worktree. The workflow standing
-  rules require the exact path
+  Constraints and Concrete Steps. Rationale: this plan is not a reusable public
+  guide; it is an executable df12-build task document for a git-donkey
+  worktree. The workflow standing rules require the exact path
   `/data/leynos/Projects/odw-lint.worktrees/roadmap-2-1-14` and forbid edits in
   the root/control worktree, so replacing the path with a generic environment
-  variable would remove a safety guard.
-  Date/Author: 2026-07-05, implementation agent after CodeRabbit review.
+  variable would remove a safety guard. Date/Author: 2026-07-05, implementation
+  agent after CodeRabbit review.
 - Decision: do not add an ADR during WI1 for the scanner-boundary ownership
-  wording.
-  Rationale: WI1 adds an internal primitive and folds one nested helper without
-  changing public behaviour, public exports, dependencies, or the documented
-  ownership boundary. ADR 0001 already records the static-analysis boundary,
-  and `docs/technical-design.md` §6.2 is the source of truth for the scanner
-  seam. WI6 updates those docs for the completed consolidation; a new ADR is
-  only justified if a later work item changes architecture materially, such as
-  introducing a new long-term sibling module boundary beyond the
-  pre-authorized file-size mitigation.
-  Date/Author: 2026-07-05, implementation agent after CodeRabbit review.
+  wording. Rationale: WI1 adds an internal primitive and folds one nested
+  helper without changing public behaviour, public exports, dependencies, or
+  the documented ownership boundary. ADR 0001 already records the
+  static-analysis boundary, and `docs/technical-design.md` §6.2 is the source
+  of truth for the scanner seam. WI6 updates those docs for the completed
+  consolidation; a new ADR is only justified if a later work item changes
+  architecture materially, such as introducing a new long-term sibling module
+  boundary beyond the pre-authorized file-size mitigation. Date/Author:
+  2026-07-05, implementation agent after CodeRabbit review.
 - Decision: split region-level scanner loops into
   `source-scanner-regions.ts` and re-export them from
-  `source-scanner-primitives.ts`.
-  Rationale: adding the balanced primitive to the 396-line primitives module
-  would violate the file-size tolerance and likely the 400-line gate. The split
-  keeps low-level character and comment primitives in the original seam module,
-  colocates delimited and balanced region walkers, and preserves existing
-  imports through the primitives re-export.
-  Date/Author: 2026-07-05, implementation agent.
+  `source-scanner-primitives.ts`. Rationale: adding the balanced primitive to
+  the 396-line primitives module would violate the file-size tolerance and
+  likely the 400-line gate. The split keeps low-level character and comment
+  primitives in the original seam module, colocates delimited and balanced
+  region walkers, and preserves existing imports through the primitives
+  re-export. Date/Author: 2026-07-05, implementation agent.
 - Decision: keep `scanExpressionEnd`'s terminator and trailing-trivia logic in
   `workflow-metadata-parser-scan.ts`, but share the string/comment skip through
-  `nextInertRegionEnd`.
-  Rationale: the full expression scanner still has the broader three-family
-  delimiter-depth and terminator-set contract recorded during planning. WI5
-  removes only the duplicated inert-region walk, while `scanBalancedEnd`
-  delegates wholly to `scanBalancedExpressionEnd` because its contract matches
-  the primitive.
-  Date/Author: 2026-07-05, implementation agent.
+  `nextInertRegionEnd`. Rationale: the full expression scanner still has the
+  broader three-family delimiter-depth and terminator-set contract recorded
+  during planning. WI5 removes only the duplicated inert-region walk, while
+  `scanBalancedEnd` delegates wholly to `scanBalancedExpressionEnd` because its
+  contract matches the primitive. Date/Author: 2026-07-05, implementation agent.
 - Decision: update the existing design and developer guides instead of adding a
-  new ADR for the region-scanner split.
-  Rationale: the split is a file-size and ownership refinement inside the
-  existing static-analysis boundary. It does not change public behaviour,
-  dependencies, CLI surface, or cross-package architecture, and ADR 0001 remains
-  the governing boundary decision.
+  new ADR for the region-scanner split. Rationale: the split is a file-size and
+  ownership refinement inside the existing static-analysis boundary. It does
+  not change public behaviour, dependencies, CLI surface, or cross-package
+  architecture, and ADR 0001 remains the governing boundary decision.
   Date/Author: 2026-07-05, implementation agent.
 
 ## Outcomes & retrospective
@@ -515,8 +489,8 @@ Both compose `source-scanner-primitives.ts` (the seam introduced by task
 Load these skills before touching code: `leta` (symbol navigation and
 references — already loaded at session start), `python-router` is **not**
 applicable; load the TypeScript-relevant guidance from `AGENTS.md` "TypeScript
-Guidance". For the property-test work, no Python verification skills apply; this
-project uses `fast-check` (see `AGENTS.md` "Invariant testing").
+Guidance". For the property-test work, no Python verification skills apply;
+this project uses `fast-check` (see `AGENTS.md` "Invariant testing").
 
 Design documents to read before implementing: `docs/technical-design.md` §6.2
 (static source model and the "must not re-implement the shared UTF-16 grammar
@@ -531,10 +505,10 @@ Guidance" (immutability, small functions, `never` guards, JSDoc).
 ## Plan of work
 
 Each work item is a single atomic commit that passes `make all`. Work items are
-ordered so each rewire lands only after its primitive and its differential guard
-exist. Every code change follows Red-Green-Refactor: the new primitives get a
-focused failing unit test first; the pure rewires are guarded by the existing
-and extended parity/behaviour suites, which act as the differential
+ordered so each rewire lands only after its primitive and its differential
+guard exist. Every code change follows Red-Green-Refactor: the new primitives
+get a focused failing unit test first; the pure rewires are guarded by the
+existing and extended parity/behaviour suites, which act as the differential
 red-green harness (the execplans "nearest observable substitute" for a pure
 refactor — the suite is green before, the loop is deleted, the suite stays
 green).
@@ -557,8 +531,8 @@ table-driven cases for a new export `scanDelimitedRegionEnd`:
 - `allowTemplateInterpolation: true` skips a backtick `${ … }` region including
   a nested template and a comment holding the close delimiter.
 
-Run `bun test tests/static-analysis/source-scanner-delimited-region.test.ts` and
-expect failure because the symbol does not yet exist.
+Run `bun test tests/static-analysis/source-scanner-delimited-region.test.ts`
+and expect failure because the symbol does not yet exist.
 
 Green: in `src/static-analysis/source-scanner-primitives.ts` add:
 
@@ -577,8 +551,8 @@ export const scanDelimitedRegionEnd = (
 ): number => { /* single escaped-delimited loop */ };
 ```
 
-The loop iterates from `startIndex + 1` to `options.endIndex ?? text.length`;
-on `\` it advances via `indexAfterEscapedUnit` (and, only when
+The loop iterates from `startIndex + 1` to `options.endIndex ?? text.length`; on
+`\` it advances via `indexAfterEscapedUnit` (and, only when
 `terminateAtLineTerminator` is set, consumes a following LF after an escaped CR
 so an escaped CRLF is one continuation); when `allowTemplateInterpolation` and
 the delimiter is a backtick and the text starts `${`, it advances to
@@ -587,7 +561,8 @@ and an unescaped line terminator it returns the current index; on the delimiter
 it returns `index + 1`; otherwise it advances one unit. Re-express the nested
 `stringLikeRegionEnd` inside `templateExpressionEnd` as a call to
 `scanDelimitedRegionEnd(text, startIndex, delimiter, { endIndex: end,
-allowTemplateInterpolation: true })`, deleting the duplicate inner loop.
+allowTemplateInterpolation: true })`,
+deleting the duplicate inner loop.
 
 Update the expected declaration array at
 `tests/static-analysis/source-file-architecture.test.ts:176` to add
@@ -622,15 +597,15 @@ Green: replace the loop body of `scanEscapedDelimitedEnd`
 body of `scanDelimitedEnd`
 (`src/static-analysis/workflow-metadata-comment-scan.ts`) with
 `scanDelimitedRegionEnd(text, startIndex, delimiter, { endIndex,
-allowTemplateInterpolation: true })`. Keep both signatures and modules
-unchanged; remove the now-unused local imports (`indexAfterEscapedUnit` in
-`source-mask-delimiters.ts` only if no longer used elsewhere in that file —
-`blankMaskedRange`/`scanEscapedDelimitedEnd` are the only users, so audit with
-`leta`).
+allowTemplateInterpolation: true })`.
+Keep both signatures and modules unchanged; remove the now-unused local imports
+(`indexAfterEscapedUnit` in `source-mask-delimiters.ts` only if no longer used
+elsewhere in that file — `blankMaskedRange`/`scanEscapedDelimitedEnd` are the
+only users, so audit with `leta`).
 
-Refactor: the parity oracle imports these two symbols by name; it now proves the
-unified primitive matches both frozen contracts. No oracle change is required in
-this item beyond confirming it stays green.
+Refactor: the parity oracle imports these two symbols by name; it now proves
+the unified primitive matches both frozen contracts. No oracle change is
+required in this item beyond confirming it stays green.
 
 Tests this item touches: none added; `delimited-end-parity.property.test.ts`,
 `source-mask.property.test.ts`, `source-mask-internals.test.ts`,
@@ -657,11 +632,13 @@ Run the file and expect failure until the option is implemented.
 
 Green: implement the `terminateAtLineTerminator` branch in
 `scanDelimitedRegionEnd` (the line-terminator stop and the escaped-CRLF `+1`
-described in WI1's loop, but only active under this flag). Then replace the loop
-body of `scanQuotedStringEnd` (`src/static-analysis/source-mask-strings.ts`)
-with `scanDelimitedRegionEnd(sourceText, startIndex, delimiter, {
-terminateAtLineTerminator: true })`, deleting the local
-`nextEscapedQuotedStringIndex` and `isEscapedCrLfLineContinuation` helpers.
+described in WI1's loop, but only active under this flag). Then replace the
+loop body of `scanQuotedStringEnd`
+(`src/static-analysis/source-mask-strings.ts`) with
+`scanDelimitedRegionEnd(sourceText, startIndex, delimiter, {
+terminateAtLineTerminator: true })`,
+deleting the local `nextEscapedQuotedStringIndex` and
+`isEscapedCrLfLineContinuation` helpers.
 
 This deletion has two mandatory knock-on edits that must land in **this same
 commit**, or the `lint`, `typecheck`, and `test` steps of `make all` fail:
@@ -670,16 +647,16 @@ commit**, or the `lint`, `typecheck`, and `test` steps of `make all` fail:
    helpers are gone, `indexAfterEscapedUnit`, `isCrLfAt`, and
    `isSourceLineTerminator` are no longer referenced and must be removed from
    the `./source-scanner-primitives` import to satisfy no-unused-imports, and
-   `scanDelimitedRegionEnd` must be **added** to that import so the rewired call
-   resolves. Keep `isQuotedStringDelimiter` — it is still used by
+   `scanDelimitedRegionEnd` must be **added** to that import so the rewired
+   call resolves. Keep `isQuotedStringDelimiter` — it is still used by
    `scanQuotedStringRange`. Confirm the final unused set with
    `leta refs indexAfterEscapedUnit` / `isCrLfAt` / `isSourceLineTerminator`
    scoped to this file before deleting. Net import list becomes
    `{ isQuotedStringDelimiter, scanDelimitedRegionEnd }` (kept sorted).
 2. **Inventory update in `source-file-architecture.test.ts:241-246`.** The
    `expectModuleDeclarations("src/static-analysis/source-mask-strings.ts", […])`
-   assertion pins the full top-level inventory via `toEqual`, including the two
-   private helpers being deleted. Shrink the expected array to exactly
+   assertion pins the full top-level inventory via `toEqual`, including the
+   two private helpers being deleted. Shrink the expected array to exactly
    `["scanQuotedStringEnd", "scanQuotedStringRange"]` (kept sorted) in this
    commit, matching the two names WI3 leaves behind.
 
@@ -688,29 +665,29 @@ green.
 
 Refactor: add a frozen `expectedQuotedStringEnd` oracle and a `fast-check`
 property to `delimited-end-parity.property.test.ts` (or, if that file nears the
-400-line gate, a new `tests/static-analysis/quoted-string-end-parity.property.
-test.ts`) so the quoted-string contract has a differential guard equal in
-strength to the other delimited contracts.
+400-line gate, a new
+`tests/static-analysis/quoted-string-end-parity.property. test.ts`) so the
+quoted-string contract has a differential guard equal in strength to the other
+delimited contracts.
 
 Tests this item touches: extends `source-scanner-delimited-region.test.ts`
 (line-terminator cases) and the parity oracle; updates the
-`source-mask-strings.ts` expected inventory in `source-file-architecture.test.ts`.
-Guarded by `source-mask-strings.test.ts` and `source-mask.property.test.ts`
-staying green.
+`source-mask-strings.ts` expected inventory in
+`source-file-architecture.test.ts`. Guarded by `source-mask-strings.test.ts` and
+`source-mask.property.test.ts` staying green.
 
 Validation: `make all`.
 
 ### WI4 — Balanced-expression primitive and shared inert-region step; fold the template balanced core
 
-Docs to read: `docs/complexity-antipatterns-and-refactoring-strategies.md`
-§4.A (extracting the shared step); others as WI1. Skills: `leta`, `fast-check`.
+Docs to read: `docs/complexity-antipatterns-and-refactoring-strategies.md` §4.A
+(extracting the shared step); others as WI1. Skills: `leta`, `fast-check`.
 
 Red: add `tests/static-analysis/source-scanner-balanced.test.ts` with
 table-driven cases for two new exports:
 
 - `nextInertRegionEnd(text, index, endIndex)` returns the end of a string-like
-  region and of a line/block comment, and `undefined` for an ordinary
-  character;
+  region and of a line/block comment, and `undefined` for an ordinary character;
 - `scanBalancedExpressionEnd(text, startIndex, endIndex, options)` returns the
   index after the matching close for nested braces, ignores braces inside
   strings and comments, returns the bound when unterminated, and supports a
@@ -742,16 +719,18 @@ export const scanBalancedExpressionEnd = (
 ```
 
 `nextInertRegionEnd` returns `commentDispatchEnd(text, index, endIndex)` when
-that is defined, else `scanDelimitedRegionEnd(text, index, character, {
-endIndex, allowTemplateInterpolation: true })` when the character is
-string-like, else `undefined`. `scanBalancedExpressionEnd` initializes depth to
-`1` when `initiallyOpen`, else `0`; skips inert regions via
-`nextInertRegionEnd`; increments on `open`, decrements on `close`, and returns
-`index + 1` when depth reaches `0` on a close; returns `endIndex` when
-unterminated. Re-express the nested `expressionEnd` inside
-`templateExpressionEnd` as
+that is defined, else
+`scanDelimitedRegionEnd(text, index, character, {
+endIndex, allowTemplateInterpolation: true })`
+when the character is string-like, else `undefined`.
+`scanBalancedExpressionEnd` initializes depth to `1` when `initiallyOpen`, else
+`0`; skips inert regions via `nextInertRegionEnd`; increments on `open`,
+decrements on `close`, and returns `index + 1` when depth reaches `0` on a
+close; returns `endIndex` when unterminated. Re-express the nested
+`expressionEnd` inside `templateExpressionEnd` as
 `scanBalancedExpressionEnd(text, start, end, { open: "{", close: "}",
-initiallyOpen: true })`, so `templateExpressionEnd` becomes a thin wrapper.
+initiallyOpen: true })`,
+so `templateExpressionEnd` becomes a thin wrapper.
 
 Update the expected declaration array at `source-file-architecture.test.ts:176`
 to add `BalancedExpressionOptions`, `nextInertRegionEnd`, and
@@ -772,10 +751,9 @@ Validation: `make all`.
 
 ### WI5 — Rewire the metadata balanced scanners onto the shared primitives
 
-Docs/skills as WI4. `leta refs scanBalancedEnd` and `leta refs
-scanExpressionEnd` to confirm the eleven call sites in
-`workflow-metadata-parser.ts` are unaffected by the signature-preserving
-rewire.
+Docs/skills as WI4. `leta refs scanBalancedEnd` and
+`leta refs scanExpressionEnd` to confirm the eleven call sites in
+`workflow-metadata-parser.ts` are unaffected by the signature-preserving rewire.
 
 Red-substitute: add a frozen balanced-parity oracle. Create
 `tests/static-analysis/balanced-end-parity.property.test.ts` holding frozen
@@ -789,15 +767,16 @@ rewire and keep it green.
 Green: replace the loop body of `scanBalancedEnd`
 (`src/static-analysis/workflow-metadata-parser-scan.ts`) with
 `scanBalancedExpressionEnd(cursor.text, cursor.index, cursor.endIndex, { open,
-close })`. Rewrite `scanExpressionEnd` in the same file so its loop uses
+close })`.
+Rewrite `scanExpressionEnd` in the same file so its loop uses
 `nextInertRegionEnd` for the string/comment skip step, keeping its
 `nextDelimiterDepthState` depth model, its terminator-set check
-(`isExpressionTerminator`), and its `trimTrailingTriviaIndex` call local. Remove
-the now-unused direct `scanDelimitedEnd`/`commentDispatchEnd` imports if `leta`
-confirms they are no longer referenced in that module.
+(`isExpressionTerminator`), and its `trimTrailingTriviaIndex` call local.
+Remove the now-unused direct `scanDelimitedEnd`/`commentDispatchEnd` imports if
+`leta` confirms they are no longer referenced in that module.
 
-Refactor: confirm the metadata behaviour suites
-(`workflow-metadata.test.ts`, `invalid-workflow-metadata-parity.test.ts`,
+Refactor: confirm the metadata behaviour suites (`workflow-metadata.test.ts`,
+`invalid-workflow-metadata-parity.test.ts`,
 `invalid-workflow-fixtures.test.ts`) stay green.
 
 Validation: `make all`.
@@ -814,14 +793,13 @@ balanced-expression scanner (plus the shared inert-region step), and states
 that scanner families compose these rather than re-implementing delimited or
 balanced walks.
 
-Update the `source-scanner-primitives.ts` bullet in
-`docs/developers-guide.md` to list `scanDelimitedRegionEnd`,
-`scanBalancedExpressionEnd`, and `nextInertRegionEnd`, and — per the `AGENTS.md`
-abstraction/adapter policy — record the scope and permitted call sites (the two
-scanner families and `templateExpressionEnd`) and the "where contracts match"
-exception that keeps `scanExpressionEnd` separate. If WI4 created
-`source-scanner-regions.ts`, document it as an internal sibling re-exported
-through the seam.
+Update the `source-scanner-primitives.ts` bullet in `docs/developers-guide.md`
+to list `scanDelimitedRegionEnd`, `scanBalancedExpressionEnd`, and
+`nextInertRegionEnd`, and — per the `AGENTS.md` abstraction/adapter policy —
+record the scope and permitted call sites (the two scanner families and
+`templateExpressionEnd`) and the "where contracts match" exception that keeps
+`scanExpressionEnd` separate. If WI4 created `source-scanner-regions.ts`,
+document it as an internal sibling re-exported through the seam.
 
 Wrap Markdown prose at 80 columns and code blocks at 120 (`AGENTS.md` "Markdown
 Guidance"). Format only the changed files:
@@ -874,8 +852,8 @@ validates any Mermaid diagrams (none are expected to change).
 Acceptance is behavioural and differential:
 
 - Tests: `make all` passes. The existing masking, metadata, and parity suites
-  listed under "How to observe success" pass unchanged. The new
-  per-primitive suites (`source-scanner-delimited-region.test.ts`,
+  listed under "How to observe success" pass unchanged. The new per-primitive
+  suites (`source-scanner-delimited-region.test.ts`,
   `source-scanner-balanced.test.ts`) and the extended parity oracles
   (quoted-string and balanced) pass. Each new-primitive test fails before its
   green step for the expected "symbol/option not implemented" reason and passes
@@ -899,9 +877,9 @@ plus the differential property tests as the behaviour-preservation proof.
 ## Idempotence and recovery
 
 Every step is a normal source edit under Git; re-running `make all` is safe and
-repeatable. If a rewire turns a parity suite red, revert that single work item's
-commit (each is atomic) and re-examine the frozen oracle versus the primitive
-before retrying. No destructive or migration steps are involved.
+repeatable. If a rewire turns a parity suite red, revert that single work
+item's commit (each is atomic) and re-examine the frozen oracle versus the
+primitive before retrying. No destructive or migration steps are involved.
 
 ## Artefacts and notes
 
@@ -924,8 +902,8 @@ Key call sites confirmed during planning (for the implementer's orientation):
 
 ## Interfaces and dependencies
 
-At the end of this plan, `src/static-analysis/source-scanner-primitives.ts`
-(or its re-exporting sibling) exports:
+At the end of this plan, `src/static-analysis/source-scanner-primitives.ts` (or
+its re-exporting sibling) exports:
 
 ```typescript
 export type DelimitedRegionOptions = Readonly<{
@@ -989,16 +967,17 @@ quoted-string fold:
    `indexAfterEscapedUnit`, `isCrLfAt`, and `isSourceLineTerminator` become
    unused and the call to `scanDelimitedRegionEnd` is unresolved. WI3's Green
    step now specifies removing those three imports, adding
-   `scanDelimitedRegionEnd`, and retaining `isQuotedStringDelimiter` (still used
-   by `scanQuotedStringRange`), landing in the same commit so `lint`,
+   `scanDelimitedRegionEnd`, and retaining `isQuotedStringDelimiter` (still
+   used by `scanQuotedStringRange`), landing in the same commit so `lint`,
    `typecheck`, and `test` all pass.
 
-Round 1 draft established the six-work-item decomposition,
-the two-option delimited-region primitive and the balanced-expression primitive
-plus shared inert-region step, the "where contracts match" boundary that keeps
-`scanExpressionEnd` separate, the declaration-inventory and 400-line architecture
-gates as hard constraints, and the pre-authorized `source-scanner-regions.ts`
-sibling split as the file-size mitigation. Refinement over the seed draft:
-clarified that `source-file-architecture.test.ts:176` pins **all** top-level
-declarations (exported and module-private), so private loop helpers must also be
+Round 1 draft established the six-work-item decomposition, the two-option
+delimited-region primitive and the balanced-expression primitive plus shared
+inert-region step, the "where contracts match" boundary that keeps
+`scanExpressionEnd` separate, the declaration-inventory and 400-line
+architecture gates as hard constraints, and the pre-authorized
+`source-scanner-regions.ts` sibling split as the file-size mitigation.
+Refinement over the seed draft: clarified that
+`source-file-architecture.test.ts:176` pins **all** top-level declarations
+(exported and module-private), so private loop helpers must also be
 inventoried; the plan now prefers inlining helpers to keep that array stable.

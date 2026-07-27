@@ -206,10 +206,9 @@ Proposed fix:
 
 Add a minimal `docs/users-guide.md` before the first executable CLI vertical
 slice lands. Keep it intentionally short at first: document the intended
-`odw-lint check` command shape, the current diagnostic report contract, links
-to `docs/rules/index.md`, configuration placeholders and known non-goals.
-Update `docs/contents.md` and `docs/repository-layout.md` when the guide is
-created.
+`odw-lint check` command shape, the current diagnostic report contract, links to
+`docs/rules/index.md`, configuration placeholders and known non-goals. Update
+`docs/contents.md` and `docs/repository-layout.md` when the guide is created.
 
 ## Proposed roadmap items
 
@@ -236,8 +235,8 @@ Severity: medium
 
 ### Add the first user's guide
 
-Rationale: top-level documentation navigation now exists, but there is still
-no user-facing guide. A minimal guide should land before the first CLI slice so
+Rationale: top-level documentation navigation now exists, but there is still no
+user-facing guide. A minimal guide should land before the first CLI slice so
 workflow authors can find command, diagnostic and rule-reference behaviour
 without reading maintainer-only design documents.
 

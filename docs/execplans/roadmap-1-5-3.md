@@ -35,8 +35,8 @@ Implementation must not begin until this draft is reviewed and approved.
   `package.json`, or `docs/roadmap.md`, prove branch freshness with
   `git merge-base --is-ancestor origin/main HEAD`. If that command exits
   non-zero, stop before editing and rebase, refresh, or escalate. A triple-dot
-  diff is not a freshness proof because it can be empty while `origin/main`
-  has advanced beyond the branch.
+  diff is not a freshness proof because it can be empty while `origin/main` has
+  advanced beyond the branch.
 - Use this GrepAI command shape as the primary intent-search tool:
 
   ```sh
@@ -208,16 +208,14 @@ conflict in `Decision Log`, and escalate.
   assertions are prescriptive rather than optional.
 - [x] (2026-06-28T23:55Z) Work item 1: Added
   `tests/diagnostics/public-api-surface.test.ts` with table-driven extractor
-  coverage for explicit named value, type, and alias re-exports, plus
-  wildcard, namespace, default, export-assignment, and direct-export rejection
-  cases.
+  coverage for explicit named value, type, and alias re-exports, plus wildcard,
+  namespace, default, export-assignment, and direct-export rejection cases.
 - [x] (2026-06-28T23:55Z) Work item 1 deterministic gates passed:
   `bun test ./tests/diagnostics/public-api-surface.test.ts`, `make all`,
   `make markdownlint`, and `make nixie`.
 - [x] (2026-06-28T23:55Z) Work item 1 CodeRabbit invocation was attempted
   after deterministic gates. The CLI stayed in browser-authentication wait
-  state and timed out without review output; no rate-limit wait time was
-  quoted.
+  state and timed out without review output; no rate-limit wait time was quoted.
 - [x] (2026-06-29T00:02Z) Work item 2: Extended
   `tests/diagnostics/public-api-surface.test.ts` to derive the root package
   entry from runtime-validated `package.json` `main`, `types`, and
@@ -226,9 +224,8 @@ conflict in `Decision Log`, and escalate.
   `EXPECTED_PUBLIC_PACKAGE_EXPORTS` list with 38 named exports and compared it
   against the parsed `src/index.ts` facade.
 - [x] (2026-06-29T00:02Z) Work item 2 red-check passed: temporarily removing
-  `TOOL_NAME` from the reviewed export list made the focused Bun test fail
-  with `TOOL_NAME` as an unexpected actual export, then the mutation was
-  restored.
+  `TOOL_NAME` from the reviewed export list made the focused Bun test fail with
+  `TOOL_NAME` as an unexpected actual export, then the mutation was restored.
 - [x] (2026-06-29T00:02Z) Work item 2 deterministic gates passed:
   `bun test ./tests/diagnostics/public-api-surface.test.ts`, `make all`,
   `make markdownlint`, and `make nixie`. `make nixie` emitted pre-existing
@@ -240,8 +237,8 @@ conflict in `Decision Log`, and escalate.
   wait state and timed out without review output; no rate-limit wait time was
   quoted.
 - [x] (2026-06-29T00:07Z) Work item 3: Documented the package export-surface
-  guard in `docs/developers-guide.md` and marked roadmap task 1.5.3 complete
-  in `docs/roadmap.md`.
+  guard in `docs/developers-guide.md` and marked roadmap task 1.5.3 complete in
+  `docs/roadmap.md`.
 - [x] (2026-06-29T00:07Z) Work item 3: Verified the scoped roadmap close-out
   diff against refreshed `origin/main`; the only `docs/roadmap.md` change is
   the 1.5.3 checkbox.
@@ -322,9 +319,9 @@ conflict in `Decision Log`, and escalate.
 - Observation: after manifest validation and public export comparison were
   added, `tests/diagnostics/public-api-surface.test.ts` is 390 physical lines.
   Evidence: `wc -l tests/diagnostics/public-api-surface.test.ts` reported
-  `390`. Impact: the file remains inside the 400-line project limit, but
-  future package-entry guard expansion should extract a helper or split tests
-  rather than keep growing this file.
+  `390`. Impact: the file remains inside the 400-line project limit, but future
+  package-entry guard expansion should extract a helper or split tests rather
+  than keep growing this file.
 
 ## Decision Log
 
@@ -377,18 +374,16 @@ conflict in `Decision Log`, and escalate.
   2026-06-29T00:00Z / planning agent.
 
 - Decision: keep the initial extractor helper local to
-  `tests/diagnostics/public-api-surface.test.ts`.
-  Rationale: the helper is a test-only architecture guard, and keeping it
-  local avoids adding production API or a shared test abstraction before the
-  real package-entry comparison proves the final shape. Date/Author:
-  2026-06-28T23:55Z / implementation agent.
+  `tests/diagnostics/public-api-surface.test.ts`. Rationale: the helper is a
+  test-only architecture guard, and keeping it local avoids adding production
+  API or a shared test abstraction before the real package-entry comparison
+  proves the final shape. Date/Author: 2026-06-28T23:55Z / implementation agent.
 
 - Decision: keep manifest guard fixtures in the same test file as the export
-  scanner.
-  Rationale: the package entry target and named export list form one review
-  guard. Keeping them together lets reviewers see how the manifest boundary and
-  facade export list protect the same package API surface without adding a
-  reusable abstraction for one test-only concern. Date/Author:
+  scanner. Rationale: the package entry target and named export list form one
+  review guard. Keeping them together lets reviewers see how the manifest
+  boundary and facade export list protect the same package API surface without
+  adding a reusable abstraction for one test-only concern. Date/Author:
   2026-06-29T00:02Z / implementation agent.
 
 ## Outcomes & retrospective
@@ -457,20 +452,21 @@ Use only existing dependencies and built-ins:
 - Bun 1.3.11 runs `bun test`. Official Bun docs verify that test files may be
   TypeScript, use a Jest-like `bun:test` API, run with `bun test`, and may be
   filtered by file path. Evidence: Firecrawl scraped
-  `https://bun.com/docs/test.md`, sections "Run tests" and "Test Filtering",
-  on 2026-06-28; `bun --version` in this worktree reports `1.3.11`.
+  `https://bun.com/docs/test.md`, sections "Run tests" and "Test Filtering", on
+  2026-06-28; `bun --version` in this worktree reports `1.3.11`.
 - TypeScript 5.9.3 is locked in `bun.lock` and installed in `node_modules`.
   Its installed declarations and implementation support: `ts.createSourceFile`,
   `ts.forEachChild`, `ts.isExportDeclaration`, `ts.isNamedExports`,
   `ts.isExportSpecifier`, `ts.isExportAssignment`, and `ts.isStringLiteral`.
-  Evidence: `bun.lock` pins `typescript@5.9.3`; `node_modules/typescript/package.json`
-  reports version `5.9.3`; `node_modules/typescript/lib/typescript.d.ts` lines
-  5572-5667 define `ExportDeclaration`, `NamedExports`, `ExportSpecifier`, and
+  Evidence: `bun.lock` pins `typescript@5.9.3`;
+  `node_modules/typescript/package.json` reports version `5.9.3`;
+  `node_modules/typescript/lib/typescript.d.ts` lines 5572-5667 define
+  `ExportDeclaration`, `NamedExports`, `ExportSpecifier`, and
   `ExportAssignment`; lines 9097-9100 declare the export predicates; lines
   9188-9192 declare `forEachChild` and `createSourceFile`. The installed
   `node_modules/typescript/lib/typescript.js` implements the predicates around
-  lines 31093-31102 and implements `forEachChild` and `createSourceFile`
-  around lines 32965-33032. Official TypeScript Compiler API docs at
+  lines 31093-31102 and implements `forEachChild` and `createSourceFile` around
+  lines 32965-33032. Official TypeScript Compiler API docs at
   `https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API`,
   section "Traversing the AST with a little linter", show parsing source with
   `ts.createSourceFile` and traversing with `ts.forEachChild`.
@@ -592,8 +588,7 @@ Implementation:
 1. Create `tests/diagnostics/public-api-surface.test.ts` with a module JSDoc
    block explaining that the file protects the reviewed package export surface.
 2. Add local helper tests around inline source strings before checking the real
-   package entry. The table must cover all of these cases and expected
-   outcomes:
+   package entry. The table must cover all of these cases and expected outcomes:
    - `export { x } from "./x"` records `x`;
    - `export { type X } from "./x"` records `X`;
    - `export { x as y } from "./x"` records `y`;
@@ -992,17 +987,17 @@ Research evidence gathered during the planning pass:
 
 - Official TypeScript Compiler API docs were retrieved with Firecrawl from
   `https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API`
-  (`scrapeId` `019f109b-8578-72ed-9a8e-7c047f1e5d4a`). The section
-  "Traversing the AST with a little linter" shows parsing source with
+  (`scrapeId` `019f109b-8578-72ed-9a8e-7c047f1e5d4a`). The section "Traversing
+  the AST with a little linter" shows parsing source with
   `ts.createSourceFile`, traversing with `ts.forEachChild`, and doing so
   without a type checker when syntax traversal is sufficient.
 - Official Node package docs were retrieved with Firecrawl from
   `https://nodejs.org/api/packages.html` (`scrapeId`
-  `019f109b-57c1-743d-a990-5b38952470a9`). The sections "Package entry
-  points", "Conditional exports", "Community Conditions Definitions", and
+  `019f109b-57c1-743d-a990-5b38952470a9`). The sections "Package entry points",
+  "Conditional exports", "Community Conditions Definitions", and
   "Self-referencing a package using its name" verify that `exports` defines
-  package entry points, conditional exports are part of that mechanism,
-  `types` is a documented community condition for typing systems, and package
+  package entry points, conditional exports are part of that mechanism, `types`
+  is a documented community condition for typing systems, and package
   self-reference works through the package name only for exported paths.
 - Official Bun test docs were retrieved with Firecrawl from
   `https://bun.com/docs/test.md` (`scrapeId`
@@ -1011,12 +1006,12 @@ Research evidence gathered during the planning pass:
   non-zero exit on test failure.
 - The sibling ODW checkout at
   `/data/leynos/Projects/open-dynamic-workflows` was inspected at revision
-  `ecc4867fd354437c12cb4ecb21ef8ad7e94610d7`. It has an untracked `bun.lock`
-  in that checkout, but the tracked source evidence is still clear:
-  `src/index.ts` line 37 exports loader metadata types only, while
-  `src/loader.ts` line 78 exports `loadWorkflowScript` and line 325 evaluates
-  metadata with `new Function`. This task must not import or rely on those ODW
-  runtime helpers.
+  `ecc4867fd354437c12cb4ecb21ef8ad7e94610d7`. It has an untracked `bun.lock` in
+  that checkout, but the tracked source evidence is still clear: `src/index.ts`
+  line 37 exports loader metadata types only, while `src/loader.ts` line 78
+  exports `loadWorkflowScript` and line 325 evaluates metadata with
+  `new Function`. This task must not import or rely on those ODW runtime
+  helpers.
 
 ## Addenda
 

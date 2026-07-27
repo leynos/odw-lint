@@ -1,9 +1,8 @@
 # Consolidate Build-Gate CLI Support
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -36,8 +35,8 @@ Success is observable when:
   shared writer type, default-stream resolution, and report dispatch,
 - branch-freshness, whitespace-hygiene, and review-evidence CLIs consume the
   one shared `tests/build-gate/cli-support.ts` helper and no longer declare a
-  local `CliWriters` type or an inline `{ writeOut: stdout.write, writeErr:
-  stderr.write }` default,
+  local `CliWriters` type or an inline
+  `{ writeOut: stdout.write, writeErr: stderr.write }` default,
 - every existing gate test still passes with unchanged exit codes and unchanged
   reviewer-facing report text, and
 - `make all`, `make markdownlint`, and `make nixie` pass.
@@ -152,44 +151,35 @@ conflict in `Decision Log`, and escalate.
   (`writeOut("...passed...")`, `writeErr(violations)`, `writeErr(failure)`)
   rather than formatting one result object, so folding it onto a single
   report-dispatch helper could accidentally reorder work (scanning) relative to
-  writing, or change which stream a branch uses.
-  Severity: high.
-  Likelihood: medium.
-  Mitigation: keep the existing inline `stdout`/`stderr` snapshot tests in
-  `whitespace-hygiene.test.ts` as the regression guard; refactor the runner to
-  compute a `{ report, toErr, exitCode }` outcome first and dispatch once,
+  writing, or change which stream a branch uses. Severity: high. Likelihood:
+  medium. Mitigation: keep the existing inline `stdout`/`stderr` snapshot tests
+  in `whitespace-hygiene.test.ts` as the regression guard; refactor the runner
+  to compute a `{ report, toErr, exitCode }` outcome first and dispatch once,
   preserving every message byte-for-byte and every stream choice.
 - Risk: `exactOptionalPropertyTypes` rejects forwarding
   `options.writeOut`/`options.writeErr` (each `(...) => void` or `undefined`)
-  into a `Partial<CliWriters>` override object.
-  Severity: medium.
-  Likelihood: high.
-  Mitigation: type the override parameter to explicitly permit `undefined`
-  field values (`writeOut?: CliWriters["writeOut"] | undefined`) and pin this
-  with a focused type-level and runtime test.
+  into a `Partial<CliWriters>` override object. Severity: medium. Likelihood:
+  high. Mitigation: type the override parameter to explicitly permit
+  `undefined` field values (`writeOut?: CliWriters["writeOut"] | undefined`)
+  and pin this with a focused type-level and runtime test.
 - Risk: The shared helper becomes an over-broad "CLI utility drawer".
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: limit `cli-support.ts` to the writer type, default-stream
-  resolution, and single-report dispatch. Result formatting stays in each
-  gate's `*-report.ts`/runner, and exit-code mapping stays in each gate module.
+  Severity: medium. Likelihood: medium. Mitigation: limit `cli-support.ts` to
+  the writer type, default-stream resolution, and single-report dispatch.
+  Result formatting stays in each gate's `*-report.ts`/runner, and exit-code
+  mapping stays in each gate module.
 - Risk: `git-support.ts` already exports `CapturedCliOutput` with the same
   `writeOut`/`writeErr` fields; deduplicating it against the new `CliWriters`
-  could disturb its many test consumers.
-  Severity: low.
-  Likelihood: low.
+  could disturb its many test consumers. Severity: low. Likelihood: low.
   Mitigation: reuse `CliWriters` in `CapturedCliOutput` as a purely structural
   type alias intersection so no `createCapturedCliOutput` call site or
   `git-support.test.ts` assertion changes; verify with the focused git-support
   test before committing.
 - Risk: A behaviour-preserving refactor has no natural failing Red test.
-  Severity: low.
-  Likelihood: medium.
-  Mitigation: for the new helper use genuine Red-Green-Refactor (helper does
-  not exist yet). For each migration, first update the test to import and
-  assert the shared seam so it fails to type-check or run before the runner is
-  migrated, keeping the existing stream/exit-code assertions as the
-  behavioural guard.
+  Severity: low. Likelihood: medium. Mitigation: for the new helper use genuine
+  Red-Green-Refactor (helper does not exist yet). For each migration, first
+  update the test to import and assert the shared seam so it fails to
+  type-check or run before the runner is migrated, keeping the existing
+  stream/exit-code assertions as the behavioural guard.
 
 ## Progress
 
@@ -200,8 +190,8 @@ conflict in `Decision Log`, and escalate.
   changes, so no rebase was required. Resolved tool versions were Bun 1.3.11
   and TypeScript 6.0.3.
 - [x] (2026-07-03 00:00Z) Work item 1: introduced
-  `tests/build-gate/cli-support.ts`, covered default writer resolution,
-  explicit `undefined` override fallback, and report dispatch in
+  `tests/build-gate/cli-support.ts`, covered default writer resolution, explicit
+  `undefined` override fallback, and report dispatch in
   `tests/build-gate/cli-support.test.ts`, and reused `CliWriters` in
   `tests/build-gate/git-support.ts`.
 - [x] (2026-07-03 00:00Z) Work item 2: moved branch-freshness and
@@ -221,10 +211,9 @@ conflict in `Decision Log`, and escalate.
   planned roadmap consolidation, not an addendum from an audit finding.
   Evidence: `docs/issues/` contains audit files up to `audit-2.1.12.md` but no
   `audit-1.5.9.md`; `docs/roadmap.md` lists 1.5.9 as a plain task requiring
-  1.5.5 and 1.5.6.
-  Impact: the intent source is the roadmap task text plus the precedent of the
-  completed 1.5.5 seam, verified directly against the three CLI modules in this
-  worktree.
+  1.5.5 and 1.5.6. Impact: the intent source is the roadmap task text plus the
+  precedent of the completed 1.5.5 seam, verified directly against the three
+  CLI modules in this worktree.
 - Observation: `leta files` succeeded after adding the worktree, but the
   branch-local symbol grep command failed with a transient connection drop.
   Evidence: this command returned `Error: Connection closed unexpectedly`.
@@ -242,32 +231,30 @@ conflict in `Decision Log`, and escalate.
   for work item 0 came from `leta files` plus direct inspection of the relevant
   `tests/build-gate/*` modules and tests.
 - Observation: GrepAI was available, but the broad intent searches favoured
-  prior ExecPlans over the current build-gate source.
-  Evidence: searches for build-gate CLI writer/default-stream/report-dispatch
-  terms returned `docs/execplans/roadmap-1-5-5.md`,
-  `docs/execplans/roadmap-1-5-7.md`, and related plan files.
-  Impact: the prior plans remain useful precedent for the helper-seam pattern;
-  every branch-local source fact was verified directly in this worktree.
+  prior ExecPlans over the current build-gate source. Evidence: searches for
+  build-gate CLI writer/default-stream/report-dispatch terms returned
+  `docs/execplans/roadmap-1-5-5.md`, `docs/execplans/roadmap-1-5-7.md`, and
+  related plan files. Impact: the prior plans remain useful precedent for the
+  helper-seam pattern; every branch-local source fact was verified directly in
+  this worktree.
 - Observation: after the work item 0 plan update, `origin/main` advanced by one
-  commit adding documentation contents freshness coverage.
-  Evidence: after rebasing, `make all` failed in
+  commit adding documentation contents freshness coverage. Evidence: after
+  rebasing, `make all` failed in
   `tests/build-gate/documentation-contents.test.ts` because
   `docs/execplans/roadmap-1-5-9.md` was not linked from `docs/contents.md`.
   Impact: work item 0 now includes a narrow `docs/contents.md` index entry for
   this ExecPlan so the documentation freshness gate passes on current main.
 - Observation: the work item 1 Red stage failed for the intended missing-helper
-  reason.
-  Evidence: `bun test ./tests/build-gate/cli-support.test.ts` reported
-  `Cannot find module './cli-support'` before
-  `tests/build-gate/cli-support.ts` existed.
-  Impact: the new helper tests proved the missing seam before implementation;
-  after adding the helper,
+  reason. Evidence: `bun test ./tests/build-gate/cli-support.test.ts` reported
+  `Cannot find module './cli-support'` before `tests/build-gate/cli-support.ts`
+  existed. Impact: the new helper tests proved the missing seam before
+  implementation; after adding the helper,
   `bun test ./tests/build-gate/cli-support.test.ts ./tests/build-gate/git-support.test.ts`
   passed with 19 tests.
 - Observation: work item 2's source-guard tests and migration were applied in
   one patch before the focused test run, so there is no separate captured Red
-  transcript for those migration guards.
-  Evidence: this focused test command passed with 42 tests after migration.
+  transcript for those migration guards. Evidence: this focused test command
+  passed with 42 tests after migration.
 
   ```sh
   bun test \
@@ -279,55 +266,48 @@ conflict in `Decision Log`, and escalate.
   Impact: the final tests still pin the intended seam and behaviour, but the
   Red-Green evidence for this refactor item is weaker than planned.
 - Observation: work item 3 followed the same source-guard pattern as work item
-  2 and was validated by unchanged inline output snapshots.
-  Evidence:
+  2 and was validated by unchanged inline output snapshots. Evidence:
   `bun test ./tests/build-gate/whitespace-hygiene.test.ts ./tests/build-gate/whitespace-hygiene-support.test.ts`
-  passed with 15 tests and 12 snapshots after migration.
-  Impact: the whitespace runner now dispatches one computed report through the
-  shared helper while preserving the user-facing messages byte-for-byte.
+  passed with 15 tests and 12 snapshots after migration. Impact: the
+  whitespace runner now dispatches one computed report through the shared
+  helper while preserving the user-facing messages byte-for-byte.
 
 ## Decision Log
 
 - Decision: Extract one test-only helper module named
   `tests/build-gate/cli-support.ts` owning `CliWriters`, default-stream
   resolution (`resolveCliWriters`), and single-report dispatch
-  (`emitCliReport`).
-  Rationale: the roadmap success criterion names "one documented CLI-support
-  helper" consumed by all three CLIs. This mirrors the cohesive
-  `git-support.ts` seam from 1.5.5 while keeping formatting and exit-code
-  policy colocated with each gate.
-  Date/Author: 2026-07-03 / Codex.
+  (`emitCliReport`). Rationale: the roadmap success criterion names "one
+  documented CLI-support helper" consumed by all three CLIs. This mirrors the
+  cohesive `git-support.ts` seam from 1.5.5 while keeping formatting and
+  exit-code policy colocated with each gate. Date/Author: 2026-07-03 / Codex.
 - Decision: Keep report formatting (`formatBranchFreshnessResult`,
   `formatReviewEvidenceResult`, and whitespace's inline messages) and exit-code
   mapping in the gate modules; the shared helper only receives an already
-  formatted `report` string plus a `toErr` boolean and writers.
-  Rationale: the task explicitly requires "preserving each gate's policy and
-  result contract". A pure writer/dispatch seam avoids leaking result unions
-  into the shared module.
-  Date/Author: 2026-07-03 / Codex.
+  formatted `report` string plus a `toErr` boolean and writers. Rationale: the
+  task explicitly requires "preserving each gate's policy and result contract".
+  A pure writer/dispatch seam avoids leaking result unions into the shared
+  module. Date/Author: 2026-07-03 / Codex.
 - Decision: Type the `resolveCliWriters` override parameter to allow explicitly
-  `undefined` field values.
-  Rationale: `review-evidence-cli.ts` forwards optional
-  `options.writeOut`/`options.writeErr`; under `exactOptionalPropertyTypes` a
-  bare `Partial<CliWriters>` would reject `{ writeOut: undefined }`.
-  Date/Author: 2026-07-03 / Codex.
+  `undefined` field values. Rationale: `review-evidence-cli.ts` forwards
+  optional `options.writeOut`/`options.writeErr`; under
+  `exactOptionalPropertyTypes` a bare `Partial<CliWriters>` would reject
+  `{ writeOut: undefined }`. Date/Author: 2026-07-03 / Codex.
 - Decision: Use the existing `node:process` `stdout`/`stderr` streams and
-  `bun:test`; add no new library.
-  Rationale: the task is consolidation, not a dependency change; the current
-  CLIs already write with `stdout.write`/`stderr.write`.
-  Date/Author: 2026-07-03 / Codex.
+  `bun:test`; add no new library. Rationale: the task is consolidation, not a
+  dependency change; the current CLIs already write with `stdout.write`/
+  `stderr.write`. Date/Author: 2026-07-03 / Codex.
 - Decision: No sibling ODW checkout is needed for the implementation mechanism.
   Rationale: the task touches only build-gate CLI plumbing under `tests/`. It
   does not lean on ODW loader, workflow, or example behaviour. Static ODW
-  runtime boundaries still apply as constraints.
-  Date/Author: 2026-07-03 / Codex.
+  runtime boundaries still apply as constraints. Date/Author: 2026-07-03 /
+  Codex.
 - Decision: Treat the user's explicit instruction to execute the approved
   ExecPlan as approval for implementation, and update the status from DRAFT to
-  IN PROGRESS during work item 0.
-  Rationale: the workflow prompt states that the plan is approved and must be
-  executed work item by work item; pausing on the stale status line would
-  conflict with the no-clarifying-questions instruction.
-  Date/Author: 2026-07-03 / Codex.
+  IN PROGRESS during work item 0. Rationale: the workflow prompt states that
+  the plan is approved and must be executed work item by work item; pausing on
+  the stale status line would conflict with the no-clarifying-questions
+  instruction. Date/Author: 2026-07-03 / Codex.
 
 ## Outcomes & Retrospective
 
@@ -338,11 +318,11 @@ report text.
 
 Completed outcome: `tests/build-gate/cli-support.ts` now owns the shared
 `CliWriters` type, default process-stream resolution, and one-report dispatch
-helper for build-gate CLIs. `runBranchFreshnessCli`,
-`runReviewEvidenceCli`, and `runWhitespaceHygieneCli` consume that helper while
-keeping their result formatting, exit-code mapping, and stream-routing policy
-local. The developer guide and repository layout now document the helper
-ownership boundary, and roadmap task 1.5.9 is ticked complete.
+helper for build-gate CLIs. `runBranchFreshnessCli`, `runReviewEvidenceCli`, and
+`runWhitespaceHygieneCli` consume that helper while keeping their result
+formatting, exit-code mapping, and stream-routing policy local. The developer
+guide and repository layout now document the helper ownership boundary, and
+roadmap task 1.5.9 is ticked complete.
 
 Validation evidence at close-out:
 
@@ -388,10 +368,11 @@ The current, duplicated CLI plumbing is:
 
 - `tests/build-gate/branch-freshness-git.ts` lines 22-25 declare a local
   `CliWriters` type; `runBranchFreshnessCli` (lines 74-98) defaults `writers`
-  to an inline `{ writeOut: (m) => stdout.write(m), writeErr: (m) =>
-  stderr.write(m) }`, formats the result via `formatBranchFreshnessResult`,
-  computes `exitCodeForBranchFreshness`, and dispatches: exit 2 to `writeErr`,
-  otherwise `writeOut`.
+  to an inline
+  `{ writeOut: (m) => stdout.write(m), writeErr: (m) => stderr.write(m) }`,
+  formats the result via `formatBranchFreshnessResult`, computes
+  `exitCodeForBranchFreshness`, and dispatches: exit 2 to `writeErr`, otherwise
+  `writeOut`.
 - `tests/build-gate/whitespace-hygiene.ts` lines 17-20 declare the same
   `CliWriters` type; `runWhitespaceHygieneCli` (lines 29-55) defaults `writers`
   to the same inline object and writes each branch inline: "passed" to
@@ -780,8 +761,8 @@ Red:
 1. In `tests/build-gate/whitespace-hygiene.test.ts`, keep the existing inline
    `stdout`/`stderr` snapshots (passed to `stdout`; violations and failures to
    `stderr`) and add an assertion that the module imports `CliWriters` from
-   `./cli-support`. Before migration this fails (local type still used /
-   shared import unused).
+   `./cli-support`. Before migration this fails (local type still used / shared
+   import unused).
 2. Run:
 
    ```sh
@@ -867,7 +848,8 @@ Green:
    `tests/build-gate/cli-support.ts`; each gate keeps its own report formatting
    and exit-code mapping.
 2. Extend `docs/repository-layout.md` (lines 131-134) so `tests/build-gate/`
-   ownership also names the shared CLI-support helper alongside `git-support.ts`.
+   ownership also names the shared CLI-support helper alongside
+   `git-support.ts`.
 3. Update `docs/roadmap.md` to tick task 1.5.9 complete only after work items
    1-3 have passed gates.
 4. Update this ExecPlan's `Progress`, `Surprises & Discoveries`,
@@ -887,8 +869,7 @@ Commit this work item independently after all gates pass.
 
 ## Concrete Steps
 
-Run all commands from
-`/data/leynos/Projects/odw-lint.worktrees/roadmap-1-5-9`.
+Run all commands from `/data/leynos/Projects/odw-lint.worktrees/roadmap-1-5-9`.
 
 1. Confirm the worktree and branch:
 
@@ -1066,23 +1047,22 @@ Work item 1 update: added the shared CLI writer seam and tests, then deduped
 git-support tests pass; the next work item can migrate branch-freshness and
 review-evidence onto the seam without changing their report contracts.
 
-Work item 2 update: migrated `runBranchFreshnessCli` and
-`runReviewEvidenceCli` to resolve writers through `cli-support.ts` and emit one
-formatted report through `emitCliReport`. Focused branch-freshness,
-review-evidence CLI, and review-evidence property tests pass with unchanged
-stream-routing expectations.
+Work item 2 update: migrated `runBranchFreshnessCli` and `runReviewEvidenceCli`
+to resolve writers through `cli-support.ts` and emit one formatted report
+through `emitCliReport`. Focused branch-freshness, review-evidence CLI, and
+review-evidence property tests pass with unchanged stream-routing expectations.
 
 Work item 3 update: migrated `runWhitespaceHygieneCli` to compute one
-`WhitespaceHygieneCliOutcome` and dispatch it through `emitCliReport`.
-Focused whitespace hygiene tests and support tests pass with existing
-stdout/stderr snapshots unchanged.
+`WhitespaceHygieneCliOutcome` and dispatch it through `emitCliReport`. Focused
+whitespace hygiene tests and support tests pass with existing stdout/stderr
+snapshots unchanged.
 
 Work item 4 update: documented `cli-support.ts` in maintainer-facing docs,
 ticked roadmap task 1.5.9 complete, and closed this ExecPlan as COMPLETE. The
 final gate run at HEAD remains the acceptance proof.
 
 Addendum recovery update: after workflow recovery, the branch was rebased onto
-`origin/main` as commits `29bb8da` and `2493ce9`. `make all`, `make
-markdownlint`, and `make nixie` passed after the rebase, and `coderabbit review
---agent` completed with zero findings. The roadmap addenda 1.5.9.1 and
-1.5.9.2 are now ticked to match the completed ExecPlan addenda.
+`origin/main` as commits `29bb8da` and `2493ce9`. `make all`,
+`make markdownlint`, and `make nixie` passed after the rebase, and
+`coderabbit review --agent` completed with zero findings. The roadmap addenda
+1.5.9.1 and 1.5.9.2 are now ticked to match the completed ExecPlan addenda.

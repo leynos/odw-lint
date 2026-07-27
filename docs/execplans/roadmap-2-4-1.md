@@ -1,9 +1,8 @@
 # Implement `odw-lint check` for explicit file paths (roadmap 2.4.1)
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -19,10 +18,10 @@ bun run src/cli/main.ts check tests/static-analysis/fixtures/odw-examples/fan-ou
 The command reads each explicitly named file, statically lints it through the
 existing `lintWorkflowSource` pipeline without executing any workflow source,
 prints the diagnostics it found, and terminates with the designed exit code
-following Ruff's `check` semantics (`docs/technical-design.md` §§7.0, 7.4):
-`0` when no diagnostics remain, `1` when **any** diagnostic remains (regardless
-of severity) or an input file cannot be read, and `2` when the invocation
-itself is invalid. Success is observable: running the command over the valid
+following Ruff's `check` semantics (`docs/technical-design.md` §§7.0, 7.4): `0`
+when no diagnostics remain, `1` when **any** diagnostic remains (regardless of
+severity) or an input file cannot be read, and `2` when the invocation itself
+is invalid. Success is observable: running the command over the valid
 ODW-example corpus (each fixture carries `expectedDiagnostics: []`) exits `0`,
 running it over the deliberately invalid workflow corpus — every family of
 which emits at least one diagnostic, including the warning-only
@@ -97,8 +96,8 @@ Hard invariants that must hold throughout implementation.
   library), stop and escalate. The repo currently has no BDD infrastructure and
   no `.feature` files; behaviour is proven with spawn-based e2e tests instead.
 - Discovery creep: if a work item starts implementing glob expansion,
-  configured include roots, `.gitignore` handling, or `--stdin-filename`, stop —
-  those are 2.4.4.
+  configured include roots, `.gitignore` handling, or `--stdin-filename`, stop
+  — those are 2.4.4.
 - Iterations: if `make all` still fails after 3 focused attempts on one work
   item, stop and escalate with the failing gate output.
 - Ambiguity: if the observed exit-code behaviour of the corpus contradicts the
@@ -107,100 +106,92 @@ Hard invariants that must hold throughout implementation.
 ## Risks
 
 - Risk: mis-reading the exit-code policy for warning-only results. One reading
-  gates exit `1` on error-severity only; the design does not.
-  Severity: medium. Likelihood: low (resolved below).
-  Mitigation: follow the design's Ruff-parity mandate literally. §7.0 names
-  `ruff check` the "UX gold standard" and the evidence table
-  (`docs/technical-design.md:55`) records that `odw-lint check` "should copy
-  Ruff's check-command semantics"; `ruff check` exits `1` for **any** remaining
-  violation regardless of severity, with `--exit-zero`/`--fix-only` as the
-  documented opt-outs (§7.0 lists those same opt-outs). §7.4's exit-`1` row
-  ("Diagnostics remain, …") is not severity-qualified. So the pinned policy is:
-  exit `1` when **any** diagnostic remains or any input is unreadable; exit `0`
-  only when zero diagnostics remain. `--max-warnings` and `--strict-claude`
-  (roadmap 3.1.3) are later *refinements* of this default, not evidence that
-  plain warnings pass today. Lock it with a table test whose only exit-`0` row
-  is the truly clean case (error, warning-only, info/hint, and read-failure
-  rows all exit `1`).
+  gates exit `1` on error-severity only; the design does not. Severity: medium.
+  Likelihood: low (resolved below). Mitigation: follow the design's Ruff-parity
+  mandate literally. §7.0 names `ruff check` the "UX gold standard" and the
+  evidence table (`docs/technical-design.md:55`) records that `odw-lint check`
+  "should copy Ruff's check-command semantics"; `ruff check` exits `1` for
+  **any** remaining violation regardless of severity, with `--exit-zero`/
+  `--fix-only` as the documented opt-outs (§7.0 lists those same opt-outs).
+  §7.4's exit-`1` row ("Diagnostics remain, …") is not severity-qualified. So
+  the pinned policy is: exit `1` when **any** diagnostic remains or any input
+  is unreadable; exit `0` only when zero diagnostics remain. `--max-warnings`
+  and `--strict-claude` (roadmap 3.1.3) are later *refinements* of this
+  default, not evidence that plain warnings pass today. Lock it with a table
+  test whose only exit-`0` row is the truly clean case (error, warning-only,
+  info/hint, and read-failure rows all exit `1`).
 - Risk: representing unreadable files. `docs/technical-design.md` §7.2 says
   "Unreadable files produce diagnostics and exit code 1", but there is no
-  catalogued IO-error rule and JSON output is not built yet.
-  Severity: low. Likelihood: high.
-  Mitigation: report read failures as CLI-level error lines on stderr that
-  drive exit `1`; representing them as structured/catalogued diagnostics inside
-  the JSON envelope is deferred to 2.4.3/2.4.4. Recorded in the Decision Log.
+  catalogued IO-error rule and JSON output is not built yet. Severity: low.
+  Likelihood: high. Mitigation: report read failures as CLI-level error lines
+  on stderr that drive exit `1`; representing them as structured/catalogued
+  diagnostics inside the JSON envelope is deferred to 2.4.3/2.4.4. Recorded in
+  the Decision Log.
 - Risk: adding a new top-level `src/cli/` directory could trip an architecture
-  inventory guard.
-  Severity: low. Likelihood: low.
-  Mitigation: verified that `tests/diagnostics/architecture.test.ts` pins only
-  `src/diagnostics` and `src/static-analysis` module inventories (lines
-  314–315) and that `EXPECTED_PARSEABLE_SOURCE_FILES` is a representative, not
-  exhaustive, list; `src/cli/` is unconstrained by those assertions. The
-  recursive import-policy scan still covers the new files, which is desired.
+  inventory guard. Severity: low. Likelihood: low. Mitigation: verified that
+  `tests/diagnostics/architecture.test.ts` pins only `src/diagnostics` and
+  `src/static-analysis` module inventories (lines 314–315) and that
+  `EXPECTED_PARSEABLE_SOURCE_FILES` is a representative, not exhaustive, list;
+  `src/cli/` is unconstrained by those assertions. The recursive import-policy
+  scan still covers the new files, which is desired.
 - Risk: `src/` importing from `tests/` (the existing `cli-support.ts`
-  entrypoint helper lives under `tests/build-gate/`).
-  Severity: low. Likelihood: medium.
-  Mitigation: the product CLI must not import test-only modules. Use the Bun
-  `import.meta.main` idiom already used at
+  entrypoint helper lives under `tests/build-gate/`). Severity: low.
+  Likelihood: medium. Mitigation: the product CLI must not import test-only
+  modules. Use the Bun `import.meta.main` idiom already used at
   `tests/static-analysis/fixtures/refresh-metadata.ts:136` for the entrypoint
   guard; keep production stream/exit wiring inside `src/cli/`.
 
 ## Progress
 
 - [x] (2026-07-06T02:07Z) WI-1: Add the explicit-path workflow
-  source reader. Red: `bun test tests/cli/read-workflow-source.test.ts`
-  failed because `../../src/cli/read-workflow-source` did not exist. Green:
-  added `src/cli/read-workflow-source.ts` and
+  source reader. Red: `bun test tests/cli/read-workflow-source.test.ts` failed
+  because `../../src/cli/read-workflow-source` did not exist. Green: added
+  `src/cli/read-workflow-source.ts` and
   `tests/cli/read-workflow-source.test.ts`; the focused test passed with 6
   tests. Refactor/gate: added concise private-helper JSDoc required by
-  `df12(require-private-jsdoc)`, added the missing
-  `docs/contents.md` ExecPlan index entry required by the repository
-  documentation freshness gate, formatted only touched files, and ran
-  `make all`, `make markdownlint`, and `make nixie` successfully after the
-  ExecPlan update.
+  `df12(require-private-jsdoc)`, added the missing `docs/contents.md` ExecPlan
+  index entry required by the repository documentation freshness gate,
+  formatted only touched files, and ran `make all`, `make markdownlint`, and
+  `make nixie` successfully after the ExecPlan update.
 - [x] (2026-07-06T03:22Z) WI-2: Add the multi-file check aggregator and
-  exit-code policy. Red:
-  `bun test tests/cli/run-check.test.ts` failed because
-  `../../src/cli/run-check` did not exist. Green: added
-  `src/cli/run-check.ts` and `tests/cli/run-check.test.ts`; the focused test
-  passed with 7 tests. Refactor/gate: extracted the remaining-findings
-  predicate required by `df12(complex-conditional)`, added the private-helper
-  JSDoc required by `df12(require-private-jsdoc)`, converted branded rule IDs
-  to strings only at the test assertion boundary, formatted only touched
-  TypeScript files, and ran `make all` successfully. The aggregator counts
-  only successfully read files in `report.summary.files`, preserves diagnostic
-  path order, reports read failures separately from catalogued diagnostics,
-  and returns exit `1` for any diagnostic severity or read failure under the
-  recorded Ruff-parity policy.
+  exit-code policy. Red: `bun test tests/cli/run-check.test.ts` failed because
+  `../../src/cli/run-check` did not exist. Green: added `src/cli/run-check.ts`
+  and `tests/cli/run-check.test.ts`; the focused test passed with 7 tests.
+  Refactor/gate: extracted the remaining-findings predicate required by
+  `df12(complex-conditional)`, added the private-helper JSDoc required by
+  `df12(require-private-jsdoc)`, converted branded rule IDs to strings only at
+  the test assertion boundary, formatted only touched TypeScript files, and ran
+  `make all` successfully. The aggregator counts only successfully read files in
+  `report.summary.files`, preserves diagnostic path order, reports read
+  failures separately from catalogued diagnostics, and returns exit `1` for any
+  diagnostic severity or read failure under the recorded Ruff-parity policy.
 - [x] (2026-07-06T02:23Z) WI-3: Add the `check` argument parser,
   CLI runner, and entrypoint. Red:
   `bun test tests/cli/check-cli.test.ts tests/cli/main-entrypoint.test.ts`
-  failed because `../../src/cli/check-cli` and `src/cli/main.ts` did not
-  exist. Green: added `src/cli/check-cli.ts`, `src/cli/main.ts`,
+  failed because `../../src/cli/check-cli` and `src/cli/main.ts` did not exist.
+  Green: added `src/cli/check-cli.ts`, `src/cli/main.ts`,
   `tests/cli/check-cli.test.ts`, and `tests/cli/main-entrypoint.test.ts`; the
   focused suite passed with 10 tests. Refactor/gate: organized imports with
   targeted Biome checks, kept process output behind injected writers, kept the
   Bun entrypoint thin, and covered clean, error-bearing, warning-only,
   unreadable, usage-error, and non-`Errno` reader paths. Scrutineer then ran
   `make all`, `make check-fmt`, `make typecheck`, `make lint`, `make test`,
-  `make markdownlint`, and `make nixie` successfully; local reruns of the
-  named deterministic gates also passed.
+  `make markdownlint`, and `make nixie` successfully; local reruns of the named
+  deterministic gates also passed.
 - [x] (2026-07-06T03:38Z) WI-4: Add corpus-driven end-to-end
-  exit-code coverage. Red:
-  `bun test tests/cli/check-cli-corpus.e2e.test.ts` failed because the
-  file did not exist. Green: added
-  `tests/cli/check-cli-corpus.e2e.test.ts`; the focused process-level
-  corpus suite passed with 17 tests after targeted Biome formatting. The
-  suite spawns `bun run src/cli/main.ts check` from the repository root,
-  drives every valid ODW example fixture from
-  `ODW_EXAMPLE_FIXTURE_SNAPSHOTS`, samples one invalid fixture from each
-  reviewed invalid family (`missing-metadata`, `malformed-metadata`,
-  `hostile-metadata`, `unsupported-import-export`, and `syntax-error`),
-  proves the mixed valid/error-bearing invocation exits `1`, and proves the
-  no-operand invocation exits `2`. Refactor/gate: no production refactor was
-  needed; the post-commit local `make all` rerun exposed Bun `it.each`
-  overload friction with readonly fixture manifests, so the test now copies
-  manifest arrays only at the `it.each` boundary before the commit was
+  exit-code coverage. Red: `bun test tests/cli/check-cli-corpus.e2e.test.ts`
+  failed because the file did not exist. Green: added
+  `tests/cli/check-cli-corpus.e2e.test.ts`; the focused process-level corpus
+  suite passed with 17 tests after targeted Biome formatting. The suite spawns
+  `bun run src/cli/main.ts check` from the repository root, drives every valid
+  ODW example fixture from `ODW_EXAMPLE_FIXTURE_SNAPSHOTS`, samples one invalid
+  fixture from each reviewed invalid family (`missing-metadata`,
+  `malformed-metadata`, `hostile-metadata`, `unsupported-import-export`, and
+  `syntax-error`), proves the mixed valid/error-bearing invocation exits `1`,
+  and proves the no-operand invocation exits `2`. Refactor/gate: no production
+  refactor was needed; the post-commit local `make all` rerun exposed Bun
+  `it.each` overload friction with readonly fixture manifests, so the test now
+  copies manifest arrays only at the `it.each` boundary before the commit was
   amended and the gates rerun.
 - [x] (2026-07-06T04:27Z) WI-5: Document the minimal `check` command
   and its exit codes. Green: updated `docs/developers-guide.md` to document
@@ -213,107 +204,101 @@ Hard invariants that must hold throughout implementation.
 ## Surprises & discoveries
 
 - Observation: the human text formatter already exists and already emits
-  `file:line:column severity rule message`.
-  Evidence: `src/diagnostics/text.ts` `formatTextDiagnostics`, re-exported from
-  `src/index.ts`.
-  Impact: this task reuses it for observability; the *designed* text-output
-  contract (grouping, summary, colour, `--output-format`) remains roadmap
-  2.4.2. This slice must not redesign text output.
+  `file:line:column severity rule message`. Evidence: `src/diagnostics/text.ts`
+  `formatTextDiagnostics`, re-exported from `src/index.ts`. Impact: this task
+  reuses it for observability; the *designed* text-output contract (grouping,
+  summary, colour, `--output-format`) remains roadmap 2.4.2. This slice must
+  not redesign text output.
 - Observation: in this planning session `git`, `make`, and `bunx` invocations
   are refused by the harness permission policy ("requires approval"), even
-  read-only and with the sandbox disabled.
-  Evidence: `git -C … log`, `make markdownlint`, and
-  `bunx markdownlint-cli2 --fix` all returned "This command requires approval".
-  Impact: the ExecPlan Markdown was validated manually against
-  `.markdownlint-cli2.jsonc` (MD013 80/120 line lengths, MD004 dash bullets,
-  MD029 ordered lists, MD040 fenced-code languages); `make markdownlint` /
-  `make nixie` and the commit must be performed by the workflow host. The same
-  blanket `git`/`make`/`bunx` refusal persisted in planning rounds 2 and 3
-  (`git -C … add`, `git … commit`, and the `cd … && git` form were all refused
-  again in round 3), so the plan commit remains the host's salvage
-  responsibility. Round 3 removed the now-superseded round-1 review scratch
-  file `docs/execplans/roadmap-2-4-1.review-r1.md`; its B1/B2/A1–A3 points are
-  already folded into Revision 2 and the Decision Log, so the ExecPlan is the
-  sole dirty path and host salvage can commit it without declining.
+  read-only and with the sandbox disabled. Evidence: `git -C … log`,
+  `make markdownlint`, and `bunx markdownlint-cli2 --fix` all returned "This
+  command requires approval". Impact: the ExecPlan Markdown was validated
+  manually against `.markdownlint-cli2.jsonc` (MD013 80/120 line lengths, MD004
+  dash bullets, MD029 ordered lists, MD040 fenced-code languages);
+  `make markdownlint` / `make nixie` and the commit must be performed by the
+  workflow host. The same blanket `git`/`make`/`bunx` refusal persisted in
+  planning rounds 2 and 3 (`git -C … add`, `git … commit`, and the
+  `cd … && git` form were all refused again in round 3), so the plan commit
+  remains the host's salvage responsibility. Round 3 removed the now-superseded
+  round-1 review scratch file `docs/execplans/roadmap-2-4-1.review-r1.md`; its
+  B1/B2/A1–A3 points are already folded into Revision 2 and the Decision Log,
+  so the ExecPlan is the sole dirty path and host salvage can commit it without
+  declining.
 - Observation: a full CLI entrypoint/writer pattern already exists but only for
   build-gate CLIs under `tests/build-gate/` (`cli-support.ts`,
-  `review-evidence-cli.ts`, `*-cli-smoke.test.ts`).
-  Evidence: `tests/build-gate/cli-support.ts`,
-  `tests/build-gate/review-evidence-cli-smoke.test.ts`.
-  Impact: the product CLI mirrors those proven shapes (injectable writers,
-  discriminated usage-error results, spawn-based smoke tests) without importing
-  the test-only module.
+  `review-evidence-cli.ts`, `*-cli-smoke.test.ts`). Evidence:
+  `tests/build-gate/cli-support.ts`,
+  `tests/build-gate/review-evidence-cli-smoke.test.ts`. Impact: the product CLI
+  mirrors those proven shapes (injectable writers, discriminated usage-error
+  results, spawn-based smoke tests) without importing the test-only module.
 - Observation: adding the task ExecPlan requires a matching
-  `docs/contents.md` entry for `make all` to pass.
-  Evidence: before the contents update,
-  `bun test tests/build-gate/documentation-contents.test.ts` reported missing
-  `execplans/roadmap-2-4-1.md`; adding the link made `make all` pass.
-  Impact: WI-1 includes the minimal documentation-index update alongside the
-  source reader so the committed work item is gate-clean.
+  `docs/contents.md` entry for `make all` to pass. Evidence: before the
+  contents update, `bun test tests/build-gate/documentation-contents.test.ts`
+  reported missing `execplans/roadmap-2-4-1.md`; adding the link made
+  `make all` pass. Impact: WI-1 includes the minimal documentation-index update
+  alongside the source reader so the committed work item is gate-clean.
 - Observation: the internal analyser-failure branch in `runCheckCli` is
   present but not directly injectable without widening the WI-3 public seam.
   Evidence: `runCheck` owns the `lintWorkflowSource` call and WI-3's planned
-  `CheckCliIo` seam only exposes writers, version, and `readFileText`.
-  Impact: WI-3 covers non-`Errno` reader throws as read failures and leaves a
-  direct analyser-throw test as a residual gap rather than adding an
-  out-of-plan linter injection hook.
+  `CheckCliIo` seam only exposes writers, version, and `readFileText`. Impact:
+  WI-3 covers non-`Errno` reader throws as read failures and leaves a direct
+  analyser-throw test as a residual gap rather than adding an out-of-plan
+  linter injection hook.
 - Observation: Leta symbol lookups worked for manifest-owner symbols, then a
   later scoped symbol search returned "Connection closed unexpectedly".
   Evidence: `leta show ODW_EXAMPLE_FIXTURE_SNAPSHOTS` and
-  `leta show INVALID_WORKFLOW_FIXTURE_SNAPSHOTS` succeeded; `leta grep
+  `leta show INVALID_WORKFLOW_FIXTURE_SNAPSHOTS` succeeded;
+  `leta grep
   "spawnSync|review-evidence" "tests/build-gate" -k function,variable,const`
-  returned the connection-closed error.
-  Impact: WI-4 continued with bounded branch-local file inspection for the
-  smoke-test pattern and recorded the transient tooling failure, as permitted
-  by the workflow instructions.
+  returned the connection-closed error. Impact: WI-4 continued with bounded
+  branch-local file inspection for the smoke-test pattern and recorded the
+  transient tooling failure, as permitted by the workflow instructions.
 
 ## Decision log
 
 - Decision: adopt Ruff parity for the default exit policy — exit `1` when
   **any** diagnostic remains (regardless of severity) OR at least one input
-  file is unreadable; exit `0` only when zero diagnostics remain.
-  Rationale: `docs/technical-design.md` §7.0 makes `ruff check` the "UX gold
-  standard" and the evidence table (`docs/technical-design.md:55`) mandates that
+  file is unreadable; exit `0` only when zero diagnostics remain. Rationale:
+  `docs/technical-design.md` §7.0 makes `ruff check` the "UX gold standard" and
+  the evidence table (`docs/technical-design.md:55`) mandates that
   `odw-lint check` "should copy Ruff's check-command semantics". `ruff check`
   exits `1` for any remaining violation irrespective of severity, with
   `--exit-zero`/`--fix-only` as the documented opt-outs — §7.0 lists exactly
-  those opt-outs, which only make sense if the default is "remaining diagnostics
-  fail". §7.4's exit-`1` row ("Diagnostics remain, warning threshold was
-  exceeded, …") is not severity-qualified, and §7.2 states "Unreadable files
-  produce diagnostics and exit code 1". The earlier round-1 draft gated exit `1`
-  on error severity only; the design reviewer (round 1, B1/B2) rejected that as
-  contradicting the primary stated precedent, and it made WI-4's
-  hostile-metadata assertion impossible. `--max-warnings`/`--strict-claude`
-  (roadmap 3.1.3) are future refinements layered over this default, not a
-  licence for plain warnings to pass now. The valid ODW-example corpus carries
-  `expectedDiagnostics: []`, so it exits `0`; every invalid family emits at
-  least one diagnostic, so it exits `1`.
-  Date/Author: 2026-07-06, planning agent (revised round 2 per design review).
+  those opt-outs, which only make sense if the default is "remaining
+  diagnostics fail". §7.4's exit-`1` row ("Diagnostics remain, warning
+  threshold was exceeded, …") is not severity-qualified, and §7.2 states
+  "Unreadable files produce diagnostics and exit code 1". The earlier round-1
+  draft gated exit `1` on error severity only; the design reviewer (round 1,
+  B1/B2) rejected that as contradicting the primary stated precedent, and it
+  made WI-4's hostile-metadata assertion impossible. `--max-warnings`/
+  `--strict-claude` (roadmap 3.1.3) are future refinements layered over this
+  default, not a licence for plain warnings to pass now. The valid ODW-example
+  corpus carries `expectedDiagnostics: []`, so it exits `0`; every invalid
+  family emits at least one diagnostic, so it exits `1`. Date/Author:
+  2026-07-06, planning agent (revised round 2 per design review).
 - Decision: unreadable input files are reported as CLI error lines on stderr
   and set exit `1`; they are not modelled as catalogued `Diagnostic` objects.
   Rationale: no IO-error rule exists in `src/diagnostics/rule-catalogue.ts`;
   adding one is a §8/§9 taxonomy change out of scope for a CLI slice, and the
   structured/JSON representation is 2.4.3/2.4.4. Satisfies §7.2 ("produce
-  diagnostics and exit code 1") at the CLI observability level.
-  Date/Author: 2026-07-06, planning agent.
+  diagnostics and exit code 1") at the CLI observability level. Date/Author:
+  2026-07-06, planning agent.
 - Decision: with no path operands the command exits `2` (usage error) rather
-  than performing default-root discovery.
-  Rationale: this task is "explicit file paths"; default-root/include-glob
-  discovery is deferred (`docs/technical-design.md` §7.2;
-  `docs/developers-guide.md` §"Static-Analysis Boundary"). Exiting `2` is a
-  well-defined behaviour that does not fake discovery.
-  Date/Author: 2026-07-06, planning agent.
+  than performing default-root discovery. Rationale: this task is "explicit
+  file paths"; default-root/include-glob discovery is deferred
+  (`docs/technical-design.md` §7.2; `docs/developers-guide.md`
+  §"Static-Analysis Boundary"). Exiting `2` is a well-defined behaviour that
+  does not fake discovery. Date/Author: 2026-07-06, planning agent.
 - Decision: use the Bun `import.meta.main` guard for the entrypoint instead of
-  the test-only `runCliEntrypoint` helper.
-  Rationale: production code must not import `tests/`; `import.meta.main` is
-  already an established idiom in this repo.
-  Date/Author: 2026-07-06, planning agent.
+  the test-only `runCliEntrypoint` helper. Rationale: production code must not
+  import `tests/`; `import.meta.main` is already an established idiom in this
+  repo. Date/Author: 2026-07-06, planning agent.
 - Decision: keep the explicit-path reader as an internal `src/cli/` module and
-  avoid package-entry re-exports.
-  Rationale: the CLI source reader is application plumbing for later 2.4.1
-  work items. Exporting it through `src/index.ts` would widen the package
-  surface, contradicting this plan's constraints.
-  Date/Author: 2026-07-06, Codex builder.
+  avoid package-entry re-exports. Rationale: the CLI source reader is
+  application plumbing for later 2.4.1 work items. Exporting it through
+  `src/index.ts` would widen the package surface, contradicting this plan's
+  constraints. Date/Author: 2026-07-06, Codex builder.
 - Decision: keep the WI-3 process smoke test to the no-operand entrypoint path.
   Rationale: WI-4 owns corpus-driven end-to-end process coverage. A small
   process test in WI-3 proves `src/cli/main.ts` is runnable and uses the exit
@@ -322,8 +307,8 @@ Hard invariants that must hold throughout implementation.
 
 ## Outcomes & retrospective
 
-Delivered the roadmap 2.4.1 explicit-file-path spine for `odw-lint check`.
-The command reads named workflow files without executing them, reports existing
+Delivered the roadmap 2.4.1 explicit-file-path spine for `odw-lint check`. The
+command reads named workflow files without executing them, reports existing
 text diagnostics, reports read failures on stderr, and exits `0` only for clean
 inputs, `1` for any remaining diagnostic or unreadable input, and `2` for
 invalid usage or internal analyser failure. WI-4 proves the observable
@@ -337,8 +322,8 @@ The reader needs only this worktree. Relevant existing code:
 
 - `src/static-analysis/workflow-lint.ts` exports
   `lintWorkflowSource(source: WorkflowSource): WorkflowLintResult`. The result's
-  `diagnostics` field is the canonical, frozen diagnostic stream for one source
-  string. This is the production entry point (`docs/developers-guide.md`
+  `diagnostics` field is the canonical, frozen diagnostic stream for one
+  source string. This is the production entry point (`docs/developers-guide.md`
   lines 144–152) and does not execute workflow source.
 - `src/static-analysis/types.ts` defines
   `WorkflowSource = { readonly filePath: string; readonly sourceText: string }`.
@@ -407,16 +392,15 @@ export const readWorkflowSource = (
 Default `readFileText` uses `node:fs` `readFileSync(filePath, "utf8")` and
 classifies thrown `NodeJS.ErrnoException` codes (`ENOENT` → `not-found`,
 `EISDIR` → `not-a-file`, otherwise `unreadable`). Convert the caught unknown
-into a project-owned failure shape at this boundary (`AGENTS.md`
-§"Error Handling"). This is the "Source reader" component of
-`docs/technical-design.md` §6.1 and introduces the first `node:fs` use in
-`src/`.
+into a project-owned failure shape at this boundary (`AGENTS.md` §"Error
+Handling"). This is the "Source reader" component of `docs/technical-design.md`
+§6.1 and introduces the first `node:fs` use in `src/`.
 
 Documentation to read: `docs/technical-design.md` §§6.1, 7.2; `AGENTS.md`
 §§"Error Handling", "Runtime Validation & Types". Skills: load `python-router`
-is **not** applicable — this is TypeScript; follow `AGENTS.md`
-§"TypeScript Guidance" (there is no TS router skill in this session, so obey the
-guide directly).
+is **not** applicable — this is TypeScript; follow `AGENTS.md` §"TypeScript
+Guidance" (there is no TS router skill in this session, so obey the guide
+directly).
 
 Tests (`tests/cli/read-workflow-source.test.ts`), red first:
 
@@ -455,11 +439,11 @@ export const checkDiagnosticsExitCode = (outcome: CheckOutcome): 0 | 1;
 
 `report.summary.files` counts the paths that were successfully read and linted.
 Exit policy is exactly the Decision Log rule (Ruff parity):
-`checkDiagnosticsExitCode` returns `1` iff `outcome.report.diagnostics.length >
-0` or `outcome.readFailures.length > 0`, else `0`. Use the diagnostics stream
-length (not `summary.errors`) so warning/info/hint-only results also exit `1`,
-matching `ruff check`. Cite `docs/technical-design.md` §§7.0, 7.2, 7.4 and
-§9.2.
+`checkDiagnosticsExitCode` returns `1` iff
+`outcome.report.diagnostics.length > 0` or `outcome.readFailures.length > 0`,
+else `0`. Use the diagnostics stream length (not `summary.errors`) so
+warning/info/hint-only results also exit `1`, matching `ruff check`. Cite
+`docs/technical-design.md` §§7.0, 7.2, 7.4 and §9.2.
 
 Documentation to read: `docs/technical-design.md` §§6.1, 7.0, 7.2, 7.4, 8, 9.2;
 roadmap 2.4.1, 3.1.3. Skills: `AGENTS.md` §"TypeScript Guidance"; consider the
@@ -468,16 +452,17 @@ roadmap 2.4.1, 3.1.3. Skills: `AGENTS.md` §"TypeScript Guidance"; consider the
 Tests (`tests/cli/run-check.test.ts`), red first, using an injected in-memory
 `readFileText` and synthetic sources:
 
-- a table test over `{ clean → 0, warning-only → 1, error → 1, read-failure →
-  1, mixed error+clean → 1 }` pinning `checkDiagnosticsExitCode` under Ruff
+- a table test over
+  `{ clean → 0, warning-only → 1, error → 1, read-failure → 1,`
+  `mixed error+clean → 1 }` pinning `checkDiagnosticsExitCode` under Ruff
   parity. The only exit-`0` row is the truly clean case. Build the warning-only
   and error cases from real fixture sources so the policy is anchored to real
   diagnostics: use a hostile-metadata fixture for the warning-only case (all
-  four entries in the invalid-workflows manifest `manifests/hostile-metadata.ts`
-  are a single `odw/meta-statically-unprovable` warning, verified round 1), and
-  a `missing-metadata` invalid fixture for the error case. The warning-only row
-  is the load-bearing assertion that separates Ruff parity from the rejected
-  error-only reading.
+  four entries in the invalid-workflows manifest
+  `manifests/hostile-metadata.ts` are a single `odw/meta-statically-unprovable`
+  warning, verified round 1), and a `missing-metadata` invalid fixture for the
+  error case. The warning-only row is the load-bearing assertion that separates
+  Ruff parity from the rejected error-only reading.
 - aggregation: two readable files produce a report whose `summary.files === 2`
   and whose `diagnostics` concatenates both files' diagnostics in path order.
 - a `fast-check` property: for any ordering of `{error, warning, clean}` source
@@ -537,8 +522,8 @@ No `bin` field is added (Constraints). Keep both files well under 400 lines.
 
 Documentation to read: `docs/technical-design.md` §§7.1, 7.4; `AGENTS.md`
 §§"TypeScript Guidance", "Observability" (structured stderr lines, no ad hoc
-`console.log` in reusable code — `runCheckCli` writes through injected writers).
-Skills: `AGENTS.md` §"TypeScript Guidance".
+`console.log` in reusable code — `runCheckCli` writes through injected
+writers). Skills: `AGENTS.md` §"TypeScript Guidance".
 
 Tests (`tests/cli/check-cli.test.ts`), red first, calling `runCheckCli`
 directly with captured writers and an injected reader:
@@ -551,8 +536,8 @@ directly with captured writers and an injected reader:
   stderr empty.
 - `check <warning-only invalid-fixture>` (a hostile-metadata fixture) → returns
   `1` under Ruff parity even though its only diagnostic is a warning, stdout
-  contains the `warning` line — this pins the warning-only exit-`1` behaviour at
-  the CLI layer too.
+  contains the `warning` line — this pins the warning-only exit-`1` behaviour
+  at the CLI layer too.
 - `check <missing-path>` (reader throws `ENOENT`) → returns `1`, stderr
   contains the `error: cannot read …` line.
 - no operands, `check` with only a `--flag`, and a wrong subcommand → return
@@ -750,39 +735,38 @@ now matches `docs/technical-design.md` §§7.0, 7.2, 7.4 and evidence table line
 hostile-metadata assertion and the Purpose's "invalid corpus exits `1`" are now
 consistent, because every invalid family — including the warning-only
 hostile-metadata family — emits a diagnostic and exits `1`). Rewrote the Risk,
-Decision Log, `checkDiagnosticsExitCode` semantics (`report.diagnostics.length >
-0` instead of `summary.errors > 0`), and the WI-2/WI-3/WI-4 tests accordingly:
-the WI-2 table's only exit-`0` row is the clean case, WI-3 adds an explicit
-warning-only exit-`1` assertion, and the fast-check property now gates on any
-non-clean or unreadable source. Also fixed advisory A1 (the
-`fixture-corpus-ownership` guard does not scan `tests/cli/`, so single-sourcing
-here is a plan requirement, not a guard-enforced one), A2 (WI-3 names an
-error-bearing `missing-metadata` fixture explicitly), and A3 (WI-4's mixed
-invocation names an error-bearing invalid operand).
+Decision Log, `checkDiagnosticsExitCode` semantics
+(`report.diagnostics.length > 0` instead of `summary.errors > 0`), and the
+WI-2/WI-3/WI-4 tests accordingly: the WI-2 table's only exit-`0` row is the
+clean case, WI-3 adds an explicit warning-only exit-`1` assertion, and the
+fast-check property now gates on any non-clean or unreadable source. Also fixed
+advisory A1 (the `fixture-corpus-ownership` guard does not scan `tests/cli/`,
+so single-sourcing here is a plan requirement, not a guard-enforced one), A2
+(WI-3 names an error-bearing `missing-metadata` fixture explicitly), and A3
+(WI-4's mixed invocation names an error-bearing invalid operand).
 
 Revision 3 (2026-07-06, design review round 2 → round 3): the only round-3
 blocking point was ExecPlan durability — the plan had uncommitted modifications
-and an extra untracked path (`docs/execplans/roadmap-2-4-1.review-r1.md`) caused
-the host salvage-commit to decline. The plan content was unchanged and design
-review had not flagged any new content defect. `git` remained blanket-refused by
-the harness permission policy this round too (recorded in Surprises), so the
-agent could not self-commit; the resolution was to remove the superseded round-1
-review scratch file — whose B1/B2/A1–A3 findings are already resolved in
-Revision 2, the Decision Log, and the Risks — leaving the ExecPlan as the sole
-dirty path so host salvage commits it cleanly.
+and an extra untracked path (`docs/execplans/roadmap-2-4-1.review-r1.md`)
+caused the host salvage-commit to decline. The plan content was unchanged and
+design review had not flagged any new content defect. `git` remained
+blanket-refused by the harness permission policy this round too (recorded in
+Surprises), so the agent could not self-commit; the resolution was to remove
+the superseded round-1 review scratch file — whose B1/B2/A1–A3 findings are
+already resolved in Revision 2, the Decision Log, and the Risks — leaving the
+ExecPlan as the sole dirty path so host salvage commits it cleanly.
 
 Revision 4 (2026-07-06, WI-1 delivery): implemented the explicit-path workflow
 source reader and its focused tests, changed status to `IN PROGRESS`, recorded
-Red-Green-Refactor evidence for WI-1, and added the required
-`docs/contents.md` entry for this ExecPlan so the documentation freshness gate
-passes. Remaining work begins at WI-2.
+Red-Green-Refactor evidence for WI-1, and added the required `docs/contents.md`
+entry for this ExecPlan so the documentation freshness gate passes. Remaining
+work begins at WI-2.
 
 Revision 5 (2026-07-06, WI-3 delivery): implemented the `check` argument
 parser, CLI runner, and Bun entrypoint with direct runner tests and a bounded
 entrypoint smoke test. Recorded the residual analyser-failure injection gap,
 kept corpus-driven process coverage deferred to WI-4, and ticked WI-3 after
-scrutineer and local deterministic gates passed. Remaining work begins at
-WI-4.
+scrutineer and local deterministic gates passed. Remaining work begins at WI-4.
 
 Revision 6 (2026-07-06, WI-4 delivery): added corpus-driven process-level
 exit-code coverage for the explicit-path `check` command. The new e2e suite

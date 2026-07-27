@@ -1,9 +1,8 @@
 # Consolidate duplicated static-analysis helper fragments
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -13,11 +12,11 @@ Status: COMPLETE
 executing it. Its static-analysis layer has grown three small code fragments
 that are copied, byte-for-byte or near-so, into more than one module. Copies
 drift: a fix applied to one copy silently leaves the others wrong. Roadmap task
-5.4.1 (`docs/roadmap.md` lines 1363-1370) requires that each duplicated contract
-gain **one** reviewed owner, that focused tests pin the behaviour, and that **no
-production rule output changes**. The verbatim success line reads: "one reviewed
-helper owns each duplicated contract, focused tests pin unchanged diagnostics,
-and no production rule output changes."
+5.4.1 (`docs/roadmap.md` lines 1363-1370) requires that each duplicated
+contract gain **one** reviewed owner, that focused tests pin the behaviour, and
+that **no production rule output changes**. The verbatim success line reads:
+"one reviewed helper owns each duplicated contract, focused tests pin unchanged
+diagnostics, and no production rule output changes."
 
 Three duplicated fragments are in scope, confirmed by direct inspection of the
 worktree:
@@ -25,10 +24,10 @@ worktree:
 1. **Compact-operator token handling.** `significantOperatorEndingAt`
    (`src/static-analysis/source-mask.ts` lines 136-148) and
    `significantTemplateOperatorEndingAt`
-   (`src/static-analysis/source-mask-templates.ts` lines 155-167) have identical
-   bodies: given a source index whose character is a non-identifier token end,
-   they return `"++"`, `"--"`, or the single character. This is a pure
-   token-grammar primitive.
+   (`src/static-analysis/source-mask-templates.ts` lines 155-167) have
+   identical bodies: given a source index whose character is a non-identifier
+   token end, they return `"++"`, `"--"`, or the single character. This is a
+   pure token-grammar primitive.
 2. **Source position/span copying helpers.** `sourcePosition`
    (`src/static-analysis/source-scan.ts` lines 177-179) and `frozenPosition`
    (`src/diagnostics/rule-diagnostic.ts` lines 50-53) are the identical body
@@ -112,29 +111,25 @@ Hard invariants that must hold throughout implementation.
 ## Risks
 
 - Risk: A "duplicate" is not truly identical, so merging changes behaviour.
-  Severity: high. Likelihood: medium.
-  Mitigation: each work item first proves the shared contract (identical body,
-  or a set difference computed and pinned by test), then decomposes so every
-  original call site keeps its exact prior behaviour. The property and parity
-  tests are the backstop.
+  Severity: high. Likelihood: medium. Mitigation: each work item first proves
+  the shared contract (identical body, or a set difference computed and pinned
+  by test), then decomposes so every original call site keeps its exact prior
+  behaviour. The property and parity tests are the backstop.
 - Risk: Architecture inventory / declaration-pin tests fail because a module's
-  file list or top-level declarations changed.
-  Severity: low. Likelihood: high (expected).
-  Mitigation: treat these pins as the structural "red" signal — update the
-  expected lists in the same commit as the code move, and rely on `make test`
-  to confirm the lists match.
+  file list or top-level declarations changed. Severity: low. Likelihood: high
+  (expected). Mitigation: treat these pins as the structural "red" signal —
+  update the expected lists in the same commit as the code move, and rely on
+  `make test` to confirm the lists match.
 - Risk: Adding a runtime helper to the primitives seam violates its "no
-  diagnostic types" rule.
-  Severity: medium. Likelihood: low.
-  Mitigation: only the string-only helpers (compact-operator handling, the
-  character set) go in the seam; the position/span copy helper — which needs
-  `SourcePosition`/`SourceSpan` — goes in a new diagnostics-layer module.
+  diagnostic types" rule. Severity: medium. Likelihood: low. Mitigation: only
+  the string-only helpers (compact-operator handling, the character set) go in
+  the seam; the position/span copy helper — which needs `SourcePosition`/
+  `SourceSpan` — goes in a new diagnostics-layer module.
 - Risk: Cross-layer consolidation (WI-2) introduces an awkward import edge.
-  Severity: low. Likelihood: low.
-  Mitigation: the new owner is a small dedicated internal module in the
-  diagnostics layer, consumed downward by static-analysis, matching the existing
-  `static-analysis -> diagnostics` edges (for example `workflow-body-parser.ts`
-  already imports `rule-diagnostic`).
+  Severity: low. Likelihood: low. Mitigation: the new owner is a small
+  dedicated internal module in the diagnostics layer, consumed downward by
+  static-analysis, matching the existing `static-analysis -> diagnostics` edges
+  (for example `workflow-body-parser.ts` already imports `rule-diagnostic`).
 
 ## Progress
 
@@ -148,31 +143,29 @@ Hard invariants that must hold throughout implementation.
 failed on the missing `compactOperatorTokenEndingAt` export, then passed after
 adding the primitive and rewiring `source-mask.ts` and
 `source-mask-templates.ts`. The source-file architecture pin was updated to
-reflect the new owner and removed local helper declarations. Scrutineer then
-ran `make all`, `make markdownlint`, and `make nixie`; all passed.
+reflect the new owner and removed local helper declarations. Scrutineer then ran
+`make all`, `make markdownlint`, and `make nixie`; all passed.
 
-2026-07-06 WI-2 evidence: added
-`tests/diagnostics/source-coordinates.test.ts`; the red run failed on the
-missing `../../src/diagnostics/source-coordinates` module, then passed after
-adding `copySourcePosition` and `freezeSourceSpan` in
+2026-07-06 WI-2 evidence: added `tests/diagnostics/source-coordinates.test.ts`;
+the red run failed on the missing `../../src/diagnostics/source-coordinates`
+module, then passed after adding `copySourcePosition` and `freezeSourceSpan` in
 `src/diagnostics/source-coordinates.ts`. `rule-diagnostic.ts` now deep-copies
 diagnostic span positions through the helper, while `source-scan.ts` preserves
-the exported `sourcePosition` wrapper and `source-position.ts` preserves shallow
-span freezing through `freezeSourceSpan(span.start, span.end)`. The diagnostics
-architecture fixture lists were updated for the new private module. Focused
-tests passed:
-`bun test tests/diagnostics/source-coordinates.test.ts`,
+the exported `sourcePosition` wrapper and `source-position.ts` preserves
+shallow span freezing through `freezeSourceSpan(span.start, span.end)`. The
+diagnostics architecture fixture lists were updated for the new private module.
+Focused tests passed: `bun test tests/diagnostics/source-coordinates.test.ts`,
 `bun test tests/diagnostics/source-coordinates.test.ts
 tests/diagnostics/rule-diagnostic.test.ts
-tests/diagnostics/architecture.test.ts`, and
-`bun test tests/static-analysis/source-file.test.ts`.
+tests/diagnostics/architecture.test.ts`,
+and `bun test tests/static-analysis/source-file.test.ts`.
 
 2026-07-06 WI-3 evidence: added
 `tests/static-analysis/expression-leading-characters.test.ts`; the focused test
 pins the shared base set exported from
-`src/static-analysis/source-scanner-primitives.ts`, confirms regex scanning uses
-that base unchanged, and confirms object-literal detection derives its local
-`base ∪ { "/" }` contract while preserving arrow-body exclusion. Focused
+`src/static-analysis/source-scanner-primitives.ts`, confirms regex scanning
+uses that base unchanged, and confirms object-literal detection derives its
+local `base ∪ { "/" }` contract while preserving arrow-body exclusion. Focused
 validation passed with
 `bun test tests/static-analysis/expression-leading-characters.test.ts`. The
 full repository gate passed with `make all`.
@@ -180,96 +173,93 @@ full repository gate passed with `make all`.
 2026-07-06 WI-4 evidence: documented the final helper owners in
 `docs/developers-guide.md`, updated `docs/technical-design.md` §6.2 to name the
 new primitives-seam contracts, and marked roadmap task 5.4.1 complete in
-`docs/roadmap.md` with this ExecPlan as the completion record. The Markdown-only
-format pass covered the changed files with `mdtablefix --in-place` and
-`markdownlint-cli2 --fix`; final deterministic gates passed at HEAD with
-`make all`, `make check-fmt`, `make lint`, `make typecheck`, `make test`,
-`make markdownlint`, and `make nixie`.
+`docs/roadmap.md` with this ExecPlan as the completion record. The
+Markdown-only format pass covered the changed files with
+`mdtablefix --in-place` and `markdownlint-cli2 --fix`; final deterministic
+gates passed at HEAD with `make all`, `make check-fmt`, `make lint`,
+`make typecheck`, `make test`, `make markdownlint`, and `make nixie`.
 
 ## Surprises & discoveries
 
 - Observation: the object-literal preceding-character set and the regex
-  allowed-previous-character set differ by exactly one member.
-  Evidence: object-literal string `"([{,;:?=+-*/%!&|^~<>"` (20 characters) minus
+  allowed-previous-character set differ by exactly one member. Evidence:
+  object-literal string `"([{,;:?=+-*/%!&|^~<>"` (20 characters) minus
   `REGEX_ALLOWED_PREVIOUS_CHARACTERS` `"([{,;:=!&|?+-*%<>~^"` (19 characters)
   yields `{ "/" }`; the regex set is a subset of the object-literal set.
   Impact: WI-3 can own the shared 19-character base once and derive the
   object-literal set as `base ∪ { "/" }`, preserving behaviour exactly.
 - Observation: `source-position.ts` `sourceSpan` freezes a shallow
   `{ start, end }` record, whereas `rule-diagnostic.ts` `frozenSpan` re-freezes
-  each nested position first.
-  Evidence: source lines cited in Purpose item 2.
+  each nested position first. Evidence: source lines cited in Purpose item 2.
   Impact: WI-2 keeps a single shallow `freezeSourceSpan(start, end)` owner and
   lets each caller decide whether to pre-copy the positions, so both prior
   contracts are preserved without change.
 - Observation: the first WI-1 gate run failed before code assertions because
-  `docs/contents.md` did not list this ExecPlan.
-  Evidence: `tests/build-gate/documentation-contents.test.ts` reported missing
-  `execplans/roadmap-5-4-1.md`.
-  Impact: WI-1 includes a minimal contents-index entry so the repository gate
-  can pass before the later documentation-owner work item begins.
+  `docs/contents.md` did not list this ExecPlan. Evidence:
+  `tests/build-gate/documentation-contents.test.ts` reported missing
+  `execplans/roadmap-5-4-1.md`. Impact: WI-1 includes a minimal contents-index
+  entry so the repository gate can pass before the later documentation-owner
+  work item begins.
 - Observation: branch-local Leta symbol navigation was degraded during WI-2.
-  Evidence: `leta grep "sourcePosition|sourceSpan|frozenPosition|frozenSpan"
-  -k function --head 80` failed with `Error: Connection closed unexpectedly`;
-  a narrower retry completed without useful symbol output.
-  Impact: WI-2 used bounded direct inspection of the exact plan-named files
-  after the required GrepAI main-branch intent search; this did not block
-  implementation because the plan already identified the owned helper surfaces.
+  Evidence:
+  `leta grep "sourcePosition|sourceSpan|frozenPosition|frozenSpan"
+  -k function --head 80`
+  failed with `Error: Connection closed unexpectedly`; a narrower retry
+  completed without useful symbol output. Impact: WI-2 used bounded direct
+  inspection of the exact plan-named files after the required GrepAI
+  main-branch intent search; this did not block implementation because the plan
+  already identified the owned helper surfaces.
 
 ## Decision log
 
 - Decision: place the shared compact-operator helper and the shared
   previous-character base set in the primitives seam
-  `src/static-analysis/source-scanner-primitives.ts`.
-  Rationale: `docs/technical-design.md` §6.2 designates that module the internal
-  seam that "both the source-mask scanner family and workflow-metadata scanners
-  compose", and `docs/developers-guide.md` confirms it "owns pure JavaScript
+  `src/static-analysis/source-scanner-primitives.ts`. Rationale:
+  `docs/technical-design.md` §6.2 designates that module the internal seam that
+  "both the source-mask scanner family and workflow-metadata scanners compose",
+  and `docs/developers-guide.md` confirms it "owns pure JavaScript
   token-grammar primitives shared by the source-mask and workflow-metadata
   scanner families". Both helpers are string-only, so they respect the seam's
-  "no diagnostic/parser/public types" rule.
-  Date/Author: 2026-07-06, planning agent.
+  "no diagnostic/parser/public types" rule. Date/Author: 2026-07-06, planning
+  agent.
 - Decision: place the shared position/span freeze helpers in a new internal
-  module `src/diagnostics/source-coordinates.ts` rather than the primitives seam
-  or `diagnostics/types.ts`.
-  Rationale: the helper needs `SourcePosition`/`SourceSpan`, which the
-  primitives seam forbids. The only owner reachable by both layers under the
-  fixed layering direction is in `src/diagnostics/**`. `diagnostics/types.ts` is
-  re-exported at the package entry, so adding helpers there would widen the
-  public surface; `rule-diagnostic.ts` is semantically about building rule
-  diagnostics, so having `source-scan.ts` import it would be an awkward edge. A
-  small dedicated internal
-  module keeps the helper private and single-owned. This costs one entry each in
+  module `src/diagnostics/source-coordinates.ts` rather than the primitives
+  seam or `diagnostics/types.ts`. Rationale: the helper needs `SourcePosition`/
+  `SourceSpan`, which the primitives seam forbids. The only owner reachable by
+  both layers under the fixed layering direction is in `src/diagnostics/**`.
+  `diagnostics/types.ts` is re-exported at the package entry, so adding helpers
+  there would widen the public surface; `rule-diagnostic.ts` is semantically
+  about building rule diagnostics, so having `source-scan.ts` import it would
+  be an awkward edge. A small dedicated internal module keeps the helper
+  private and single-owned. This costs one entry each in
   `EXPECTED_DIAGNOSTIC_MODULE_FILES` and `EXPECTED_PARSEABLE_SOURCE_FILES`.
   Date/Author: 2026-07-06, planning agent.
 - Decision: for the span copy, own only the "freeze a `{ start, end }` record"
   sub-contract (`freezeSourceSpan`) and keep position re-copying a caller
-  concern.
-  Rationale: `sourceSpan` (shallow) and `frozenSpan` (deep) genuinely differ;
-  forcing one contract would change behaviour. Decomposing preserves both:
-  `sourceSpan(span) = freezeSourceSpan(span.start, span.end)` and
+  concern. Rationale: `sourceSpan` (shallow) and `frozenSpan` (deep) genuinely
+  differ; forcing one contract would change behaviour. Decomposing preserves
+  both: `sourceSpan(span) = freezeSourceSpan(span.start, span.end)` and
   `frozenSpan(span) = freezeSourceSpan(copySourcePosition(span.start),
   copySourcePosition(span.end))`.
   Date/Author: 2026-07-06, planning agent.
 - Decision: in WI-3 keep each divergent site local — regex uses the base set;
   the object-literal check uses `base ∪ { "/" }` — while owning the shared base
-  once.
-  Rationale: this mirrors the developers-guide "'where contracts match'
+  once. Rationale: this mirrors the developers-guide "'where contracts match'
   exception" convention (helpers share the matching core and keep the divergent
   edge local and documented), and matches the roadmap wording "where contracts
   match". A single fused set would be wrong for regex, which must exclude `/`.
   Date/Author: 2026-07-06, planning agent.
 - Decision: do not generalize the position copy into an untyped
-  `frozenCopy<T>`; keep it typed to `SourcePosition`.
-  Rationale: AGENTS.md prefers narrow domain types; `sourceLine` and the
-  suggestion copy remain their own concerns and are out of this task's scope.
-  Date/Author: 2026-07-06, planning agent.
+  `frozenCopy<T>`; keep it typed to `SourcePosition`. Rationale: AGENTS.md
+  prefers narrow domain types; `sourceLine` and the suggestion copy remain
+  their own concerns and are out of this task's scope. Date/Author: 2026-07-06,
+  planning agent.
 - Decision: include the missing `docs/contents.md` ExecPlan entry with WI-1
-  rather than defer it to WI-4.
-  Rationale: `make all` treats the documentation contents index as a freshness
-  gate for every current top-level ExecPlan. The entry is required gate
-  bookkeeping for this approved plan and does not document the consolidated
-  helper ownership that WI-4 still owns.
-  Date/Author: 2026-07-06, WI-1 implementation agent.
+  rather than defer it to WI-4. Rationale: `make all` treats the documentation
+  contents index as a freshness gate for every current top-level ExecPlan. The
+  entry is required gate bookkeeping for this approved plan and does not
+  document the consolidated helper ownership that WI-4 still owns. Date/Author:
+  2026-07-06, WI-1 implementation agent.
 
 ## Outcomes & retrospective
 
@@ -288,13 +278,13 @@ The rule-diagnostic path still deep-copies nested positions by composing both
 helpers, and the static-analysis source-span path still keeps its prior shallow
 behaviour. No production snapshots or parity fixtures changed.
 
-WI-3 complete: expression-leading previous-character handling now has one shared
-base owner, `EXPRESSION_LEADING_PREVIOUS_CHARACTERS`, in
-`src/static-analysis/source-scanner-primitives.ts`. Regex scanning consumes that
-base unchanged, while object-literal detection derives its prior local contract
-as the base plus `/`. The focused test pins the shared base, the one-character
-divergence, and the arrow-body exclusion. No production snapshots or parity
-fixtures changed.
+WI-3 complete: expression-leading previous-character handling now has one
+shared base owner, `EXPRESSION_LEADING_PREVIOUS_CHARACTERS`, in
+`src/static-analysis/source-scanner-primitives.ts`. Regex scanning consumes
+that base unchanged, while object-literal detection derives its prior local
+contract as the base plus `/`. The focused test pins the shared base, the
+one-character divergence, and the arrow-body exclusion. No production snapshots
+or parity fixtures changed.
 
 WI-4 complete: `docs/developers-guide.md`, `docs/technical-design.md`, and
 `docs/roadmap.md` now record the consolidated helper owners and mark roadmap
@@ -344,8 +334,8 @@ Definitions:
   token when it ends at a given index.
 - **Preceding-character heuristic**: a JavaScript scanner cannot know whether a
   `/` starts a regex or a `{` starts an object literal without looking at the
-  previous significant character; both use a small allow-set of characters after
-  which an expression may begin.
+  previous significant character; both use a small allow-set of characters
+  after which an expression may begin.
 - **Architecture inventory / declaration-pin tests**: tests that assert the
   exact list of source files in a directory and the exact set of top-level
   declarations in specific modules, so structural moves are reviewed
@@ -355,8 +345,9 @@ Verified inventory constraints (from reading the tests):
 
 - Adding `src/diagnostics/source-coordinates.ts` requires adding
   `"source-coordinates.ts"` to `EXPECTED_DIAGNOSTIC_MODULE_FILES` and
-  `"src/diagnostics/source-coordinates.ts"` to `EXPECTED_PARSEABLE_SOURCE_FILES`
-  in `tests/diagnostics/architecture-fixtures.ts`, and **not** adding it to
+  `"src/diagnostics/source-coordinates.ts"` to
+  `EXPECTED_PARSEABLE_SOURCE_FILES` in
+  `tests/diagnostics/architecture-fixtures.ts`, and **not** adding it to
   `EXPECTED_PACKAGE_ENTRY_MODULE_SPECIFIERS`.
 - Adding a declaration to `source-scanner-primitives.ts`, or removing
   `significantOperatorEndingAt` from `source-mask.ts` /
@@ -387,9 +378,9 @@ ownership".
    block in an existing `source-scanner-*` test) importing a not-yet-existing
    `compactOperatorTokenEndingAt` from
    `src/static-analysis/source-scanner-primitives.ts`. Assert: for `"a++"` at
-   the final index it returns `"++"`; for `"a--"` it returns `"--"`; for `"a+b"`
-   at the `+` index it returns `"+"`; for a lone `"+"` at index 0 it returns
-   `"+"`. Run the focused test and observe the import failure.
+   the final index it returns `"++"`; for `"a--"` it returns `"--"`; for
+   `"a+b"` at the `+` index it returns `"+"`; for a lone `"+"` at index 0 it
+   returns `"+"`. Run the focused test and observe the import failure.
 2. Green: add exported
    `compactOperatorTokenEndingAt(sourceText: string, index: number): string` to
    `source-scanner-primitives.ts` with the body currently in
@@ -446,13 +437,15 @@ boundaries) and ADR 0001 (layering as a security boundary).
    call to `copySourcePosition` (or delete `frozenPosition` and use
    `copySourcePosition` directly), and rewrite `frozenSpan` as
    `freezeSourceSpan(copySourcePosition(span.start),
-   copySourcePosition(span.end))`. The deep-copy behaviour is preserved.
+   copySourcePosition(span.end))`.
+   The deep-copy behaviour is preserved.
 5. Green: in `source-scan.ts`, redefine `sourcePosition` to delegate to
    `copySourcePosition` (keep the exported name `sourcePosition` so its
    architecture pin holds); import from `../diagnostics/source-coordinates`.
 6. Green: in `source-position.ts`, rewrite the private `sourceSpan` as
-   `freezeSourceSpan(span.start, span.end)` (keep the name `sourceSpan`; shallow
-   behaviour preserved); import from `../diagnostics/source-coordinates`.
+   `freezeSourceSpan(span.start, span.end)` (keep the name `sourceSpan`;
+   shallow behaviour preserved); import from
+   `../diagnostics/source-coordinates`.
 7. Refactor/verify: run `make all`. `rule-diagnostic.test.ts`, the source-file
    and source-position suites, and all diagnostic snapshots must pass unchanged.
 
@@ -468,15 +461,15 @@ primitives live in the primitives seam) and the developers-guide "'where
 contracts match' exception" convention.
 
 1. Red: add a focused unit test
-   (`tests/static-analysis/expression-leading-characters.test.ts`) that pins the
-   verified relationship. Assert: a not-yet-existing exported base set
-   `EXPRESSION_LEADING_PREVIOUS_CHARACTERS` from
-   `source-scanner-primitives.ts` has exactly the 19 members of the current
-   regex set; `REGEX_ALLOWED_PREVIOUS_CHARACTERS` equals the base set; the
-   object-literal set equals the base set plus `/`. Also add/extend a regression
-   assertion on `expressionContainsObjectLiteralCandidate` that a `{` following
-   `/` (for example `a / {}`) is still treated as an object-literal opening,
-   while `=>{` (arrow body) is still not. Run it; observe failure.
+   (`tests/static-analysis/expression-leading-characters.test.ts`) that pins
+   the verified relationship. Assert: a not-yet-existing exported base set
+   `EXPRESSION_LEADING_PREVIOUS_CHARACTERS` from `source-scanner-primitives.ts`
+   has exactly the 19 members of the current regex set;
+   `REGEX_ALLOWED_PREVIOUS_CHARACTERS` equals the base set; the object-literal
+   set equals the base set plus `/`. Also add/extend a regression assertion on
+   `expressionContainsObjectLiteralCandidate` that a `{` following `/` (for
+   example `a / {}`) is still treated as an object-literal opening, while `=>{`
+   (arrow body) is still not. Run it; observe failure.
 2. Green: add exported
    `EXPRESSION_LEADING_PREVIOUS_CHARACTERS: ReadonlySet<string>` to
    `source-scanner-primitives.ts` initialized from the 19-character base
@@ -493,8 +486,8 @@ contracts match' exception" convention.
    (`new Set([...EXPRESSION_LEADING_PREVIOUS_CHARACTERS, "/"])`) and change
    `isObjectLiteralOpening` to test membership with `.has(...)`. Add a comment
    noting the `/` divergence (division and regex-close contexts still permit a
-   following object-literal expression) so future readers understand why the two
-   sets differ by one member.
+   following object-literal expression) so future readers understand why the
+   two sets differ by one member.
 5. Refactor/verify: run `make all`. `source-mask-regex.test.ts` and the
    workflow-metadata suites must pass unchanged (no output change).
 
@@ -516,8 +509,8 @@ Implements AGENTS.md "Documentation Maintenance" and the "Abstraction / adapter
    handling and the expression-leading previous-character set are now owned in
    the primitives seam rather than re-implemented per scanner family.
 3. Mark roadmap task 5.4.1 complete in `docs/roadmap.md` (change `[ ]` to `[x]`
-   and add a "Completed by [roadmap-5-4-1.md](execplans/roadmap-5-4-1.md)." line
-   in the same style as task 5.5.1) as the final commit.
+   and add a "Completed by [roadmap-5-4-1.md](execplans/roadmap-5-4-1.md)."
+   line in the same style as task 5.5.1) as the final commit.
 4. Format only the changed markdown files with `mdtablefix` then
    `markdownlint-cli2 --fix`, then run `make markdownlint` and `make nixie`.
 
@@ -576,18 +569,18 @@ Quality criteria (what "done" means):
   parity tests, and diagnostic tests are unchanged.
 
 Quality method (how we check): run `make all` at the end of every work item;
-run the focused test before and after each production edit to capture
-Red-Green evidence. The deterministic commit gate for this run is `make all`;
-AGENTS.md also names sequential `make check-fmt`, `make lint`, `make typecheck`,
-and `make test`, so run those if `make all` does not clearly aggregate them.
-The workflow host re-runs the configured gates against the committed HEAD.
+run the focused test before and after each production edit to capture Red-Green
+evidence. The deterministic commit gate for this run is `make all`; AGENTS.md
+also names sequential `make check-fmt`, `make lint`, `make typecheck`, and
+`make test`, so run those if `make all` does not clearly aggregate them. The
+workflow host re-runs the configured gates against the committed HEAD.
 
 Red-Green-Refactor evidence to record per work item:
 
 - Red: `bun test <focused test>` fails on the missing import (the shared helper
   does not yet exist).
-- Green: after adding the helper and rewiring call sites, `bun test <focused
-  test>` passes and `make all` is green.
+- Green: after adding the helper and rewiring call sites,
+  `bun test <focused test>` passes and `make all` is green.
 - Refactor: no separate refactor is expected beyond removing the now-dead local
   helpers; rerun `make all` to confirm.
 
@@ -595,8 +588,8 @@ Red-Green-Refactor evidence to record per work item:
 
 Every step is a source edit under version control; re-running an edit is safe.
 If a work item's gate fails, revert the working tree for that item
-(`git restore` / `git checkout -- <files>`) and retry. No step is destructive or
-touches state outside the repository. Do not `git stash` without a named
+(`git restore` / `git checkout -- <files>`) and retry. No step is destructive
+or touches state outside the repository. Do not `git stash` without a named
 message per the run's stash-naming rule. Commit each work item only when its
 `make all` is green.
 
@@ -688,8 +681,7 @@ Skills to load when implementing:
 - `python-router`/`rust-router` are not applicable; this is TypeScript. Follow
   AGENTS.md "TypeScript Guidance" directly. Load `leta` for symbol navigation
   and reference checks, and `grepai` for intent search against the main-branch
-  index
-  (verify branch-local facts in the worktree).
+  index (verify branch-local facts in the worktree).
 - `commit-message` — for the en-GB imperative commit subjects.
 
 ## Revision note

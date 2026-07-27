@@ -1,9 +1,8 @@
 # Add fixture metadata generation and refresh tooling
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -35,10 +34,12 @@ examples, or the no-side-effect lint execution regression.
 - Run all commands from the roadmap worktree root that contains this ExecPlan.
   Do not edit the root/control worktree.
 - Treat `origin/main` as the canonical integration branch.
-- Use `grepai search --workspace Projects --project odw-lint "<English intent
-  query>" --toon --compact` as the primary intent search tool. The GrepAI index
-  reflects canonical `main` only; verify branch-local facts inside this
-  worktree with `leta`, exact text search or file inspection before editing.
+- Use
+  `grepai search --workspace Projects --project odw-lint`
+  `"<English intent query>" --toon --compact` as the primary intent search
+  tool. The GrepAI index reflects canonical `main` only; verify branch-local
+  facts inside this worktree with `leta`, exact text search or file inspection
+  before editing.
 - Use `leta` for branch-local TypeScript symbol navigation, references, call
   graphs and refactoring. Use exact text search only for Markdown, raw fixture
   text, JSON and other non-symbol literals.
@@ -53,8 +54,8 @@ examples, or the no-side-effect lint execution regression.
 - The refresh tool must read raw fixture files as source text only. It must not
   import, dynamically import, evaluate, execute or run any raw `.js` fixture.
 - Do not format copied ODW example snapshots or invalid workflow fixtures.
-  Those files are intentionally raw source. Masking fixtures may be formatted by
-  repository tooling because they are owned by `odw-lint`.
+  Those files are intentionally raw source. Masking fixtures may be formatted
+  by repository tooling because they are owned by `odw-lint`.
 - Do not add a new package dependency. Use Bun, Node-compatible standard
   library APIs and existing `odw-lint` source-span helpers.
 - The command must refresh only the existing ODW example allow-list from
@@ -79,9 +80,8 @@ examples, or the no-side-effect lint execution regression.
   generated manifest rewrites. Do not run repository-global mutating formatters
   such as `make fmt`, `bun fmt` or `mdformat-all`.
 - Every work item changes this ExecPlan, so every work item must run
-  file-scoped Markdown formatting on
-  `docs/execplans/roadmap-1-3-5.md`, then run `make markdownlint` and
-  `make nixie`.
+  file-scoped Markdown formatting on `docs/execplans/roadmap-1-3-5.md`, then run
+  `make markdownlint` and `make nixie`.
 - Every work item is independently committable and must pass its listed gates
   before the next work item begins.
 
@@ -188,11 +188,11 @@ conflict in `Decision Log`, and escalate.
   on the explicit Biome CLI contract for path-scoped formatting.
 
 - Observation: all current non-empty invalid fixture diagnostic `spanText`
-  values occur exactly once in their corresponding raw fixture source. Evidence:
-  a Bun read-only probe over `INVALID_WORKFLOW_FIXTURE_SNAPSHOTS` reported
-  one match for every non-empty anchor and the expected empty anchor at offset
-  zero for `missing-meta.js`. Impact: the refresh tool can use `spanText` as
-  the deterministic source of truth for span regeneration.
+  values occur exactly once in their corresponding raw fixture source.
+  Evidence: a Bun read-only probe over `INVALID_WORKFLOW_FIXTURE_SNAPSHOTS`
+  reported one match for every non-empty anchor and the expected empty anchor
+  at offset zero for `missing-meta.js`. Impact: the refresh tool can use
+  `spanText` as the deterministic source of truth for span regeneration.
 
 - Observation: the package entry already exports `createOriginalSourceFile`,
   `spanFromOffsets` and `snippetForSpan`. Evidence: branch-local inspection of
@@ -237,9 +237,9 @@ conflict in `Decision Log`, and escalate.
   helper-duplication risks. Evidence: the review requested file-backed URL
   validation, directory validation for `ODW_REFERENCE_CHECKOUT`, fully seeded
   temp manifests, shared derivation helpers, and an invalid-family ordering
-  guard. Impact: the implementation now returns structured failures for bad
-  URL inputs, shares SHA/span derivation through `refresh-derivation.ts`, and
-  tests file-valued checkout failures.
+  guard. Impact: the implementation now returns structured failures for bad URL
+  inputs, shares SHA/span derivation through `refresh-derivation.ts`, and tests
+  file-valued checkout failures.
 
 - Observation: addendum 1.3.5.1 found the URL normalizer duplicated between
   the public refresh entry point and the writer, and found repeated
@@ -254,24 +254,20 @@ conflict in `Decision Log`, and escalate.
 
 - Decision: implement refresh tooling as a Bun TypeScript script at
   `tests/static-analysis/fixtures/refresh-metadata.ts`, guarded by
-  `import.meta.main`.
-  Rationale: the repository is TypeScript-first, Bun can execute `.ts` files
-  directly, tests can import the pure helper functions, and no new dependency is
-  needed.
-  Date/Author: 2026-06-29T22:16Z / Codex.
+  `import.meta.main`. Rationale: the repository is TypeScript-first, Bun can
+  execute `.ts` files directly, tests can import the pure helper functions, and
+  no new dependency is needed. Date/Author: 2026-06-29T22:16Z / Codex.
 
 - Decision: expose the maintainer command as `make refresh-fixtures`.
   Rationale: AGENTS.md and `docs/repository-layout.md` prefer Makefile targets
   as canonical maintainer entry points, while the implementation can stay in a
-  tested TypeScript module.
-  Date/Author: 2026-06-29T22:16Z / Codex.
+  tested TypeScript module. Date/Author: 2026-06-29T22:16Z / Codex.
 
 - Decision: regenerate invalid diagnostic spans from `spanText`, not from ODW
-  parsing or executable runtime validation.
-  Rationale: `spanText` is reviewer-facing data already present in the
-  manifests; exact-anchor matching is deterministic and keeps the refresh tool
-  out of the ODW runtime trust boundary.
-  Date/Author: 2026-06-29T22:16Z / Codex.
+  parsing or executable runtime validation. Rationale: `spanText` is
+  reviewer-facing data already present in the manifests; exact-anchor matching
+  is deterministic and keeps the refresh tool out of the ODW runtime trust
+  boundary. Date/Author: 2026-06-29T22:16Z / Codex.
 
 - Decision: refresh the existing ODW example allow-list only.
   Rationale: roadmap task 1.3.5 is about metadata refresh for the current
@@ -279,40 +275,36 @@ conflict in `Decision Log`, and escalate.
   Date/Author: 2026-06-29T22:16Z / Codex.
 
 - Decision: define `FixtureRefreshReport` and the `refresh-metadata.ts` CLI
-  output contract before implementation.
-  Rationale: dry-run counts, written-path reporting, extra-upstream-example
-  reporting and actionable failures need one stable contract that tests,
-  documentation and the Make target all implement.
-  Date/Author: 2026-06-29T22:37Z / Codex.
+  output contract before implementation. Rationale: dry-run counts,
+  written-path reporting, extra-upstream-example reporting and actionable
+  failures need one stable contract that tests, documentation and the Make
+  target all implement. Date/Author: 2026-06-29T22:37Z / Codex.
 
 - Decision: keep `defaultOdwReferenceCheckout(repositoryRoot: URL)`, but require
-  directory URL normalization before resolving the sibling path.
-  Rationale: accepting URLs keeps the existing plan shape and works well with
+  directory URL normalization before resolving the sibling path. Rationale:
+  accepting URLs keeps the existing plan shape and works well with
   `pathToFileURL`, but a non-trailing-slash `file:` URL is otherwise treated as
-  a file path by WHATWG URL resolution.
-  Date/Author: 2026-06-29T22:37Z / Codex.
+  a file path by WHATWG URL resolution. Date/Author: 2026-06-29T22:37Z / Codex.
 
 - Decision: support both normal checkout roots and df12 worktree roots when
-  resolving the default ODW reference checkout.
-  Rationale: a normal `odw-lint` checkout can resolve the sibling through
-  `../open-dynamic-workflows/`, while a task checkout under
-  `odw-lint.worktrees/<task>` must resolve through the parent project
-  directory to avoid looking inside the worktree container.
+  resolving the default ODW reference checkout. Rationale: a normal `odw-lint`
+  checkout can resolve the sibling through `../open-dynamic-workflows/`, while
+  a task checkout under `odw-lint.worktrees/<task>` must resolve through the
+  parent project directory to avoid looking inside the worktree container.
   Date/Author: 2026-06-29T22:49Z / Codex.
 
 - Decision: split manifest source generation from refresh write orchestration.
   Rationale: the writer applies copies, comparisons and reports, while
   `refresh-manifest-source.ts` owns deterministic TypeScript source generation
   for the seven manifest modules. The split keeps files under the 400-line
-  project limit and makes idempotence issues easier to isolate.
-  Date/Author: 2026-06-29T23:58Z / Codex.
+  project limit and makes idempotence issues easier to isolate. Date/Author:
+  2026-06-29T23:58Z / Codex.
 
 - Decision: centralize SHA and anchor-span derivation in
-  `refresh-derivation.ts`.
-  Rationale: the public refresh API and generated manifest source need one
-  exact implementation for UTF-8 offset validation, overlapping anchor
-  detection and failure construction, without creating a runtime import cycle
-  between the writer and public wrapper modules.
+  `refresh-derivation.ts`. Rationale: the public refresh API and generated
+  manifest source need one exact implementation for UTF-8 offset validation,
+  overlapping anchor detection and failure construction, without creating a
+  runtime import cycle between the writer and public wrapper modules.
   Date/Author: 2026-06-30T00:21Z / Codex.
 
 ## Outcomes & retrospective
@@ -322,11 +314,12 @@ module now exports the report, failure, URL-resolution, SHA-256 and diagnostic
 span derivation contracts that later work items extend into manifest writing
 and a Makefile target. It still deliberately avoids repository writes.
 
-Work item 2 added write-mode refresh, CLI stdout/stderr behaviour, deterministic
-manifest source generation, ODW allow-list copying, extra-upstream reporting and
-temporary-corpus tests that do not require a sibling checkout during `make all`.
-The current worktree refresh is idempotent after formatting: a second write-mode
-run with the source-backed ODW checkout reported no `writtenPaths`.
+Work item 2 added write-mode refresh, CLI stdout/stderr behaviour,
+deterministic manifest source generation, ODW allow-list copying,
+extra-upstream reporting and temporary-corpus tests that do not require a
+sibling checkout during `make all`. The current worktree refresh is idempotent
+after formatting: a second write-mode run with the source-backed ODW checkout
+reported no `writtenPaths`.
 
 Work item 3 added `make refresh-fixtures` and a build-gate test that dry-runs
 the target without mutating repository files. Work item 4 documented the
@@ -363,17 +356,17 @@ There are three fixture groups relevant to this task:
   `tests/static-analysis/fixtures/odw-examples.ts`.
 - `tests/static-analysis/fixtures/invalid-workflows/` contains deliberately
   invalid raw workflows, including the `hostile-metadata` family. Its aggregate
-  manifest is `tests/static-analysis/fixtures/invalid-workflows.ts`, and
-  family manifests live under
+  manifest is `tests/static-analysis/fixtures/invalid-workflows.ts`, and family
+  manifests live under
   `tests/static-analysis/fixtures/invalid-workflows/manifests/`.
 - `tests/static-analysis/fixtures/masking/` contains `odw-lint`-owned masking
   fixtures. Its manifest is `tests/static-analysis/fixtures/masking.ts`.
 
 Existing test-only helpers in
 `tests/static-analysis/fixtures/corpus-support.ts` provide `sha256`,
-`copiedFixtureFileNames`, `fixtureSourceUrl` and `readFixtureSource`.
-Existing source-span helpers exported from `odw-lint` provide
-`createOriginalSourceFile`, `spanFromOffsets` and `snippetForSpan`.
+`copiedFixtureFileNames`, `fixtureSourceUrl` and `readFixtureSource`. Existing
+source-span helpers exported from `odw-lint` provide `createOriginalSourceFile`,
+`spanFromOffsets` and `snippetForSpan`.
 
 The source-backed ODW reference checkout is the sibling
 `open-dynamic-workflows/` checkout. The refresh command must default
@@ -428,8 +421,8 @@ Design and project documentation cited:
   "Formatting" and "Contents file" define the documentation style and contents
   upkeep rule.
 - `docs/repository-layout.md` sections "Test and fixture boundaries" and
-  "Tooling entry points" locate fixture ownership and Makefile validation
-  entry points.
+  "Tooling entry points" locate fixture ownership and Makefile validation entry
+  points.
 
 External and sibling source research:
 
@@ -457,8 +450,8 @@ External and sibling source research:
   `biome format --write [PATH]...` runs the formatter on explicit paths:
   <https://biomejs.dev/reference/cli/>. The plan relies only on that CLI
   contract after `make build`, not on Biome internals. `bun.lock` pins
-  `@biomejs/biome` to 2.5.1, and `bunx @biomejs/biome --version` reported
-  2.5.1 in this worktree.
+  `@biomejs/biome` to 2.5.1, and `bunx @biomejs/biome --version` reported 2.5.1
+  in this worktree.
 - Official Node URL docs for `new URL(input, base)` state that a relative
   input is parsed against the base URL, and a local Bun probe confirmed the
   trailing-slash directory behaviour that affects
@@ -562,8 +555,8 @@ affected path when one exists, and every failure must include a concrete
 ### Work item 1: Add import-safe fixture metadata derivation helpers
 
 This work item creates the pure derivation core and tests it without writing
-repository files. It is the red-green foundation for the later mutating
-refresh command.
+repository files. It is the red-green foundation for the later mutating refresh
+command.
 
 Read before editing:
 
@@ -618,16 +611,16 @@ It must also export:
 
 - `deriveSha256(sourceText: string): string`, delegating to the existing
   `sha256` helper or matching its Node `createHash("sha256")` contract.
-- `deriveAnchoredDiagnosticSpan(source: WorkflowSource, anchor:
-  DiagnosticSpanAnchor): RefreshedDiagnosticSpan`.
+- `deriveAnchoredDiagnosticSpan(source: WorkflowSource, anchor: DiagnosticSpanAnchor):`
+  `RefreshedDiagnosticSpan`.
 - `normalizeDirectoryUrl(url: URL): URL`, which returns a copy with no search or
-  hash and with a trailing `/` appended to the pathname when absent. It must not
-  call `new URL("./", url)` for normalization because that treats a
+  hash and with a trailing `/` appended to the pathname when absent. It must
+  not call `new URL("./", url)` for normalization because that treats a
   non-trailing-slash directory URL as a file.
 - `defaultOdwReferenceCheckout(repositoryRoot: URL): URL`.
-- `resolveOdwReferenceCheckout(repositoryRoot: URL, overridePath: string |
-  undefined): URL`. The override is a filesystem path, not a `file:` URL; a
-  relative override is resolved from the normalized repository-root directory.
+- `resolveOdwReferenceCheckout(repositoryRoot: URL, overridePath: string | undefined):`
+  `URL`. The override is a filesystem path, not a `file:` URL; a relative
+  override is resolved from the normalized repository-root directory.
 - `refreshFixtureMetadata(options: FixtureRefreshOptions): FixtureRefreshReport`
   as a non-mutating stub that returns the exact report shape from "Command and
   report contract" when `shouldWrite` is `false`.
@@ -669,8 +662,8 @@ Tests to add:
   resolves a relative `ODW_REFERENCE_CHECKOUT` override from the repository
   root, not from the process current working directory.
 - Unit test: dry-run `refreshFixtureMetadata({ shouldWrite: false })` returns a
-  `FixtureRefreshReport` with current corpus counts, sorted managed paths,
-  empty `writtenPaths`, and `failures: []` when supplied with a temporary ODW
+  `FixtureRefreshReport` with current corpus counts, sorted managed paths, empty
+  `writtenPaths`, and `failures: []` when supplied with a temporary ODW
   reference checkout.
 - Unit test: importing `refresh-metadata.ts` does not mutate files or set the
   hostile metadata global marker.
@@ -694,8 +687,8 @@ make nixie
 ```
 
 Expected result: the focused test fails before the derivation helpers exist,
-passes after the helpers are implemented, and all repository gates pass.
-Commit this item before starting work item 2.
+passes after the helpers are implemented, and all repository gates pass. Commit
+this item before starting work item 2.
 
 ### Work item 2: Add deterministic manifest refresh writing for every fixture corpus
 
@@ -730,9 +723,8 @@ Edit:
   `tests/static-analysis/fixtures/masking.ts`, and the five files under
   `tests/static-analysis/fixtures/invalid-workflows/manifests/`.
 - It may copy the nine existing files listed in
-  `ODW_EXAMPLE_FIXTURE_SNAPSHOTS` from
-  `${ODW_REFERENCE_CHECKOUT}/examples/` into
-  `tests/static-analysis/fixtures/odw-examples/`.
+  `ODW_EXAMPLE_FIXTURE_SNAPSHOTS` from `${ODW_REFERENCE_CHECKOUT}/examples/`
+  into `tests/static-analysis/fixtures/odw-examples/`.
 - Update this ExecPlan progress and discoveries.
 
 The implementation must not add a parser dependency. Generate manifest source
@@ -764,12 +756,12 @@ Tests to add or update:
   temporary repository tree and a temporary ODW reference checkout is
   idempotent. The first write may report `writtenPaths`; the second write must
   report `writtenPaths: []` and the same sorted `managedPaths`. This test must
-  not read `../../open-dynamic-workflows` or require the sibling checkout
-  during `make all`.
-- CLI test: `bun run tests/static-analysis/fixtures/refresh-metadata.ts
-  --dry-run` with an injected temporary `ODW_REFERENCE_CHECKOUT` prints a
-  parseable success `FixtureRefreshReport` to stdout, leaves stderr empty, and
-  exits `0`.
+  not read `../../open-dynamic-workflows` or require the sibling checkout during
+  `make all`.
+- CLI test:
+  `bun run tests/static-analysis/fixtures/refresh-metadata.ts --dry-run` with
+  an injected temporary `ODW_REFERENCE_CHECKOUT` prints a parseable success
+  `FixtureRefreshReport` to stdout, leaves stderr empty, and exits `0`.
 - CLI test: an actionable failure, such as a missing allow-listed upstream
   example in a temporary checkout, prints a failure `FixtureRefreshReport` to
   stderr, leaves stdout empty, and exits `1`.
@@ -1053,14 +1045,14 @@ The refresh command must be safe to rerun. If manifests are current, rerunning
 If `ODW_REFERENCE_CHECKOUT` is unset, the command resolves the sibling
 `open-dynamic-workflows/` checkout from the normalized repository-root
 directory URL, using the ordinary checkout layout or the df12 worktree layout
-as appropriate. If that directory is missing, the command exits non-zero with
-a `missing-odw-reference-checkout` failure that names `ODW_REFERENCE_CHECKOUT`,
+as appropriate. If that directory is missing, the command exits non-zero with a
+`missing-odw-reference-checkout` failure that names `ODW_REFERENCE_CHECKOUT`,
 the resolved path and the remediation. If `ODW_REFERENCE_CHECKOUT` is set, its
 value is a filesystem path; a relative value is resolved from the repository
 root.
 
-If an allow-listed upstream example is missing, stop and inspect the sibling ODW
-checkout. Do not delete the corresponding copied fixture automatically.
+If an allow-listed upstream example is missing, stop and inspect the sibling
+ODW checkout. Do not delete the corresponding copied fixture automatically.
 
 If extra upstream examples are present, report them as out-of-scope for roadmap
 task 4.1.1 and continue refreshing the existing allow-list.
@@ -1119,9 +1111,8 @@ The new implementation surface is test-only:
 `tests/static-analysis/fixtures/refresh-metadata.ts` must export the report,
 failure, count, option and span-anchor interfaces named in "Command and report
 contract" and work item 1. It must also export `normalizeDirectoryUrl`,
-`defaultOdwReferenceCheckout`, `resolveOdwReferenceCheckout`,
-`deriveSha256`, `deriveAnchoredDiagnosticSpan`, and
-`refreshFixtureMetadata`.
+`defaultOdwReferenceCheckout`, `resolveOdwReferenceCheckout`, `deriveSha256`,
+`deriveAnchoredDiagnosticSpan`, and `refreshFixtureMetadata`.
 
 Use existing dependencies and runtime APIs only:
 
@@ -1148,8 +1139,8 @@ Do not add or use:
 - 2026-06-29: Initial draft for roadmap task 1.3.5. The plan chooses a Bun
   TypeScript refresh script plus `make refresh-fixtures`, defines the
   deterministic span-anchor refresh algorithm, separates four independently
-  committable work items, and records verified ODW, Bun, Biome and
-  branch-local evidence. Work item implementation followed in later revisions.
+  committable work items, and records verified ODW, Bun, Biome and branch-local
+  evidence. Work item implementation followed in later revisions.
 - 2026-06-29: Planning round 2 revision after design review. The plan now
   defines the exact `FixtureRefreshReport` type, stdout/stderr and exit-code
   contract, deterministic temporary-checkout idempotence tests that do not

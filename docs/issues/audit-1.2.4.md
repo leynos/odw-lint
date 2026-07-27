@@ -23,8 +23,8 @@ component labels, and stage labels, even though the package entry now exposes
 `createOriginalSourceFile`, source-position helpers, slicing helpers, snippet
 helpers, and source-span types.
 
-That mismatch makes the public surface harder to review. The code is not
-wrong, but a future contributor could read the entry documentation and assume
+That mismatch makes the public surface harder to review. The code is not wrong,
+but a future contributor could read the entry documentation and assume
 source-span exports are accidental or private.
 
 Proposed fix:
@@ -46,8 +46,8 @@ Proposed fix:
 The scanner and property-test oracle both treat only LF and CR as line
 terminators. Fixture cases cover LF, CRLF, CR, BMP Unicode, non-BMP Unicode,
 and trailing newlines, but they do not cover U+2028 line separator or U+2029
-paragraph separator. The roadmap already records addendum 1.2.2.5 for this
-gap, and task 1.2.4 deliberately preserved the current behaviour.
+paragraph separator. The roadmap already records addendum 1.2.2.5 for this gap,
+and task 1.2.4 deliberately preserved the current behaviour.
 
 This should still be kept visible because later parser-backed diagnostics will
 map JavaScript parser spans back to original source. If the parser treats
@@ -100,12 +100,12 @@ Proposed fix:
 - Severity: Medium
 - Location: `tests/static-analysis/fixtures/invalid-workflows.ts:131`
 
-`tests/static-analysis/fixtures/invalid-workflows.ts` now contains the
-manifest types, path builder, diagnostic builder, and every invalid workflow
-snapshot in one 386-line file. The project convention caps source files at 400
-lines, so one or two additional invalid fixtures can push the manifest over
-the limit. The repeated inline diagnostic objects also make reviews noisy
-because each new case changes many low-level span fields in one dense file.
+`tests/static-analysis/fixtures/invalid-workflows.ts` now contains the manifest
+types, path builder, diagnostic builder, and every invalid workflow snapshot in
+one 386-line file. The project convention caps source files at 400 lines, so
+one or two additional invalid fixtures can push the manifest over the limit.
+The repeated inline diagnostic objects also make reviews noisy because each new
+case changes many low-level span fields in one dense file.
 
 This is a maintainability issue rather than a runtime bug. It matters because
 future tasks will add more parser and metadata coverage, exactly where this

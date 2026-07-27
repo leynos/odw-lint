@@ -19,8 +19,8 @@ bun src/cli/main.ts check path/to/workflow.js --output-format json
 ```
 
 The useful alpha path is explicit-file linting. Testers should point the
-command at one or more known workflow files and compare the findings with
-their own understanding of the workflow.
+command at one or more known workflow files and compare the findings with their
+own understanding of the workflow.
 
 ## Current limitations
 

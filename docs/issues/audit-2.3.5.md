@@ -69,7 +69,7 @@ plainly:
 
 > Parser, envelope, and metadata parity suites must project manifest
 > diagnostics through `tests/static-analysis/fixtures/diagnostic-projection.ts`.
-> That module is the single manifest-to-comparison diagnostic contract [...] do
+> That module is the single manifest-to-comparison diagnostic contract […] do
 > not add local comparable-diagnostic shapes in individual suites.
 
 `dual-compat-parity.test.ts` is a manifest-driven deterministic-time parity
@@ -133,10 +133,9 @@ type the shared `manifestDiagnosticToComparable` for both manifest families
 without importing an invalid-workflow-specific type into the dual-compat suite,
 retype its parameter to a minimal structural input (for example a shared
 `ManifestComparableInput` interface carrying `rule`, `severity`, `message`,
-`docs`, `span`, and `spanText`) that both `InvalidWorkflowFixtureDiagnostic`
-and `DualCompatFixtureDiagnostic` satisfy. This restores docs-path parity
-coverage for deterministic-time warnings and removes the last local comparable
-shape.
+`docs`, `span`, and `spanText`) that both `InvalidWorkflowFixtureDiagnostic` and
+`DualCompatFixtureDiagnostic` satisfy. This restores docs-path parity coverage
+for deterministic-time warnings and removes the last local comparable shape.
 
 ## Finding 2: the corpus-ownership guard does not enforce the projection contract it shipped with
 

@@ -55,11 +55,11 @@ array. `odw/no-odw-only-validate` is marked `released` yet appears nowhere in
 reviewed `messages`. Its rule page presents a "Failing example", but a caller
 linting that example today receives no `odw/no-odw-only-validate` diagnostic,
 and the developers-guide states strict-Claude mode "includes preserving
-informational Claude compatibility findings such as `odw/no-odw-only-validate`"
-— behaviour that can never be observed because the finding is never produced.
-The 3.1.3 strict-Claude work leaned on this rule as an example of a
-non-promoted informational finding, so the inconsistency now has a documented
-dependant.
+informational Claude compatibility findings such as
+`odw/no-odw-only-validate`" — behaviour that can never be observed because the
+finding is never produced. The 3.1.3 strict-Claude work leaned on this rule as
+an example of a non-promoted informational finding, so the inconsistency now
+has a documented dependant.
 
 Proposed fix:
 
@@ -84,9 +84,9 @@ Location:
 
 Description:
 
-The only test connecting release status to emitted behaviour,
-"records messages for released rules with invalid fixture diagnostics", filters
-to a hand-maintained `RULE_IDS_WITH_INVALID_FIXTURE_DIAGNOSTICS` whitelist and
+The only test connecting release status to emitted behaviour, "records messages
+for released rules with invalid fixture diagnostics", filters to a
+hand-maintained `RULE_IDS_WITH_INVALID_FIXTURE_DIAGNOSTICS` whitelist and
 asserts `messages.length > 0` for that subset only. Nothing asserts the general
 invariant that every `RELEASED_RULE_IDS` entry is actually reachable from a
 production emitter. That gap is exactly what allowed Finding 1 to pass all
@@ -95,13 +95,12 @@ objects. This is the missing behavioural coverage behind the inconsistency.
 
 Proposed fix:
 
-Add a catalogue invariant test that cross-checks `RELEASED_RULE_IDS` against the
-set of rule identifiers referenced by production emitters (for example, a
+Add a catalogue invariant test that cross-checks `RELEASED_RULE_IDS` against
+the set of rule identifiers referenced by production emitters (for example, a
 maintained `EMITTED_RULE_IDS` constant asserted equal to `RELEASED_RULE_IDS`,
 or a source scan asserting that each released id appears outside
-`rule-catalogue.ts`).
-Rules deliberately released without an emitter should be an explicit, rationale-
-bearing exception list rather than a silent omission.
+`rule-catalogue.ts`). Rules deliberately released without an emitter should be
+an explicit, rationale- bearing exception list rather than a silent omission.
 
 ## Finding 3: rule-catalogue lookup is expressed three different ways
 
@@ -120,8 +119,7 @@ Description:
 Resolving a `RuleDefinition` from a rule identifier is implemented three ways.
 `ruleDefinitionFor` does a throwing `RULE_CATALOGUE.find`; the
 deterministic-time scanner preloads a `Map<RuleId, RuleDefinition>` for O(1)
-reuse; and
-`promoteStrictClaudeSeverity` performs an inline, non-throwing
+reuse; and `promoteStrictClaudeSeverity` performs an inline, non-throwing
 `RULE_CATALOGUE.find((candidate) => candidate.id === diagnostic.rule)` per
 diagnostic. The transform cannot reuse `ruleDefinitionFor` because that helper
 throws on unknown rules, whereas the transform must tolerate uncatalogued rules
@@ -162,8 +160,9 @@ Proposed fix:
 
 Hoist the policy into a named, documented constant (for example
 `STRICT_CLAUDE_PROMOTION = { category: "claude-compatibility", from: "warning",
-to: "error" }`) and drive the predicate and replacement from it, so the policy
-reads declaratively and future promotions extend the data rather than the code.
+to: "error" }`)
+and drive the predicate and replacement from it, so the policy reads
+declaratively and future promotions extend the data rather than the code.
 
 ## Finding 5: rule pages assert `--strict-claude` as a present-tense flag
 
@@ -183,12 +182,13 @@ Description:
 These rule pages state each finding "is promoted to an error under
 `--strict-claude`" in the present tense, as though the flag is available today.
 The developers-guide is careful to note that "the parsed `--strict-claude` CLI
-flag and `strictClaude` configuration key ... are owned by the CLI tasks in
+flag and `strictClaude` configuration key … are owned by the CLI tasks in
 roadmap 2.4 and configuration tasks in roadmap 3.3", i.e. the flag is not yet
-wired. The library exposes only `lintWorkflowSource(source, { strictClaude:
-true })` and the `promoteStrictClaudeSeverity` transform; there is no CLI entry
-point. A reader of the rule pages alone cannot invoke `--strict-claude` and is
-given no forward-looking caveat.
+wired. The library exposes only
+`lintWorkflowSource(source, { strictClaude: true })` and the
+`promoteStrictClaudeSeverity` transform; there is no CLI entry point. A reader
+of the rule pages alone cannot invoke `--strict-claude` and is given no
+forward-looking caveat.
 
 Proposed fix:
 
@@ -200,12 +200,12 @@ what ships today.
 
 ## Summary
 
-The 3.1.3 strict-Claude transform is small, pure, immutable, and well covered by
-both example-based and property-based tests, with no command/query or boundary
-violations observed. The substantive findings are a catalogue/documentation
-inconsistency around `odw/no-odw-only-validate` being marked `released` without
-an emitter (Finding 1) and the missing invariant test that would have caught it
-(Finding 2); the remaining findings are low-severity consistency and
-documentation tidy-ups on the catalogue lookup seam, the promotion policy's
-altitude, and the rule pages' description of the not-yet-wired
-`--strict-claude` flag.
+The 3.1.3 strict-Claude transform is small, pure, immutable, and well covered
+by both example-based and property-based tests, with no command/query or
+boundary violations observed. The substantive findings are a
+catalogue/documentation inconsistency around `odw/no-odw-only-validate` being
+marked `released` without an emitter (Finding 1) and the missing invariant test
+that would have caught it (Finding 2); the remaining findings are low-severity
+consistency and documentation tidy-ups on the catalogue lookup seam, the
+promotion policy's altitude, and the rule pages' description of the
+not-yet-wired `--strict-claude` flag.

@@ -61,8 +61,8 @@ Location:
 
 Description:
 
-Task 2.3.3 removed the duplicated `INVALID_FIXTURE_CORPUS` location literal from
-five modules and replaced it with the single exported
+Task 2.3.3 removed the duplicated `INVALID_FIXTURE_CORPUS` location literal
+from five modules and replaced it with the single exported
 `INVALID_WORKFLOW_FIXTURE_CORPUS` constant in
 `fixtures/invalid-workflows/corpus.ts`. The parallel ODW-example corpus did not
 receive the same treatment: the fixture directory URL
@@ -79,14 +79,15 @@ const ODW_EXAMPLE_CORPUS = {
 
 This is exactly the copied-location smell that 2.3.3 eliminated for the
 invalid-workflow corpus, left standing for the sibling corpus. The
-`odw-examples.ts` aggregate module already owns the ODW example snapshots, so it
-is the natural home for the location constant, mirroring how
+`odw-examples.ts` aggregate module already owns the ODW example snapshots, so
+it is the natural home for the location constant, mirroring how
 `invalid-workflows/corpus.ts` now owns the invalid-workflow location.
 
 Proposed fix:
 
-Export an `ODW_EXAMPLE_FIXTURE_CORPUS` (typed `satisfies FixtureCorpusLocation`)
-from `tests/static-analysis/fixtures/odw-examples.ts` and import it in the four
+Export an `ODW_EXAMPLE_FIXTURE_CORPUS` (typed
+`satisfies FixtureCorpusLocation`) from
+`tests/static-analysis/fixtures/odw-examples.ts` and import it in the four
 consumers, deleting the inline `FIXTURE_DIRECTORY`/`ODW_EXAMPLE_CORPUS`
 literals. This closes the same duplication class 2.3.3 addressed and keeps both
 corpora's location contracts in one reviewed place each.
@@ -108,8 +109,8 @@ Description:
 
 Now that the invalid-workflow manifest is the shared source of expected
 diagnostics, several tests must project a manifest
-`InvalidWorkflowFixtureDiagnostic` into a comparison shape — re-stringifying the
-branded `rule` with `String(...)` and selecting a subset of
+`InvalidWorkflowFixtureDiagnostic` into a comparison shape — re-stringifying
+the branded `rule` with `String(...)` and selecting a subset of
 `{ rule, severity, message, span, spanText, docs }`. That projection is
 re-authored independently in each consumer:
 
@@ -127,12 +128,12 @@ updated in lockstep, and nothing guarantees they stay aligned.
 
 Proposed fix:
 
-Add a small shared projection helper to
-`fixtures/invalid-workflows/corpus.ts` (or `manifest-types.ts`) — for example
+Add a small shared projection helper to `fixtures/invalid-workflows/corpus.ts`
+(or `manifest-types.ts`) — for example
 `comparableManifestDiagnostic(diagnostic)` returning the full stringified-rule
 record, letting each caller pick the fields it asserts on. This gives the
-manifest-to-comparison contract a single reviewed definition, matching the
-"one expectation source" intent 2.3.3 established.
+manifest-to-comparison contract a single reviewed definition, matching the "one
+expectation source" intent 2.3.3 established.
 
 ## Finding 3: `classifyInvalidFixture` and `classifyBodySyntaxFixture` duplicate the live-diagnostic mapping
 
@@ -205,8 +206,9 @@ Location:
 
 Description:
 
-`workflow-metadata.test.ts` defines a private `invalidFixture(family, fileName)`
-that does nothing but forward its two positional arguments into the shared
+`workflow-metadata.test.ts` defines a private
+`invalidFixture(family, fileName)` that does nothing but forward its two
+positional arguments into the shared
 `findInvalidWorkflowFixture({ family, fileName })`. The wrapper trades the
 shared helper's self-documenting object call for a positional one and adds a
 second name for the same lookup, which slightly obscures that the module is
@@ -227,5 +229,4 @@ follow-on test-infrastructure consolidation opportunities localized to the
 static-analysis fixture suites. No `TODO`, `FIXME`, `@ts-ignore`, or
 `biome-ignore` markers were found in `src/` or `tests/`. The manifest-driven
 parity surface, hostile-metadata passivity guards, and fixture SHA-256 and
-existence checks all remain grounded in the reviewed manifest as 2.3.3
-intended.
+existence checks all remain grounded in the reviewed manifest as 2.3.3 intended.

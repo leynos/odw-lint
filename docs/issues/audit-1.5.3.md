@@ -50,8 +50,8 @@ local `PackageJson` type and hard-codes the expected root export object.
 
 That creates two parallel package-entry interpreters. A future package shape or
 facade-rule change can update one guard while leaving the other stale, or make
-the two tests fail with different explanations for the same underlying
-contract change.
+the two tests fail with different explanations for the same underlying contract
+change.
 
 Proposed fix:
 
@@ -109,8 +109,8 @@ keep review scope clear:
   table cases; and
 - `tests/diagnostics/package-entry-support.ts` for package and facade parsing.
 
-Prioritize roadmap task 1.5.1 soon after this split so the file-size
-convention is enforced by `make all`.
+Prioritize roadmap task 1.5.1 soon after this split so the file-size convention
+is enforced by `make all`.
 
 ## Finding 3: User-facing documentation navigation is incomplete
 
@@ -146,8 +146,8 @@ without reading maintainer-only roadmap or architecture tests.
 
 Proposed fix:
 
-Add the missing documentation surfaces before or alongside the first
-user-facing `odw-lint check` implementation:
+Add the missing documentation surfaces before or alongside the first user-facing
+`odw-lint check` implementation:
 
 - `docs/contents.md` as the index for terms, design, ADRs, roadmap, guides,
   and issue audits;

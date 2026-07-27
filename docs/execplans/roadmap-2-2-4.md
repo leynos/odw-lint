@@ -1,9 +1,8 @@
 # Implement workflow AST facts for lexical bindings and source masks
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`,
-`Surprises & Discoveries`, `Decision Log`, and
-`Outcomes & Retrospective` must be kept up to date as work proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -24,11 +23,11 @@ line (see `docs/technical-design.md` sections 6.2 and 9.3):
 1. **Lexical binding facts.** By walking the SWC abstract syntax tree (AST) of
    the normalized workflow body, `odw-lint` records the set of identifier names
    the body *binds* (declares). A future rule such as `odw/no-math-random`
-   (`docs/technical-design.md` section 9.2) or `odw/bounded-fanout`
-   (section 9.3) can then ask "is this reference to `Math` / `parallel` the
-   real global, or a user-declared binding that shadows it?" and avoid
-   false positives on a workflow that legitimately declares its own
-   `parallel`, `Array`, `Number`, `Object`, or `Math`.
+   (`docs/technical-design.md` section 9.2) or `odw/bounded-fanout` (section
+   9.3) can then ask "is this reference to `Math` / `parallel` the real global,
+   or a user-declared binding that shadows it?" and avoid false positives on a
+   workflow that legitimately declares its own `parallel`, `Array`, `Number`,
+   `Object`, or `Math`.
 2. **Suppression source masks.** By reusing the existing inert-region masker
    (`src/static-analysis/source-mask.ts`, delivered by task 2.1.9), `odw-lint`
    produces a *directive-scan view* of the original source in which quoted
@@ -40,11 +39,11 @@ line (see `docs/technical-design.md` sections 6.2 and 9.3):
 
 What a reader gains after this change: a new, `@swc/core`-free public fact
 object, `WorkflowAstFacts`, obtainable from a scanned envelope through
-`collectWorkflowAstFacts(envelope)`. Its `lexicalBindings` answers
-shadowing questions by name, and its `suppressionMasks` exposes a
-directive-scan text plus the inert ranges that were blanked. Both are proven
-by focused tests; neither emits a diagnostic, changes the `Diagnostic` shape,
-or wires anything new into `lintWorkflowSource` (those remain later tasks).
+`collectWorkflowAstFacts(envelope)`. Its `lexicalBindings` answers shadowing
+questions by name, and its `suppressionMasks` exposes a directive-scan text
+plus the inert ranges that were blanked. Both are proven by focused tests;
+neither emits a diagnostic, changes the `Diagnostic` shape, or wires anything
+new into `lintWorkflowSource` (those remain later tasks).
 
 Observable proof (see `Validation and acceptance`):
 
@@ -52,8 +51,8 @@ Observable proof (see `Validation and acceptance`):
    (and the same for `Array`, `Number`, `Object`, `Math`, via `const`/`let`/
    `var`/function declaration/parameter/destructuring/catch binding) returns
    `lexicalBindings` for which `isIdentifierBound(facts.lexicalBindings, name)`
-   is `true`; on a body that only *uses* those names
-   (`Math.random()`, `parallel(items)`) it is `false`.
+   is `true`; on a body that only *uses* those names (`Math.random()`,
+   `parallel(items)`) it is `false`.
 2. `collectWorkflowAstFacts` on a body containing the decoy token
    `odw-lint-disable` inside a string, a template, a regex, and a block comment
    returns `suppressionMasks` whose `directiveScanText` no longer contains that
@@ -87,15 +86,14 @@ This is the most important design decision in the plan. Keep 2.2.4 to
   not yet in the production lint pipeline; the same restraint applies here.
   `collectWorkflowAstFacts` is a standalone, independently testable producer.
 - **Binding facts are name-based, not span-based, in this task.** SWC AST node
-  spans use a non-zero global byte-offset base
-  (`program.span.start`; proven by
+  spans use a non-zero global byte-offset base (`program.span.start`; proven by
   `tests/static-analysis/workflow-body-parser.test.ts` lines 242-259). Mapping
   those offsets to original-source spans is possible with
-  `originalSpanFromNormalizedOffsets`, but narrowing spans to structured
-  parser offsets is explicitly **task 2.2.6's** boundary (`docs/roadmap.md`
-  lines 581-589). To keep 2.2.4 independent of 2.2.6, lexical binding facts
-  record only *names* (a shadowing query needs a name-set, not a span). Adding
-  binding spans is a justified later refinement, recorded in `Decision Log`.
+  `originalSpanFromNormalizedOffsets`, but narrowing spans to structured parser
+  offsets is explicitly **task 2.2.6's** boundary (`docs/roadmap.md` lines
+  581-589). To keep 2.2.4 independent of 2.2.6, lexical binding facts record
+  only *names* (a shadowing query needs a name-set, not a span). Adding binding
+  spans is a justified later refinement, recorded in `Decision Log`.
 - **The public facts object is `@swc/core`-free.** The raw SWC `Module` is an
   internal implementation detail. `collectWorkflowAstFacts` returns only
   derived, parser-type-free data so the public package surface does not leak
@@ -103,14 +101,14 @@ This is the most important design decision in the plan. Keep 2.2.4 to
   `originalSpanFromNormalizedOffsets`, which "deliberately accepts numeric
   offsets rather than SWC AST types" (`docs/developers-guide.md` line 70).
 
-Design references: `docs/technical-design.md` sections 4, 5, 6.1, 6.2, 6.4,
-8, 9.2, 9.3, 11.1, 12.1, 12.2; `docs/adr/0001-static-analysis-boundary.md`;
+Design references: `docs/technical-design.md` sections 4, 5, 6.1, 6.2, 6.4, 8,
+9.2, 9.3, 11.1, 12.1, 12.2; `docs/adr/0001-static-analysis-boundary.md`;
 `docs/developers-guide.md` "Workflow body parser adapter" (lines 49-72),
-"Workflow envelope scanner" (lines 74-138), the source-mask module map
-(lines 478-491), and "Source-span helpers" (lines 436-476); `AGENTS.md`
-(Testing, Snapshot scope, file-size limit, DRY/Separate Atomic Refactors).
-Requires 2.1.9 (source-mask scanners split — COMPLETE, `docs/roadmap.md`
-line 478) and 2.2.2 (body normalization and span mapping — COMPLETE,
+"Workflow envelope scanner" (lines 74-138), the source-mask module map (lines
+478-491), and "Source-span helpers" (lines 436-476); `AGENTS.md` (Testing,
+Snapshot scope, file-size limit, DRY/Separate Atomic Refactors). Requires 2.1.9
+(source-mask scanners split — COMPLETE, `docs/roadmap.md` line 478) and 2.2.2
+(body normalization and span mapping — COMPLETE,
 `docs/execplans/roadmap-2-2-2.md`).
 
 ## Constraints
@@ -119,9 +117,9 @@ Hard invariants that must hold throughout implementation. Violation requires
 escalation, not a workaround.
 
 - **No source evaluation.** New production and test code must not import,
-  evaluate, execute, or `Function`-construct workflow source, and must not
-  call any ODW loader, primitive, runtime, scheduler, or agent-dispatch path.
-  The only permitted parser call is `@swc/core`'s `parseSync` over normalized,
+  evaluate, execute, or `Function`-construct workflow source, and must not call
+  any ODW loader, primitive, runtime, scheduler, or agent-dispatch path. The
+  only permitted parser call is `@swc/core`'s `parseSync` over normalized,
   parse-only text, exactly as `parseWorkflowBody` already uses it
   (`docs/technical-design.md` sections 5, 6.4, 12.1;
   `docs/adr/0001-static-analysis-boundary.md`;
@@ -133,8 +131,8 @@ escalation, not a workaround.
 - **No new public leak of `@swc/core` types.** The public `WorkflowAstFacts`
   and everything re-exported from `src/index.ts` must not reference an
   `@swc/core` AST type. The raw `Module` stays internal.
-- **No wiring into `lintWorkflowSource`.** `src/static-analysis/workflow-lint.ts`
-  is unchanged.
+- **No wiring into `lintWorkflowSource`.**
+  `src/static-analysis/workflow-lint.ts` is unchanged.
 - **UTF-8 / UTF-16 index discipline.** `SourceSpan` offsets are UTF-8 byte
   offsets; source-mask ranges are UTF-16 text indexes
   (`src/static-analysis/source-mask-types.ts`). Suppression-mask facts stay in
@@ -172,17 +170,16 @@ escalation, not a workaround.
 
 - Risk: an assumed SWC AST field name (for example an array pattern's
   `elements`, an object pattern's `properties`, or a binding identifier's
-  `value`) does not match the pinned `@swc/core@1.15.43` /
-  `@swc/types@0.1.27` output, so the binding collector silently misses or
-  miscounts a name. Severity: high. Likelihood: medium.
-  Mitigation: WI2 begins with a deterministic shape probe that parses one
-  destructuring sample and inspects `JSON.stringify(parseSync(...))`, so the
-  collector is written against the *observed* shape rather than recollection;
-  every binding case is then pinned by a table-driven test that fails loudly if
-  a name is missed. The existing generic AST walk in
-  `tests/static-analysis/workflow-body-parser.test.ts` (lines 155-176) is
-  independent evidence the tree is a plain, `.type`-keyed object of
-  span-bearing nodes.
+  `value`) does not match the pinned `@swc/core@1.15.43` / `@swc/types@0.1.27`
+  output, so the binding collector silently misses or miscounts a name.
+  Severity: high. Likelihood: medium. Mitigation: WI2 begins with a
+  deterministic shape probe that parses one destructuring sample and inspects
+  `JSON.stringify(parseSync(...))`, so the collector is written against the
+  *observed* shape rather than recollection; every binding case is then pinned
+  by a table-driven test that fails loudly if a name is missed. The existing
+  generic AST walk in `tests/static-analysis/workflow-body-parser.test.ts`
+  (lines 155-176) is independent evidence the tree is a plain, `.type`-keyed
+  object of span-bearing nodes.
 - Risk: **wrapper-name pollution.** `normalizeWorkflowBody` wraps every body in
   the named declaration `async function __odwLintWorkflowBody__() { … }`
   (`src/static-analysis/workflow-body-normalizer.ts` line 17), so the parsed
@@ -191,14 +188,14 @@ escalation, not a workaround.
   would collect `__odwLintWorkflowBody__` into `boundNames`, leaking a
   normalization implementation detail into the public
   `LexicalBindingFacts.boundNames` and contradicting this plan's own contract
-  ("the set of identifier names the body binds"). Severity: high (public-surface
-  correctness). Likelihood: high without a guard.
-  Mitigation (both directions, so the wart is pinned twice): (a) the collector
-  does **not** start at `module.body`; it unwraps the single top-level wrapper
+  ("the set of identifier names the body binds"). Severity: high
+  (public-surface correctness). Likelihood: high without a guard. Mitigation
+  (both directions, so the wart is pinned twice): (a) the collector does
+  **not** start at `module.body`; it unwraps the single top-level wrapper
   `FunctionDeclaration` and begins traversal at that function's body statements
   (`BlockStatement.stmts`, probe-confirmed), so the wrapper's own binding name
-  and its (empty) parameter list are never visited; (b) as a defensive backstop,
-  the collector seeds an excluded-name set with the shared
+  and its (empty) parameter list are never visited; (b) as a defensive
+  backstop, the collector seeds an excluded-name set with the shared
   `WORKFLOW_BODY_WRAP_FUNCTION_NAME` constant so the synthetic name is filtered
   even if the tree shape ever changes. WI2's negative matrix asserts
   `boundNames` does not contain `__odwLintWorkflowBody__`, and one
@@ -208,44 +205,41 @@ escalation, not a workaround.
   example the `Math` in a default value `function f(x = Math.max(1, 2)) {}`, or
   the computed key in `const { [Math]: y } = o`), producing a false "shadowed"
   answer and a future false negative in a global-helper rule. Severity: medium.
-  Likelihood: medium.
-  Mitigation: the collector recurses only through binding positions
-  (declarator `id`, param patterns, function/class declaration identifiers,
-  catch param) and, inside patterns, only through binding sub-nodes
+  Likelihood: medium. Mitigation: the collector recurses only through binding
+  positions (declarator `id`, param patterns, function/class declaration
+  identifiers, catch param) and, inside patterns, only through binding sub-nodes
   (`AssignmentPattern.left`, not `.right`; pattern-property values, not
   computed keys). WI2 adds explicit negative-position tests (default-value
   reference, computed key, member-expression object) asserting those names are
   **absent** from `boundNames`.
 - Risk: the suppression mask blanks line comments (where real directives live)
-  or fails to blank a block comment, inverting the success criterion.
-  Severity: high. Likelihood: low.
-  Mitigation: classify each masker "comment" range as line vs block by the
-  character after the opening slash (`/` → line, `*` → block; the same
-  distinction `src/static-analysis/source-mask-comments.ts` already makes at
-  scan time), reveal only line-comment ranges, and pin both directions with
-  tests (a `//` directive survives; a `/* */` decoy is blanked).
+  or fails to blank a block comment, inverting the success criterion. Severity:
+  high. Likelihood: low. Mitigation: classify each masker "comment" range as
+  line vs block by the character after the opening slash (`/` → line, `*` →
+  block; the same distinction `src/static-analysis/source-mask-comments.ts`
+  already makes at scan time), reveal only line-comment ranges, and pin both
+  directions with tests (a `//` directive survives; a `/* */` decoy is blanked).
 - Risk: a body that fails to parse leaves the binding collector with no AST,
   and a caller expects facts anyway. Severity: low. Likelihood: medium.
-  Mitigation: `collectWorkflowAstFacts` mirrors `parseWorkflowBody`'s
-  defensive posture: on parse failure it returns `parseSucceeded: false` with
-  an empty binding set, while suppression masks (which derive from the original
-  source, not the AST) are still produced. A test pins the parse-failure path.
+  Mitigation: `collectWorkflowAstFacts` mirrors `parseWorkflowBody`'s defensive
+  posture: on parse failure it returns `parseSucceeded: false` with an empty
+  binding set, while suppression masks (which derive from the original source,
+  not the AST) are still produced. A test pins the parse-failure path.
 - Risk: extracting a shared parse helper (WI1) changes the behaviour of the
-  shipped `parseWorkflowBody`, breaking the 2.2.1/2.2.3 snapshots.
-  Severity: medium. Likelihood: low.
-  Mitigation: WI1 is a pure, snapshot-neutral refactor validated by the
-  existing `workflow-body-parser.test.ts` and
+  shipped `parseWorkflowBody`, breaking the 2.2.1/2.2.3 snapshots. Severity:
+  medium. Likelihood: low. Mitigation: WI1 is a pure, snapshot-neutral refactor
+  validated by the existing `workflow-body-parser.test.ts` and
   `body-diagnostic-spans.test.ts` suites passing unchanged before the feature
   work begins (`AGENTS.md` "Separate Atomic Refactors").
 - Risk: `bun test` cannot be run during planning because the agent shell gates
-  arbitrary Bash behind approval, so the exact AST shape is unconfirmed at
-  plan time. Severity: medium. Likelihood: high (already observed).
-  Mitigation: every load-bearing shape claim is pinned by a Red test in this
-  plan, and WI2 step 1 is an explicit in-repo shape probe the implementer runs
-  before writing the collector. Network research tools (firecrawl / WebFetch)
-  were permission-gated in the planning session, so the pinned-version
-  `@swc/types` file could not be fetched; the in-repo probe plus tests are the
-  authoritative substitute.
+  arbitrary Bash behind approval, so the exact AST shape is unconfirmed at plan
+  time. Severity: medium. Likelihood: high (already observed). Mitigation:
+  every load-bearing shape claim is pinned by a Red test in this plan, and WI2
+  step 1 is an explicit in-repo shape probe the implementer runs before writing
+  the collector. Network research tools (firecrawl / WebFetch) were
+  permission-gated in the planning session, so the pinned-version `@swc/types`
+  file could not be fetched; the in-repo probe plus tests are the authoritative
+  substitute.
 
 ## Progress
 
@@ -255,10 +249,10 @@ escalation, not a workaround.
   hit a recoverable rate limit, then completed after the mandated `vsleep`
   backoff; its direct-helper-test finding was fixed in
   `tests/static-analysis/workflow-body-parse.test.ts`. A later review repeated
-  the parser-error and overload-guard findings; both were fixed, and
-  `make all`, `make markdownlint`, and `make nixie` passed again. Final
-  CodeRabbit re-review remains deferred because the allowed retry budget for
-  WI1 was consumed.
+  the parser-error and overload-guard findings; both were fixed, and `make all`,
+  `make markdownlint`, and `make nixie` passed again. Final CodeRabbit
+  re-review remains deferred because the allowed retry budget for WI1 was
+  consumed.
 - [x] (2026-07-03 06:23Z) WI2: Export the wrapper-name constant, then add the
   lexical binding facts module (unwrapping the synthetic wrapper) and its
   tests. Focused tests pass for helper shadowing, reference-only negatives,
@@ -276,8 +270,8 @@ escalation, not a workaround.
   strings, templates, regex literals, and block comments inert, and provides a
   binary-search `isIndexInInertRegion` predicate over sorted mask ranges.
   Focused tests cover fixed decoys, full-text snapshots, line-terminator
-  preservation, and generated source invariants. `make all` and CodeRabbit
-  were green after follow-up review fixes.
+  preservation, and generated source invariants. `make all` and CodeRabbit were
+  green after follow-up review fixes.
 - [x] (2026-07-03 10:25Z) WI4: Assemble `WorkflowAstFacts`, add
   `collectWorkflowAstFacts`, export the public surface, and add an integration
   test. The public fact object stays `@swc/core`-free, while an internal
@@ -290,113 +284,100 @@ escalation, not a workaround.
 - [x] (2026-07-03 10:42Z) WI5: Document the facts in the developers' guide
   and tick roadmap 2.2.4. The developers' guide now names
   `collectWorkflowAstFacts`, `WorkflowAstFacts`, `LexicalBindingFacts`,
-  `isIdentifierBound`, `WorkflowSuppressionMasks`, and
-  `isIndexInInertRegion`, and records that facts remain standalone producers
-  rather than lint-pipeline diagnostics. Roadmap 2.2.4 is marked complete.
-  Deterministic gates (`make all`, `make markdownlint`, `make nixie`) and
-  CodeRabbit are green.
+  `isIdentifierBound`, `WorkflowSuppressionMasks`, and `isIndexInInertRegion`,
+  and records that facts remain standalone producers rather than lint-pipeline
+  diagnostics. Roadmap 2.2.4 is marked complete. Deterministic gates
+  (`make all`, `make markdownlint`, `make nixie`) and CodeRabbit are green.
 
 ## Surprises & discoveries
 
 - Observation: the repository already walks the SWC AST as a generic tree of
-  span-bearing objects and already knows the global offset base.
-  Evidence: `tests/static-analysis/workflow-body-parser.test.ts` lines 155-176
-  collect "any node with a numeric span" recursively, and lines 244-259
-  subtract `program.span.start` before mapping node spans through
-  `originalSpanFromNormalizedOffsets`.
-  Impact: WI2's collector reuses the same "plain object keyed by `.type`" walk
-  assumption; binding facts need no span mapping, so the offset base is
-  irrelevant to this task.
+  span-bearing objects and already knows the global offset base. Evidence:
+  `tests/static-analysis/workflow-body-parser.test.ts` lines 155-176 collect
+  "any node with a numeric span" recursively, and lines 244-259 subtract
+  `program.span.start` before mapping node spans through
+  `originalSpanFromNormalizedOffsets`. Impact: WI2's collector reuses the same
+  "plain object keyed by `.type`" walk assumption; binding facts need no span
+  mapping, so the offset base is irrelevant to this task.
 - Observation: the source masker preserves line terminators when blanking and
-  distinguishes line from block comments at scan time.
-  Evidence: `src/static-analysis/source-mask-delimiters.ts`
-  `blankMaskedRange` keeps terminator characters; `source-mask-comments.ts`
-  branches on `nextCharacter === "/"` (line) versus block.
-  Impact: WI3 can build the directive-scan text from the existing
-  `maskedText` (index-aligned, terminators intact) and re-reveal line comments
-  by copying their original characters back, without re-implementing scanning.
+  distinguishes line from block comments at scan time. Evidence:
+  `src/static-analysis/source-mask-delimiters.ts` `blankMaskedRange` keeps
+  terminator characters; `source-mask-comments.ts` branches on
+  `nextCharacter === "/"` (line) versus block. Impact: WI3 can build the
+  directive-scan text from the existing `maskedText` (index-aligned,
+  terminators intact) and re-reveal line comments by copying their original
+  characters back, without re-implementing scanning.
 - Observation: adding a new source module requires updating the architecture
-  inventory test.
-  Evidence: WI1's first `make all` failed in
+  inventory test. Evidence: WI1's first `make all` failed in
   `tests/diagnostics/architecture.test.ts` until
-  `EXPECTED_STATIC_ANALYSIS_MODULE_FILES` included
-  `workflow-body-parse.ts`.
+  `EXPECTED_STATIC_ANALYSIS_MODULE_FILES` included `workflow-body-parse.ts`.
   Impact: every later new source module in this plan must update the same
   pinned inventory alongside the implementation.
 - Observation: the WI2 SWC shape probe matched the plan's assumed wrapper and
-  binding-pattern fields.
-  Evidence: parsing the destructuring probe through `parseNormalizedWorkflowBody`
-  returned one top-level `FunctionDeclaration`; the wrapper name lives in
-  `identifier.value`; user statements live in the wrapper `BlockStatement`'s
-  `stmts`; array patterns use `elements`; object patterns use `properties`
-  with `AssignmentPatternProperty`, `KeyValuePatternProperty`, and
-  `RestElement`; function parameters use `params[].pat`; default bindings use
-  `AssignmentPattern.left`; rest bindings use `argument`; catch bindings use
-  `handler.param`.
-  Impact: `collectLexicalBindings` can unwrap the synthetic function and walk
-  only those binding-position fields without span mapping.
+  binding-pattern fields. Evidence: parsing the destructuring probe through
+  `parseNormalizedWorkflowBody` returned one top-level `FunctionDeclaration`;
+  the wrapper name lives in `identifier.value`; user statements live in the
+  wrapper `BlockStatement`'s `stmts`; array patterns use `elements`; object
+  patterns use `properties` with `AssignmentPatternProperty`,
+  `KeyValuePatternProperty`, and `RestElement`; function parameters use
+  `params[].pat`; default bindings use `AssignmentPattern.left`; rest bindings
+  use `argument`; catch bindings use `handler.param`. Impact:
+  `collectLexicalBindings` can unwrap the synthetic function and walk only
+  those binding-position fields without span mapping.
 - Observation: `fast-check`'s `stringMatching(/[A-Za-z0-9_]{0,8}/u)` produced
-  a whitespace-containing counter-example (`"a "`).
-  Evidence: the initial WI2 property failed with counter-example `["a "]`.
-  Impact: the final identifier generator uses an explicit finite set of valid
-  identifier continuation characters instead of regex-generated strings.
+  a whitespace-containing counter-example (`"a "`). Evidence: the initial WI2
+  property failed with counter-example `["a "]`. Impact: the final identifier
+  generator uses an explicit finite set of valid identifier continuation
+  characters instead of regex-generated strings.
 - Observation: SWC stores class constructor parameters on `Constructor.params`
   and public/private method parameters on `ClassMethod.function.params` /
-  `PrivateMethod.function.params`.
-  Evidence: the class-method shape probe over
-  `class C { constructor({ a }) {} method([b]) {} #secret(c = 1) {} }`
-  showed those exact node fields.
-  Impact: `collectLexicalBindings` includes dedicated collectors for
-  `Constructor`, `ClassMethod`, and `PrivateMethod` so method parameters are
-  not missed by future global-helper shadowing rules.
+  `PrivateMethod.function.params`. Evidence: the class-method shape probe over
+  `class C { constructor({ a }) {} method([b]) {} #secret(c = 1) {} }` showed
+  those exact node fields. Impact: `collectLexicalBindings` includes dedicated
+  collectors for `Constructor`, `ClassMethod`, and `PrivateMethod` so method
+  parameters are not missed by future global-helper shadowing rules.
 - Observation: `maskNonCodeSource` emits sorted, non-overlapping ranges, so
   filtering out revealed line comments preserves the range invariant needed by
-  `isIndexInInertRegion`'s binary search.
-  Evidence: `source-mask-types.ts` documents sorted, disjoint ranges, and WI3's
-  generated invariant test checks inert membership across mixed block and line
-  comment sources.
-  Impact: the suppression-mask predicate can stay logarithmic without adding a
-  second range-normalization pass.
+  `isIndexInInertRegion`'s binary search. Evidence: `source-mask-types.ts`
+  documents sorted, disjoint ranges, and WI3's generated invariant test checks
+  inert membership across mixed block and line comment sources. Impact: the
+  suppression-mask predicate can stay logarithmic without adding a second
+  range-normalization pass.
 - Observation: public `WorkflowAstFacts` can remain parser-type-free while
-  internal code still reuses an existing SWC parse result.
-  Evidence: WI4 keeps `collectWorkflowAstFacts` as the package-facing API and
-  adds internal-only `collectWorkflowAstFactsFromParseResult`, guarded by
-  source-file and body-span identity carried on `NormalizedBodyParseResult`.
-  Impact: downstream rule code can avoid a second parse without exposing
-  `@swc/core`'s `Module` through `src/index.ts`.
+  internal code still reuses an existing SWC parse result. Evidence: WI4 keeps
+  `collectWorkflowAstFacts` as the package-facing API and adds internal-only
+  `collectWorkflowAstFactsFromParseResult`, guarded by source-file and
+  body-span identity carried on `NormalizedBodyParseResult`. Impact: downstream
+  rule code can avoid a second parse without exposing `@swc/core`'s `Module`
+  through `src/index.ts`.
 
 ## Decision log
 
 - Decision: this task adds production fact producers plus tests and docs; it
   emits no diagnostics, defines no rule, changes no `Diagnostic` shape, and
-  does not wire into `lintWorkflowSource`.
-  Rationale: `docs/developers-guide.md` lines 71-72 and 133-138 scope 2.2.4 to
-  "reusable workflow AST facts"; the consuming rules are phase-3 tasks;
-  section 8 gates diagnostic-shape changes.
-  Date/Author: 2026-07-03, planning agent.
+  does not wire into `lintWorkflowSource`. Rationale:
+  `docs/developers-guide.md` lines 71-72 and 133-138 scope 2.2.4 to "reusable
+  workflow AST facts"; the consuming rules are phase-3 tasks; section 8 gates
+  diagnostic-shape changes. Date/Author: 2026-07-03, planning agent.
 - Decision: lexical binding facts are name-based (a `boundNames` set), not
-  span-based.
-  Rationale: the shadowing query the success line requires needs only a
-  name-set; recording binding spans would pull in SWC offset-base handling that
-  `docs/roadmap.md` lines 581-589 reserve for task 2.2.6. Name-based facts keep
-  2.2.4 independent of 2.2.6. Span-carrying bindings are a justified later
-  refinement.
-  Date/Author: 2026-07-03, planning agent.
+  span-based. Rationale: the shadowing query the success line requires needs
+  only a name-set; recording binding spans would pull in SWC offset-base
+  handling that `docs/roadmap.md` lines 581-589 reserve for task 2.2.6.
+  Name-based facts keep 2.2.4 independent of 2.2.6. Span-carrying bindings are
+  a justified later refinement. Date/Author: 2026-07-03, planning agent.
 - Decision: shadowing is a conservative name-set membership test, not
-  scope-precise analysis.
-  Rationale: a global-helper rule that suppresses on any same-named binding is
-  safe (it prefers a false negative — one missed warning — over a false
-  positive on a legitimate local). Scope-precise binding analysis is a
-  deferred refinement noted for phase-3 rule work. The success line — "distinguish
-  JavaScript globals from shadowed `parallel`, `Array`, `Number`, `Object`,
-  and `Math`" — is met by name membership.
-  Date/Author: 2026-07-03, planning agent.
+  scope-precise analysis. Rationale: a global-helper rule that suppresses on
+  any same-named binding is safe (it prefers a false negative — one missed
+  warning — over a false positive on a legitimate local). Scope-precise binding
+  analysis is a deferred refinement noted for phase-3 rule work. The success
+  line — "distinguish JavaScript globals from shadowed `parallel`, `Array`,
+  `Number`, `Object`, and `Math`" — is met by name membership. Date/Author:
+  2026-07-03, planning agent.
 - Decision: `collectLexicalBindings` unwraps the synthetic wrapper
   `FunctionDeclaration` and begins traversal at its body statements, and also
   seeds an excluded-name set with the shared `WORKFLOW_BODY_WRAP_FUNCTION_NAME`
-  constant.
-  Rationale: `normalizeWorkflowBody` wraps every body in a *named* declaration
-  `async function __odwLintWorkflowBody__() { … }`
+  constant. Rationale: `normalizeWorkflowBody` wraps every body in a *named*
+  declaration `async function __odwLintWorkflowBody__() { … }`
   (`src/static-analysis/workflow-body-normalizer.ts` line 17), so the parsed
   module's only top-level statement is that wrapper. Collecting binding names
   straight off `module.body` would report `__odwLintWorkflowBody__` — a
@@ -408,44 +389,40 @@ escalation, not a workaround.
   prefix, snapshot-neutral) keeps the wrapper name defined in exactly one place
   (`AGENTS.md` DRY). Two tests pin the wart: `boundNames` excludes
   `__odwLintWorkflowBody__`, and one body's `boundNames` equals exactly the
-  user-declared set.
-  Date/Author: 2026-07-03, planning agent (round 2, design-review response).
+  user-declared set. Date/Author: 2026-07-03, planning agent (round 2,
+  design-review response).
 - Decision: the suppression mask reveals line comments and blanks strings,
   templates, regexes, and block comments, reusing `maskNonCodeSource` rather
-  than adding a second scanner.
-  Rationale: the success line lists exactly those four inert kinds ("strings,
-  templates, regexes, and block comments") and omits line comments, because
-  real directives live in line comments. Deriving from the existing masker
-  (option (c)) avoids duplicating the scan orchestration and keeps one masking
-  contract (`AGENTS.md` DRY policy).
+  than adding a second scanner. Rationale: the success line lists exactly those
+  four inert kinds ("strings, templates, regexes, and block comments") and
+  omits line comments, because real directives live in line comments. Deriving
+  from the existing masker (option (c)) avoids duplicating the scan
+  orchestration and keeps one masking contract (`AGENTS.md` DRY policy).
   Date/Author: 2026-07-03, planning agent.
 - Decision: `WorkflowAstFacts` is `@swc/core`-free; the raw `Module` stays
-  internal to the parse helper and collector.
-  Rationale: keeps the public package surface stable and parser-agnostic,
-  matching `originalSpanFromNormalizedOffsets`'s numeric-offset boundary
-  (`docs/developers-guide.md` line 70).
-  Date/Author: 2026-07-03, planning agent.
+  internal to the parse helper and collector. Rationale: keeps the public
+  package surface stable and parser-agnostic, matching
+  `originalSpanFromNormalizedOffsets`'s numeric-offset boundary
+  (`docs/developers-guide.md` line 70). Date/Author: 2026-07-03, planning agent.
 - Decision: WI1 extracts a shared internal parse helper so `parseWorkflowBody`
   and the facts collector share one normalize-and-parse path and one
-  `ParseOptions` constant.
-  Rationale: `AGENTS.md` requires sweeping for an existing equivalent before
-  duplicating; the equivalent is `parseWorkflowBody`'s
-  `normalizeWorkflowBody` + `parseSync` sequence. Extracting first, as a
-  separate atomic refactor, keeps one parse path.
+  `ParseOptions` constant. Rationale: `AGENTS.md` requires sweeping for an
+  existing equivalent before duplicating; the equivalent is
+  `parseWorkflowBody`'s `normalizeWorkflowBody` + `parseSync` sequence.
+  Extracting first, as a separate atomic refactor, keeps one parse path.
   Date/Author: 2026-07-03, planning agent.
 - Decision: keep Oxford `-ize` spellings in the ExecPlan and reject
-  CodeRabbit's `normalise` / `normaliser` spelling suggestion.
-  Rationale: `AGENTS.md` and `docs/documentation-style-guide.md` explicitly
-  require en-GB Oxford spelling, where this project standardizes on `-ize` and
-  reserves `-yse` for words such as `analyse`.
-  Date/Author: 2026-07-03, implementation agent.
+  CodeRabbit's `normalise` / `normaliser` spelling suggestion. Rationale:
+  `AGENTS.md` and `docs/documentation-style-guide.md` explicitly require en-GB
+  Oxford spelling, where this project standardizes on `-ize` and reserves
+  `-yse` for words such as `analyse`. Date/Author: 2026-07-03, implementation
+  agent.
 - Decision: preserve the caught SWC parse error on the internal
-  `NormalizedBodyParseResult` failure branch.
-  Rationale: the helper is not public, so carrying `error: unknown` does not
-  leak parser types through `src/index.ts`; it keeps future parser-backed
-  diagnostics able to inspect parser context without changing
-  `parseWorkflowBody`'s public diagnostic shape in WI1.
-  Date/Author: 2026-07-03, implementation agent.
+  `NormalizedBodyParseResult` failure branch. Rationale: the helper is not
+  public, so carrying `error: unknown` does not leak parser types through
+  `src/index.ts`; it keeps future parser-backed diagnostics able to inspect
+  parser context without changing `parseWorkflowBody`'s public diagnostic shape
+  in WI1. Date/Author: 2026-07-03, implementation agent.
 
 ## Outcomes & retrospective
 
@@ -488,8 +465,8 @@ A novice needs these files:
   distinction (`nextCharacter === "/"` opens a line comment) that WI3 reuses to
   classify a "comment" range as line or block.
 - `src/static-analysis/source-mask-delimiters.ts` — `blankMaskedRange`
-  preserves line terminators while blanking; the alignment contract WI3
-  depends on.
+  preserves line terminators while blanking; the alignment contract WI3 depends
+  on.
 - `src/static-analysis/types.ts` — `WorkflowEnvelope`, `OriginalSourceFile`,
   `SourceSpan`, and the `SourceOffsetError`. `WorkflowAstFacts` will live
   alongside these or in the new fact modules.
@@ -552,16 +529,17 @@ export const parseNormalizedWorkflowBody: (
 ) => NormalizedBodyParseResult;
 ```
 
-Move the `WORKFLOW_BODY_PARSE_OPTIONS` constant and the
-`normalizeWorkflowBody` + `parseSync` call into this module. Rewire
-`parseWorkflowBody` (in `workflow-body-parser.ts`) to call
-`parseNormalizedWorkflowBody`; on `{ ok: false }` it builds the same
-`odw/body-syntax` diagnostic as today. This module is **not** re-exported
-publicly (it returns an `@swc/core` type); it is an internal collaborator.
+Move the `WORKFLOW_BODY_PARSE_OPTIONS` constant and the `normalizeWorkflowBody`
 
-This is snapshot-neutral: `parseWorkflowBody`'s observable result is
-unchanged. It is a pure refactor landing before the feature, so the shared
-parse path exists for WI2 and WI4.
+- `parseSync` call into this module. Rewire `parseWorkflowBody` (in
+`workflow-body-parser.ts`) to call `parseNormalizedWorkflowBody`; on
+`{ ok: false }` it builds the same `odw/body-syntax` diagnostic as today. This
+module is **not** re-exported publicly (it returns an `@swc/core` type); it is
+an internal collaborator.
+
+This is snapshot-neutral: `parseWorkflowBody`'s observable result is unchanged.
+It is a pure refactor landing before the feature, so the shared parse path
+exists for WI2 and WI4.
 
 Validation: `make all` — the existing `workflow-body-parser.test.ts` and
 `body-diagnostic-spans.test.ts` suites pass unchanged, with no `.snap` diffs.
@@ -574,8 +552,8 @@ idiom); `AGENTS.md` Testing (table-driven + `fast-check`).
 
 Step 1 (shape probe — do this before writing the collector). Add a temporary
 scratch test that parses one destructuring sample through
-`parseNormalizedWorkflowBody` and prints `JSON.stringify(result.module, null, 2)`
-for a body such as:
+`parseNormalizedWorkflowBody` and prints
+`JSON.stringify(result.module, null, 2)` for a body such as:
 
 ```js
 const { a, b: c, d = 1, ...rest } = obj;
@@ -589,8 +567,9 @@ Run it once to capture the real node shapes, and specifically confirm the
 
 - `module.body` is a single-element array whose element is the wrapper
   `FunctionDeclaration` (`type: "FunctionDeclaration"`);
-- the wrapper's name identifier field (expected `identifier.value ===
-  "__odwLintWorkflowBody__"`, matching `WORKFLOW_BODY_WRAP_FUNCTION_NAME`);
+- the wrapper's name identifier field (expected
+  `identifier.value === "__odwLintWorkflowBody__"`, matching
+  `WORKFLOW_BODY_WRAP_FUNCTION_NAME`);
 - the wrapper's body statement-list field (expected `body.stmts`, the SWC
   `BlockStatement` field), which is where user declarations live;
 
@@ -599,9 +578,9 @@ object pattern property/`RestElement` fields, `AssignmentPattern` left/right
 fields). Record the observed shapes in `Surprises & Discoveries`, then **delete
 the scratch test** before committing. This replaces the network research that
 was unavailable at plan time. If the probe shows the wrapper is not the sole
-top-level statement, or the body-statement field is not `stmts`, record the real
-shape and adjust the unwrap accordingly (the defensive name exclusion in step
-(b) below still holds regardless of tree shape).
+top-level statement, or the body-statement field is not `stmts`, record the
+real shape and adjust the unwrap accordingly (the defensive name exclusion in
+step (b) below still holds regardless of tree shape).
 
 First, lift the wrapper name into a shared constant. Edit
 `src/static-analysis/workflow-body-normalizer.ts` to export
@@ -609,7 +588,8 @@ First, lift the wrapper name into a shared constant. Edit
 existing private `WORKFLOW_BODY_WRAP_PREFIX` from it
 (`` `async function ${WORKFLOW_BODY_WRAP_FUNCTION_NAME}() {` ``). This produces
 byte-identical `normalizedText`, so the normalizer and body-parser snapshots do
-not change (verified: `tests/static-analysis/__snapshots__/workflow-body-normalizer.test.ts.snap`
+not change (verified:
+`tests/static-analysis/__snapshots__/workflow-body-normalizer.test.ts.snap`
 line 4 already embeds the same prefix). Do **not** add this constant to
 `src/static-analysis/index.ts` or `src/index.ts`; it stays an internal
 collaborator imported by the collector via its module path.
@@ -634,8 +614,8 @@ Create `src/static-analysis/workflow-ast-bindings.ts`:
      set containing `WORKFLOW_BODY_WRAP_FUNCTION_NAME`, and drop any binding
      whose name is in that set before it reaches `boundNames`, so the synthetic
      name can never surface even if the tree shape changes.
-  From the unwrapped statements, walk recursively, collecting binding names from
-  binding positions only:
+  From the unwrapped statements, walk recursively, collecting binding names
+  from binding positions only:
   - `VariableDeclarator.id` patterns,
   - `FunctionDeclaration` / `ClassDeclaration` name identifiers,
   - function / arrow / method parameter patterns,
@@ -643,42 +623,41 @@ Create `src/static-analysis/workflow-ast-bindings.ts`:
   - named `FunctionExpression` / `ClassExpression` binding names.
   Inside a pattern, recurse through binding sub-nodes only: array pattern
   elements, object pattern property *values* and rest elements,
-  `AssignmentPattern.left` (never `.right`), and `RestElement` arguments.
-  Read the identifier name from the field the probe confirmed (expected
-  `value`). Do **not** collect names reached only through references
-  (member-expression objects, computed keys, default-value expressions, call
-  arguments).
+  `AssignmentPattern.left` (never `.right`), and `RestElement` arguments. Read
+  the identifier name from the field the probe confirmed (expected `value`). Do
+  **not** collect names reached only through references (member-expression
+  objects, computed keys, default-value expressions, call arguments).
 - `isIdentifierBound(facts: LexicalBindingFacts, name: string): boolean` —
   membership predicate the future rules call.
 
 Tests: `tests/static-analysis/workflow-ast-bindings.test.ts`:
 
 - Table-driven positive matrix: for each of `parallel`, `Array`, `Number`,
-  `Object`, `Math`, a body that binds it via, across the table, `const`,
-  `let`, `var`, function declaration, function parameter, object-destructure,
+  `Object`, `Math`, a body that binds it via, across the table, `const`, `let`,
+  `var`, function declaration, function parameter, object-destructure,
   array-destructure, default-parameter binding, and `catch` parameter; assert
   `isIdentifierBound(facts, name) === true`.
 - Negative matrix: bodies that only *reference* those names
   (`Math.random();`, `parallel(items);`, `const y = Array.from(items);`), a
   default-value reference (`function f(x = Math.max(1, 2)) {}`), and a computed
-  key (`const { [Math]: z } = o;`); assert `isIdentifierBound(facts, name)
-  === false` for the referenced-but-unbound global.
+  key (`const { [Math]: z } = o;`); assert
+  `isIdentifierBound(facts, name) === false` for the referenced-but-unbound
+  global.
 - Wrapper-exclusion (pins the wrapper-name-pollution wart): for a representative
   body such as `const parallel = 1; function h() {}`, assert
   `isIdentifierBound(facts, "__odwLintWorkflowBody__") === false` and that
-  `facts.boundNames` does **not** include `"__odwLintWorkflowBody__"`. This test
-  must fail on any collector that walks `module.body` without unwrapping the
-  wrapper.
+  `facts.boundNames` does **not** include `"__odwLintWorkflowBody__"`. This
+  test must fail on any collector that walks `module.body` without unwrapping
+  the wrapper.
 - Exact-set (pins that `boundNames` is exactly the user-declared set for one
   body, with no synthetic or spurious names): for a body such as
   `const a = 1; function b() {} const { c } = o;`, assert
   `[...facts.boundNames].sort()` deep-equals `["a", "b", "c"]` — i.e. neither
   `__odwLintWorkflowBody__` nor any reference leaks in.
 - One `fast-check` property: for a generated identifier name declared with
-  `const <name> = 1;`, `boundNames` always contains `<name>` (invariant:
-  every declared name is reported). Use a generator constrained to valid
-  identifier starts to avoid the filtering trap (`AGENTS.md` `fast-check`
-  guidance).
+  `const <name> = 1;`, `boundNames` always contains `<name>` (invariant: every
+  declared name is reported). Use a generator constrained to valid identifier
+  starts to avoid the filtering trap (`AGENTS.md` `fast-check` guidance).
 
 Follow Red-Green-Refactor: write the failing positive test first, confirm it
 fails for the intended reason (empty `boundNames`), then implement the
@@ -698,8 +677,8 @@ Create `src/static-analysis/workflow-suppression-mask.ts`:
 - Type
   `WorkflowSuppressionMasks = { readonly sourceFile: OriginalSourceFile;
   readonly directiveScanText: string;
-  readonly inertRanges: readonly SourceMaskRange[] }` (frozen; `inertRanges`
-  are the ranges blanked in `directiveScanText`).
+  readonly inertRanges: readonly SourceMaskRange[] }`
+  (frozen; `inertRanges` are the ranges blanked in `directiveScanText`).
 - `buildSuppressionMasks(sourceFile: OriginalSourceFile): WorkflowSuppressionMasks`
   — call `maskNonCodeSource(sourceFile)`; classify each `kind: "comment"` range
   as line vs block using the character after its opening slash
@@ -717,11 +696,13 @@ Tests: `tests/static-analysis/workflow-suppression-mask.test.ts`:
   `directiveScanText` and its index is **not** in an inert region.
 - Blank cases (table-driven over string, template, regex, block comment): the
   decoy token `odw-lint-disable` placed inside each is blanked in
-  `directiveScanText` (asserted by `directiveScanText.indexOf("odw-lint-disable")`
-  at that position returning `-1`) and its index **is** reported inert.
-- Alignment invariant: `directiveScanText.length === sourceFile.sourceText.length`
-  and every line-terminator position is preserved (spot-check with a
-  multi-line block comment so its interior newlines survive).
+  `directiveScanText` (asserted by
+  `directiveScanText.indexOf("odw-lint-disable")` at that position returning
+  `-1`) and its index **is** reported inert.
+- Alignment invariant:
+  `directiveScanText.length === sourceFile.sourceText.length` and every
+  line-terminator position is preserved (spot-check with a multi-line block
+  comment so its interior newlines survive).
 - Optional reviewer snapshot of `directiveScanText` for one representative
   mixed body, paired with the semantic assertions above (`AGENTS.md` "pair
   snapshots with semantic assertions"). Serialize through `JSON.stringify` so
@@ -757,12 +738,12 @@ export const collectWorkflowAstFacts: (
 from the original source, independent of parse success). Freeze the returned
 container.
 
-Re-export `collectWorkflowAstFacts`, `WorkflowAstFacts`,
-`LexicalBindingFacts`, `isIdentifierBound`, `WorkflowSuppressionMasks`, and
-`isIndexInInertRegion` from `src/static-analysis/index.ts`, and re-export the
-same names from `src/index.ts` (alphabetically, matching the existing block).
-Do not export `parseNormalizedWorkflowBody`, `NormalizedBodyParseResult`, or
-any `@swc/core` type.
+Re-export `collectWorkflowAstFacts`, `WorkflowAstFacts`, `LexicalBindingFacts`,
+`isIdentifierBound`, `WorkflowSuppressionMasks`, and `isIndexInInertRegion` from
+`src/static-analysis/index.ts`, and re-export the same names from
+`src/index.ts` (alphabetically, matching the existing block). Do not export
+`parseNormalizedWorkflowBody`, `NormalizedBodyParseResult`, or any `@swc/core`
+type.
 
 Tests: `tests/static-analysis/workflow-ast-facts.test.ts`:
 
@@ -772,18 +753,18 @@ Tests: `tests/static-analysis/workflow-ast-facts.test.ts`:
   `isIdentifierBound(facts.lexicalBindings, "parallel") === false`, plus a
   suppression-mask assertion for a decoy inside a string.
 - Parse-failure path: a body with an unclosed block
-  (`if (args.ready) {\n`) returns `parseSucceeded: false`, empty
-  `boundNames`, and still-populated `suppressionMasks`.
+  (`if (args.ready) {\n`) returns `parseSucceeded: false`, empty `boundNames`,
+  and still-populated `suppressionMasks`.
 - Public-surface test: import the new names from `"odw-lint"` and assert they
   are callable where they are runtime values, and cover exported fact types
-  (`WorkflowAstFacts`, `LexicalBindingFacts`, and
-  `WorkflowSuppressionMasks`) with compile-time `expectTypeOf` assertions.
+  (`WorkflowAstFacts`, `LexicalBindingFacts`, and `WorkflowSuppressionMasks`)
+  with compile-time `expectTypeOf` assertions.
 - Freeze test: `Object.isFrozen(facts)` is `true`.
 
 No behavioural (Gherkin) or end-to-end test is required: this task changes no
 externally observable CLI behaviour (`AGENTS.md` adds e2e only "when a change
-affects externally observable behaviour"). Record that rationale in the
-commit body.
+affects externally observable behaviour"). Record that rationale in the commit
+body.
 
 Validation: `make all`.
 
@@ -796,10 +777,10 @@ body-parser and source-mask sections.
 - Add a "Workflow AST facts" subsection to `docs/developers-guide.md` (after
   the body-parser adapter section, near line 72) naming
   `collectWorkflowAstFacts`, `WorkflowAstFacts`, `LexicalBindingFacts` /
-  `isIdentifierBound`, and `WorkflowSuppressionMasks` /
-  `isIndexInInertRegion`; stating the name-based shadowing model and the
-  line-comment-visible directive-scan mask; and recording that facts emit no
-  diagnostics and are not yet wired into `lintWorkflowSource`.
+  `isIdentifierBound`, and `WorkflowSuppressionMasks` / `isIndexInInertRegion`;
+  stating the name-based shadowing model and the line-comment-visible
+  directive-scan mask; and recording that facts emit no diagnostics and are not
+  yet wired into `lintWorkflowSource`.
 - Update the sentence at `docs/developers-guide.md` lines 71-72 so it no longer
   says exposing AST facts "remains task 2.2.4's boundary" once the facts exist;
   point instead at the new subsection.
@@ -1005,9 +986,9 @@ export const collectWorkflowAstFactsFromParseResult: (
 export const WORKFLOW_BODY_WRAP_FUNCTION_NAME = "__odwLintWorkflowBody__";
 ```
 
-Dependencies: `@swc/core@1.15.43` (`parseSync`, `Module` type) and the
-existing `maskNonCodeSource` / `normalizeWorkflowBody` collaborators. No new
-dependency. No ODW runtime symbol may appear in any new file.
+Dependencies: `@swc/core@1.15.43` (`parseSync`, `Module` type) and the existing
+`maskNonCodeSource` / `normalizeWorkflowBody` collaborators. No new dependency.
+No ODW runtime symbol may appear in any new file.
 
 ## Revision notes
 
@@ -1019,9 +1000,9 @@ dependency. No ODW runtime symbol may appear in any new file.
   exhausted.
 - 2026-07-03: Marked WI2 complete after adding lexical binding facts, the
   wrapper-name exclusion, class constructor/method parameter support, default
-  initializer traversal, generated identifier coverage, and raw-module
-  fallback coverage. Deterministic gates are green; CodeRabbit follow-up items
-  were fixed before the WI2 commit.
+  initializer traversal, generated identifier coverage, and raw-module fallback
+  coverage. Deterministic gates are green; CodeRabbit follow-up items were
+  fixed before the WI2 commit.
 - 2026-07-03: Marked WI3 complete after adding directive-scan suppression
   masks, inert-region lookup, fixed-case decoy tests, full-text snapshots, and
   generated invariant coverage. Deterministic gates and CodeRabbit are green.

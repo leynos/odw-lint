@@ -123,8 +123,8 @@
   commit-gate step.
 - Recording is additive on `make review-evidence`: enabling recording never
   changes its existing exit codes. Exit 0 remains `verified`, exit 1 remains
-  `failed`, exit 2 remains only `usage-error`, and exit 3 remains `degraded`.
-  A failed recording write, or a failure to read Git provenance while recording,
+  `failed`, exit 2 remains only `usage-error`, and exit 3 remains `degraded`. A
+  failed recording write, or a failure to read Git provenance while recording,
   is surfaced on stderr and caught by `make review-evidence-artefact` as a
   missing, unusable, or unbound artefact rather than by changing the
   review-evidence exit code.
@@ -164,8 +164,8 @@
 ## Refactoring Heuristics & Workflow
 
 - **Recognizing Refactoring Needs:** The codebase should be assessed regularly
-  for potential refactoring opportunities. Refactoring should be considered when
-  observations indicate:
+  for potential refactoring opportunities. Refactoring should be considered
+  when observations indicate:
   - **Long Methods/Functions:** Functions or methods that are excessively long
     or try to do too many things.
   - **Duplicated Code:** Identical or very similar code blocks appearing in
@@ -326,8 +326,8 @@ are present.
   failure represents an intentional contract change.
 - **Invariant testing**: Use `fast-check` property tests when a change
   introduces behaviour over a range of inputs, states, orderings, or
-  transitions. Use table-driven tests for small finite case sets where generated
-  data would add noise.
+  transitions. Use table-driven tests for small finite case sets where
+  generated data would add noise.
 - **Exhaustive proofs**: Use `lemmascript` for exhaustive proofs when a change
   introduces contractual logic, state-machine rules, ordering invariants, or
   transformations that should hold for all values in a bounded domain.

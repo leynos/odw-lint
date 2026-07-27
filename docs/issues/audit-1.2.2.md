@@ -4,9 +4,9 @@
 - Scope: `origin/main` inspected from the `audit-1.2.2` git-donkey worktree
 
 This audit was run after the original source span helpers landed on
-`origin/main`. It used `grepai` for canonical main-branch intent search,
-`leta` for branch-local symbol, reference, and call-graph verification, and
-`sem` for entity-level history and blame.
+`origin/main`. It used `grepai` for canonical main-branch intent search, `leta`
+for branch-local symbol, reference, and call-graph verification, and `sem` for
+entity-level history and blame.
 
 ## Finding 1: Source records look structural but require hidden indexes
 
@@ -54,8 +54,8 @@ Proposed fix:
 Both helpers walk the same source text, track byte offsets, UTF-16 indexes,
 line numbers, columns, Unicode code points, and CRLF handling, and call the
 same line-terminator predicates. The details are currently aligned, and the
-property tests are strong, but the production implementation now has two
-places where newline or Unicode semantics can drift.
+property tests are strong, but the production implementation now has two places
+where newline or Unicode semantics can drift.
 
 This is different from the independent property oracle in
 `tests/static-analysis/source-file-property-oracle.ts`, where duplication is
@@ -65,13 +65,12 @@ production module can keep one source scanner without weakening those tests.
 Proposed fix:
 
 - Replace the two production passes with one private scan that returns the
-  public `SourceLine[]` plus the private offset-to-position and
-  offset-to-index maps.
+  public `SourceLine[]` plus the private offset-to-position and offset-to-index
+  maps.
 - Keep the independent test oracle separate so it remains a genuine
   cross-check rather than sharing production logic.
 - Add one regression test around CRLF plus multibyte Unicode after the
-  refactor to prove the merged scanner preserves the current boundary
-  behaviour.
+  refactor to prove the merged scanner preserves the current boundary behaviour.
 
 ## Finding 3: Exported source-span helpers lack usage examples
 
@@ -86,13 +85,13 @@ Proposed fix:
 The project guidance says function documentation should include clear examples
 demonstrating usage and outcome. The newly exported source-span helpers have
 good parameter and error documentation, but no examples. That leaves future
-parser and reporter contributors to infer half-open UTF-8 byte spans,
-one-based display positions, and the `createOriginalSourceFile` construction
-requirement from tests instead of from the API comments.
+parser and reporter contributors to infer half-open UTF-8 byte spans, one-based
+display positions, and the `createOriginalSourceFile` construction requirement
+from tests instead of from the API comments.
 
 The gap matters because these helpers are exported through `src/index.ts` and
-are the basis for all future diagnostic spans. Misusing them would create
-wrong source locations rather than a local implementation detail.
+are the basis for all future diagnostic spans. Misusing them would create wrong
+source locations rather than a local implementation detail.
 
 Proposed fix:
 
@@ -128,8 +127,8 @@ repetition to remove is only test harness setup.
 Proposed fix:
 
 - Add a small test helper such as `generatedSourceTextArbitrary()` or
-  `withGeneratedSourceFile` that centralizes the four-segment source
-  generation and source-record construction.
+  `withGeneratedSourceFile` that centralizes the four-segment source generation
+  and source-record construction.
 - Keep each property body focused on the invariant it asserts.
 - Preserve the deterministic `SOURCE_SPAN_PROPERTY_RUNNER` settings so
   failures stay reproducible.
@@ -137,8 +136,7 @@ Proposed fix:
 ## Proposed roadmap items
 
 - Clarify the `OriginalSourceFile` construction contract before parser,
-  mapper, and reporter work depend on source records across module
-  boundaries.
+  mapper, and reporter work depend on source records across module boundaries.
 - Refactor the production source scanner to build line metadata and lookup
   indexes in one pass while keeping the independent property oracle separate.
 - Add source-span helper examples and a developer-guide note before the first

@@ -1,8 +1,8 @@
 # Rule reference
 
-This reference lists every rule reserved by the typed catalogue. Released
-rules may be emitted by the checker; planned rules document reserved behaviour
-that is not emitted yet.
+This reference lists every rule reserved by the typed catalogue. Released rules
+may be emitted by the checker; planned rules document reserved behaviour that
+is not emitted yet.
 
 | Rule                                                                | Category               | Default severity | Release status |
 | ------------------------------------------------------------------- | ---------------------- | ---------------- | -------------- |

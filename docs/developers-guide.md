@@ -56,12 +56,11 @@ not filter explicit paths in this command slice.
 `node:fs` calls so the runner remains synchronous, while tests can inject
 deterministic readers and writers without mutating process-wide state.
 
-Read failures are written to stderr as
-`error: cannot read <path>: <message>` and are also represented in the
-diagnostic report. `summary.filesSkipped` counts unreadable inputs, and the
-top-level `ioErrors` array carries `{ file, reason, message }` records for
-machine consumers. `summary.files` continues to count only readable files that
-were checked.
+Read failures are written to stderr as `error: cannot read <path>: <message>`
+and are also represented in the diagnostic report. `summary.filesSkipped`
+counts unreadable inputs, and the top-level `ioErrors` array carries
+`{ file, reason, message }` records for machine consumers. `summary.files`
+continues to count only readable files that were checked.
 
 `--strict-claude` promotes Claude compatibility warnings to errors for the
 invocation and takes precedence over `strictClaude: false` in configuration.
@@ -122,15 +121,14 @@ syntax failures into `odw/body-syntax` diagnostics with original-source spans.
 The adapter parses ECMAScript-only source (`syntax: "ecmascript"`), so
 TypeScript-only syntax yields `odw/body-syntax`; ADR
 [0002-workflow-body-parser-dialect-scope.md](adr/0002-workflow-body-parser-dialect-scope.md)
-records that dialect boundary.
-The adapter never executes workflow source, never calls ODW runtime helpers,
-and returns a frozen discriminated result instead of letting syntax errors
-escape.
-The parser-error span-narrowing seam is intentionally internal. The pinned
-`@swc/core@1.15.43` parser exposes no structured syntax-error byte range, so
-production diagnostics currently use the conservative whole-body fallback; do
-not export the speculative narrowing helper through the package entry until a
-production parser path can exercise it. ADR
+records that dialect boundary. The adapter never executes workflow source,
+never calls ODW runtime helpers, and returns a frozen discriminated result
+instead of letting syntax errors escape. The parser-error span-narrowing seam
+is intentionally internal. The pinned `@swc/core@1.15.43` parser exposes no
+structured syntax-error byte range, so production diagnostics currently use the
+conservative whole-body fallback; do not export the speculative narrowing
+helper through the package entry until a production parser path can exercise
+it. ADR
 [0003-body-syntax-span-narrowing-quarantine.md](adr/0003-body-syntax-span-narrowing-quarantine.md)
 is the disposition of record for that quarantine.
 
@@ -163,8 +161,8 @@ public package surface described below.
 
 `collectWorkflowAstFacts(envelope)` produces reusable, parser-type-free facts
 for later parser-backed rules. It returns a frozen `WorkflowAstFacts` object
-with `parseSucceeded`, `lexicalBindings`, and `suppressionMasks` fields. It does
-not emit diagnostics and is not wired into `lintWorkflowSource`; consuming
+with `parseSucceeded`, `lexicalBindings`, and `suppressionMasks` fields. It
+does not emit diagnostics and is not wired into `lintWorkflowSource`; consuming
 rules still own any future diagnostic behaviour.
 
 `LexicalBindingFacts` records a sorted, unique `boundNames` list. Use
@@ -172,21 +170,21 @@ rules still own any future diagnostic behaviour.
 body declares a name such as `parallel`, `Array`, `Number`, `Object`, or
 `Math`. This model is deliberately name-based rather than scope-span-based, so
 future rules can avoid false positives when user code shadows a global helper
-without depending on SWC node types at the public boundary.
-The whole-body set includes object-literal setter and object-method parameters,
-consistent with class-member parameters and the internal scope model, while
-remaining a name-based public fact rather than a scope-span map.
+without depending on SWC node types at the public boundary. The whole-body set
+includes object-literal setter and object-method parameters, consistent with
+class-member parameters and the internal scope model, while remaining a
+name-based public fact rather than a scope-span map.
 
 The deterministic-time scanner is the first diagnostic consumer of these facts.
 It layers an internal function-scope view over the whole-body model, so bare
-`Date`, `Math`, and `globalThis` compatibility warnings are suppressed only when
-that name is shadowed at the use site. During the scanner walk, each node's
-scope-owned facts are computed once and shared between the binding and alias
-scope entries. The public `LexicalBindingFacts` surface remains whole-body and
-parser-type-free, and future orchestration rules such as `odw/bounded-loop`
-(3.2.1) and `odw/bounded-fanout` (3.2.2) will keep consuming that public model
-to decide whether `Array`, `Object`, `Number`, and `Math` helpers are
-JavaScript globals or workflow-local bindings.
+`Date`, `Math`, and `globalThis` compatibility warnings are suppressed only
+when that name is shadowed at the use site. During the scanner walk, each
+node's scope-owned facts are computed once and shared between the binding and
+alias scope entries. The public `LexicalBindingFacts` surface remains
+whole-body and parser-type-free, and future orchestration rules such as
+`odw/bounded-loop` (3.2.1) and `odw/bounded-fanout` (3.2.2) will keep consuming
+that public model to decide whether `Array`, `Object`, `Number`, and `Math`
+helpers are JavaScript globals or workflow-local bindings.
 
 `WorkflowSuppressionMasks` exposes `directiveScanText` and `inertRanges`.
 Strings, template literals, regex literals, and block comments stay blanked in
@@ -213,8 +211,8 @@ Use `lintWorkflowSource` as the production entry point when a caller needs the
 complete static workflow diagnostic stream for one source string. It builds the
 original source file, scans the envelope, classifies metadata, and returns
 diagnostics in canonical order: envelope diagnostics first, then metadata
-diagnostics, body syntax diagnostics, and Claude compatibility diagnostics.
-The body parser runs once for this pipeline; `odw/body-syntax` owns syntax
+diagnostics, body syntax diagnostics, and Claude compatibility diagnostics. The
+body parser runs once for this pipeline; `odw/body-syntax` owns syntax
 failures, and Claude compatibility checks consume the same successful parse
 result. The Claude compatibility stage currently runs the deterministic-time
 scanner and the ODW-only `validate(source)` scanner over that shared parse
@@ -230,8 +228,8 @@ informational Claude compatibility findings such as `odw/no-odw-only-validate`.
 the merged `diagnostics` stream only; the `scan`, `classification`,
 `bodySyntax`, and `claudeCompatibility` sub-views continue to expose each
 pipeline stage's default-severity findings. The `--strict-claude` CLI flag and
-`strictClaude` configuration key toggle this mechanism, with the CLI flag taking
-precedence for a single invocation.
+`strictClaude` configuration key toggle this mechanism, with the CLI flag
+taking precedence for a single invocation.
 
 ### Configuration schema
 
@@ -243,8 +241,8 @@ inert JSON object with these optional keys:
 - `exclude`: an array of non-empty glob-pattern strings.
 - `strictClaude`: a boolean that feeds the strict Claude promotion mechanism.
 - `rules`: an object whose keys are catalogued rule identifiers and whose
-  values are `error`, `warning`, `info`, `hint`, or the configuration-only
-  value `off`.
+  values are `error`, `warning`, `info`, `hint`, or the configuration-only value
+  `off`.
 
 The validator parses unknown JSON into a project-owned discriminated result and
 collects all observed issues. Unknown rule identifiers are validation errors
@@ -255,18 +253,18 @@ future-looking keys without breaking the current checker.
 Configured rule severities are applied by
 `src/config/apply-config-severities.ts` after the lint pipeline emits
 diagnostics and before strict Claude promotion. A configured severity replaces
-the diagnostic severity for that rule, while `off` removes matching
-diagnostics from the stream entirely. The ordering is intentional:
-configuration suppression must not be revived by strict Claude promotion, but a
+the diagnostic severity for that rule, while `off` removes matching diagnostics
+from the stream entirely. The ordering is intentional: configuration
+suppression must not be revived by strict Claude promotion, but a
 Claude-compatibility rule configured to `warning` can still promote to `error`
 when strict Claude mode is enabled.
 
 The `check` command accepts `--config <path>` to load an explicit JSON
 configuration file and `--isolated` to ignore configuration discovery. Invalid
 configuration, unreadable explicit configuration files, malformed JSON, and
-using `--config` together with `--isolated` are usage/configuration failures and
-exit with code 2. Validation warnings, such as unknown pre-1.0 top-level keys,
-are written to standard error and do not prevent linting.
+using `--config` together with `--isolated` are usage/configuration failures
+and exit with code 2. Validation warnings, such as unknown pre-1.0 top-level
+keys, are written to standard error and do not prevent linting.
 
 The current `--config` implementation accepts file paths only. Inline
 `--config "key = value"` overrides and glob-based include/exclude discovery
@@ -283,10 +281,10 @@ diagnostics should use `lintWorkflowSource` so the body-syntax and Claude
 compatibility paths share the same normalized parse result.
 
 Static-analysis result contracts freeze the returned result container and any
-array owned by that result at runtime. Nested fact trees owned by a parser, such
-as parsed metadata objects and arrays, are also frozen before they leave their
-module. Reused diagnostic, source-span, and source-position value objects are
-`readonly` compile-time data; consumers must not depend on recursive
+array owned by that result at runtime. Nested fact trees owned by a parser,
+such as parsed metadata objects and arrays, are also frozen before they leave
+their module. Reused diagnostic, source-span, and source-position value objects
+are `readonly` compile-time data; consumers must not depend on recursive
 runtime-freezing beyond the producer-owned containers documented by focused
 tests.
 
@@ -297,8 +295,8 @@ emits the runtime-invalid metadata diagnostics `odw/meta-object`,
 `odw/meta-name`, and `odw/meta-description`, plus
 `odw/meta-statically-unprovable` for metadata that would require source
 evaluation. It must continue to parse source text passively and must not import
-or call executable ODW loader, primitive, launcher, worker, runtime,
-scheduler, metadata-evaluating, or agent-dispatch paths.
+or call executable ODW loader, primitive, launcher, worker, runtime, scheduler,
+metadata-evaluating, or agent-dispatch paths.
 
 The focused classifier tests live in
 `tests/static-analysis/workflow-metadata.test.ts`. Invalid fixture parity for
@@ -317,8 +315,8 @@ package entry.
 
 When extending this area, keep the roadmap sequencing intact: task 2.1.4 owns
 the forbidden-import architecture test for production code, task 2.2.1 owns the
-shipped standalone SWC parser adapter, task 2.2.2 owns body normalization,
-span mapping, and valid-example parser integration, task 2.2.4 owns reusable
+shipped standalone SWC parser adapter, task 2.2.2 owns body normalization, span
+mapping, and valid-example parser integration, task 2.2.4 owns reusable
 workflow AST facts, which now live in the package surface, and task 3.1.1 owns
 Claude pure-metadata compatibility diagnostics.
 
@@ -374,18 +372,17 @@ branches, and exits with a usage error when the worktree is dirty. Keep it
 outside `make all` because it performs a network fetch.
 
 The roadmap review or audit path must run `make review-evidence` as a required
-step and record its report as the review evidence; see AGENTS.md
-"Roadmap Review & Audit Evidence". The target runs `make all`,
-`make markdownlint`, and `make nixie` through the shared build-gate command
-runner, then reports the selected dual-review path. The df12 review/audit
-environment provides the full toolchain, including `nixie`, so the re-run gates
-can pass on a clean tree. Reporting `verified` additionally requires the
-harness to export observed reviewer state that selects a scrutineer or
-coderabbit dual-review path, for example
-`ODW_LINT_REVIEW_SCRUTINEER=available`. A clean tree with no exported reviewer
-state is honestly `degraded` (exit 3) on the `local-self-run` path. Keep the
-target outside `make all` because it re-runs `make all` and is a reviewer-run
-audit gate, not a recursive commit-gate step.
+step and record its report as the review evidence; see AGENTS.md "Roadmap
+Review & Audit Evidence". The target runs `make all`, `make markdownlint`, and
+`make nixie` through the shared build-gate command runner, then reports the
+selected dual-review path. The df12 review/audit environment provides the full
+toolchain, including `nixie`, so the re-run gates can pass on a clean tree.
+Reporting `verified` additionally requires the harness to export observed
+reviewer state that selects a scrutineer or coderabbit dual-review path, for
+example `ODW_LINT_REVIEW_SCRUTINEER=available`. A clean tree with no exported
+reviewer state is honestly `degraded` (exit 3) on the `local-self-run` path.
+Keep the target outside `make all` because it re-runs `make all` and is a
+reviewer-run audit gate, not a recursive commit-gate step.
 
 Recording is explicit. Run
 `bun run tests/build-gate/review-evidence-cli.ts --record=<path>` or set
@@ -430,14 +427,14 @@ Reviewer availability is also environment-first. The harness should export
 Absent either an environment value or a flag, `scrutineer` and `coderabbit`
 default to `unavailable`, while `local-self-run` defaults to `available`.
 
-`make review-evidence` exits 0 for `verified`, 1 for a failed re-run gate, 2 for
-usage errors, and 3 for `degraded` evidence. A degraded report means the review
-evidence is incomplete rather than passed: for example, a sandboxed reviewer can
-run `bun run tests/build-gate/review-evidence-cli.ts --no-exec` to record that
-command execution was unavailable. Spawn-unavailable gates are degraded because
-they did not run; timed-out or killed gates are failed because they did run but
-did not complete successfully. Reviewer path selection is explicit and ordered:
-primary `scrutineer`, fallback `coderabbit`, then degraded
+`make review-evidence` exits 0 for `verified`, 1 for a failed re-run gate, 2
+for usage errors, and 3 for `degraded` evidence. A degraded report means the
+review evidence is incomplete rather than passed: for example, a sandboxed
+reviewer can run `bun run tests/build-gate/review-evidence-cli.ts --no-exec` to
+record that command execution was unavailable. Spawn-unavailable gates are
+degraded because they did not run; timed-out or killed gates are failed because
+they did run but did not complete successfully. Reviewer path selection is
+explicit and ordered: primary `scrutineer`, fallback `coderabbit`, then degraded
 `local-self-run` when no independent reviewer remains. The report names the
 selected path so quota-blocked review cannot be silently substituted.
 
@@ -573,12 +570,12 @@ now carries a reviewed template for source-specific parser detail; other rules
 remain exact-message only until they emit dynamic parser-backed diagnostics.
 
 A template placeholder is written as `{name}`. The name must begin with an
-ASCII letter and may continue with ASCII letters or digits. Literal `{` and
-`}` characters are not part of the template grammar today; add a design note
-before introducing escape syntax. Empty placeholders, whitespace in placeholder
-names, numeric first characters, unclosed `{`, and unopened `}` are rejected
-when the catalogue is constructed. Reviewed templates are also bounded by
-length and placeholder-count limits so matcher construction stays predictable.
+ASCII letter and may continue with ASCII letters or digits. Literal `{` and `}`
+characters are not part of the template grammar today; add a design note before
+introducing escape syntax. Empty placeholders, whitespace in placeholder names,
+numeric first characters, unclosed `{`, and unopened `}` are rejected when the
+catalogue is constructed. Reviewed templates are also bounded by length and
+placeholder-count limits so matcher construction stays predictable.
 
 `renderMessageTemplate(template, values)` requires the value object to contain
 exactly the placeholder names declared by the template. Missing keys, unknown
@@ -586,9 +583,9 @@ extra keys, inherited keys, and empty string values are errors. Repeated
 placeholder occurrences render the same value each time.
 
 `messageMatchesTemplate(template, message)` answers whether a concrete
-diagnostic message could have been rendered from the reviewed template. Matching
-is whole-message only: literal text is escaped, placeholders match one or more
-characters, repeated placeholders must match the same dynamic text, and
+diagnostic message could have been rendered from the reviewed template.
+Matching is whole-message only: literal text is escaped, placeholders match one
+or more characters, repeated placeholders must match the same dynamic text, and
 unrelated prefixes, suffixes, empty placeholder runs, or overlong candidate
 messages fail. Use `ruleAllowsMessage(rule, message)` for fixture parity,
 report validators, and editor integrations that need the full reviewed
@@ -627,10 +624,10 @@ format or rewrite those files in this repository. Update
 `tests/static-analysis/fixtures/odw-examples.ts` when refreshing the corpus so
 the manifest records the new hashes and the expected `no-error` diagnostics.
 Test consumers must import `ODW_EXAMPLE_FIXTURE_CORPUS` from
-`tests/static-analysis/fixtures/odw-examples/corpus.ts` instead of writing their
-own `new URL(...)` corpus locations. That owner module also exports
-`ODW_EXAMPLE_UPSTREAM_ROOT` and `findOdwExampleFixture`, and it is the permitted
-composition point for valid ODW-example fixture reads.
+`tests/static-analysis/fixtures/odw-examples/corpus.ts` instead of writing
+their own `new URL(...)` corpus locations. That owner module also exports
+`ODW_EXAMPLE_UPSTREAM_ROOT` and `findOdwExampleFixture`, and it is the
+permitted composition point for valid ODW-example fixture reads.
 
 Invalid workflow fixtures live under
 `tests/static-analysis/fixtures/invalid-workflows/`. They are deliberately raw
@@ -640,60 +637,55 @@ its metadata expressions would write a global marker, throw a custom marker,
 write a marker file, or read an environment probe and surface it through a
 marker if evaluated. Add hostile fixtures through `make refresh-fixtures` so
 their hashes, spans, and reviewer-facing `spanText` remain derived from source
-text rather than hand-edited.
-Do not import, evaluate, execute, or format invalid workflow fixtures as
-ordinary JavaScript. Keep `tests/static-analysis/fixtures/invalid-workflows.ts`
-in sync with every raw fixture by updating the family, path, SHA-256 hash,
-expected status, diagnostic rule, severity, message, UTF-8 source span, and
-reviewer-facing `spanText`. Fixture diagnostic expectations are checked against
-the rule catalogue for rule identifier, default severity, exact reviewed
-messages or reviewed message templates, and documentation path parity. Dynamic
-parser-backed messages must match catalogue-owned templates instead of broad
-substring assertions. When an invalid fixture needs a different reviewer-facing
-`message`, extend the matching catalogue entry in the same change rather than
-treating the manifest as a separate source of truth.
-Test consumers must import `INVALID_WORKFLOW_FIXTURE_CORPUS` from
+text rather than hand-edited. Do not import, evaluate, execute, or format
+invalid workflow fixtures as ordinary JavaScript. Keep
+`tests/static-analysis/fixtures/invalid-workflows.ts` in sync with every raw
+fixture by updating the family, path, SHA-256 hash, expected status, diagnostic
+rule, severity, message, UTF-8 source span, and reviewer-facing `spanText`.
+Fixture diagnostic expectations are checked against the rule catalogue for rule
+identifier, default severity, exact reviewed messages or reviewed message
+templates, and documentation path parity. Dynamic parser-backed messages must
+match catalogue-owned templates instead of broad substring assertions. When an
+invalid fixture needs a different reviewer-facing `message`, extend the
+matching catalogue entry in the same change rather than treating the manifest
+as a separate source of truth. Test consumers must import
+`INVALID_WORKFLOW_FIXTURE_CORPUS` from
 `tests/static-analysis/fixtures/invalid-workflows/corpus.ts` instead of writing
 their own invalid-workflow corpus location. The same owner module owns
 `findInvalidWorkflowFixture`, so fixture lookup and passive text reads stay
-close to the corpus definition.
-The shared `fixtureSourceUrl`/`readFixtureSource` helpers accept either a
-manifest path under the owner module's `manifestRoot` or a corpus-relative path.
-A repository-relative path outside the owner root is rejected rather than
-silently stripped. `findFixtureSnapshot` is a corpus-owner helper only; use it
-inside owner modules to keep find-or-throw lookup wording consistent, not in
-ordinary parity tests.
-Invalid-fixture diagnostic assertions in `workflow-body-parser.test.ts`,
+close to the corpus definition. The shared `fixtureSourceUrl`/
+`readFixtureSource` helpers accept either a manifest path under the owner
+module's `manifestRoot` or a corpus-relative path. A repository-relative path
+outside the owner root is rejected rather than silently stripped.
+`findFixtureSnapshot` is a corpus-owner helper only; use it inside owner
+modules to keep find-or-throw lookup wording consistent, not in ordinary parity
+tests. Invalid-fixture diagnostic assertions in `workflow-body-parser.test.ts`,
 `workflow-envelope-fixtures.test.ts`, `workflow-metadata.test.ts`, and
 `hostile-metadata-security.test.ts` derive their expected diagnostics from the
 invalid workflow manifest. The merged-pipeline parity surface in
 `invalid-workflow-metadata-parity.test.ts` also reads the manifest, so parser,
 envelope, and metadata rule diagnostics share one expectation source for rule
 identifiers, severities, messages, documentation paths, original-source spans,
-and reviewer-facing `spanText`.
-All manifest-driven diagnostic parity suites must project manifest diagnostics
-through
+and reviewer-facing `spanText`. All manifest-driven diagnostic parity suites
+must project manifest diagnostics through
 `tests/static-analysis/fixtures/diagnostic-projection.ts`. That module is the
 single manifest-to-comparison diagnostic contract for rule identifiers,
 severities, messages, documentation paths, original-source spans, and
 reviewer-facing `spanText`; do not add local comparable-diagnostic shapes in
-individual suites.
-When intentionally bumping `@swc/core`, re-observe the `odw/body-syntax`
-parser detail for the `syntax-error` invalid workflow family and update these
-surfaces together: the raw fixtures under
+individual suites. When intentionally bumping `@swc/core`, re-observe the
+`odw/body-syntax` parser detail for the `syntax-error` invalid workflow family
+and update these surfaces together: the raw fixtures under
 `tests/static-analysis/fixtures/invalid-workflows/syntax-error/`, their
 manifest at
 `tests/static-analysis/fixtures/invalid-workflows/manifests/syntax-error.ts`,
 and the manifest-driven parser parity assertions in
-`tests/static-analysis/workflow-body-parser.test.ts`.
-Re-observe the parser error object's structured range surface at the same time;
-ADR
+`tests/static-analysis/workflow-body-parser.test.ts`. Re-observe the parser
+error object's structured range surface at the same time; ADR
 [0003-body-syntax-span-narrowing-quarantine.md](adr/0003-body-syntax-span-narrowing-quarantine.md)
 must be revisited before accepting a parser upgrade that could activate
 token-level narrowing. The named guard for that parser-error surface is
 `tests/static-analysis/swc-parse-error-surface.test.ts`; keep it bound to the
-production allow-list in
-`src/static-analysis/workflow-body-parser-spans.ts`.
+production allow-list in `src/static-analysis/workflow-body-parser-spans.ts`.
 Also rerun `tests/static-analysis/workflow-body-dialect.test.ts` and preserve
 the TypeScript-in-body rejection set recorded by ADR
 [0002-workflow-body-parser-dialect-scope.md](adr/0002-workflow-body-parser-dialect-scope.md)
@@ -738,16 +730,16 @@ Dual-compatibility parity for roadmap task 2.3.2 lives in
 `tests/static-analysis/fixtures/dual-compat.ts`, the passive fixture files under
 `tests/static-analysis/fixtures/dual-compat/`, and
 `tests/static-analysis/dual-compat-parity.test.ts`. The manifest is the trusted
-expectation source for pure-metadata accept-path fixtures and deterministic-time
-warning fixtures. The suite proves pure-literal `meta` remains portability-clean,
-checks the `Date.now`, `Math.random`, and argless `new Date` warning rule,
-severity, message, documentation path, span, and `spanText` contracts through
-the shared diagnostic projection, and keeps a masked-text counter-example for
-false-positive discipline. Its freshness guard recomputes fixture SHA-256
-values and anchored spans from source text, and its inertness guard rejects
-executable ODW runtime import edges. User-visible `odw/claude-pure-meta`
-emission remains deferred to task 3.1.1; manifest-driven dialect test
-consolidation remains 2.3.3.
+expectation source for pure-metadata accept-path fixtures and
+deterministic-time warning fixtures. The suite proves pure-literal `meta`
+remains portability-clean, checks the `Date.now`, `Math.random`, and argless
+`new Date` warning rule, severity, message, documentation path, span, and
+`spanText` contracts through the shared diagnostic projection, and keeps a
+masked-text counter-example for false-positive discipline. Its freshness guard
+recomputes fixture SHA-256 values and anchored spans from source text, and its
+inertness guard rejects executable ODW runtime import edges. User-visible
+`odw/claude-pure-meta` emission remains deferred to task 3.1.1; manifest-driven
+dialect test consolidation remains 2.3.3.
 
 TypeScript-only body rejection parity for roadmap task 2.3.4 lives in
 `tests/static-analysis/body-syntax-loader-parity.test.ts` and the shared
@@ -756,11 +748,11 @@ uses a trusted, construction-only `Function` and `AsyncFunction` probe over ADR
 0002 literals, never fixture or user source, and asserts that the constructor
 accept/reject decision matches `odw-lint`'s `odw/body-syntax` decision for the
 TypeScript-only rejection set and the ECMAScript boundary set.
-`tests/static-analysis/hostile-metadata-security.test.ts` still owns the broader
-no-side-effect lint regression for hostile metadata fixtures. It observes the
-global marker, marker-file absence, and environment-derived marker value while
-linting fixture source text through the static analysis path and the public
-package entry.
+`tests/static-analysis/hostile-metadata-security.test.ts` still owns the
+broader no-side-effect lint regression for hostile metadata fixtures. It
+observes the global marker, marker-file absence, and environment-derived marker
+value while linting fixture source text through the static analysis path and
+the public package entry.
 
 After a refresh, review the JSON report and the Git diff. Then run:
 
@@ -793,16 +785,15 @@ or `snippetForSpan` only after the span has been validated against the same
 `OriginalSourceFile`; both helpers re-check caller-supplied spans so stale
 line, column, or offset data cannot produce misleading text.
 
-`tests/static-analysis/body-diagnostic-spans.test.ts` is the parser-backed
-span snapshot suite for the design invariant in
-`docs/technical-design.md` §11.5. It builds invalid workflow bodies in memory
-and checks each `odw/body-syntax` diagnostic span against an independent
-UTF-8 byte oracle, `sliceSourceSpan`, and `snippetForSpan`. The matrix covers
-LF, CRLF, Unicode BMP and astral code points, comments, regex literals,
-template text, and template interpolation. The snapshots intentionally record
-the whole body slice while the body parser keeps the S2 whole-body fallback;
-future narrowing is governed by the ADR 0003 quarantine decision and its parser
-surface re-observation trigger.
+`tests/static-analysis/body-diagnostic-spans.test.ts` is the parser-backed span
+snapshot suite for the design invariant in `docs/technical-design.md` §11.5. It
+builds invalid workflow bodies in memory and checks each `odw/body-syntax`
+diagnostic span against an independent UTF-8 byte oracle, `sliceSourceSpan`, and
+`snippetForSpan`. The matrix covers LF, CRLF, Unicode BMP and astral code
+points, comments, regex literals, template text, and template interpolation.
+The snapshots intentionally record the whole body slice while the body parser
+keeps the S2 whole-body fallback; future narrowing is governed by the ADR 0003
+quarantine decision and its parser surface re-observation trigger.
 
 Internal source-helper ownership is split by responsibility:
 
@@ -815,18 +806,17 @@ Internal source-helper ownership is split by responsibility:
   token-grammar primitives shared by the source-mask and workflow-metadata
   scanner families. It is internal-only and may be imported by static-analysis
   scanner-family modules for line terminators, escape advancement, comment
-  boundaries, delimiter guards, identifier runs,
-  `scanDelimitedRegionEnd`, `scanBalancedExpressionEnd`, and
-  `nextInertRegionEnd`. It also owns compact operator token recognition through
-  `compactOperatorTokenEndingAt` and the shared
-  `EXPRESSION_LEADING_PREVIOUS_CHARACTERS` base set used when a following `/`
-  or `{` may start an expression. Keep it free of mask-range, parser-cursor,
-  diagnostic, and public package types; compose primitives there, then keep
-  token-specific range or metadata decisions in the owning scanner family.
-  Object-literal detection deliberately derives its local set as that base plus
-  `/`, because a division or regex-close context can still precede an
-  object-literal expression while regex-literal detection must not treat `/` as
-  a regex-leading previous character.
+  boundaries, delimiter guards, identifier runs, `scanDelimitedRegionEnd`,
+  `scanBalancedExpressionEnd`, and `nextInertRegionEnd`. It also owns compact
+  operator token recognition through `compactOperatorTokenEndingAt` and the
+  shared `EXPRESSION_LEADING_PREVIOUS_CHARACTERS` base set used when a following
+  `/` or `{` may start an expression. Keep it free of mask-range,
+  parser-cursor, diagnostic, and public package types; compose primitives
+  there, then keep token-specific range or metadata decisions in the owning
+  scanner family. Object-literal detection deliberately derives its local set
+  as that base plus `/`, because a division or regex-close context can still
+  precede an object-literal expression while regex-literal detection must not
+  treat `/` as a regex-leading previous character.
 - `src/static-analysis/source-scanner-regions.ts` owns the shared
   region-level scanner loops and is re-exported through
   `source-scanner-primitives.ts`. Its permitted callers are the two scanner
@@ -836,9 +826,9 @@ Internal source-helper ownership is split by responsibility:
   template interpolation uses it for nested `${ ... }` scans. Do not import it
   directly from unrelated modules; use the primitives seam so the internal
   ownership remains concentrated. The "where contracts match" exception is
-  intentional: `scanExpressionEnd` keeps its terminator-set, three-family depth,
-  and trailing-trivia contract local while delegating only its inert-region
-  skip to `nextInertRegionEnd`.
+  intentional: `scanExpressionEnd` keeps its terminator-set, three-family
+  depth, and trailing-trivia contract local while delegating only its
+  inert-region skip to `nextInertRegionEnd`.
 - `src/static-analysis/source-indexes.ts` owns private index storage and
   guarded lookup for factory-created source records.
 - `src/static-analysis/source-mask.ts` is the inert-region masking facade and
@@ -857,9 +847,9 @@ Internal source-helper ownership is split by responsibility:
   template-literal, and regex-literal token scanners. External scanner code
   still calls `maskNonCodeSource` rather than importing these internal modules.
   Comment scanners import the named boundary primitives directly
-  (`lineCommentContentEnd` for comment bodies and
-  `lineCommentTerminatorEnd` for mask ranges) instead of adding
-  same-name wrappers with different terminator semantics.
+  (`lineCommentContentEnd` for comment bodies and `lineCommentTerminatorEnd`
+  for mask ranges) instead of adding same-name wrappers with different
+  terminator semantics.
 - `src/static-analysis/source-position.ts` owns offset lookup, span
   construction, and caller-supplied span validation.
 - `src/static-analysis/source-snippet.ts` owns validated source slicing and

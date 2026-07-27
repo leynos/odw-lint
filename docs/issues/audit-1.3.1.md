@@ -5,9 +5,9 @@
   git-donkey worktree
 
 This audit was run after the ODW example workflow fixture snapshots landed on
-`origin/main`. It used `grepai` for canonical main-branch intent search,
-`leta` for branch-local symbol, reference, and call-graph verification, and
-`sem` for entity-level history and blame.
+`origin/main`. It used `grepai` for canonical main-branch intent search, `leta`
+for branch-local symbol, reference, and call-graph verification, and `sem` for
+entity-level history and blame.
 
 ## Finding 1: The build target ignores `bun.lock`
 
@@ -78,8 +78,8 @@ yet provide a command, script, or checklist that performs those steps.
 
 That gap makes the corpus harder to maintain safely. A maintainer must infer
 which upstream files to copy, how to preserve byte-for-byte fixture content,
-how to recompute the SHA-256 values, and how to keep the exact nine-file
-corpus aligned with the tests.
+how to recompute the SHA-256 values, and how to keep the exact nine-file corpus
+aligned with the tests.
 
 Proposed fix:
 
@@ -98,8 +98,8 @@ Proposed fix:
   `docs/technical-design.md:445`, `docs/adr/0001-static-analysis-boundary.md:43`
 
 The accepted ADR and technical design say production code must not import ODW
-runtime helpers that evaluate metadata, compile workflow bodies, start runs,
-or dispatch agents. The current boundary tests still only assert passive
+runtime helpers that evaluate metadata, compile workflow bodies, start runs, or
+dispatch agents. The current boundary tests still only assert passive
 static-analysis exports and a `WorkflowSource` fixture. Branch-local symbol
 verification found no production-import guard for forbidden ODW runtime paths.
 
@@ -130,8 +130,8 @@ these links yet, so this is not user-visible today.
 
 The gap should close before the first released rule catalogue entry. Otherwise
 diagnostics can grow user-facing documentation links before the target pages
-exist, and rule documentation will become another source of truth separate
-from the catalogue.
+exist, and rule documentation will become another source of truth separate from
+the catalogue.
 
 Proposed fix:
 
@@ -155,8 +155,8 @@ describes canonical navigation documents, but the worktree still lacks
 `docs/contents.md` and `docs/repository-layout.md`.
 
 The roadmap already reserves task 4.4.1 for this work. The additional issue
-audit and fixture-maintenance documentation from task 1.3.1 make the
-navigation gap more visible for future handoffs.
+audit and fixture-maintenance documentation from task 1.3.1 make the navigation
+gap more visible for future handoffs.
 
 Proposed fix:
 

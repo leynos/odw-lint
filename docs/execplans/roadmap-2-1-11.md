@@ -20,40 +20,41 @@ error if evaluated. The regression at
 `tests/static-analysis/hostile-metadata-security.test.ts` only observes the
 `globalThis` marker.
 
-`docs/technical-design.md` section 11.3 requires the security regression fixture
-to include metadata that "writes a file, reads an environment variable, throws
-a custom side-effect marker, or otherwise would be observable if evaluated",
-with the expected outcome being "a diagnostic and no side effect". Section 11.1
-lists "Hostile metadata that would cause a side effect if evaluated" as a
-required corpus dimension. This task closes the gap between those two channels
-and the four the design intends.
+`docs/technical-design.md` section 11.3 requires the security regression
+fixture to include metadata that "writes a file, reads an environment variable,
+throws a custom side-effect marker, or otherwise would be observable if
+evaluated", with the expected outcome being "a diagnostic and no side effect".
+Section 11.1 lists "Hostile metadata that would cause a side effect if
+evaluated" as a required corpus dimension. This task closes the gap between
+those two channels and the four the design intends.
 
 After this change a maintainer can observe the following. Running `make test`
 (via `make all`) passes, and the hostile-metadata security regression now
 exercises four observable side-effect channels: a global write, a thrown
 marker, a filesystem write, and an environment read. Two new hostile fixtures
 (`fs-write-marker.js` and `env-read-marker.js`) are added through the existing
-refresh tooling (`make refresh-fixtures`), so their SHA-256 hashes, UTF-8 spans,
-manifest source, and reviewer-facing `spanText` are all derived deterministically
-rather than hand-edited. The fixture-count guards and snapshots that pin the
-corpus size are updated in lockstep. Linting every hostile fixture through the
-real `scanWorkflowEnvelope`/`classifyWorkflowMetadata` path and through the
-public `odw-lint` entry in a fresh module graph produces the expected
-`odw/meta-statically-unprovable` diagnostic and leaves no global marker, no
-marker file on disk, and no environment-derived marker. A canary sub-test per
-new channel proves the observation actually detects a real side effect, so the
-absence assertions are meaningful rather than vacuous.
+refresh tooling (`make refresh-fixtures`), so their SHA-256 hashes, UTF-8
+spans, manifest source, and reviewer-facing `spanText` are all derived
+deterministically rather than hand-edited. The fixture-count guards and
+snapshots that pin the corpus size are updated in lockstep. Linting every
+hostile fixture through the real `scanWorkflowEnvelope`/
+`classifyWorkflowMetadata` path and through the public `odw-lint` entry in a
+fresh module graph produces the expected `odw/meta-statically-unprovable`
+diagnostic and leaves no global marker, no marker file on disk, and no
+environment-derived marker. A canary sub-test per new channel proves the
+observation actually detects a real side effect, so the absence assertions are
+meaningful rather than vacuous.
 
 ## Constraints
 
 - Work only in the assigned `roadmap-2-1-11` git-donkey worktree for this
-  repository, at
-  `/data/leynos/Projects/odw-lint.worktrees/roadmap-2-1-11`. Do not edit any
-  root or control checkout; implementation edits belong only in this worktree.
+  repository, at `/data/leynos/Projects/odw-lint.worktrees/roadmap-2-1-11`. Do
+  not edit any root or control checkout; implementation edits belong only in
+  this worktree.
 - Treat `origin/main` as the canonical integration branch. Before
   implementation, run `git fetch origin main` and rebase or merge the task
-  branch onto `origin/main`, then re-run the branch-local verification below.
-  A stale branch is a plan defect, not an implementation tolerance.
+  branch onto `origin/main`, then re-run the branch-local verification below. A
+  stale branch is a plan defect, not an implementation tolerance.
 - Use this GrepAI command shape first for intent search against the canonical
   main-branch index:
 
@@ -76,26 +77,27 @@ absence assertions are meaningful rather than vacuous.
   Every fixture must be read as UTF-8 source text or bytes only. This is the
   central invariant the task exists to protect.
 - New hostile fixtures live under
-  `tests/static-analysis/fixtures/invalid-workflows/hostile-metadata/`, which is
-  already excluded from Biome (`biome.jsonc` line 13) and Oxlint
+  `tests/static-analysis/fixtures/invalid-workflows/hostile-metadata/`, which
+  is already excluded from Biome (`biome.jsonc` line 13) and Oxlint
   (`.oxlintrc.json` line 6). Do not add these paths to any formatter or linter
   include list, and do not hand-format the fixture `.js` files.
 - Fixture metadata (SHA-256, UTF-8 span, display line/column, `spanText`) must
   be produced by the refresh tooling
   (`tests/static-analysis/fixtures/refresh-metadata.ts`, run via
-  `make refresh-fixtures`), not hand-edited. Manual manifest edits are limited to
-  adding the fixture entry skeleton (family, fileName, expectedStatus, the
+  `make refresh-fixtures`), not hand-edited. Manual manifest edits are limited
+  to adding the fixture entry skeleton (family, fileName, expectedStatus, the
   diagnostic rule/severity/message, and the `spanText` anchor); the refresh
   derives everything else.
-- Each fixture's diagnostic must remain a single `odw/meta-statically-unprovable`
-  warning drawn from the rule catalogue (`src/diagnostics/rule-catalogue.ts` via
-  the `odw-lint` public entry). Do not introduce new rules, messages, or message
-  templates in this task; the fixture message must be the reviewed catalogue
-  message `Workflow metadata must remain statically provable without evaluation.`
+- Each fixture's diagnostic must remain a single
+  `odw/meta-statically-unprovable` warning drawn from the rule catalogue
+  (`src/diagnostics/rule-catalogue.ts` via the `odw-lint` public entry). Do not
+  introduce new rules, messages, or message templates in this task; the fixture
+  message must be the reviewed catalogue message
+  `Workflow metadata must remain statically provable without evaluation.`
 - Keep the task scoped to hostile-metadata side-effect fixtures and the security
-  regression that observes them. Do not implement CLI reporters, file discovery,
-  configuration, parser-backed body rules, ODW loader parity, or the static
-  workflow lint entry point (task 2.1.12).
+  regression that observes them. Do not implement CLI reporters, file
+  discovery, configuration, parser-backed body rules, ODW loader parity, or the
+  static workflow lint entry point (task 2.1.12).
 - Fixture `.js` source must be ASCII only. The corpus test asserts every byte is
   `<= 0x7f` (`tests/static-analysis/invalid-workflow-fixtures.test.ts`, the
   "validates manifest fixture hashes and diagnostic spans" case).
@@ -136,33 +138,30 @@ absence assertions are meaningful rather than vacuous.
 ## Risks
 
 - Risk: Adding fixtures shifts the corpus size and breaks several count guards
-  and snapshots at once, making the diff noisy and easy to get wrong.
-  Severity: medium. Likelihood: high.
-  Mitigation: enumerate every count guard and snapshot up front (see "Context
-  and orientation"); update the manual `expectedCounts` literal and hard-coded
-  file-name list deliberately, then regenerate snapshots only after confirming
-  the failure is the intended contract change.
+  and snapshots at once, making the diff noisy and easy to get wrong. Severity:
+  medium. Likelihood: high. Mitigation: enumerate every count guard and
+  snapshot up front (see "Context and orientation"); update the manual
+  `expectedCounts` literal and hard-coded file-name list deliberately, then
+  regenerate snapshots only after confirming the failure is the intended
+  contract change.
 - Risk: The environment-read observation tempts direct `process.env` mutation in
-  the parent test process, violating `AGENTS.md`.
-  Severity: medium. Likelihood: medium.
-  Mitigation: the in-process lint tests never evaluate fixtures, so they need no
-  env at all; confine any env probe to the spawned fresh-module-graph child via
-  the spawn environment, and prove the env channel with a canary that simulates
-  the marker directly.
+  the parent test process, violating `AGENTS.md`. Severity: medium. Likelihood:
+  medium. Mitigation: the in-process lint tests never evaluate fixtures, so
+  they need no env at all; confine any env probe to the spawned
+  fresh-module-graph child via the spawn environment, and prove the env channel
+  with a canary that simulates the marker directly.
 - Risk: A chosen `spanText` anchor is not unique in the fixture source, so the
   refresh raises `missing-anchor`/`duplicate-anchor` and cannot derive a span.
-  Severity: low. Likelihood: medium.
-  Mitigation: anchor on the whole metadata IIFE
-  (`(() => { ... })()`), which is unique per fixture; verify with `grep -c`
-  before running the refresh.
+  Severity: low. Likelihood: medium. Mitigation: anchor on the whole metadata
+  IIFE (`(() => { ... })()`), which is unique per fixture; verify with
+  `grep -c` before running the refresh.
 - Risk: Growing `invalid-workflow-fixtures.test.ts` or
   `workflow-metadata.test.ts` past 400 lines trips the file-size gate.
-  Severity: medium. Likelihood: medium.
-  Mitigation: generalize existing parameterized assertions instead of adding new
-  literal cases; move any bulky shared data into a colocated support module.
+  Severity: medium. Likelihood: medium. Mitigation: generalize existing
+  parameterized assertions instead of adding new literal cases; move any bulky
+  shared data into a colocated support module.
 - Risk: The new fixtures accidentally trip Biome/Oxlint because the exclusion
-  glob does not match a new sub-path.
-  Severity: low. Likelihood: low.
+  glob does not match a new sub-path. Severity: low. Likelihood: low.
   Mitigation: place fixtures under the already-excluded
   `invalid-workflows/hostile-metadata/` directory and confirm `make check-fmt`
   and `make lint` stay green.
@@ -187,146 +186,141 @@ absence assertions are meaningful rather than vacuous.
 
 - Observation: the planning session had no Bash execution (`bunx`, `awk`,
   `make`, `grep` with quantifiers were all denied), so markdown formatters and
-  linters could not be run against this plan during authoring.
-  Evidence: repeated "Permission to use Bash has been denied" responses,
-  including from read-only helper subagents.
-  Impact: long backticked file paths were abbreviated in prose (full paths are
-  retained in the fenced code blocks and the fixture root is named once) to keep
-  within the 80-character MD013 prose limit; the implementer must still run
-  `make markdownlint` and `make nixie` (work item 4) to confirm the plan and the
-  developers guide are lint-clean before merge.
+  linters could not be run against this plan during authoring. Evidence:
+  repeated "Permission to use Bash has been denied" responses, including from
+  read-only helper subagents. Impact: long backticked file paths were
+  abbreviated in prose (full paths are retained in the fenced code blocks and
+  the fixture root is named once) to keep within the 80-character MD013 prose
+  limit; the implementer must still run `make markdownlint` and `make nixie`
+  (work item 4) to confirm the plan and the developers guide are lint-clean
+  before merge.
 - Observation: work item 0 branch freshness matched the plan.
-  Evidence: `git fetch origin main && git rebase origin/main` reported
-  "Current branch roadmap-2-1-11 is up to date." on 2026-07-02.
-  Impact: no rebase conflict or baseline adjustment was needed before
-  implementation.
+  Evidence: `git fetch origin main && git rebase origin/main` reported "Current
+  branch roadmap-2-1-11 is up to date." on 2026-07-02. Impact: no rebase
+  conflict or baseline adjustment was needed before implementation.
 - Observation: the branch-local baseline still matches the plan's orientation
-  values.
-  Evidence: `expectedCounts` is `odwExamples: 9`, `masking: 9`,
+  values. Evidence: `expectedCounts` is `odwExamples: 9`, `masking: 9`,
   `invalidWorkflows: 14`, `hostileMetadata: 2`, `invalidDiagnostics: 14`, and
   `totalFixtures: 32`; `EXPECTED_FILE_NAMES` has 14 entries, including
-  `hostile-metadata/global-marker.js` and
-  `hostile-metadata/throw-marker.js`; the compact invalid-workflow snapshot
-  lists the same two hostile fixtures.
+  `hostile-metadata/global-marker.js` and `hostile-metadata/throw-marker.js`;
+  the compact invalid-workflow snapshot lists the same two hostile fixtures.
   Impact: later fixture work can move only the intended count guards, manifest
   entries, and snapshots.
 - Observation: GrepAI was available but returned only low-signal historical
-  roadmap and audit results for hostile-metadata intent searches.
-  Evidence: searches for "hostile metadata side effect fixtures diagnostics side
-  effects tests" and "static analysis hostile metadata fixture global marker
-  throw marker manifest" returned older roadmap/audit files rather than the
-  current hostile fixture source.
-  Impact: GrepAI was used as main-branch orientation only; branch-local facts
-  were verified with `leta`, exact text search, and file inspection.
+  roadmap and audit results for hostile-metadata intent searches. Evidence:
+  searches for "hostile metadata side effect fixtures diagnostics side effects
+  tests" and "static analysis hostile metadata fixture global marker throw
+  marker manifest" returned older roadmap/audit files rather than the current
+  hostile fixture source. Impact: GrepAI was used as main-branch orientation
+  only; branch-local facts were verified with `leta`, exact text search, and
+  file inspection.
 - Observation: the requested `scrutineer` sub-agent could not run work item 0
-  gates because its fixed model quota was exhausted.
-  Evidence: sub-agent `019f2247-89fa-7ea1-806e-c123bfb26450` returned "You've
-  hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or
-  try again at Jul 7th, 2026 11:20 AM."
-  Impact: deterministic gates and CodeRabbit review were run directly from the
-  assigned worktree for this item; tracked-file edits remained local to this
-  implementation agent.
+  gates because its fixed model quota was exhausted. Evidence: sub-agent
+  `019f2247-89fa-7ea1-806e-c123bfb26450` returned "You've hit your usage limit
+  for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Jul
+  7th, 2026 11:20 AM." Impact: deterministic gates and CodeRabbit review were
+  run directly from the assigned worktree for this item; tracked-file edits
+  remained local to this implementation agent.
 - Observation: work item 0 deterministic gates and review passed.
   Evidence: `make all` and `make markdownlint` passed on 2026-07-02. The first
   `make nixie` run validated every Mermaid diagram but raised
   `BlockingIOError: [Errno 11] write could not complete without blocking` while
   printing the success banner; rerunning `make nixie` with output captured to
-  `/tmp/odw-lint-roadmap-2-1-11-nixie.log` exited 0 and ended with "All diagrams
-  validated successfully!" CodeRabbit initially returned a recoverable rate
-  limit, then passed on the first retry after the required randomized `vsleep`
-  backoff with 0 findings.
-  Impact: work item 0 is ready to commit with no code changes.
+  `/tmp/odw-lint-roadmap-2-1-11-nixie.log` exited 0 and ended with "All
+  diagrams validated successfully!" CodeRabbit initially returned a recoverable
+  rate limit, then passed on the first retry after the required randomized
+  `vsleep` backoff with 0 findings. Impact: work item 0 is ready to commit with
+  no code changes.
 - Observation: work item 1 broadened the security harness without adding new
-  fixtures.
-  Evidence: `hostile-metadata-security.test.ts` now registers deterministic
-  temp marker-file paths, asserts marker-file absence around every hostile
-  fixture lint, passes filesystem and environment-derived marker canaries, and
-  passes marker-file and environment-probe values into the fresh-module child
-  process. `fresh-module-graph.ts` accepts a child `env` option, covered by
-  `fresh-module-graph.test.ts`.
-  Impact: later hostile fixtures automatically inherit the no-global-marker and
-  no-marker-file assertions.
+  fixtures. Evidence: `hostile-metadata-security.test.ts` now registers
+  deterministic temp marker-file paths, asserts marker-file absence around
+  every hostile fixture lint, passes filesystem and environment-derived marker
+  canaries, and passes marker-file and environment-probe values into the
+  fresh-module child process. `fresh-module-graph.ts` accepts a child `env`
+  option, covered by `fresh-module-graph.test.ts`. Impact: later hostile
+  fixtures automatically inherit the no-global-marker and no-marker-file
+  assertions.
 - Observation: work item 1 validation passed.
-  Evidence: `bun test tests/static-analysis/hostile-metadata-security.test.ts
-  tests/static-analysis/fresh-module-graph.test.ts` passed 10 tests; `make all`
-  passed 565 tests; CodeRabbit review completed with 0 findings.
-  Impact: the observation-channel harness is ready to commit before fixture
-  growth.
+  Evidence:
+  `bun test tests/static-analysis/hostile-metadata-security.test.ts
+  tests/static-analysis/fresh-module-graph.test.ts`
+  passed 10 tests; `make all` passed 565 tests; CodeRabbit review completed
+  with 0 findings. Impact: the observation-channel harness is ready to commit
+  before fixture growth.
 - Observation: work item 2 added the filesystem-write hostile fixture through
-  the refresh tooling.
-  Evidence: `fs-write-marker.js` was added under the hostile-metadata fixture
-  directory, the anchor check for `require("node:fs").writeFileSync(` returned
-  1, and `make refresh-fixtures` wrote only
+  the refresh tooling. Evidence: `fs-write-marker.js` was added under the
+  hostile-metadata fixture directory, the anchor check for
+  `require("node:fs").writeFileSync(` returned 1, and `make refresh-fixtures`
+  wrote only
   `tests/static-analysis/fixtures/invalid-workflows/manifests/hostile-metadata.ts`.
   The refresh report counted `hostileMetadata: 3`, `invalidWorkflows: 15`,
-  `invalidDiagnostics: 15`, and `totalFixtures: 33`.
-  Impact: the filesystem-write channel is now pinned by a raw fixture, derived
-  manifest metadata, count guards, snapshots, and the hostile security
-  regression.
+  `invalidDiagnostics: 15`, and `totalFixtures: 33`. Impact: the
+  filesystem-write channel is now pinned by a raw fixture, derived manifest
+  metadata, count guards, snapshots, and the hostile security regression.
 - Observation: work item 2 validation passed.
   Evidence: the focused invalid-workflow, fixture-refresh, hostile-security,
   and refresh-boundary tests passed; rerunning `make refresh-fixtures` reported
   `writtenPaths: []`; `make all` passed 567 tests; CodeRabbit review completed
-  with 0 findings.
-  Impact: the filesystem fixture is ready to commit before adding the
-  environment-read fixture.
+  with 0 findings. Impact: the filesystem fixture is ready to commit before
+  adding the environment-read fixture.
 - Observation: work item 3 added the environment-read hostile fixture through
-  the refresh tooling.
-  Evidence: `env-read-marker.js` was added under the hostile-metadata fixture
-  directory, the anchor check for `process.env.ODW_LINT_HOSTILE_ENV_PROBE`
-  returned 1, and `make refresh-fixtures` wrote only
+  the refresh tooling. Evidence: `env-read-marker.js` was added under the
+  hostile-metadata fixture directory, the anchor check for
+  `process.env.ODW_LINT_HOSTILE_ENV_PROBE` returned 1, and
+  `make refresh-fixtures` wrote only
   `tests/static-analysis/fixtures/invalid-workflows/manifests/hostile-metadata.ts`.
   The refresh report counted `hostileMetadata: 4`, `invalidWorkflows: 16`,
-  `invalidDiagnostics: 16`, and `totalFixtures: 34`.
-  Impact: the hostile corpus now covers global write, thrown marker,
-  filesystem write, and environment read side-effect channels.
+  `invalidDiagnostics: 16`, and `totalFixtures: 34`. Impact: the hostile corpus
+  now covers global write, thrown marker, filesystem write, and environment
+  read side-effect channels.
 - Observation: work item 3 validation passed.
   Evidence: the focused invalid-workflow, fixture-refresh, hostile-security,
   and refresh-boundary tests passed; rerunning `make refresh-fixtures` reported
   `writtenPaths: []`; `make all` passed 569 tests; CodeRabbit review completed
-  with 0 findings.
-  Impact: the four-channel hostile corpus is ready for documentation.
+  with 0 findings. Impact: the four-channel hostile corpus is ready for
+  documentation.
 - Observation: work item 4 updated the developer guide.
   Evidence: the "Static-analysis fixtures" section now names the global marker,
   thrown marker, marker-file, and environment-probe hostile channels; it tells
   maintainers to add hostile fixtures through `make refresh-fixtures`; and it
   states that `hostile-metadata-security.test.ts` observes the global marker,
-  marker-file absence, and environment-derived marker while linting source text.
-  Impact: the maintainer-facing fixture guidance matches the broadened corpus
-  and regression harness.
+  marker-file absence, and environment-derived marker while linting source
+  text. Impact: the maintainer-facing fixture guidance matches the broadened
+  corpus and regression harness.
 - Observation: work item 4 validation passed.
-  Evidence: `mdtablefix docs/developers-guide.md
-  docs/execplans/roadmap-2-1-11.md`, `markdownlint-cli2 --fix` on the same two
-  files, `make markdownlint`, `make nixie`, and `make all` all passed.
-  `make all` passed 569 tests. CodeRabbit review completed with 0 findings.
-  Impact: documentation and code gates are green for the completed task.
+  Evidence:
+  `mdtablefix docs/developers-guide.md docs/execplans/roadmap-2-1-11.md`,
+  `markdownlint-cli2 --fix` on the same two files, `make markdownlint`,
+  `make nixie`, and `make all` all passed. `make all` passed 569 tests.
+  CodeRabbit review completed with 0 findings. Impact: documentation and code
+  gates are green for the completed task.
 
 ## Decision log
 
 - Decision: Add two fixtures (`fs-write-marker.js` for the filesystem-write
-  channel and `env-read-marker.js` for the environment-read channel) rather than
-  the roadmap minimum of one.
-  Rationale: `docs/technical-design.md` section 11.3 enumerates file-write,
-  environment-read, and thrown-marker channels; the task success criterion names
-  "filesystem or environment side-effect observables". Covering both new
-  channels fully satisfies the design enumeration and the success wording, and
-  each fixture remains an independently committable, gate-passable unit.
-  Date/Author: 2026-07-02, planning agent.
+  channel and `env-read-marker.js` for the environment-read channel) rather
+  than the roadmap minimum of one. Rationale: `docs/technical-design.md`
+  section 11.3 enumerates file-write, environment-read, and thrown-marker
+  channels; the task success criterion names "filesystem or environment
+  side-effect observables". Covering both new channels fully satisfies the
+  design enumeration and the success wording, and each fixture remains an
+  independently committable, gate-passable unit. Date/Author: 2026-07-02,
+  planning agent.
 - Decision: Observe the filesystem channel with a temp marker-file absence
   assertion plus a direct-write canary; observe the environment channel through
   the existing `globalThis` marker (the env-read fixture writes the read value
-  into the marker) plus a child-process env-probe canary.
-  Rationale: the security regression never evaluates fixture source, so an
-  absence assertion is the correct observable; the canary proves the observation
-  channel can detect a real side effect, keeping the absence assertion
-  meaningful. Reading an environment variable has no observable effect by itself,
-  so the env-read fixture must surface the read value through a write channel.
-  Date/Author: 2026-07-02, planning agent.
+  into the marker) plus a child-process env-probe canary. Rationale: the
+  security regression never evaluates fixture source, so an absence assertion
+  is the correct observable; the canary proves the observation channel can
+  detect a real side effect, keeping the absence assertion meaningful. Reading
+  an environment variable has no observable effect by itself, so the env-read
+  fixture must surface the read value through a write channel. Date/Author:
+  2026-07-02, planning agent.
 - Decision: Anchor each new diagnostic on the whole metadata IIFE expression.
-  Rationale: the refresh derives spans from a `spanText` anchor that must appear
-  exactly once (`docs/developers-guide.md`); the IIFE is unique per fixture and
-  matches how `global-marker.js` and `throw-marker.js` are already anchored.
-  Date/Author: 2026-07-02, planning agent.
+  Rationale: the refresh derives spans from a `spanText` anchor that must
+  appear exactly once (`docs/developers-guide.md`); the IIFE is unique per
+  fixture and matches how `global-marker.js` and `throw-marker.js` are already
+  anchored. Date/Author: 2026-07-02, planning agent.
 
 ## Outcomes & retrospective
 
@@ -334,8 +328,8 @@ Roadmap task 2.1.11 is complete. The hostile-metadata corpus now contains four
 side-effect channels: global marker write, custom marker throw, filesystem
 marker write, and environment-probe read surfaced through the global marker.
 The security regression observes global marker absence, marker-file absence,
-and environment-derived marker absence through both the internal static-analysis
-path and the public package entry in a fresh module graph.
+and environment-derived marker absence through both the internal
+static-analysis path and the public package entry in a fresh module graph.
 
 The fixture refresh workflow remained deterministic. The final refresh counts
 are `hostileMetadata: 4`, `invalidWorkflows: 16`, `invalidDiagnostics: 16`, and
@@ -346,16 +340,17 @@ The only workflow deviation was the unavailable `scrutineer` sub-agent. The
 requested role was quota-blocked, so deterministic gates and CodeRabbit reviews
 were run directly from the assigned worktree and recorded in this plan.
 
-Final validation for the documentation milestone passed with `make markdownlint`,
-`make nixie`, and `make all`, followed by a CodeRabbit review with 0 findings.
+Final validation for the documentation milestone passed with
+`make markdownlint`, `make nixie`, and `make all`, followed by a CodeRabbit
+review with 0 findings.
 
 ## Context and orientation
 
 This repository is `odw-lint`, a Bun + TypeScript static linter for Open
 Dynamic Workflows (ODW). It never executes workflow source; it lints text. The
-hostile-metadata corpus proves that promise: each fixture's metadata would leave
-an observable side effect if evaluated, and the security regression asserts it
-never is.
+hostile-metadata corpus proves that promise: each fixture's metadata would
+leave an observable side effect if evaluated, and the security regression
+asserts it never is.
 
 Key files and directories, all repository-relative:
 
@@ -383,8 +378,8 @@ Key files and directories, all repository-relative:
   `make refresh-fixtures`). It reads fixture files as bytes/UTF-8 only; it is
   documented as import-safe precisely because hostile fixtures exist.
 - `tests/static-analysis/fixtures/refresh-manifest-source.ts` — generates
-  manifest TypeScript source. `invalidFixtureSource`/`diagnosticSource` emit each
-  fixture entry; `refreshedDiagnosticSpan` re-derives the span from the
+  manifest TypeScript source. `invalidFixtureSource`/`diagnosticSource` emit
+  each fixture entry; `refreshedDiagnosticSpan` re-derives the span from the
   `spanText` anchor via `deriveAnchoredDiagnosticSpan`.
 - `tests/static-analysis/fixtures/refresh-writers.ts` — computes the report and
   `currentCounts()`. Counts are derived from the live manifests:
@@ -396,17 +391,17 @@ Key files and directories, all repository-relative:
   regression. It lints each hostile fixture's source through
   `createOriginalSourceFile` -> `scanWorkflowEnvelope` ->
   `classifyWorkflowMetadata`, asserts the expected diagnostics, and asserts the
-  `globalThis` marker stays undefined. A separate case runs the public `odw-lint`
-  entry over the fixtures in a fresh module graph child process
+  `globalThis` marker stays undefined. A separate case runs the public
+  `odw-lint` entry over the fixtures in a fresh module graph child process
   (`fresh-module-graph.ts` helpers) and asserts diagnostics present and marker
-  unset. A canary case proves the global-marker observation works by setting the
-  marker directly.
+  unset. A canary case proves the global-marker observation works by setting
+  the marker directly.
 - `tests/static-analysis/invalid-workflow-fixtures.test.ts` — the corpus
   contract test. It hard-codes `EXPECTED_FILE_NAMES` (14 entries, includes both
-  hostile files), asserts ASCII-only bytes, re-derives and checks spans, and has
-  a "reads hostile fixture source without setting the global marker" case that
-  hard-codes the two hostile file names and a per-file marker substring. It also
-  emits a compact manifest snapshot.
+  hostile files), asserts ASCII-only bytes, re-derives and checks spans, and
+  has a "reads hostile fixture source without setting the global marker" case
+  that hard-codes the two hostile file names and a per-file marker substring.
+  It also emits a compact manifest snapshot.
 - `tests/static-analysis/workflow-metadata.test.ts` — classification tests
   including "keeps hostile global-marker metadata passive", which asserts the
   `meta-statically-unprovable` diagnostic and marker-undefined for
@@ -445,9 +440,9 @@ Terms of art:
 The refresh derivation model matters: to add a fixture you (1) write the raw
 `.js` file, (2) add a manifest skeleton entry naming the diagnostic and a unique
 `spanText` anchor, then (3) run the refresh, which recomputes `sha256` and the
-byte/line/column span from the anchor and rewrites the manifest deterministically.
-The manifest is the source of truth for which fixtures exist; the refresh only
-updates their derived metadata.
+byte/line/column span from the anchor and rewrites the manifest
+deterministically. The manifest is the source of truth for which fixtures
+exist; the refresh only updates their derived metadata.
 
 ## Plan of work
 
@@ -460,13 +455,14 @@ Markdown, it must also pass `make markdownlint` and `make nixie`.
 Stage A (orientation). Confirm the worktree and branch, fetch and rebase onto
 `origin/main`, and re-read the files named above to confirm they still match
 this plan. Record the exact current values of `expectedCounts`, the
-`EXPECTED_FILE_NAMES` list, and the compact snapshot in `Surprises &
-Discoveries` if any differ from this plan (they are the baseline the later work
-items must move). No code changes; no commit unless the rebase produced one.
+`EXPECTED_FILE_NAMES` list, and the compact snapshot in
+`Surprises & Discoveries` if any differ from this plan (they are the baseline
+the later work items must move). No code changes; no commit unless the rebase
+produced one.
 
 Implements: the branch-freshness constraint above and `AGENTS.md` (Branches).
-Read: `docs/roadmap.md` task 2.1.11; this plan.
-Skills to load: none beyond the routing skill; no code yet.
+Read: `docs/roadmap.md` task 2.1.11; this plan. Skills to load: none beyond the
+routing skill; no code yet.
 
 ### Work item 1 — broaden the security regression observation channels
 
@@ -507,10 +503,11 @@ Stage C (green). Add the helper(s) and shared observation state:
   will cover the new fixtures automatically.
 - Extend the public-entry fresh-module-graph script
   (`publicEntryImportSafetyScript`) so the child, before importing, sets a temp
-  filesystem marker-path environment variable and an environment probe variable,
-  and after linting each fixture asserts: diagnostics present, global marker
-  unset, and the marker file absent. Keep the structured `failFreshModuleGraphCheck`
-  failure codes descriptive (e.g. `hostile-file-written`, `hostile-marker-set`).
+  filesystem marker-path environment variable and an environment probe
+  variable, and after linting each fixture asserts: diagnostics present, global
+  marker unset, and the marker file absent. Keep the structured
+  `failFreshModuleGraphCheck` failure codes descriptive (e.g.
+  `hostile-file-written`, `hostile-marker-set`).
 
 Re-run the focused file; the canaries and the extended loop pass.
 
@@ -520,18 +517,18 @@ observation helpers into a colocated
 import them. Keep names and TSDoc consistent with the existing helpers.
 
 Tests to add/update: two new canary cases and the extended per-fixture and
-fresh-module-graph assertions in `hostile-metadata-security.test.ts`. No fixture
-count changes, so no snapshot or count-guard updates in this work item.
+fresh-module-graph assertions in `hostile-metadata-security.test.ts`. No
+fixture count changes, so no snapshot or count-guard updates in this work item.
 
 Implements: `docs/technical-design.md` section 11.3 (security regression must
 observe file and environment channels); `AGENTS.md` (Testing:
-environment-dependent tests, snapshot scope, deterministic runner).
-Read: `tests/static-analysis/hostile-metadata-security.test.ts`,
-`tests/static-analysis/fresh-module-graph.ts`, `AGENTS.md` (Testing).
-Skills to load: `python-router`? No — this is TypeScript; load no Python
-skills. Use the repository's TypeScript conventions. If a router skill for
-TypeScript/Bun testing is offered, prefer the `execplans` discipline already in
-use plus in-repo patterns. Verify helpers with `leta refs` for any name reuse.
+environment-dependent tests, snapshot scope, deterministic runner). Read:
+`tests/static-analysis/hostile-metadata-security.test.ts`,
+`tests/static-analysis/fresh-module-graph.ts`, `AGENTS.md` (Testing). Skills to
+load: `python-router`? No — this is TypeScript; load no Python skills. Use the
+repository's TypeScript conventions. If a router skill for TypeScript/Bun
+testing is offered, prefer the `execplans` discipline already in use plus
+in-repo patterns. Verify helpers with `leta refs` for any name reuse.
 
 Validation: `make all`.
 
@@ -542,8 +539,8 @@ targeted security assertion:
 
 1. Create the raw fixture `fs-write-marker.js` under the hostile-metadata
    fixture directory
-   (`tests/static-analysis/fixtures/invalid-workflows/hostile-metadata/`)
-   with ASCII-only content whose computed `description` IIFE would perform a
+   (`tests/static-analysis/fixtures/invalid-workflows/hostile-metadata/`) with
+   ASCII-only content whose computed `description` IIFE would perform a
    filesystem write if evaluated, reading its target path from an environment
    variable so the security test can inject a temp path without evaluating the
    source, for example:
@@ -565,18 +562,18 @@ targeted security assertion:
    ```
 
 2. Add a skeleton entry to the hostile-metadata manifest
-   (`.../invalid-workflows/manifests/hostile-metadata.ts`)
-   in filename order for the family, using `invalidWorkflowFixture`/`diagnostic`
-   with `rule: "odw/meta-statically-unprovable"`, `severity: "warning"`, the
+   (`.../invalid-workflows/manifests/hostile-metadata.ts`) in filename order
+   for the family, using `invalidWorkflowFixture`/`diagnostic` with
+   `rule: "odw/meta-statically-unprovable"`, `severity: "warning"`, the
    catalogue message, and `spanText` set to the whole IIFE
    (`(() => { ... })()`). Leave `sha256` and `span` as any placeholder; the
-   refresh will overwrite them. Confirm the anchor is unique with
-   `grep -c` before refreshing.
+   refresh will overwrite them. Confirm the anchor is unique with `grep -c`
+   before refreshing.
 3. In `hostile-metadata-security.test.ts`, add a named assertion that the corpus
    includes a filesystem-write fixture and that linting it leaves the marker
    file absent (the extended loop from work item 1 already covers the absence;
-   add an explicit `some(fileName === "fs-write-marker.js")` guard so the intent
-   is visible).
+   add an explicit `some(fileName === "fs-write-marker.js")` guard so the
+   intent is visible).
 
 Run the focused corpus and security tests; they fail because
 `EXPECTED_FILE_NAMES`, `expectedCounts`, the hostile file-name list, and the
@@ -585,12 +582,14 @@ placeholders.
 
 Stage C (green).
 
-1. Run `make refresh-fixtures` (or `bun run
-   tests/static-analysis/fixtures/refresh-metadata.ts`) to derive `sha256`, the
-   UTF-8 `span`, and rewrite the manifest deterministically. Review the JSON
-   report and the Git diff; confirm only the intended manifest entry changed.
+1. Run `make refresh-fixtures` (or
+   `bun run tests/static-analysis/fixtures/refresh-metadata.ts`) to derive
+   `sha256`, the UTF-8 `span`, and rewrite the manifest deterministically.
+   Review the JSON report and the Git diff; confirm only the intended manifest
+   entry changed.
 2. Update the manual `expectedCounts` literal in
-   `fixture-metadata-refresh-boundaries.test.ts` to `hostileMetadata: 3,
+   `fixture-metadata-refresh-boundaries.test.ts` to
+   `hostileMetadata: 3,
    invalidWorkflows: 15, invalidDiagnostics: 15, totalFixtures: 33`
    (odwExamples/masking unchanged).
 3. Update `EXPECTED_FILE_NAMES` and the hard-coded hostile file-name list in
@@ -605,12 +604,12 @@ Stage C (green).
    `bun test tests/static-analysis/invalid-workflow-fixtures.test.ts
    tests/static-analysis/fixture-metadata-refresh.test.ts
    tests/static-analysis/fixture-metadata-refresh-cli.test.ts
-   --update-snapshots`. Review each snapshot diff for count and file-list
-   changes only.
+   --update-snapshots`.
+   Review each snapshot diff for count and file-list changes only.
 5. Optionally add a "keeps hostile fs-write metadata passive" case to
-   `workflow-metadata.test.ts` mirroring the existing global-marker case, only if
-   it stays within the 400-line limit; otherwise rely on the corpus and security
-   coverage.
+   `workflow-metadata.test.ts` mirroring the existing global-marker case, only
+   if it stays within the 400-line limit; otherwise rely on the corpus and
+   security coverage.
 
 Run `make all`; expect all green.
 
@@ -623,13 +622,13 @@ assertion, and (optionally) one classification case.
 Implements: `docs/technical-design.md` sections 11.1 and 11.3 (file-write
 hostile fixture; diagnostic and no side effect); `docs/roadmap.md` task 2.1.11
 (filesystem-write fixture through the refresh tooling, updating hashes, spans,
-snapshots, and fixture-count guards).
-Read: `docs/developers-guide.md` ("Static-analysis fixtures", hostile paragraph);
+snapshots, and fixture-count guards). Read: `docs/developers-guide.md`
+("Static-analysis fixtures", hostile paragraph);
 `tests/static-analysis/fixtures/refresh-manifest-source.ts`;
 `tests/static-analysis/fixtures/refresh-writers.ts`;
-`tests/static-analysis/invalid-workflow-fixtures.test.ts`.
-Skills to load: `execplans` (this discipline); verify branch-local facts with
-`leta`/exact search. No Python verification skills apply.
+`tests/static-analysis/invalid-workflow-fixtures.test.ts`. Skills to load:
+`execplans` (this discipline); verify branch-local facts with `leta`/exact
+search. No Python verification skills apply.
 
 Validation: `make all`.
 
@@ -639,10 +638,10 @@ Stage B (red). Mirror work item 2 for the environment-read channel:
 
 1. Create the raw fixture `env-read-marker.js` under the same hostile-metadata
    fixture directory
-   (`tests/static-analysis/fixtures/invalid-workflows/hostile-metadata/`)
-   with ASCII-only content whose computed `description` IIFE reads an
-   environment variable and surfaces the read value through the global marker so
-   it is observable, for example:
+   (`tests/static-analysis/fixtures/invalid-workflows/hostile-metadata/`) with
+   ASCII-only content whose computed `description` IIFE reads an environment
+   variable and surfaces the read value through the global marker so it is
+   observable, for example:
 
    ```javascript
    export const meta = {
@@ -673,8 +672,13 @@ snapshots, and placeholder metadata.
 Stage C (green).
 
 1. Run `make refresh-fixtures`; review the report and diff.
-2. Update `expectedCounts` to `hostileMetadata: 4, invalidWorkflows: 16,
-   invalidDiagnostics: 16, totalFixtures: 34`.
+2. Update `expectedCounts` to:
+
+   ```text
+   hostileMetadata: 4, invalidWorkflows: 16, invalidDiagnostics: 16,
+   totalFixtures: 34
+   ```
+
 3. Add `hostile-metadata/env-read-marker.js` to `EXPECTED_FILE_NAMES` and the
    hostile file-name list; extend the generalized marker-substring map.
 4. Regenerate the same three snapshots and review the diffs.
@@ -684,24 +688,24 @@ Stage C (green).
 Run `make all`; expect all green.
 
 Stage D (refactor). If `invalid-workflow-fixtures.test.ts` or
-`workflow-metadata.test.ts` nears 400 lines, extract shared hostile-fixture test
-data/helpers into a colocated support module.
+`workflow-metadata.test.ts` nears 400 lines, extract shared hostile-fixture
+test data/helpers into a colocated support module.
 
 Tests to add/update: as work item 2, for the environment-read fixture.
 
 Implements: `docs/technical-design.md` sections 11.1 and 11.3 (environment-read
-hostile fixture); `docs/roadmap.md` task 2.1.11 (environment-read fixture through
-the refresh tooling; regression exercises global-write, thrown-marker, and
-filesystem or environment observables; refresh output deterministic).
-Read: same as work item 2.
-Skills to load: `execplans`; branch-local verification with `leta`/exact search.
+hostile fixture); `docs/roadmap.md` task 2.1.11 (environment-read fixture
+through the refresh tooling; regression exercises global-write, thrown-marker,
+and filesystem or environment observables; refresh output deterministic). Read:
+same as work item 2. Skills to load: `execplans`; branch-local verification with
+`leta`/exact search.
 
 Validation: `make all`.
 
 ### Work item 4 — document the broadened fixtures
 
-Update `docs/developers-guide.md` so the hostile-metadata paragraph describes all
-four side-effect channels (global write, thrown marker, filesystem write,
+Update `docs/developers-guide.md` so the hostile-metadata paragraph describes
+all four side-effect channels (global write, thrown marker, filesystem write,
 environment read), notes that new fixtures are added through
 `make refresh-fixtures`, and states that
 `tests/static-analysis/hostile-metadata-security.test.ts` now observes the
@@ -718,11 +722,11 @@ make nixie
 make all
 ```
 
-Implements: `AGENTS.md` (keep `docs/` current); `docs/documentation-style-guide.md`
-(en-GB Oxford spelling, prose style).
-Read: `docs/developers-guide.md` (Static-analysis fixtures);
-`docs/documentation-style-guide.md`.
-Skills to load: `en-gb-oxendict` for the prose pass.
+Implements: `AGENTS.md` (keep `docs/` current);
+`docs/documentation-style-guide.md` (en-GB Oxford spelling, prose style). Read:
+`docs/developers-guide.md` (Static-analysis fixtures);
+`docs/documentation-style-guide.md`. Skills to load: `en-gb-oxendict` for the
+prose pass.
 
 Validation: `make markdownlint`, `make nixie`, `make all`.
 
@@ -783,17 +787,18 @@ Quality criteria (what "done" means):
 
 - Tests: `make test` (via `make all`) passes. The hostile-metadata security
   regression asserts, for every hostile fixture, the expected single
-  `odw/meta-statically-unprovable` warning and no global marker, no marker file,
-  and no environment-derived marker. The filesystem and environment canaries
-  each prove their observation channel detects a real side effect and then a
-  clean state. The public-entry fresh-module-graph case passes with the marker
-  file and global marker both absent across all four fixtures.
+  `odw/meta-statically-unprovable` warning and no global marker, no marker
+  file, and no environment-derived marker. The filesystem and environment
+  canaries each prove their observation channel detects a real side effect and
+  then a clean state. The public-entry fresh-module-graph case passes with the
+  marker file and global marker both absent across all four fixtures.
 - Lint/typecheck: `make check-fmt`, `make lint`, and `make typecheck` (all part
   of `make all`) pass. The new fixture `.js` files remain excluded from Biome
   and Oxlint.
 - Counts and snapshots: `expectedCounts` and the three regenerated snapshots
-  reflect `hostileMetadata: 4`, `invalidWorkflows: 16`, `invalidDiagnostics: 16`,
-  `totalFixtures: 34`; the corpus file-name list includes both new fixtures.
+  reflect `hostileMetadata: 4`, `invalidWorkflows: 16`,
+  `invalidDiagnostics: 16`, `totalFixtures: 34`; the corpus file-name list
+  includes both new fixtures.
 - Determinism: running `make refresh-fixtures` twice produces no diff on the
   second run.
 - Markdown: `make markdownlint` and `make nixie` pass for the developers guide
@@ -822,8 +827,8 @@ refresh JSON report and Git diff before committing generated changes.
   `missing-anchor`/`duplicate-anchor` and writes nothing; fix the anchor in the
   manifest and re-run rather than hand-editing spans.
 - The filesystem canary and the extended per-fixture loop must remove any temp
-  marker file in `afterEach`, so a failed run leaves no stray files. If a run is
-  interrupted, remove any `odw-lint-hostile-*` file under the system temp
+  marker file in `afterEach`, so a failed run leaves no stray files. If a run
+  is interrupted, remove any `odw-lint-hostile-*` file under the system temp
   directory.
 - Each work item commits independently and gates with `make all`, so a failed
   work item can be reset without disturbing earlier committed work.
@@ -831,13 +836,14 @@ refresh JSON report and Git diff before committing generated changes.
 ## Artefacts and notes
 
 - The `meta-statically-unprovable` diagnostic message is the reviewed catalogue
-  string `Workflow metadata must remain statically provable without evaluation.`
-  and severity `warning`; the `diagnostic()` builder derives the branded rule id
-  and `docs` path from `RULE_CATALOGUE`, so the manifest entry only supplies the
+  string
+  `Workflow metadata must remain statically provable without evaluation.` and
+  severity `warning`; the `diagnostic()` builder derives the branded rule id and
+  `docs` path from `RULE_CATALOGUE`, so the manifest entry only supplies the
   raw rule string, severity, message, and `spanText`.
 - Existing anchors for reference: `global-marker.js` and `throw-marker.js` both
-  anchor on the whole `(() => { ... })()` IIFE; the new fixtures follow the same
-  pattern.
+  anchor on the whole `(() => { ... })()` IIFE; the new fixtures follow the
+  same pattern.
 
 ## Interfaces and dependencies
 

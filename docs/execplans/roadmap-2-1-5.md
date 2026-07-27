@@ -1,9 +1,8 @@
 # Add the hostile metadata security regression test
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -11,8 +10,8 @@ Status: COMPLETE
 
 Roadmap task 2.1.5 requires a dedicated, release-blocking **security regression
 test** proving that linting hostile workflow metadata never evaluates that
-metadata and therefore leaves no observable side effect, while still producing a
-diagnostic. See `docs/roadmap.md` task 2.1.5 (requires 1.3.4 and 2.1.3) and
+metadata and therefore leaves no observable side effect, while still producing
+a diagnostic. See `docs/roadmap.md` task 2.1.5 (requires 1.3.4 and 2.1.3) and
 `docs/technical-design.md` §11.3.
 
 The ODW loader boundary the linter reproduces is static: `odw-lint` must parse
@@ -23,19 +22,19 @@ metadata would leave an observable marker if evaluated (a global write in
 `global-marker.js`, a thrown error in `throw-marker.js`). Task 2.1.3 already
 made `classifyWorkflowMetadata` classify these passively as
 `odw/meta-statically-unprovable` warnings. What is still missing, per §11.3, is
-a **single, focused, fixture-driven security regression test** that consolidates
-the "diagnostic and no side effect" contract for the whole hostile family and
-guards it against regression as the lint surface grows.
+a **single, focused, fixture-driven security regression test** that
+consolidates the "diagnostic and no side effect" contract for the whole hostile
+family and guards it against regression as the lint surface grows.
 
-After work item 1 a maintainer can run `make all` (or `bun test`) and observe
-a dedicated test file, `tests/static-analysis/hostile-metadata-security.test.ts`,
+After work item 1 a maintainer can run `make all` (or `bun test`) and observe a
+dedicated test file, `tests/static-analysis/hostile-metadata-security.test.ts`,
 that:
 
 1. lints every `hostile-metadata` fixture through the real static-analysis path
    (`scanWorkflowEnvelope` then `classifyWorkflowMetadata`), and
 2. asserts each fixture yields the manifest's expected diagnostic (rule,
-   severity, message), the classifier never throws, and the hostile global
-   side effect marker `globalThis.__odwLintHostileMetadataWasEvaluated` remains
+   severity, message), the classifier never throws, and the hostile global side
+   effect marker `globalThis.__odwLintHostileMetadataWasEvaluated` remains
    `undefined` before and after linting.
 
 Observable success: the new test passes under `make all`; a documented mutation
@@ -49,18 +48,18 @@ escalation, not a workaround.
 
 - **Static-analysis boundary (release-blocking).** No production or test code
   added by this plan may import, `eval`, `new Function`, dynamic-`import`, or
-  otherwise execute any ODW workflow fixture, the ODW loader, primitive factory,
-  runtime launcher, or worker path. Work item 2 may dynamically import only the
-  public `odw-lint` entry point in a cold child process. The linter only ever
-  reads fixture **source text**. See `docs/adr/0001-static-analysis-boundary.md`,
-  `docs/technical-design.md` §§5, 11.3, and the existing forbidden-import guard
-  from roadmap 2.1.4. This is the property under test; breaking it defeats the
-  task.
+  otherwise execute any ODW workflow fixture, the ODW loader, primitive
+  factory, runtime launcher, or worker path. Work item 2 may dynamically import
+  only the public `odw-lint` entry point in a cold child process. The linter
+  only ever reads fixture **source text**. See
+  `docs/adr/0001-static-analysis-boundary.md`, `docs/technical-design.md` §§5,
+  11.3, and the existing forbidden-import guard from roadmap 2.1.4. This is the
+  property under test; breaking it defeats the task.
 - **Do not modify production `src/` behaviour.** Task 2.1.3 already implemented
   passive classification; 2.1.5 is a **test-only** deliverable. If the security
-  test cannot pass because production code actually evaluates metadata, stop and
-  surface the offender rather than editing production behaviour inside this task
-  (mirrors the 2.1.4 planning constraint in `docs/roadmap.md`).
+  test cannot pass because production code actually evaluates metadata, stop
+  and surface the offender rather than editing production behaviour inside this
+  task (mirrors the 2.1.4 planning constraint in `docs/roadmap.md`).
 - **Do not grow the hostile fixture corpus in this task.** The existing two
   hostile fixtures already satisfy §11.3's disjunctive requirement ("writes a
   file, reads an environment variable, throws a custom side effect marker, or
@@ -69,9 +68,9 @@ escalation, not a workaround.
   `hostileMetadata: 2`, the refresh snapshots, and the invalid-workflow
   snapshot) and is out of scope. See Decision Log.
 - **File-size convention.** No single code file may exceed 400 lines
-  (`AGENTS.md` "Keep file size manageable"). The new test must be a new file; do
-  not append to `tests/static-analysis/workflow-metadata.test.ts` (already 386
-  lines).
+  (`AGENTS.md` "Keep file size manageable"). The new test must be a new file;
+  do not append to `tests/static-analysis/workflow-metadata.test.ts` (already
+  386 lines).
 - **Determinism and environment hygiene.** Tests must be deterministic
   (`AGENTS.md` Testing). Any global-state mutation (the hostile marker) must be
   cleared and restored in a shared helper (`AGENTS.md` "Environment-dependent
@@ -94,38 +93,35 @@ escalation, not a workaround.
 - **Iterations:** if `make all` still fails after 3 focused fix attempts, stop
   and escalate.
 - **Ambiguity:** if a reviewer reads §11.3 as mandating a filesystem-write or
-  env-read hostile fixture specifically (not the disjunction), stop and escalate
-  before growing the corpus.
+  env-read hostile fixture specifically (not the disjunction), stop and
+  escalate before growing the corpus.
 
 ## Risks
 
 - Risk: The behaviour under test already passes (2.1.3 shipped passive
   classification), so a naive test would be green from the start and prove
-  nothing.
-  Severity: medium. Likelihood: high.
-  Mitigation: Use the Red-Green-Refactor substitute in "Validation and
-  acceptance": a documented mutation experiment that temporarily evaluates the
-  metadata to observe the test failing, plus an in-test **canary** assertion
-  that the marker detector genuinely fires when the marker is set directly.
+  nothing. Severity: medium. Likelihood: high. Mitigation: Use the
+  Red-Green-Refactor substitute in "Validation and acceptance": a documented
+  mutation experiment that temporarily evaluates the metadata to observe the
+  test failing, plus an in-test **canary** assertion that the marker detector
+  genuinely fires when the marker is set directly.
 - Risk: Redundancy with existing hostile assertions in
   `tests/static-analysis/workflow-metadata.test.ts` and
-  `tests/static-analysis/invalid-workflow-fixtures.test.ts`.
-  Severity: low. Likelihood: medium.
-  Mitigation: The new file is the single fixture-driven security-regression
-  surface: it iterates the whole `hostile-metadata` family (auto-covering future
-  fixtures), asserts non-throwing classification for `throw-marker.js`
-  explicitly, and adds the out-of-process cold-module-graph guard that the other
-  files do not. Cite the distinction in the file header.
+  `tests/static-analysis/invalid-workflow-fixtures.test.ts`. Severity: low.
+  Likelihood: medium. Mitigation: The new file is the single fixture-driven
+  security-regression surface: it iterates the whole `hostile-metadata` family
+  (auto-covering future fixtures), asserts non-throwing classification for
+  `throw-marker.js` explicitly, and adds the out-of-process cold-module-graph
+  guard that the other files do not. Cite the distinction in the file header.
 - Risk: The out-of-process guard is flaky or slow (spawns a process).
-  Severity: low. Likelihood: low.
-  Mitigation: Mirror the proven pattern in
+  Severity: low. Likelihood: low. Mitigation: Mirror the proven pattern in
   `tests/static-analysis/fixture-metadata-refresh-cli.test.ts` ("stays
   import-safe … in a fresh module graph") with a bounded `timeout` and
   `process.execPath`.
 - Risk: Global-marker leakage across tests in the same Bun process.
-  Severity: low. Likelihood: medium.
-  Mitigation: Clear the marker in `beforeEach`/`afterEach` and assert it
-  `undefined` both before and after each lint.
+  Severity: low. Likelihood: medium. Mitigation: Clear the marker in
+  `beforeEach`/`afterEach` and assert it `undefined` both before and after each
+  lint.
 
 ## Progress
 
@@ -137,9 +133,9 @@ escalation, not a workaround.
   task 2.1.5.
 
   Progress note (2026-07-01): Added
-  `tests/static-analysis/hostile-metadata-security.test.ts` with marker cleanup,
-  a canary test, and a manifest-driven loop over every `hostile-metadata`
-  fixture. The normal static path passed with
+  `tests/static-analysis/hostile-metadata-security.test.ts` with marker
+  cleanup, a canary test, and a manifest-driven loop over every
+  `hostile-metadata` fixture. The normal static path passed with
   `bun test tests/static-analysis/hostile-metadata-security.test.ts`. The
   temporary mutation experiment failed for the intended reasons: the
   global-marker fixture set the hostile marker, and the throw-marker fixture
@@ -157,15 +153,15 @@ escalation, not a workaround.
   Progress note (2026-07-01): Added the child-process guard to
   `tests/static-analysis/hostile-metadata-security.test.ts`. The test imports
   only the public `odw-lint` entry in a fresh module graph, reads hostile
-  fixtures as source text, lints them through
-  `createOriginalSourceFile`, `scanWorkflowEnvelope`, and
-  `classifyWorkflowMetadata`, and exits non-zero if diagnostics are absent or
-  the hostile marker appears. `bun test
-  tests/static-analysis/hostile-metadata-security.test.ts` and `make all`
-  passed. `coderabbit review --agent` reported zero findings for this work
-  item. The requested scrutineer delegation remained unavailable because its
-  fixed GPT-5.3-Codex-Spark quota was exhausted, so the deterministic gate and
-  CodeRabbit command were run directly in the assigned worktree.
+  fixtures as source text, lints them through `createOriginalSourceFile`,
+  `scanWorkflowEnvelope`, and `classifyWorkflowMetadata`, and exits non-zero if
+  diagnostics are absent or the hostile marker appears.
+  `bun test tests/static-analysis/hostile-metadata-security.test.ts` and
+  `make all` passed. `coderabbit review --agent` reported zero findings for
+  this work item. The requested scrutineer delegation remained unavailable
+  because its fixed GPT-5.3-Codex-Spark quota was exhausted, so the
+  deterministic gate and CodeRabbit command were run directly in the assigned
+  worktree.
 
   Progress note (2026-07-01): Updated `docs/developers-guide.md` to point at
   the delivered hostile metadata security test, marked `docs/roadmap.md` task
@@ -177,91 +173,88 @@ escalation, not a workaround.
   inside `/data/leynos/Projects/odw-lint.worktrees/roadmap-2-1-5`. The
   worktree, this ExecPlan, the implementation diff, documentation updates, and
   validation surfaces were all readable. The branch was clean and ahead of
-  `origin/main` by three commits:
-  `Add hostile metadata regression test`,
+  `origin/main` by three commits: `Add hostile metadata regression test`,
   `Guard hostile metadata public imports`, and
-  `Document hostile metadata guard`. `grepai search --workspace 'Projects'
+  `Document hostile metadata guard`.
+  `grepai search --workspace 'Projects'
   --project 'odw-lint' "metadata classification diagnostics documentation
-  roadmap 2.1.5" --toon --compact --limit 8` succeeded against the canonical
-  main-branch index; branch-local checks then used `leta` and direct file
-  inspection in this worktree. `leta workspace add` reported the workspace was
-  already added, and `leta files` listed
+  roadmap 2.1.5" --toon --compact --limit 8`
+  succeeded against the canonical main-branch index; branch-local checks then
+  used `leta` and direct file inspection in this worktree. `leta workspace add`
+  reported the workspace was already added, and `leta files` listed
   `tests/static-analysis/hostile-metadata-security.test.ts` plus this ExecPlan.
   `sem diff --from origin/main --to HEAD --file-exts .ts` showed the only
   TypeScript entity additions were the hostile metadata security test helpers
   and tests. Focused validation passed with
-  `bun test tests/static-analysis/hostile-metadata-security.test.ts` (5 pass,
-  0 fail, 20 assertions). Repository validation passed with `make all` (490
+  `bun test tests/static-analysis/hostile-metadata-security.test.ts` (5 pass, 0
+  fail, 20 assertions). Repository validation passed with `make all` (490
   tests, 0 failures, 34 snapshots, 24697 assertions), `make markdownlint` (71
   Markdown files, 0 errors), and `make nixie` (all diagrams validated
   successfully). The requested scrutineer delegation was attempted first, but
   the sub-agent failed before running commands with:
   `You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model
-  now, or try again at Jul 7th, 2026 11:20 AM.` Because the deterministic gates
-  were green and scrutineer was unavailable, `coderabbit review --agent` was run
-  directly from this worktree and completed with `findings: 0`.
+  now, or try again at Jul 7th, 2026 11:20 AM.`
+  Because the deterministic gates were green and scrutineer was unavailable,
+  `coderabbit review --agent` was run directly from this worktree and completed
+  with `findings: 0`.
 
 ## Surprises & discoveries
 
 - Observation: `classifyWorkflowMetadata`, `scanWorkflowEnvelope`, and
   `createOriginalSourceFile` are all re-exported from the public `odw-lint`
   entry (`src/index.ts` lines ~48-75), so the out-of-process guard can lint via
-  the packaged surface, not just internal paths.
-  Evidence: `grep -n "scanWorkflowEnvelope" src/index.ts` -> line 69.
-  Impact: Work item 2 can assert the **public** lint surface is import-safe.
+  the packaged surface, not just internal paths. Evidence:
+  `grep -n "scanWorkflowEnvelope" src/index.ts` -> line 69. Impact: Work item 2
+  can assert the **public** lint surface is import-safe.
 - Observation: The hostile marker property name is
   `__odwLintHostileMetadataWasEvaluated`, and the throw marker string is
-  `ODW_LINT_HOSTILE_METADATA_EVALUATED`.
-  Evidence:
-  `tests/static-analysis/fixtures/invalid-workflows/hostile-metadata/*.js`
-  and the manifest `manifests/hostile-metadata.ts`.
-  Impact: Reuse these constants; do not invent new ones.
+  `ODW_LINT_HOSTILE_METADATA_EVALUATED`. Evidence:
+  `tests/static-analysis/fixtures/invalid-workflows/hostile-metadata/*.js` and
+  the manifest `manifests/hostile-metadata.ts`. Impact: Reuse these constants;
+  do not invent new ones.
 - Observation: The blocking dual-review findings for fix round 1 were caused by
   the reviewer session being unable to read the worktree, not by a confirmed
-  implementation defect.
-  Evidence: `git status --short --branch` in this worktree reported
-  `## roadmap-2-1-5...origin/main [ahead 3]`; this ExecPlan and the changed
-  files were readable; `bun test
-  tests/static-analysis/hostile-metadata-security.test.ts`, `make all`,
-  `make markdownlint`, and `make nixie` all passed on 2026-07-02.
+  implementation defect. Evidence: `git status --short --branch` in this
+  worktree reported `## roadmap-2-1-5...origin/main [ahead 3]`; this ExecPlan
+  and the changed files were readable;
+  `bun test tests/static-analysis/hostile-metadata-security.test.ts`,
+  `make all`, `make markdownlint`, and `make nixie` all passed on 2026-07-02.
   Impact: Fix round 1 records fresh worktree-local evidence instead of changing
   the already-passing implementation behaviour.
 
 ## Decision log
 
 - Decision: Reuse the existing two hostile fixtures rather than add a
-  filesystem-write or env-read fixture.
-  Rationale: `docs/technical-design.md` §11.3 states the security regression
-  fixture must include metadata that "writes a file, reads an environment
-  variable, throws a custom side effect marker, **or** otherwise would be
-  observable if evaluated." This is a disjunction; the global-write and thrown
-  marker fixtures already satisfy it. Adding fixtures would force regenerating
-  hashes/spans via the 1.3.5 refresh tool and updating multiple snapshot and
-  boundary-count tests (`fixture-metadata-refresh-boundaries.test.ts`
-  `hostileMetadata: 2`, `__snapshots__/fixture-metadata-refresh*.snap`,
+  filesystem-write or env-read fixture. Rationale: `docs/technical-design.md`
+  §11.3 states the security regression fixture must include metadata that
+  "writes a file, reads an environment variable, throws a custom side effect
+  marker, **or** otherwise would be observable if evaluated." This is a
+  disjunction; the global-write and thrown marker fixtures already satisfy it.
+  Adding fixtures would force regenerating hashes/spans via the 1.3.5 refresh
+  tool and updating multiple snapshot and boundary-count tests
+  (`fixture-metadata-refresh-boundaries.test.ts` `hostileMetadata: 2`,
+  `__snapshots__/fixture-metadata-refresh*.snap`,
   `__snapshots__/invalid-workflow-fixtures.test.ts.snap`), inflating blast
   radius against the "atomic, gate-passable" requirement. Escalation trigger
-  recorded in Tolerances if a reviewer reads §11.3 as conjunctive.
-  Date/Author: 2026-07-01, planning agent.
+  recorded in Tolerances if a reviewer reads §11.3 as conjunctive. Date/Author:
+  2026-07-01, planning agent.
 - Decision: Deliver a new dedicated test file rather than extend an existing
-  hostile test.
-  Rationale: `AGENTS.md` 400-line file limit (workflow-metadata.test.ts is 386
-  lines) and the need for a single, discoverable security-regression surface.
-  Date/Author: 2026-07-01, planning agent.
+  hostile test. Rationale: `AGENTS.md` 400-line file limit
+  (workflow-metadata.test.ts is 386 lines) and the need for a single,
+  discoverable security-regression surface. Date/Author: 2026-07-01, planning
+  agent.
 - Decision: Satisfy Red-Green-Refactor via a documented mutation experiment plus
   an in-test canary, because the production behaviour already exists.
   Rationale: The execplans skill permits the "nearest observable substitute"
   when true red is unavailable; the deliverable is a regression guard, not new
-  production behaviour.
-  Date/Author: 2026-07-01, planning agent.
+  production behaviour. Date/Author: 2026-07-01, planning agent.
 - Decision: Treat the five fix-round blocking findings as stale
   evidence-access failures once the assigned worktree proved readable and the
-  gates passed.
-  Rationale: Each finding explicitly said the reviewer could not inspect the
-  branch, ExecPlan, documentation, or validation output. Fresh verification in
-  the assigned worktree showed those artefacts are accessible and that the
-  implementation still satisfies the task scope.
-  Date/Author: 2026-07-02, fix-round agent.
+  gates passed. Rationale: Each finding explicitly said the reviewer could not
+  inspect the branch, ExecPlan, documentation, or validation output. Fresh
+  verification in the assigned worktree showed those artefacts are accessible
+  and that the implementation still satisfies the task scope. Date/Author:
+  2026-07-02, fix-round agent.
 
 ## Outcomes & retrospective
 
@@ -331,8 +324,8 @@ Existing hostile-metadata assets (test-only):
   global-marker metadata passive", "returns a warning instead of throwing
   hostile throw-marker metadata"); `invalid-workflow-fixtures.test.ts` ("reads
   hostile fixture source without setting the global marker");
-  `fixture-metadata-refresh-cli.test.ts` ("stays import-safe … in a fresh module
-  graph").
+  `fixture-metadata-refresh-cli.test.ts` ("stays import-safe … in a fresh
+  module graph").
 
 Terms of art:
 
@@ -348,8 +341,8 @@ Terms of art:
 ## Plan of work
 
 Three atomic, independently committable and gate-passable work items. Each ends
-with `make all`. Work items 1 and 2 build one new test file; work item 3 updates
-docs. Stage the file so each commit passes gates on its own.
+with `make all`. Work items 1 and 2 build one new test file; work item 3
+updates docs. Stage the file so each commit passes gates on its own.
 
 ### Work item 1 — In-process hostile metadata security regression test
 
@@ -387,13 +380,13 @@ Structure:
 3. `beforeEach`/`afterEach` call `clearHostileMarker()`.
 4. A **canary** test proving the detector works: set
    `globalThis.__odwLintHostileMetadataWasEvaluated = "canary"` directly, assert
-   `hostileMarkerValue()` reads it, then `clearHostileMarker()` and assert it is
-   `undefined`. This makes the "no side effect" assertions falsifiable.
+   `hostileMarkerValue()` reads it, then `clearHostileMarker()` and assert it
+   is `undefined`. This makes the "no side effect" assertions falsifiable.
 5. A **fixture-driven** loop over the `hostile-metadata` family: filter
    `INVALID_WORKFLOW_FIXTURE_SNAPSHOTS` to entries whose `family` equals
-   `"hostile-metadata"`.
-   Assert the family is non-empty (guards against a silently empty loop). For
-   each fixture, an `it("lints <fileName> without a side effect")` that:
+   `"hostile-metadata"`. Assert the family is non-empty (guards against a
+   silently empty loop). For each fixture, an
+   `it("lints <fileName> without a side effect")` that:
    - asserts `hostileMarkerValue()` is `undefined` before linting;
    - reads the source via `readFixtureSource(corpus, fixture.fixturePath)`;
    - lints via `lintSource` **inside** `expect(() => …).not.toThrow()` (this is
@@ -407,8 +400,8 @@ Structure:
    - asserts `hostileMarkerValue()` is still `undefined` after linting.
 
 Red-Green-Refactor for this work item is documented in "Validation and
-acceptance" (mutation experiment). Keep the file well under 400 lines and prefer
-compact loops over duplicated cases (`AGENTS.md` "Parameterized tests").
+acceptance" (mutation experiment). Keep the file well under 400 lines and
+prefer compact loops over duplicated cases (`AGENTS.md` "Parameterized tests").
 
 Tests added/updated: the whole new file is the added test (unit +
 security-regression). No snapshot files are introduced (semantic assertions
@@ -424,16 +417,20 @@ surface; `biomejs` for lint/format expectations.
 Append one `describe`/`it` to
 `tests/static-analysis/hostile-metadata-security.test.ts` mirroring
 `fixture-metadata-refresh-cli.test.ts`'s "stays import-safe … in a fresh module
-graph". Using `spawnSync(process.execPath, ["--eval", script], { cwd:
-repositoryRoot, encoding: "utf8", timeout: 5000 })`, run a small script that:
+graph". Using
+`spawnSync(process.execPath, ["--eval", script], { cwd:
+repositoryRoot, encoding: "utf8", timeout: 5000 })`,
+run a small script that:
 
 1. sets `globalThis.__odwLintHostileMetadataWasEvaluated = undefined;`
 2. `await import("odw-lint")` (the public entry) and destructures
-   `createOriginalSourceFile`, `scanWorkflowEnvelope`, `classifyWorkflowMetadata`;
+   `createOriginalSourceFile`, `scanWorkflowEnvelope`,
+   `classifyWorkflowMetadata`;
 3. reads each hostile fixture's source text with `node:fs` `readFileSync` (text
    only — never `import()` the fixture) and lints it through the public surface;
 4. exits non-zero if any classification yields zero diagnostics, or if
-   `globalThis.__odwLintHostileMetadataWasEvaluated !== undefined` after linting.
+   `globalThis.__odwLintHostileMetadataWasEvaluated !== undefined` after
+   linting.
 
 Assert `result.error` is `undefined`, `result.signal` is `null`,
 `result.status` is `0`, and `stderr` is empty. Compute the repository root with
@@ -441,9 +438,9 @@ Assert `result.error` is `undefined`, `result.signal` is `null`,
 test does. This proves the **packaged** lint surface is import-safe in a cold
 module graph, a property the in-process test cannot fully establish.
 
-Tests added/updated: one additional out-of-process test in the same file. No new
-dependencies (`node:child_process`, `node:path`, `node:url`, `node:fs` already
-used across the suite).
+Tests added/updated: one additional out-of-process test in the same file. No
+new dependencies (`node:child_process`, `node:path`, `node:url`, `node:fs`
+already used across the suite).
 
 ### Work item 3 — Document and tick roadmap 2.1.5
 
@@ -487,8 +484,8 @@ Run everything from the worktree root
    # Expect: PASS (production is already static). Then prove the guard bites:
    ```
 
-   Mutation experiment (temporary, reverted immediately): in a throwaway edit of
-   the lint helper, force evaluation of the metadata (for example `eval` the
+   Mutation experiment (temporary, reverted immediately): in a throwaway edit
+   of the lint helper, force evaluation of the metadata (for example `eval` the
    fixture's masked description or `import()` the fixture) and re-run the test:
 
    ```bash
@@ -532,8 +529,8 @@ Run everything from the worktree root
    git commit
    ```
 
-Do **not** run a repo-global formatter (`make fmt`, `mdformat-all`); format only
-the files this task changed.
+Do **not** run a repo-global formatter (`make fmt`, `mdformat-all`); format
+only the files this task changed.
 
 ## Validation and acceptance
 
@@ -571,10 +568,10 @@ Validation commands (path-safe; rely on repository gates):
 ## Idempotence and recovery
 
 - Creating the test file is idempotent; re-running `make all` is safe.
-- The mutation experiment must be reverted before committing; `git status
-  --short` must show only the intended additions. If the throwaway mutation is
-  accidentally staged, `git restore --staged` and `git checkout --` the affected
-  source file.
+- The mutation experiment must be reverted before committing;
+  `git status --short` must show only the intended additions. If the throwaway
+  mutation is accidentally staged, `git restore --staged` and `git checkout --`
+  the affected source file.
 - If `make all` fails on an unrelated pre-existing issue, stop and escalate
   (Tolerances) rather than editing unrelated code.
 
@@ -616,12 +613,13 @@ expect(result.status).toBe(0);
 
 Use these existing, stable surfaces (no new APIs are introduced):
 
-- `src/static-analysis/source-file.ts` -> `createOriginalSourceFile({ filePath,
-  sourceText }): OriginalSourceFile`.
-- `src/static-analysis/workflow-envelope.ts` -> `scanWorkflowEnvelope(sourceFile):
-  WorkflowEnvelopeScanResult`.
-- `src/static-analysis/workflow-metadata.ts` -> `classifyWorkflowMetadata(scanResult):
-  { readonly status: string; readonly diagnostics: readonly Diagnostic[] }`.
+- `src/static-analysis/source-file.ts` ->
+  `createOriginalSourceFile({ filePath, sourceText }): OriginalSourceFile`.
+- `src/static-analysis/workflow-envelope.ts` ->
+  `scanWorkflowEnvelope(sourceFile): WorkflowEnvelopeScanResult`.
+- `src/static-analysis/workflow-metadata.ts` ->
+  `classifyWorkflowMetadata(scanResult): { readonly status: string;`
+  `readonly diagnostics: readonly Diagnostic[] }`.
 - Public entry `odw-lint` (`src/index.ts`) re-exports all three plus
   `WorkflowEnvelopeScanResult`, used by the out-of-process guard.
 - `tests/static-analysis/fixtures/corpus-support.ts` -> `readFixtureSource`,

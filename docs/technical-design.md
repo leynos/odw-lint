@@ -127,16 +127,16 @@ Parser-backed rule modules share SWC node-shape helpers through
 `src/static-analysis/swc-ast.ts`. That internal seam owns the strict AST node
 guard, semantic child-field traversal, record guard re-export, and generic
 pre-order `traverseAstSubtree` driver. The deterministic-time scanner uses the
-driver for a full-subtree walk, threading scope-narrowed binding and alias views
-through the same traversal context. It computes each visited node's
-`ScopeOwnFacts` once, then shares that value between the binding and alias scope
-entries. Scope views, alias declaration views, and the lexical-binding collector
-consume `astChildValues` while keeping their distinct scope-bounded and
-type-dispatched recursion policies. Binding pattern collection and
-global-object resolution are not generic tree walks: they stay directed analyses
-behind the same shape helpers where needed. Keeping these helpers in one module
-prevents rule-local traversal drift while leaving public package exports
-unchanged.
+driver for a full-subtree walk, threading scope-narrowed binding and alias
+views through the same traversal context. It computes each visited node's
+`ScopeOwnFacts` once, then shares that value between the binding and alias
+scope entries. Scope views, alias declaration views, and the lexical-binding
+collector consume `astChildValues` while keeping their distinct scope-bounded
+and type-dispatched recursion policies. Binding pattern collection and
+global-object resolution are not generic tree walks: they stay directed
+analyses behind the same shape helpers where needed. Keeping these helpers in
+one module prevents rule-local traversal drift while leaving public package
+exports unchanged.
 
 ### 6.2. Static source model
 
@@ -319,9 +319,8 @@ File-discovery rules:
 
 `--exit-zero` forces exit code 0 for diagnostics, but never for abnormal
 termination. `--fix-only` follows Ruff's posture: apply fixes and do not report
-or exit non-zero for remaining diagnostics.
-`--max-warnings n` tolerates up to `n` warnings and only fails when the warning
-count strictly exceeds `n`.
+or exit non-zero for remaining diagnostics. `--max-warnings n` tolerates up to
+`n` warnings and only fails when the warning count strictly exceeds `n`.
 
 ## 8. Diagnostic contract
 
@@ -367,8 +366,8 @@ The diagnostic contract has these invariants:
 - `ioErrors` is always present. It is empty for a run with no input-file read
   failures. Each entry has the invocation `file`, a stable `reason` of
   `not-found`, `not-a-file`, or `unreadable`, and the human-readable `message`
-  also emitted on stderr by the command-line interface (CLI). IO errors are
-  not catalogued rule diagnostics because they are host input failures, not
+  also emitted on stderr by the command-line interface (CLI). IO errors are not
+  catalogued rule diagnostics because they are host input failures, not
   workflow-content violations.
 - `rule` is constrained to the catalogue-derived `RULE_IDS` enum and is stable
   once released.
@@ -403,10 +402,9 @@ an existing rule's meaning, or changing the diagnostic object shape requires
 schema-version review and compatibility handling.
 
 ADR [0004](adr/0004-machine-readable-io-error-channel.md) records the decision
-to add `ioErrors` and `summary.filesSkipped` without changing
-`schemaVersion`. The package remains private and pre-release, and existing
-consumers that read known fields do not need compatibility logic for these
-additive fields.
+to add `ioErrors` and `summary.filesSkipped` without changing `schemaVersion`.
+The package remains private and pre-release, and existing consumers that read
+known fields do not need compatibility logic for these additive fields.
 
 Reviewed message templates keep dynamic diagnostics inside the same catalogue
 contract as exact messages. Template text may contain placeholders of the form
@@ -421,10 +419,9 @@ candidate messages are rejected before regex matching. Rule authors attach
 reviewed templates through `RuleDefinition.messageTemplates`; the production
 `ruleAllowsMessage(rule, message)` predicate accepts a dynamic message only
 when it equals a reviewed exact message or matches one of those reviewed
-templates.
-`odw/body-syntax` uses the first reviewed template in this contract: parser
-syntax detail is rendered into `{detail}` after the fixed reviewed sentence,
-while the exact message remains the no-detail fallback.
+templates. `odw/body-syntax` uses the first reviewed template in this contract:
+parser syntax detail is rendered into `{detail}` after the fixed reviewed
+sentence, while the exact message remains the no-detail fallback.
 
 ## 9. Rule taxonomy
 

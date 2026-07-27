@@ -5,9 +5,9 @@
   `df12/audit-1.3.4-20260628143452` git-donkey worktree
 
 This audit was run after the hostile metadata fixture corpus landed on
-`origin/main`. It used `grepai` for canonical main-branch intent search,
-`leta` for branch-local symbol, reference, and call-graph verification, and
-`sem` for entity-level diff and blame inspection.
+`origin/main`. It used `grepai` for canonical main-branch intent search, `leta`
+for branch-local symbol, reference, and call-graph verification, and `sem` for
+entity-level diff and blame inspection.
 
 ## Finding 1: The build target still ignores `bun.lock`
 
@@ -22,9 +22,9 @@ node_modules: package.json
 ```
 
 That leaves `make build`, `make lint`, `make typecheck`, `make test`, and
-`make all` vulnerable to stale installed dependencies when a change updates
-only `bun.lock`. The repository commits the lockfile deliberately, and roadmap
-task 1.4.1 already reserves this build-gate hardening.
+`make all` vulnerable to stale installed dependencies when a change updates only
+`bun.lock`. The repository commits the lockfile deliberately, and roadmap task
+1.4.1 already reserves this build-gate hardening.
 
 Proposed fix:
 
@@ -44,14 +44,14 @@ Proposed fix:
 
 The developer guide still says roadmap task 1.1.1 exposed the static-analysis
 boundary through `src/index.ts` but did not add package-level `exports`,
-`types`, `main`, or `bin` fields while the package remains private. The
-current package manifest has `main`, `types`, and `exports`, and the
-architecture test pins that package entry shape.
+`types`, `main`, or `bin` fields while the package remains private. The current
+package manifest has `main`, `types`, and `exports`, and the architecture test
+pins that package entry shape.
 
 The public entry file also still describes itself as the "Public diagnostic
 contract", even though it now exports diagnostics and static-analysis source
-helpers. A maintainer following the guide could treat package exports as out
-of scope or miss that static-analysis helpers are part of the current package
+helpers. A maintainer following the guide could treat package exports as out of
+scope or miss that static-analysis helpers are part of the current package
 surface.
 
 Proposed fix:
@@ -129,9 +129,9 @@ behaviour is otherwise the same: read committed fixture text through manifest
 data and compare it with pinned hashes.
 
 Task 1.3.4 added another hostile metadata check on top of the same local
-invalid-fixture I/O helpers. The repeated code is still small, but it will
-grow when loader parity, fixture refresh automation, and actual lint execution
-tests add more corpus checks.
+invalid-fixture I/O helpers. The repeated code is still small, but it will grow
+when loader parity, fixture refresh automation, and actual lint execution tests
+add more corpus checks.
 
 Proposed fix:
 
@@ -210,10 +210,10 @@ Proposed fix:
 
 The repository now has terms of reference, a technical design, an ADR, a
 developer guide, scripting standards, seven issue audits, and eight execution
-plans, but no `docs/contents.md`, `docs/repository-layout.md`, user's guide,
-or `README.md`. Roadmap tasks 4.2.1 and 4.4.1 reserve the larger user and
-maintainer documentation work, but the audit trail is already large enough
-that maintainers must infer document families from filenames.
+plans, but no `docs/contents.md`, `docs/repository-layout.md`, user's guide, or
+`README.md`. Roadmap tasks 4.2.1 and 4.4.1 reserve the larger user and
+maintainer documentation work, but the audit trail is already large enough that
+maintainers must infer document families from filenames.
 
 This is not a release blocker before the CLI exists, but it is a navigation
 cost for roadmap agents and reviewers today.

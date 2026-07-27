@@ -2,8 +2,8 @@
 
 This post-step audit was run after roadmap task 2.4.2, "Add text output with
 file, line, column, severity, rule, and message", squash-merged into
-`origin/main` at commit `58c2927`. That change promoted the human text output to
-the default `odw-lint check` report: `formatTextReport` in
+`origin/main` at commit `58c2927`. That change promoted the human text output
+to the default `odw-lint check` report: `formatTextReport` in
 `src/diagnostics/text.ts` now emits one
 `file:line:column severity rule message` line per diagnostic, a blank-line
 separator, and a `Found …` severity summary footer, wired through
@@ -11,19 +11,19 @@ separator, and a `Found …` severity summary footer, wired through
 `docs/developers-guide.md` and extended the text, CLI, and snapshot suites.
 
 The audit verified every branch-local fact in a fresh worktree off
-`origin/main` (base commit `58c2927`) with targeted file inspection, `grep`, and
-entity history. `grepai` intent search against the canonical `main` index was
-used only for orientation, because the merge is recent and the index still
+`origin/main` (base commit `58c2927`) with targeted file inspection, `grep`,
+and entity history. `grepai` intent search against the canonical `main` index
+was used only for orientation, because the merge is recent and the index still
 reflects the pre-merge tree; every finding below is grounded in direct
 branch-local inspection.
 
-The 2.4.2 change is small, cohesive, and well-tested. `formatTextReport` and its
-severity summary are covered by example, snapshot, and property-based tests; the
-`runCheck` aggregator has thorough multi-file, mixed, and property coverage; and
-the empty-report, control-whitespace, and Unicode-separator edge cases are all
-exercised. The findings below are residual duplication, immutability, and
-ergonomic inconsistencies plus one CLI glue-layer test gap. None blocks the
-task; all are low severity and recorded for completeness.
+The 2.4.2 change is small, cohesive, and well-tested. `formatTextReport` and
+its severity summary are covered by example, snapshot, and property-based
+tests; the `runCheck` aggregator has thorough multi-file, mixed, and property
+coverage; and the empty-report, control-whitespace, and Unicode-separator edge
+cases are all exercised. The findings below are residual duplication,
+immutability, and ergonomic inconsistencies plus one CLI glue-layer test gap.
+None blocks the task; all are low severity and recorded for completeness.
 
 Normative references used:
 
@@ -70,13 +70,13 @@ const messageForThrownValue = (error: unknown): string => {
 
 They are byte-for-byte the same and serve the same boundary role: converting an
 unknown thrown value into stable user-visible text (`check-cli.ts` for the
-`internal error:` path, `read-workflow-source.ts` for the read-failure message).
-AGENTS.md's boundary-error guidance ("Convert unknown thrown values and
-third-party failures to project-owned error shapes at API or command
+`internal error:` path, `read-workflow-source.ts` for the read-failure
+message). AGENTS.md's boundary-error guidance ("Convert unknown thrown values
+and third-party failures to project-owned error shapes at API or command
 boundaries") makes this a shared concern rather than a coincidental clone. The
 duplication is fresh: `read-workflow-source.ts` and the check CLI landed across
-tasks 2.4.1 and 2.4.2, so the second copy was introduced knowingly alongside the
-first.
+tasks 2.4.1 and 2.4.2, so the second copy was introduced knowingly alongside
+the first.
 
 Proposed fix:
 
@@ -118,18 +118,19 @@ report envelope, its diagnostics array, and every diagnostic object can be
 mutated in place. The immutability discipline is therefore inconsistent between
 neighbouring modules created in the same slice: the CLI aggregator freezes, the
 report builder it calls does not. `createDiagnosticReport` already deep-clones
-its inputs (`cloneDiagnostic`, `cloneSourceSpan`), so the intent to hand back an
-independent, caller-detached value is clear; leaving the result mutable
+its inputs (`cloneDiagnostic`, `cloneSourceSpan`), so the intent to hand back
+an independent, caller-detached value is clear; leaving the result mutable
 undercuts that intent.
 
 Proposed fix:
 
 Decide on one immutability contract and apply it consistently. The lowest-churn
-option is to freeze the report envelope (and ideally its `diagnostics` array) at
-the end of `createDiagnosticReport`, matching the sibling CLI modules, so that
-the shallow `Object.freeze` in `runCheck` no longer implies a guarantee it does
-not deliver. Document the chosen depth of the freeze in the function docstring
-so callers know whether nested diagnostics are safe to treat as frozen.
+option is to freeze the report envelope (and ideally its `diagnostics` array)
+at the end of `createDiagnosticReport`, matching the sibling CLI modules, so
+that the shallow `Object.freeze` in `runCheck` no longer implies a guarantee it
+does not deliver. Document the chosen depth of the freeze in the function
+docstring so callers know whether nested diagnostics are safe to treat as
+frozen.
 
 ## Finding 3: the check CLI rebuilds the request conditionally, then spreads it redundantly
 
@@ -164,8 +165,8 @@ const outcome = runCheck({
 
 The two branches repeat `paths` and the `io.version ?? packageJson.version`
 expression, and `runCheck({ ...request })` copies a fully-formed object for no
-effect — `runCheck(request)` is equivalent. The shape is a small readability and
-maintenance snag: the version-defaulting logic is duplicated across the two
+effect — `runCheck(request)` is equivalent. The shape is a small readability
+and maintenance snag: the version-defaulting logic is duplicated across the two
 arms, and the spread reads as if it were merging additional fields when it is
 not.
 
@@ -175,8 +176,8 @@ Compute the shared fields once and attach the optional seam conditionally, for
 example by building a base `{ paths, version }` and conditionally spreading
 `...(io.readFileText ? { readFileText: io.readFileText } : {})` into a single
 object literal, then call `runCheck(request)` directly. This keeps
-`exactOptionalPropertyTypes` satisfied, removes the duplicated default, and drops
-the misleading spread.
+`exactOptionalPropertyTypes` satisfied, removes the duplicated default, and
+drops the misleading spread.
 
 ## Finding 4: the severity list and its summary key/label mapping have no single source of truth
 
@@ -194,8 +195,8 @@ Location:
 Description:
 
 The severity ordering `["error", "warning", "info", "hint"]` and its mapping to
-the pluralized summary keys (`errors`, `warnings`, `infos`, `hints`) is restated
-independently in four places: the `DIAGNOSTIC_SEVERITIES` tuple
+the pluralized summary keys (`errors`, `warnings`, `infos`, `hints`) is
+restated independently in four places: the `DIAGNOSTIC_SEVERITIES` tuple
 (`severity.ts:10`, described as "the source of truth"), the `counts` object and
 its key-to-summary mapping in `countDiagnostics` (`report.ts:36`), the
 `SUMMARY_PARTS` table with its singular/plural labels in `text.ts:13`, and the
@@ -203,8 +204,8 @@ its key-to-summary mapping in `countDiagnostics` (`report.ts:36`), the
 hard-codes a second copy of the ordering plus the singular/plural noun for each
 severity, none of which is derived from `DIAGNOSTIC_SEVERITIES`. Adding or
 renaming a severity would require coordinated edits in all four locations — the
-"shotgun surgery" smell that AGENTS.md's refactoring heuristics call out — and a
-missed edit would silently drop a severity from either the counts or the text
+"shotgun surgery" smell that AGENTS.md's refactoring heuristics call out — and
+a missed edit would silently drop a severity from either the counts or the text
 summary. The severity tuple is already labelled the source of truth, so the
 divergent hand-maintained mirrors contradict the stated design.
 
@@ -212,11 +213,11 @@ Proposed fix:
 
 Derive the summary key and singular/plural labels from `DIAGNOSTIC_SEVERITIES`
 rather than restating them. For example, define one small table keyed by
-severity that carries `summaryKey`, `singular`, and `plural`, colocated with the
-severity model, and have `countDiagnostics` and `SUMMARY_PARTS` consume it so a
-new severity is a single-site change. Weigh this against the current explicitness
-if the severity set is considered closed; record the decision either way so the
-"source of truth" claim in `severity.ts` matches reality.
+severity that carries `summaryKey`, `singular`, and `plural`, colocated with
+the severity model, and have `countDiagnostics` and `SUMMARY_PARTS` consume it
+so a new severity is a single-site change. Weigh this against the current
+explicitness if the severity set is considered closed; record the decision
+either way so the "source of truth" claim in `severity.ts` matches reality.
 
 ## Finding 5: no CLI-level test exercises a mixed diagnostics-and-read-failure invocation
 
@@ -237,21 +238,21 @@ path in isolation — a clean run, a diagnostic-bearing run (stdout only), and a
 unreadable-path run (stderr only) — but never a single invocation that mixes a
 readable diagnostic-bearing file with an unreadable path. The `runCheck`
 aggregator suite proves that diagnostics and read failures accumulate together
-and that the exit code is `1` in mixed cases, yet the CLI glue that splits those
-two channels across stdout and stderr in one run is unverified: a regression that
-dropped either channel, or interleaved them onto the wrong stream, when both are
-present would pass the current suite. The stdout-before-stderr emission contract
-is exactly the kind of externally observable CLI behaviour AGENTS.md asks
-end-to-end coverage to lock in.
+and that the exit code is `1` in mixed cases, yet the CLI glue that splits
+those two channels across stdout and stderr in one run is unverified: a
+regression that dropped either channel, or interleaved them onto the wrong
+stream, when both are present would pass the current suite. The
+stdout-before-stderr emission contract is exactly the kind of externally
+observable CLI behaviour AGENTS.md asks end-to-end coverage to lock in.
 
 Proposed fix:
 
-Add a `check-cli.test.ts` case that runs `["check", <diagnostic-fixture>,
-<missing-path>]` with an injected reader and captured writers, asserting that
-stdout carries the diagnostic line and `Found …` summary, stderr carries the
-`error: cannot read <path>:` line, and the exit code is `1`. This pins the
-two-channel emission behaviour of the glue layer that the aggregator tests do not
-reach.
+Add a `check-cli.test.ts` case that runs
+`["check", <diagnostic-fixture>, <missing-path>]` with an injected reader and
+captured writers, asserting that stdout carries the diagnostic line and
+`Found …` summary, stderr carries the `error: cannot read <path>:` line, and
+the exit code is `1`. This pins the two-channel emission behaviour of the glue
+layer that the aggregator tests do not reach.
 
 ## Finding 6: the argument flag scan spans the subcommand and pre-empts command validation
 
@@ -280,16 +281,17 @@ if (subcommand !== "check") {
 }
 ```
 
-Two consequences follow. First, any operand beginning with `-` is rejected as an
-unknown option, which forecloses the conventional `-` stdin sentinel and any
+Two consequences follow. First, any operand beginning with `-` is rejected as
+an unknown option, which forecloses the conventional `-` stdin sentinel and any
 dash-prefixed filename — behaviour that will collide with the Ruff-compatible
-`--stdin-filename` and flag surface planned for task 2.4.4. Second, the ordering
-means a genuinely wrong command that happens to start with `-` (for example
-`--help`) is reported as `unknown option: --help` rather than being routed to
-help or command handling, so flag errors mask command errors. This is acceptable
-for the deliberately minimal 2.4.2 slice and the guide records the wider flag
-surface as deferred, but the scan-then-validate ordering is worth flagging so it
-is revisited rather than inherited unexamined when option parsing lands.
+`--stdin-filename` and flag surface planned for task 2.4.4. Second, the
+ordering means a genuinely wrong command that happens to start with `-` (for
+example `--help`) is reported as `unknown option: --help` rather than being
+routed to help or command handling, so flag errors mask command errors. This is
+acceptable for the deliberately minimal 2.4.2 slice and the guide records the
+wider flag surface as deferred, but the scan-then-validate ordering is worth
+flagging so it is revisited rather than inherited unexamined when option
+parsing lands.
 
 Proposed fix:
 
@@ -298,8 +300,9 @@ option parsing from operand handling: stop at `--` for end-of-options, treat a
 bare `-` as the stdin operand rather than a flag, and validate the subcommand
 before rejecting unknown options so command and option errors are reported
 distinctly. For the current slice, at minimum add a short comment at the scan
-recording that dash-prefixed operands are intentionally unsupported until 2.4.4,
-so the limitation is a documented decision rather than an accident of ordering.
+recording that dash-prefixed operands are intentionally unsupported until
+2.4.4, so the limitation is a documented decision rather than an accident of
+ordering.
 
 ## Finding 7: the text report contract is documented but its non-machine-parseable shape is not called out
 
@@ -319,21 +322,22 @@ Description:
 whitespace (`normalizeTextField` collapses CR, LF, tabs, NEL, LS, and PS), not
 ordinary spaces. A file path or message containing an ordinary space therefore
 yields a line that cannot be split back into fields unambiguously — the format
-is human-oriented only. The users' guide describes the line shape and the `Found
-…` summary well, and correctly steers CI and editor integrations toward the
-planned machine formats, but it does not state plainly that the text output is
-not a stable machine-parseable contract (unlike the forthcoming JSON envelope).
-Readers could reasonably infer the space-delimited line is grep/awk-friendly and
-build brittle tooling on it. The absence of a delimiter after the column also
-diverges from the Ruff `file:line:col:` precedent the design otherwise follows,
-which is worth noting even though full Ruff parity is a later task.
+is human-oriented only. The users' guide describes the line shape and the
+`Found …` summary well, and correctly steers CI and editor integrations toward
+the planned machine formats, but it does not state plainly that the text output
+is not a stable machine-parseable contract (unlike the forthcoming JSON
+envelope). Readers could reasonably infer the space-delimited line is
+grep/awk-friendly and build brittle tooling on it. The absence of a delimiter
+after the column also diverges from the Ruff `file:line:col:` precedent the
+design otherwise follows, which is worth noting even though full Ruff parity is
+a later task.
 
 Proposed fix:
 
 Add one sentence to the text-output section of the users' guide (and a matching
-note in the developers' guide contract) stating that the text report is intended
-for human reading only and is not a stable machine-parseable format — callers
-that need to parse diagnostics should use the JSON output planned for task 2.4.3.
-Optionally, record in the technical design whether the eventual text format
-should adopt the Ruff `file:line:col:` colon delimiter for closer precedent
-alignment, so the divergence is a deliberate choice rather than drift.
+note in the developers' guide contract) stating that the text report is
+intended for human reading only and is not a stable machine-parseable format —
+callers that need to parse diagnostics should use the JSON output planned for
+task 2.4.3. Optionally, record in the technical design whether the eventual
+text format should adopt the Ruff `file:line:col:` colon delimiter for closer
+precedent alignment, so the divergence is a deliberate choice rather than drift.

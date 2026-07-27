@@ -76,5 +76,5 @@ conservatively broad.
 The remaining conservative limits are member forms such as
 `namespace.validate(source)`, dynamic and computed callees such as
 `registry["validate"](source)`, and global forms such as
-`globalThis.validate(source)`. These forms stay intentionally undetected because
-the scanner cannot prove that they reference ODW's injected primitive.
+`globalThis.validate(source)`. These forms stay intentionally undetected
+because the scanner cannot prove that they reference ODW's injected primitive.

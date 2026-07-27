@@ -1,9 +1,8 @@
 # Implement pure-literal metadata compatibility checks
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -61,8 +60,8 @@ would **not** load under ODW's isolated `new Function` evaluation, so it stays
 `odw/meta-statically-unprovable`, never `odw/claude-pure-meta`. Likewise a
 computed *required* field (for example `description: "Computed " + "text."`, the
 `computed-meta-expression.js` fixture) stays `odw/meta-statically-unprovable`,
-because `odw-lint` refuses to fold the expression and therefore cannot prove the
-resulting `description` is a valid string.
+because `odw-lint` refuses to fold the expression and therefore cannot prove
+the resulting `description` is a valid string.
 
 This realizes roadmap task 3.1.1 (`docs/roadmap.md` lines 973-977) and the
 metadata classification contract in `docs/technical-design.md` §6.3 (the
@@ -78,11 +77,12 @@ escalation, not a workaround.
 
 - **Do not execute workflow source.** The metadata classifier, parser, and the
   new closed-constant recognizer must never call `new Function`, `eval`, ODW's
-  runtime loader, `checkMeta`, `scanDualCompat`, `validate(source)`, or any path
-  that evaluates metadata or the workflow body. Recognizing a closed-constant
-  expression is a *structural* classification of source tokens (for example
-  "binary `+` over two string literals"); it must never compute the value. This
-  is the core security boundary of the project (`docs/technical-design.md` §6.4;
+  runtime loader, `checkMeta`, `scanDualCompat`, `validate(source)`, or any
+  path that evaluates metadata or the workflow body. Recognizing a
+  closed-constant expression is a *structural* classification of source tokens
+  (for example "binary `+` over two string literals"); it must never compute
+  the value. This is the core security boundary of the project
+  (`docs/technical-design.md` §6.4;
   `docs/adr/0001-static-analysis-boundary.md`). The hostile-metadata fixtures
   (`tests/static-analysis/fixtures/invalid-workflows/hostile-metadata/`) exist
   to catch any accidental evaluation and must remain passive.
@@ -108,10 +108,10 @@ escalation, not a workaround.
   escalation. `tests/diagnostics/public-api-fixtures.ts` pins the exported
   names.
 - **Soundness over completeness.** `odw/claude-pure-meta` must never fire for
-  metadata ODW would reject at load time. When in doubt about whether a computed
-  form is closed-constant, classify it as *open* and fall back to
-  `odw/meta-statically-unprovable`. Under-emitting `odw/claude-pure-meta` (a safe
-  superset warning) is acceptable; over-emitting it is a soundness defect
+  metadata ODW would reject at load time. When in doubt about whether a
+  computed form is closed-constant, classify it as *open* and fall back to
+  `odw/meta-statically-unprovable`. Under-emitting `odw/claude-pure-meta` (a
+  safe superset warning) is acceptable; over-emitting it is a soundness defect
   (`docs/technical-design.md` §6.3).
 - **Test-first (Red-Green-Refactor).** Each behavioural change lands a failing
   test first, then the minimal implementation, then refactor.
@@ -136,16 +136,15 @@ escalation, not a workaround.
 - **Iterations:** if a work item's gate (`make all`) still fails after 3
   focused fix attempts, stop and escalate with the failing output.
 - **Fixture regeneration:** if `make refresh-fixtures` cannot run because the
-  sibling ODW checkout is unavailable in the sandbox, do not block; fall back to
-  the documented hand-authoring path in WI-3 and record the tooling failure.
+  sibling ODW checkout is unavailable in the sandbox, do not block; fall back
+  to the documented hand-authoring path in WI-3 and record the tooling failure.
 
 ## Risks
 
 - Risk: making the literal parser "total" over object literals (returning parsed
   facts with impurity markers instead of aborting) changes the parser's public
   return contract, breaking parser-level unit tests that assert
-  `status === "not-statically-provable"`.
-  Severity: medium. Likelihood: high.
+  `status === "not-statically-provable"`. Severity: medium. Likelihood: high.
   Mitigation: WI-1 updates exactly the affected parser-level tests
   (`tests/static-analysis/workflow-metadata.test.ts` lines 176-209 and
   `tests/static-analysis/workflow-metadata-parser-edge.test.ts` lines 130-160,
@@ -153,38 +152,35 @@ escalation, not a workaround.
   classifier-, fixture-, and parity-level tests stay green in WI-1.
 - Risk: the closed-constant recognizer accepts a form that can actually throw or
   reference free scope, so `odw/claude-pure-meta` fires for metadata ODW would
-  reject (a soundness defect that misleads task 3.1.3 strict mode).
-  Severity: high. Likelihood: medium.
-  Mitigation: the recognizer accepts only an explicitly enumerated allow-list of
-  total, side-effect-free forms over number/string/boolean/`null` literals (see
-  the "Closed-constant expressions" Decision Log entry); every other form,
-  including `bigint`, calls, identifiers, member access, spreads, template
-  interpolation, and ternaries, is treated as *open*. WI-2 pins the boundary
-  with adversarial negative tests (throwing IIFE, free identifier, `bigint`
-  division) that must classify as `odw/meta-statically-unprovable`.
+  reject (a soundness defect that misleads task 3.1.3 strict mode). Severity:
+  high. Likelihood: medium. Mitigation: the recognizer accepts only an
+  explicitly enumerated allow-list of total, side-effect-free forms over
+  number/string/boolean/`null` literals (see the "Closed-constant expressions"
+  Decision Log entry); every other form, including `bigint`, calls,
+  identifiers, member access, spreads, template interpolation, and ternaries,
+  is treated as *open*. WI-2 pins the boundary with adversarial negative tests
+  (throwing IIFE, free identifier, `bigint` division) that must classify as
+  `odw/meta-statically-unprovable`.
 - Risk: `make refresh-fixtures` requires the sibling ODW checkout
   (`missing-odw-reference-checkout`) which is outside the sandbox's allowed
-  directories.
-  Severity: low. Likelihood: medium.
-  Mitigation: WI-3 keeps the ODW-derived fixtures untouched; the new
-  Claude-incompatibility fixtures are locally authored (not upstream copies),
-  and their manifest entries are validated by the existing freshness/parity
-  tests regardless of how they are produced. A hand-authoring fallback is
-  documented.
+  directories. Severity: low. Likelihood: medium. Mitigation: WI-3 keeps the
+  ODW-derived fixtures untouched; the new Claude-incompatibility fixtures are
+  locally authored (not upstream copies), and their manifest entries are
+  validated by the existing freshness/parity tests regardless of how they are
+  produced. A hand-authoring fallback is documented.
 - Risk: file-size limit breach when adding impurity handling and the
-  closed-constant recognizer to two already large modules.
-  Severity: low. Likelihood: medium.
-  Mitigation: extract the total-parse impurity walk and the closed-constant
-  recognizer into new small modules
-  (`workflow-metadata-impurity.ts`,
-  `workflow-metadata-constant-expr.ts`,
+  closed-constant recognizer to two already large modules. Severity: low.
+  Likelihood: medium. Mitigation: extract the total-parse impurity walk and the
+  closed-constant recognizer into new small modules
+  (`workflow-metadata-impurity.ts`, `workflow-metadata-constant-expr.ts`,
   `workflow-metadata-required-fields.ts`); verify with
   `find src -name '*.ts' -exec wc -l {} +` before each commit.
 
 ## Progress
 
 - [x] WI-1: Model impure metadata values in a total object-literal parse
-- [x] WI-2: Emit `odw/claude-pure-meta` for provably ODW-loadable impure metadata
+- [x] WI-2: Emit `odw/claude-pure-meta` for provably ODW-loadable impure
+      metadata
 - [x] WI-3: Add dual-compat parity fixtures for closed-constant metadata
 - [x] WI-4: Reconcile rule and design docs and tick roadmap task 3.1.1
 
@@ -195,15 +191,14 @@ escalation, not a workaround.
   keeps parsing literal sibling properties, records object-level impurity spans
   for spreads, computed keys, and shorthand or otherwise unnameable properties,
   and computes `firstImpureSpan` from the combined value and object-level
-  impurity spans. The classifier still emits
-  `odw/meta-statically-unprovable` for impure object literals, preserving the
-  externally visible diagnostic boundary for this work item.
+  impurity spans. The classifier still emits `odw/meta-statically-unprovable`
+  for impure object literals, preserving the externally visible diagnostic
+  boundary for this work item.
 - WI-1 gate note: adding `workflow-metadata-impurity.ts` and
   `workflow-metadata-parser-results.ts` required updating the static-analysis
   module inventory in `tests/diagnostics/architecture-fixtures.ts`. `make all`
   also enforced a pre-existing documentation-contents freshness expectation for
-  this ExecPlan, so `docs/contents.md` now lists
-  `execplans/roadmap-3-1-1.md`.
+  this ExecPlan, so `docs/contents.md` now lists `execplans/roadmap-3-1-1.md`.
 - WI-2 implementation note: the classifier now emits
   `odw/claude-pure-meta` only when `name` and `description` remain provable
   valid literals and every recorded impurity is a closed-constant span. Open
@@ -211,23 +206,21 @@ escalation, not a workaround.
   `bigint` arithmetic, and scanner-unaccepted string atoms stay
   `odw/meta-statically-unprovable`.
 - WI-2 gate note: the file-size and complexity gates required splitting the
-  closed-constant recognizer support into
-  `workflow-metadata-constant-expr.ts`,
+  closed-constant recognizer support into `workflow-metadata-constant-expr.ts`,
   `workflow-metadata-constant-results.ts`, and
   `workflow-metadata-expression.ts`, and moving the new WI-2 boundary cases into
   `workflow-metadata-claude-pure-meta.test.ts`. The static-analysis
   architecture fixture was updated for those new modules.
 - WI-3 implementation note: two locally-authored passive dual-compat fixtures
-  now cover closed-constant metadata (`retries: 1 - 2` and
-  `tags: ["a" + "b"]`) through the public lint and loader-parity harnesses.
-  `make refresh-fixtures` succeeded against the sibling ODW checkout and
-  confirmed 12 dual-compat fixtures, but it did not discover the new local
-  fixture files because the refresh writer derives `dual-compat.ts` from the
-  manifest source. The two manifest entries were therefore hand-authored with
-  `lintWorkflowSource` spans and SHA-256 hashes, then validated by the
-  manifest-freshness and embedded-manifest-source snapshot tests. The additive
-  corpus-count snapshots moved from 10 to 12 dual-compat fixtures and from 44
-  to 46 total fixtures.
+  now cover closed-constant metadata (`retries: 1 - 2` and `tags: ["a" + "b"]`)
+  through the public lint and loader-parity harnesses. `make refresh-fixtures`
+  succeeded against the sibling ODW checkout and confirmed 12 dual-compat
+  fixtures, but it did not discover the new local fixture files because the
+  refresh writer derives `dual-compat.ts` from the manifest source. The two
+  manifest entries were therefore hand-authored with `lintWorkflowSource` spans
+  and SHA-256 hashes, then validated by the manifest-freshness and
+  embedded-manifest-source snapshot tests. The additive corpus-count snapshots
+  moved from 10 to 12 dual-compat fixtures and from 44 to 46 total fixtures.
 - WI-3 tooling note: GrepAI search was available for main-branch intent search,
   and `sem blame tests/static-analysis/fixtures/dual-compat.ts` worked for
   semantic history context. Leta was partially available (`leta files` worked),
@@ -237,20 +230,20 @@ escalation, not a workaround.
   therefore used bounded branch-local file inspection for the fixture manifest
   and parity test surfaces.
 - WI-4 implementation note: the rule documentation now uses a closed-constant
-  non-required metadata field (`retries: 1 - 2`) as the failing example, matching
-  the rule's actual classifier boundary. The design taxonomy now points the
-  `odw/claude-pure-meta` summary back to §6.3's ODW-acceptance gate, and roadmap
-  task 3.1.1 is ticked complete.
+  non-required metadata field (`retries: 1 - 2`) as the failing example,
+  matching the rule's actual classifier boundary. The design taxonomy now
+  points the `odw/claude-pure-meta` summary back to §6.3's ODW-acceptance gate,
+  and roadmap task 3.1.1 is ticked complete.
 
 - Observation: `odw/claude-pure-meta` is already catalogued
   (`src/diagnostics/rule-catalogue.ts` lines 164-169), documented
   (`docs/rules/claude-pure-meta.md`), listed as `released` in
   `docs/rules/index.md`, and present in the diagnostic-schema enum snapshot
   (`tests/diagnostics/__snapshots__/schema.test.ts.snap`), but no checker code
-  emits it and its `messages` contract is empty. Evidence: `grep -rn
-  claude-pure-meta`. Impact: WI-2 fills the message contract and adds the
-  emitting branch; no new catalogue entry, doc page, or schema enum member is
-  needed.
+  emits it and its `messages` contract is empty. Evidence:
+  `grep -rn claude-pure-meta`. Impact: WI-2 fills the message contract and adds
+  the emitting branch; no new catalogue entry, doc page, or schema enum member
+  is needed.
 - Observation (fixture audit — proves the "no existing fixture flips"
   tolerance): under the revised closed-constant boundary, **no existing fixture
   manifest changes classification**. Concretely:
@@ -275,10 +268,10 @@ escalation, not a workaround.
   non-required field), which no fixture manifest references. Evidence: audit of
   `tests/static-analysis/fixtures/invalid-workflows/malformed-metadata/` and
   `tests/static-analysis/loader-parity.test.ts` lines 276-284. Impact: WI-2
-  needs no generated-manifest regeneration; WI-3's fixtures are purely additive.
-  "Additive" here means they append two new `family: "claude-pure-meta"` entries
-  and change no existing entry — this additivity extends to the
-  embedded-manifest-source snapshot
+  needs no generated-manifest regeneration; WI-3's fixtures are purely
+  additive. "Additive" here means they append two new
+  `family: "claude-pure-meta"` entries and change no existing entry — this
+  additivity extends to the embedded-manifest-source snapshot
   `tests/static-analysis/__snapshots__/fixture-metadata-refresh-manifest-source.test.ts.snap`,
   which embeds the whole generated `dual-compat.ts` (snapshot header line 180,
   `family:` entries lines 203-338) and therefore grows by exactly those two
@@ -292,17 +285,17 @@ escalation, not a workaround.
   `phases: [{ title: helper }]` does **not** emit `odw/claude-pure-meta`. Under
   the revised boundary that assertion is *correct* (`helper` is a free
   identifier → open → `odw/meta-statically-unprovable`), so WI-2 strengthens it
-  into a positive `odw/meta-statically-unprovable` assertion rather than flipping
-  it to `odw/claude-pure-meta`. The positive `odw/claude-pure-meta` case uses a
-  closed-constant example (`retries: 1 - 2`).
+  into a positive `odw/meta-statically-unprovable` assertion rather than
+  flipping it to `odw/claude-pure-meta`. The positive `odw/claude-pure-meta`
+  case uses a closed-constant example (`retries: 1 - 2`).
 
 ## Decision log
 
 - Decision: **Asymmetric provable-load boundary.** Emit `odw/claude-pure-meta`
-  only for an object-literal `meta` that `odw-lint` can prove ODW's `new
-  Function` evaluation would accept — *without folding any value* — yet which is
-  not a pure literal. ODW-acceptance decomposes into two obligations, proven
-  differently:
+  only for an object-literal `meta` that `odw-lint` can prove ODW's
+  `new Function` evaluation would accept — *without folding any value* — yet
+  which is not a pure literal. ODW-acceptance decomposes into two obligations,
+  proven differently:
   1. **Required-field validity.** ODW requires `name` to evaluate to a non-empty
      string and `description` to a string. `odw-lint` proves this only when both
      are plain string literals (it never folds an expression to discover its
@@ -330,28 +323,27 @@ escalation, not a workaround.
   call, identifier at top level) remain `odw/meta-statically-unprovable`.
   Rationale: `docs/technical-design.md` §6.3 (the taxonomy the roadmap task
   cites first) defines "Claude-incompatible" as "ODW *can* accept the workflow,
-  but Claude Code's static workflow reader would reject it", and
-  "statically unprovable" as "ODW's runtime *might* accept … but `odw-lint`
-  cannot prove that safely without evaluating source". The asymmetry maps
-  exactly onto *what must be proven*: required fields need a proven **valid
-  value** (which demands folding — refused — so a computed required field is
-  unprovable), whereas non-required content needs only proven **non-throwing
-  evaluability** (a structural closed-constant check, which never evaluates). A
-  closed-constant expression loads under *every* possible slice-scoping model
-  because it references nothing and cannot throw, so this boundary is sound
-  regardless of ODW's exact slice extent — neutralizing any residual
-  uncertainty about `extractMeta`'s scoping. §9.2 states the rule condition as
-  the summary "`meta` is not a pure literal"; that summary is read within §6.3's
-  "ODW can accept" gate, and WI-4 adds a one-clause cross-reference so the two
-  sections cannot be read in isolation.
-  Date/Author: 2026-07-06, planning agent (round 2).
+  but Claude Code's static workflow reader would reject it", and "statically
+  unprovable" as "ODW's runtime *might* accept … but `odw-lint` cannot prove
+  that safely without evaluating source". The asymmetry maps exactly onto *what
+  must be proven*: required fields need a proven **valid value** (which demands
+  folding — refused — so a computed required field is unprovable), whereas
+  non-required content needs only proven **non-throwing evaluability** (a
+  structural closed-constant check, which never evaluates). A closed-constant
+  expression loads under *every* possible slice-scoping model because it
+  references nothing and cannot throw, so this boundary is sound regardless of
+  ODW's exact slice extent — neutralizing any residual uncertainty about
+  `extractMeta`'s scoping. §9.2 states the rule condition as the summary
+  "`meta` is not a pure literal"; that summary is read within §6.3's "ODW can
+  accept" gate, and WI-4 adds a one-clause cross-reference so the two sections
+  cannot be read in isolation. Date/Author: 2026-07-06, planning agent (round
+  2).
 - Decision: **Closed-constant expressions (the enumerated allow-list).** An
-  expression is *closed-constant* when it is one of, recursively:
-  a number literal, a parser-accepted string literal (including a template
-  literal with **no** interpolation whose raw text is accepted by the parser's
-  own string scanner), a boolean literal, `null`; a unary `+`, `-`, `~` applied
-  to a closed-constant number, or `!` applied to a closed-constant boolean; a
-  binary
+  expression is *closed-constant* when it is one of, recursively: a number
+  literal, a parser-accepted string literal (including a template literal with
+  **no** interpolation whose raw text is accepted by the parser's own string
+  scanner), a boolean literal, `null`; a unary `+`, `-`, `~` applied to a
+  closed-constant number, or `!` applied to a closed-constant boolean; a binary
   `+ - * / % **` where both operands are closed-constant numbers, or binary `+`
   where both operands are closed-constant strings; an array literal whose
   elements are all closed-constant (no elisions, no spread); an object literal
@@ -368,38 +360,38 @@ escalation, not a workaround.
   `docs/adr/0001-static-analysis-boundary.md`). A string/template atom that the
   parser's own `scanStringLiteral` cannot fully accept and decode is **open**,
   not closed-constant, even if another JavaScript parser would accept it.
-  Examples include escaped forms that this parser currently reports as
-  impure, such as `"\u0064"` and `"\0"`, and any raw-newline string candidate
-  that ODW's `new Function` would reject. Such spans must stay
+  Examples include escaped forms that this parser currently reports as impure,
+  such as `"\u0064"` and `"\0"`, and any raw-newline string candidate that ODW's
+  `new Function` would reject. Such spans must stay
   `odw/meta-statically-unprovable` unless the scanner itself is deliberately
-  widened and the tests below are updated.
-  Rationale: this is the maximal set `odw-lint` can prove ODW-loadable without
-  evaluation, and excluding `bigint` and every partial operator keeps it sound.
-  Date/Author: 2026-07-06, planning agent (round 2); amended 2026-07-06 after
-  design review to make scanner-accepted string atoms an explicit precondition.
+  widened and the tests below are updated. Rationale: this is the maximal set
+  `odw-lint` can prove ODW-loadable without evaluation, and excluding `bigint`
+  and every partial operator keeps it sound. Date/Author: 2026-07-06, planning
+  agent (round 2); amended 2026-07-06 after design review to make
+  scanner-accepted string atoms an explicit precondition.
 - Decision: **Total object-literal parse with an `impure` value kind.** Extend
   the literal parser so that an object-literal `meta` always parses to facts:
-  literal property values parse as today; a non-literal property value becomes a
-  new `ParsedMetadataValue` of `kind: "impure"` carrying its span; spreads and
-  computed keys are recorded as object-level impurity spans and skipped over the
-  value they introduce. Record a first-impure span (smallest start offset among
-  impure values and keys) and keep `WorkflowMetadataPortability`
-  (`"pure-literal" | "not-statically-provable"`) as the purity signal. Non-object
-  metadata values still return `not-statically-provable`.
-  Rationale: the classifier needs `name`/`description` facts *even when other
-  content is impure*, which the current abort-on-first-impurity parser cannot
-  provide. This is the "static lenient parse mode" anticipated by
-  `docs/technical-design.md` §6.4. The closed-constant-vs-open sub-classification
-  is deliberately *not* computed in the parser (WI-1 keeps classifier output
-  byte-identical); it is derived in WI-2 by a dedicated recognizer over the
-  recorded impure spans.
-  Date/Author: 2026-07-06, planning agent (round 2).
+  literal property values parse as today; a non-literal property value becomes
+  a new `ParsedMetadataValue` of `kind: "impure"` carrying its span; spreads
+  and computed keys are recorded as object-level impurity spans and skipped
+  over the value they introduce. Record a first-impure span (smallest start
+  offset among impure values and keys) and keep `WorkflowMetadataPortability`
+  (`"pure-literal" | "not-statically-provable"`) as the purity signal.
+  Non-object metadata values still return `not-statically-provable`. Rationale:
+  the classifier needs `name`/`description` facts *even when other content is
+  impure*, which the current abort-on-first-impurity parser cannot provide.
+  This is the "static lenient parse mode" anticipated by
+  `docs/technical-design.md` §6.4. The closed-constant-vs-open
+  sub-classification is deliberately *not* computed in the parser (WI-1 keeps
+  classifier output byte-identical); it is derived in WI-2 by a dedicated
+  recognizer over the recorded impure spans. Date/Author: 2026-07-06, planning
+  agent (round 2).
 - Decision: **Claude-pure-meta span points at the first impure content.**
   Rationale: most actionable for authors and equal to the span the current
-  parser already surfaces, so no new span machinery is required. It also matches
-  the revised failing example in `docs/rules/claude-pure-meta.md` (which
-  highlights the computed value).
-  Date/Author: 2026-07-06, planning agent (round 2).
+  parser already surfaces, so no new span machinery is required. It also
+  matches the revised failing example in `docs/rules/claude-pure-meta.md`
+  (which highlights the computed value). Date/Author: 2026-07-06, planning
+  agent (round 2).
 - Decision: **Grammar-sensitive exponentiation under-emits.** The
   closed-constant recognizer treats direct unary-left exponentiation as open,
   which may also under-emit for some parenthesized variants. This keeps the
@@ -409,11 +401,11 @@ escalation, not a workaround.
 - Decision: **Reviewed message text** for `odw/claude-pure-meta`:
   `"Workflow metadata is not a pure literal, which Claude Code rejects because
   its static workflow reader cannot evaluate computed metadata."`
-  Rationale: mirrors the established deterministic-time message pattern
-  ("… which Claude Code rejects because …") and the rule doc prose. The
-  implementer must keep the catalogue message, the rule doc, and every fixture
-  manifest that references the message in sync.
-  Date/Author: 2026-07-06, planning agent (round 2).
+  Rationale: mirrors the established deterministic-time message pattern ("…
+  which Claude Code rejects because …") and the rule doc prose. The implementer
+  must keep the catalogue message, the rule doc, and every fixture manifest
+  that references the message in sync. Date/Author: 2026-07-06, planning agent
+  (round 2).
 - Decision: **Rewrite the `claude-pure-meta.md` failing example; leave §6.3,
   §9.2 semantics and `meta-statically-unprovable.md` intact.** The current
   `docs/rules/claude-pure-meta.md` failing example puts the impurity in `name`
@@ -421,10 +413,10 @@ escalation, not a workaround.
   classifies as `odw/meta-statically-unprovable`, not the rule the page
   documents. That example is therefore unsound and is replaced with a
   closed-constant non-required-field example (`retries: 1 - 2`). This is a doc
-  *correction* justified by §6.3 (the example must be a case ODW accepts), not a
-  semantic change to §6.3 or §9.2, and it needs no design-doc escalation because
-  the taxonomy in §6.3 is honoured exactly. WI-4 additionally adds a one-clause
-  cross-reference in §9.2 pointing at §6.3's "ODW can accept" gate.
+  *correction* justified by §6.3 (the example must be a case ODW accepts), not
+  a semantic change to §6.3 or §9.2, and it needs no design-doc escalation
+  because the taxonomy in §6.3 is honoured exactly. WI-4 additionally adds a
+  one-clause cross-reference in §9.2 pointing at §6.3's "ODW can accept" gate.
   Date/Author: 2026-07-06, planning agent (round 2).
 - Decision: **Leave `meta-statically-unprovable.md` unchanged after WI-4.**
   Rationale: its `computed-meta-expression.js` example still puts the impurity
@@ -442,9 +434,9 @@ closed-constant expressions. Open impurities, computed required fields, and
 scanner-rejected string atoms remain `odw/meta-statically-unprovable`.
 
 WI-4 found no new unsound closed-constant form. The only documentation
-reconciliation needed was to replace the old computed-`name` rule example with a
-closed-constant non-required-field example and to make §9.2 explicitly inherit
-§6.3's ODW-acceptance gate.
+reconciliation needed was to replace the old computed-`name` rule example with
+a closed-constant non-required-field example and to make §9.2 explicitly
+inherit §6.3's ODW-acceptance gate.
 
 ## Context and orientation
 
@@ -460,8 +452,8 @@ never executes workflow source. Key modules for this task, by full path:
 - `src/static-analysis/workflow-metadata-parser.ts` — the pure-literal metadata
   parser. `parseWorkflowMetadataLiteral(scanResult)` returns either
   `{status:"parsed", facts}` or `{status:"not-statically-provable", span}`.
-  Today it aborts at the first non-literal value (`parseValue`,
-  `parseProperty`, `parseObject`, `parseArray` early-return `unprovableFrom`).
+  Today it aborts at the first non-literal value (`parseValue`, `parseProperty`,
+  `parseObject`, `parseArray` early-return `unprovableFrom`).
 - `src/static-analysis/workflow-metadata.ts` — `classifyWorkflowMetadata`
   turns the scan + parse into a `WorkflowMetadataClassification`
   (`not-applicable` | `valid` | `runtime-invalid` | `statically-unprovable`)
@@ -500,33 +492,34 @@ Verified external behaviour and the tooling-availability record:
 - ODW's runtime loader (`src/loader.ts` `extractMeta`) "masks non-code, finds
   `export const meta`, slices the object literal from the original source, and
   evaluates it with `new Function`" — verbatim from
-  `docs/execplans/roadmap-1-3-4.md` lines 467-469 (which cite the sibling source
-  by file and symbol). ODW therefore accepts computed metadata **only** when the
-  sliced object evaluates to a valid object without throwing; free identifiers in
-  the slice raise `ReferenceError` and throwing expressions raise, and ODW then
-  rejects. This is the load-bearing fact behind the asymmetric boundary.
+  `docs/execplans/roadmap-1-3-4.md` lines 467-469 (which cite the sibling
+  source by file and symbol). ODW therefore accepts computed metadata **only**
+  when the sliced object evaluates to a valid object without throwing; free
+  identifiers in the slice raise `ReferenceError` and throwing expressions
+  raise, and ODW then rejects. This is the load-bearing fact behind the
+  asymmetric boundary.
 - ODW's static `checkMeta` (`src/dual-compat.ts`) "parses a pure-literal subset
   with `LiteralParser` and treats computed values as not pure without executing
-  workflow bodies" (`docs/execplans/roadmap-1-3-4.md` lines 473-475). `odw-lint`'s
-  vendored parser (`workflow-metadata-parser.ts`) implements this pure-literal
-  subset; this task widens it to keep parsing after the first impurity and adds
-  a closed-constant recognizer on top.
+  workflow bodies" (`docs/execplans/roadmap-1-3-4.md` lines 473-475).
+  `odw-lint`'s vendored parser (`workflow-metadata-parser.ts`) implements this
+  pure-literal subset; this task widens it to keep parsing after the first
+  impurity and adds a closed-constant recognizer on top.
 - Tooling-availability failure (recorded per the standing rule): `ls`/`Read` of
   `/data/leynos/Projects/open-dynamic-workflows/**` are blocked in this agent
   session ("may only list files in the allowed working directories"). Fallback
   evidence is the in-repo execplan citations above, which quote the sibling
   source with file, symbol, and line numbers. Crucially, the chosen boundary
-  does **not** depend on the exact slice extent: closed-constant expressions load
-  identically under any scoping model, so the plan is implementable and sound
-  even without re-reading the sibling checkout.
+  does **not** depend on the exact slice extent: closed-constant expressions
+  load identically under any scoping model, so the plan is implementable and
+  sound even without re-reading the sibling checkout.
 
 ## Plan of work
 
 The work is four ordered, independently committable, gate-passable items. WI-1
 is a behaviour-preserving refactor that makes the parser total; WI-2 makes the
-single observable behaviour change (the new `odw/claude-pure-meta` branch); WI-3
-adds end-to-end fixture coverage; WI-4 reconciles documentation and ticks the
-roadmap.
+single observable behaviour change (the new `odw/claude-pure-meta` branch);
+WI-3 adds end-to-end fixture coverage; WI-4 reconciles documentation and ticks
+the roadmap.
 
 ### WI-1: Model impure metadata values in a total object-literal parse
 
@@ -538,20 +531,21 @@ Skills to load: `leta` for symbol navigation (`parseWorkflowMetadataLiteral`,
 entity-level history; this is a TypeScript repository, so no Python/Rust router
 applies — follow the `AGENTS.md` TypeScript guidance directly.
 
-Goal: change `parseWorkflowMetadataLiteral` so that when `metaValue.kind ===
-"object"` it always returns `{status:"parsed", facts}`, where `facts` records
-every property (literal values as today; non-literal values as a new
-`ParsedMetadataValue` of `kind:"impure"` with a span), records object-level
-impurities (spreads, computed keys) as spans, exposes the first-impure span, and
-sets `portability` to `"not-statically-provable"` when any impurity exists
-(`"pure-literal"` otherwise). Non-object metadata values keep returning
-`{status:"not-statically-provable", span}`.
+Goal: change `parseWorkflowMetadataLiteral` so that when
+`metaValue.kind === "object"` it always returns `{status:"parsed", facts}`,
+where `facts` records every property (literal values as today; non-literal
+values as a new `ParsedMetadataValue` of `kind:"impure"` with a span), records
+object-level impurities (spreads, computed keys) as spans, exposes the
+first-impure span, and sets `portability` to `"not-statically-provable"` when
+any impurity exists (`"pure-literal"` otherwise). Non-object metadata values
+keep returning `{status:"not-statically-provable", span}`.
 
 Then keep `classifyWorkflowMetadata` **output byte-identical to today**: for
 object-literal metadata that is impure, it must still emit
-`odw/meta-statically-unprovable` at the first-impure span (the same span the old
-parser surfaced). This keeps every classifier-, fixture-, parity-, and
-loader-parity test green in this work item. (WI-2 is the only observable change.)
+`odw/meta-statically-unprovable` at the first-impure span (the same span the
+old parser surfaced). This keeps every classifier-, fixture-, parity-, and
+loader-parity test green in this work item. (WI-2 is the only observable
+change.)
 
 Concrete edits:
 
@@ -563,20 +557,20 @@ Concrete edits:
 2. In `src/static-analysis/workflow-metadata-parser.ts`, change `parseValue` to
    return an `impure` value (advancing via `scanExpressionEnd`) instead of
    `unprovableFrom`; change `parseProperty` to record spreads and computed keys
-   as object-level impurities and continue (for a computed key, scan the
-   `[…]` key, then the `:`, then the value, recording the key span as an
-   impurity and the value as normal); change `parseObject`/`parseArray` to keep
-   iterating rather than abort. Compute the first-impure span. Preserve
-   numeric-key normalization, string decoding, and comment/trivia handling
-   exactly.
+   as object-level impurities and continue (for a computed key, scan the `[…]`
+   key, then the `:`, then the value, recording the key span as an impurity and
+   the value as normal); change `parseObject`/`parseArray` to keep iterating
+   rather than abort. Compute the first-impure span. Preserve numeric-key
+   normalization, string decoding, and comment/trivia handling exactly.
 3. Extract the impurity walk into a new module
    (`src/static-analysis/workflow-metadata-impurity.ts`) if
    `workflow-metadata-parser.ts` would otherwise exceed 400 lines.
 4. In `classifyWorkflowMetadata`, replace the current
    `if (parseResult.facts.portability !== "pure-literal") return
-   staticallyUnprovable(objectSpan)` with logic that reports
-   `staticallyUnprovable(firstImpureSpan)` for impure object literals — i.e. the
-   same rule id and the same span as the pre-refactor behaviour.
+   staticallyUnprovable(objectSpan)`
+   with logic that reports `staticallyUnprovable(firstImpureSpan)` for impure
+   object literals — i.e. the same rule id and the same span as the
+   pre-refactor behaviour.
 
 Tests (Red-Green-Refactor):
 
@@ -591,7 +585,8 @@ Tests (Red-Green-Refactor):
     (`1-2`, raw line terminator, computed key with comment) and the
     `parserOutcomeSummary`/`expectUnprovableSpan` helpers: same treatment; add
     an `impure`-value branch to `parsedValueSummary`.
-  - Update `tests/static-analysis/__snapshots__/workflow-metadata-parser-edge.test.ts.snap`
+  - Update
+    `tests/static-analysis/__snapshots__/workflow-metadata-parser-edge.test.ts.snap`
     via `bun test tests/static-analysis/workflow-metadata-parser-edge.test.ts
     --update-snapshots` only after confirming the change is intentional.
 - Add a focused unit test proving the classifier output is unchanged for a
@@ -604,8 +599,8 @@ Validation: `make all` (must be green with no manifest or fixture-source
 changes). Confirm no file exceeds 400 lines.
 
 Acceptance: parser returns parsed facts (with `impure` markers) for impure
-object literals; `lintWorkflowSource` diagnostics for every existing fixture are
-unchanged (proved by the untouched fixture/parity suites passing).
+object literals; `lintWorkflowSource` diagnostics for every existing fixture
+are unchanged (proved by the untouched fixture/parity suites passing).
 
 ### WI-2: Emit `odw/claude-pure-meta` for provably ODW-loadable impure metadata
 
@@ -620,15 +615,19 @@ Goal: implement the Asymmetric provable-load boundary (see Decision Log). Add
 the reviewed message to the catalogue, add a closed-constant recognizer, and
 emit `odw/claude-pure-meta` for object-literal metadata whose `name` and
 `description` are provable string literals and whose every other value/key is a
-pure literal or closed-constant, with at least one non-literal; keep every other
-case exactly as today.
+pure literal or closed-constant, with at least one non-literal; keep every
+other case exactly as today.
 
 Concrete edits:
 
-1. `src/diagnostics/rule-catalogue.ts`: add `messages: [ "Workflow metadata is
-   not a pure literal, which Claude Code rejects because its static workflow
-   reader cannot evaluate computed metadata." ]` to the `odw/claude-pure-meta`
-   definition (lines 164-169).
+1. `src/diagnostics/rule-catalogue.ts`: add
+
+   ```text
+   messages: [ "Workflow metadata is not a pure literal, which Claude Code
+   rejects because its static workflow reader cannot evaluate computed metadata." ]
+   ```
+
+   to the `odw/claude-pure-meta` definition (lines 164-169).
 2. New module `src/static-analysis/workflow-metadata-constant-expr.ts`: a pure,
    non-evaluating function `isClosedConstantSpan(sourceFile, span): boolean`
    (or an equivalent operating on the impure `ParsedMetadataValue`/impurity
@@ -637,10 +636,10 @@ Concrete edits:
    outside the allow-list (default-open, for soundness). Keep it under 400
    lines.
 3. New module `src/static-analysis/workflow-metadata-required-fields.ts` (only
-   if `workflow-metadata.ts` would exceed 400 lines): a three-way required-field
-   evaluation returning, per field, one of `valid-literal` / `invalid-literal` /
-   `unprovable` (impure value, or absent while a top-level spread could inject
-   it).
+   if `workflow-metadata.ts` would exceed 400 lines): a three-way
+   required-field evaluation returning, per field, one of `valid-literal` /
+   `invalid-literal` / `unprovable` (impure value, or absent while a top-level
+   spread could inject it).
 4. `src/static-analysis/workflow-metadata.ts`:
    - Add a `claude-incompatible` member to `WorkflowMetadataClassification`
      (status `"claude-incompatible"` with `facts` and diagnostics), and a
@@ -705,10 +704,11 @@ Tests (Red-Green-Refactor):
   - Other boundaries: `{ description:"d" }` (missing name, no spread) →
     `odw/meta-name` error; fully pure literal → no diagnostics.
 - Update the catalogue/message tests to reflect the new non-empty message
-  contract: `tests/diagnostics/rule-catalogue.test.ts` (the `odw/claude-pure-meta`
-  tuple), any message-template invariant test, and the schema snapshot
-  `tests/diagnostics/__snapshots__/schema.test.ts.snap` if the message surfaces
-  there (update via targeted `--update-snapshots` only after review).
+  contract: `tests/diagnostics/rule-catalogue.test.ts` (the
+  `odw/claude-pure-meta` tuple), any message-template invariant test, and the
+  schema snapshot `tests/diagnostics/__snapshots__/schema.test.ts.snap` if the
+  message surfaces there (update via targeted `--update-snapshots` only after
+  review).
 - Green: implement edits 1-4.
 - Refactor: extract helpers, verify file sizes, re-run focused tests then
   `make all`.
@@ -736,8 +736,8 @@ and the parity suite `tests/static-analysis/dual-compat-parity.test.ts`. Skills:
 `deterministic-time` family was added.
 
 Goal: add end-to-end coverage that a Claude-incompatible (closed-constant)
-workflow flows through the public `lintWorkflowSource`/loader-parity pipeline to
-a single `odw/claude-pure-meta` warning with no dialect errors.
+workflow flows through the public `lintWorkflowSource`/loader-parity pipeline
+to a single `odw/claude-pure-meta` warning with no dialect errors.
 
 Concrete edits:
 
@@ -745,8 +745,8 @@ Concrete edits:
    `DualCompatFixtureFamily` in
    `tests/static-analysis/fixtures/dual-compat/manifest-types.ts`.
 2. Author two locally-created passive fixtures under
-   `tests/static-analysis/fixtures/dual-compat/claude-pure-meta/`. Both must use
-   **closed-constant** impurity with literal `name`/`description` (no free
+   `tests/static-analysis/fixtures/dual-compat/claude-pure-meta/`. Both must
+   use **closed-constant** impurity with literal `name`/`description` (no free
    identifiers, no calls — those would ReferenceError under ODW's isolated
    `new Function` and would not be genuine "ODW-valid but Claude-incompatible"
    cases):
@@ -766,44 +766,45 @@ Concrete edits:
 4. Update `tests/static-analysis/dual-compat-parity.test.ts`: add a
    `describe("dual-compat claude-pure-meta parity")` block mirroring the
    deterministic-time block (assert live diagnostics, `status:"warning"`, empty
-   `dialectErrorRules`, and the `odw/claude-pure-meta` rule class). The per-family
-   `toHaveLength(...)` assertions are per-family and unaffected; the real
-   integration is that the two all-fixture iterating suites (the harness
+   `dialectErrorRules`, and the `odw/claude-pure-meta` rule class). The
+   per-family `toHaveLength(...)` assertions are per-family and unaffected; the
+   real integration is that the two all-fixture iterating suites (the harness
    integration suite and `dual-compat manifest freshness`) pick up the two
    additive entries with correct sha256 and spans.
 5. Regenerate the manifest hashes/spans. Preferred:
-   `make refresh-fixtures` (writes `tests/static-analysis/fixtures/dual-compat.ts`).
-   Fallback if the sibling ODW checkout is unavailable in the sandbox (the
-   generator fails with `missing-odw-reference-checkout`): hand-author the two
-   manifest entries — compute `sha256` with a one-off `bun -e` over the fixture
-   file, and take spans from the anchored-span helper
-   `deriveAnchoredDiagnosticSpan` (already exercised by `dual-compat manifest
-   freshness`). The freshness and parity tests validate correctness either way.
-   Record which path was used in `Surprises & Discoveries`.
+   `make refresh-fixtures` (writes
+   `tests/static-analysis/fixtures/dual-compat.ts`). Fallback if the sibling
+   ODW checkout is unavailable in the sandbox (the generator fails with
+   `missing-odw-reference-checkout`): hand-author the two manifest entries —
+   compute `sha256` with a one-off `bun -e` over the fixture file, and take
+   spans from the anchored-span helper `deriveAnchoredDiagnosticSpan` (already
+   exercised by `dual-compat manifest freshness`). The freshness and parity
+   tests validate correctness either way. Record which path was used in
+   `Surprises & Discoveries`.
 6. **Update the embedded-manifest-source snapshot (a required additive
    update).** The Bun snapshot
    `tests/static-analysis/__snapshots__/fixture-metadata-refresh-manifest-source.test.ts.snap`
    embeds the *entire* generated `dual-compat.ts` source under its
-   `## tests/static-analysis/fixtures/dual-compat.ts` section (snapshot header at
-   line 180; `family:` entries at lines 203-338). The test
-   `tests/static-analysis/fixture-metadata-refresh-manifest-source.test.ts` copies
-   the real `dual-compat` fixtures into a temp workspace with a *scaffolded* ODW
-   reference checkout (`createTempRefreshWorkspace`, lines 55-60), regenerates the
-   manifest via `plannedManifestFiles`, and snapshots it — so it runs under
-   `make all` regardless of the sibling checkout, and the two new
-   `family: "claude-pure-meta"` fixture entries make this snapshot grow by two
-   entries. `make refresh-fixtures` only runs `refresh-metadata.ts` (Makefile
-   line 37), which rewrites the manifest `.ts` files but does **not** run
-   `bun test --update-snapshots`; the stale snapshot would then fail `make test`
-   (`bun test`, Makefile line 34, part of `make all`). Therefore, after step 5,
-   regenerate this snapshot with a targeted `bun test` over
+   `## tests/static-analysis/fixtures/dual-compat.ts` section (snapshot header
+   at line 180; `family:` entries at lines 203-338). The test
+   `tests/static-analysis/fixture-metadata-refresh-manifest-source.test.ts`
+   copies the real `dual-compat` fixtures into a temp workspace with a
+   *scaffolded* ODW reference checkout (`createTempRefreshWorkspace`, lines
+   55-60), regenerates the manifest via `plannedManifestFiles`, and snapshots
+   it — so it runs under `make all` regardless of the sibling checkout, and the
+   two new `family: "claude-pure-meta"` fixture entries make this snapshot grow
+   by two entries. `make refresh-fixtures` only runs `refresh-metadata.ts`
+   (Makefile line 37), which rewrites the manifest `.ts` files but does **not**
+   run `bun test --update-snapshots`; the stale snapshot would then fail
+   `make test` (`bun test`, Makefile line 34, part of `make all`). Therefore,
+   after step 5, regenerate this snapshot with a targeted `bun test` over
    `tests/static-analysis/fixture-metadata-refresh-manifest-source.test.ts`
    passing `--update-snapshots`, but ONLY after diffing the snapshot and
-   confirming the **only** change is the
-   two added `family: "claude-pure-meta"` entries (`closed-constant-retries.js`
-   and `concat-tag.js`). If any *existing* entry (any non-`claude-pure-meta`
-   family) changes, stop and escalate under the Classification-ambiguity
-   tolerance — that is a genuine boundary error, not additive growth.
+   confirming the **only** change is the two added `family: "claude-pure-meta"`
+   entries (`closed-constant-retries.js` and `concat-tag.js`). If any
+   *existing* entry (any non-`claude-pure-meta` family) changes, stop and
+   escalate under the Classification-ambiguity tolerance — that is a genuine
+   boundary error, not additive growth.
 
 Tests (Red-Green-Refactor):
 
@@ -816,9 +817,9 @@ Tests (Red-Green-Refactor):
 
 Validation: `make all` (includes the parity suite, the loader-parity harness,
 and the embedded-manifest-source snapshot test). Two additive changes are
-**expected** here and are NOT boundary errors: (a) two new `family:
-"claude-pure-meta"` entries appended to `dual-compat.ts`, and (b) the same two
-entries appearing inside the
+**expected** here and are NOT boundary errors: (a) two new
+`family: "claude-pure-meta"` entries appended to `dual-compat.ts`, and (b) the
+same two entries appearing inside the
 `fixture-metadata-refresh-manifest-source.test.ts.snap` snapshot regenerated in
 step 6. The escalation trigger is narrower: a change to any *existing*
 (non-`claude-pure-meta`) manifest entry — in `dual-compat.ts`, in the snapshot,
@@ -833,9 +834,9 @@ churn"'`).
 Acceptance: `dual-compat claude-pure-meta parity` passes; the loader-parity
 harness reduces each new fixture to `status=warning`,
 `rules=odw/claude-pure-meta`, `errors=`; and
-`fixture-metadata-refresh-manifest-source.test.ts` passes with the
-regenerated snapshot showing exactly the two added `claude-pure-meta` entries
-and no change to any existing entry.
+`fixture-metadata-refresh-manifest-source.test.ts` passes with the regenerated
+snapshot showing exactly the two added `claude-pure-meta` entries and no change
+to any existing entry.
 
 ### WI-4: Reconcile rule and design docs and tick roadmap task 3.1.1
 
@@ -870,9 +871,9 @@ Concrete edits:
    §6.3's "ODW can accept" gate — e.g. "(within §6.3's ODW-acceptance gate: the
    required fields are provable literal strings and every computed part is a
    self-contained constant expression that cannot throw)". Leave §6.3 and
-   `docs/rules/meta-statically-unprovable.md` unchanged; add a Decision Log note
-   confirming why (`computed-meta-expression.js`'s impurity is in a required
-   field, so it correctly stays statically-unprovable).
+   `docs/rules/meta-statically-unprovable.md` unchanged; add a Decision Log
+   note confirming why (`computed-meta-expression.js`'s impurity is in a
+   required field, so it correctly stays statically-unprovable).
 3. `docs/roadmap.md`: tick task 3.1.1 (`- [ ]` → `- [x]`) at line 973 once
    WI-1..WI-3 are merged-ready.
 4. Format only the touched Markdown files with `mdtablefix` then
@@ -884,9 +885,10 @@ Concrete edits:
 Validation: `make markdownlint` and `make nixie` (Markdown gates), then
 `make all` for the whole gate. Run `make all` last so the tree is fully green.
 
-Acceptance: Markdown gates pass; roadmap shows 3.1.1 complete; `claude-pure-meta`
-rule doc documents a case the rule actually emits; §9.2 cross-references §6.3;
-`meta-statically-unprovable.md` and its fixture are untouched.
+Acceptance: Markdown gates pass; roadmap shows 3.1.1 complete;
+`claude-pure-meta` rule doc documents a case the rule actually emits; §9.2
+cross-references §6.3; `meta-statically-unprovable.md` and its fixture are
+untouched.
 
 ## Concrete steps
 
@@ -922,11 +924,11 @@ $ bun test tests/static-analysis/workflow-metadata.test.ts
 
 ## Validation and acceptance
 
-Deterministic commit gate for every work item: `make all`
-(runs `build`, `check-fmt`, `whitespace-hygiene`, `lint` [Biome + Oxlint],
-`typecheck`, `test`). For work items that change Markdown (WI-4), additionally
-run `make markdownlint` and `make nixie`. `AGENTS.md` is authoritative for the
-gate set; `make all` aggregates `check-fmt`, `lint`, `typecheck`, and `test`, so
+Deterministic commit gate for every work item: `make all` (runs `build`,
+`check-fmt`, `whitespace-hygiene`, `lint` [Biome + Oxlint], `typecheck`,
+`test`). For work items that change Markdown (WI-4), additionally run
+`make markdownlint` and `make nixie`. `AGENTS.md` is authoritative for the gate
+set; `make all` aggregates `check-fmt`, `lint`, `typecheck`, and `test`, so
 running it satisfies those named targets. The workflow host re-runs these gates
 against committed HEAD; do not claim green unless `make all` (plus the Markdown
 gates for doc changes) passed at HEAD.
@@ -936,8 +938,9 @@ Red-Green-Refactor evidence to record at implementation:
 - WI-1 Red: parser-level tests asserting `status:"parsed"` + first-impure span
   fail before the parser is made total.
 - WI-2 Red: the positive test asserting `odw/claude-pure-meta` for
-  `retries: 1 - 2`, and the negative test asserting `odw/meta-statically-unprovable`
-  for the throwing IIFE, both fail before the classifier change.
+  `retries: 1 - 2`, and the negative test asserting
+  `odw/meta-statically-unprovable` for the throwing IIFE, both fail before the
+  classifier change.
 - Green/Refactor: the same commands pass after the minimal change and after
   helper extraction.
 
@@ -963,7 +966,8 @@ mid-item, fix forward and re-run `make all`; do not commit a partially green
 tree. If `make refresh-fixtures` rewrites unrelated manifests (sibling-checkout
 drift), park that churn with a named stash
 (`git stash push -m 'df12-stash v1 task=3.1.1 kind=discard reason="refresh
-churn"'`) and keep only the additive fixture entries.
+churn"'`)
+and keep only the additive fixture entries.
 
 ## Interfaces and dependencies
 
@@ -1010,22 +1014,23 @@ is re-exported from the public API.
 Round 2 (2026-07-06). Replaces the round-1 "provable-load boundary" (which
 proved ODW-loadability from `name`/`description` alone) with the **asymmetric
 provable-load boundary**: required fields are proven only as plain string
-literals, and non-required content is admitted only when it is *closed-constant*
-(structurally-total, cannot throw or reference free scope). This resolves the
-three round-1 blocking defects:
+literals, and non-required content is admitted only when it is
+*closed-constant* (structurally-total, cannot throw or reference free scope).
+This resolves the three round-1 blocking defects:
 
 - **B1 (unsound boundary):** open impurity — throwing IIFE, free identifier —
   now classifies as `odw/meta-statically-unprovable`, because ODW's isolated
-  `new Function` evaluation would throw or `ReferenceError`. `odw/claude-pure-meta`
-  fires only for closed-constant impurity, which provably loads under any
-  slice-scoping. Branch 3 of the WI-2 classifier order enforces this.
+  `new Function` evaluation would throw or `ReferenceError`.
+  `odw/claude-pure-meta` fires only for closed-constant impurity, which
+  provably loads under any slice-scoping. Branch 3 of the WI-2 classifier order
+  enforces this.
 - **B2 (contradicts §9.2 and the rule doc / un-costed fixture flips):** the
   fixture audit in `Surprises` proves **no** existing fixture flips —
-  `computed-meta-expression.js` stays statically-unprovable because its impurity
-  is in the required `description` field, so `meta-statically-unprovable.md` is
-  untouched. §6.3 and §9.2 semantics are preserved; only §9.2 gains a
-  cross-reference and the genuinely-unsound `claude-pure-meta.md` example is
-  corrected to a case the rule actually emits.
+  `computed-meta-expression.js` stays statically-unprovable because its
+  impurity is in the required `description` field, so
+  `meta-statically-unprovable.md` is untouched. §6.3 and §9.2 semantics are
+  preserved; only §9.2 gains a cross-reference and the genuinely-unsound
+  `claude-pure-meta.md` example is corrected to a case the rule actually emits.
 - **B3 (unverified ODW behaviour):** WI-3 fixtures and the worked examples now
   use only closed-constant impurity (`retries: 1 - 2`, `tags: ["a" + "b"]`),
   which is ODW-evaluable in isolation regardless of `extractMeta`'s slice
@@ -1034,23 +1039,24 @@ three round-1 blocking defects:
   `docs/execplans/roadmap-1-3-4.md` lines 467-469.
 
 Also addresses the advisories: A1 (documenting the boundary in §9.2 is now a
-mandatory WI-4 edit), A2 (WI-3 no longer claims the `dual-compat inertness` test
-enforces fixture inertness), A3 (WI-3 drops the "hard-coded family counts"
+mandatory WI-4 edit), A2 (WI-3 no longer claims the `dual-compat inertness`
+test enforces fixture inertness), A3 (WI-3 drops the "hard-coded family counts"
 wording and names the two all-fixture iterating suites instead).
 
 Round 3 (2026-07-06). No content change to the boundary, work items, or tests.
 This revision resolves the sole round-3 blocking point — **ExecPlan
 durability**: the round-2 plan was never committed because the host declined
-salvage while the worktree held one uncommitted path *beyond* the plan file — the
-untracked round-1 review artefact `docs/execplans/roadmap-3-1-1.review-r1.md`.
-Git is hard-denied in this planning agent's session (verified: every `git`
-invocation, including via a bypass-mode subagent, is blocked), so the plan is
-committed by the host's salvage path, which requires the plan file to be the
-*only* uncommitted change. This revision therefore removes the stray untracked
-review artefact so the worktree holds nothing but the plan-file modification,
-unblocking the durable commit. The round-1 review's substance is not lost: its
-blocking defects (B1–B3) and advisories (A1–A3) are quoted and answered verbatim
-in the round-2 entries of this Revision note above.
+salvage while the worktree held one uncommitted path *beyond* the plan file —
+the untracked round-1 review artefact
+`docs/execplans/roadmap-3-1-1.review-r1.md`. Git is hard-denied in this
+planning agent's session (verified: every `git` invocation, including via a
+bypass-mode subagent, is blocked), so the plan is committed by the host's
+salvage path, which requires the plan file to be the *only* uncommitted change.
+This revision therefore removes the stray untracked review artefact so the
+worktree holds nothing but the plan-file modification, unblocking the durable
+commit. The round-1 review's substance is not lost: its blocking defects
+(B1–B3) and advisories (A1–A3) are quoted and answered verbatim in the round-2
+entries of this Revision note above.
 
 Round 4 (2026-07-06). No content change to the boundary, classification order,
 or tests. Resolves the sole round-4 blocking point — **WI-3 omitted the
@@ -1059,33 +1065,33 @@ Bun snapshot
 `tests/static-analysis/__snapshots__/fixture-metadata-refresh-manifest-source.test.ts.snap`
 embeds the entire generated `dual-compat.ts` (snapshot header line 180,
 `family:` entries lines 203-338); its test copies the real `dual-compat`
-fixtures into a temp workspace with a scaffolded ODW checkout and re-derives the
-manifest, so adding the two `family: "claude-pure-meta"` fixtures grows the
-snapshot by two entries. `make refresh-fixtures` runs only `refresh-metadata.ts`
-(Makefile line 37) and does not `bun test --update-snapshots`, so the stale
-snapshot would fail `make test` (Makefile line 34, part of `make all`). Verified
-against the repository: `fixture-metadata-refresh-manifest-source.test.ts` lines
-10-33 (representative paths include `dual-compat.ts`; `toMatchSnapshot`),
+fixtures into a temp workspace with a scaffolded ODW checkout and re-derives
+the manifest, so adding the two `family: "claude-pure-meta"` fixtures grows the
+snapshot by two entries. `make refresh-fixtures` runs only
+`refresh-metadata.ts` (Makefile line 37) and does not
+`bun test --update-snapshots`, so the stale snapshot would fail `make test`
+(Makefile line 34, part of `make all`). Verified against the repository:
+`fixture-metadata-refresh-manifest-source.test.ts` lines 10-33 (representative
+paths include `dual-compat.ts`; `toMatchSnapshot`),
 `fixture-metadata-refresh-workspace.ts` lines 55-60 (copies `dual-compat`) and
 lines 33-98 (scaffolds a temp ODW reference checkout, so the test runs without
 the sibling checkout). Fixes applied: (1) WI-3 now has an explicit step 6 that
 names the snapshot and refreshes it via a targeted `bun test` over
 `tests/static-analysis/fixture-metadata-refresh-manifest-source.test.ts` with
-`--update-snapshots` after confirming the only diff is the two new entries;
-(2) the WI-3 Validation,
-WI-3 Acceptance, the `Surprises` fixture-audit note, and the
-Classification-ambiguity tolerance are reconciled so additive growth of this
-snapshot by exactly the two `claude-pure-meta` entries is *expected*, while a
-change to any *existing* entry remains the escalation trigger; (3) the WI-2
-Validation is clarified to state that WI-2 adds no fixtures and must show no
-manifest/snapshot diff, so the additive snapshot growth belongs to WI-3 alone
-and is never mislabelled as a WI-2 boundary error.
+`--update-snapshots` after confirming the only diff is the two new entries; (2)
+the WI-3 Validation, WI-3 Acceptance, the `Surprises` fixture-audit note, and
+the Classification-ambiguity tolerance are reconciled so additive growth of
+this snapshot by exactly the two `claude-pure-meta` entries is *expected*,
+while a change to any *existing* entry remains the escalation trigger; (3) the
+WI-2 Validation is clarified to state that WI-2 adds no fixtures and must show
+no manifest/snapshot diff, so the additive snapshot growth belongs to WI-3
+alone and is never mislabelled as a WI-2 boundary error.
 
 Round 5 (2026-07-06). No content change to the boundary, work items, tests, or
 validation. This revision re-verified the load-bearing branch-local facts and
-confirmed the plan remains implementable as written:
-`odw/claude-pure-meta` is catalogued at `src/diagnostics/rule-catalogue.ts`
-line 165 (category `claude-compatibility`, `defaultSeverity: "warning"`,
+confirmed the plan remains implementable as written: `odw/claude-pure-meta` is
+catalogued at `src/diagnostics/rule-catalogue.ts` line 165 (category
+`claude-compatibility`, `defaultSeverity: "warning"`,
 `releaseStatus: "released"`) with **no** `messages` field, so WI-2 step 1's
 message-contract addition is still needed and additive;
 `src/static-analysis/workflow-metadata-parser.ts` is 393 lines and

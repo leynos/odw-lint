@@ -1,14 +1,14 @@
 # 0002. Workflow-body parser dialect scope
 
-Status: Accepted
-Date: 2026-07-03
+Status: Accepted Date: 2026-07-03
 
 ## Context
 
 `odw-lint` parses workflow bodies before a workflow runs so it can report
 `odw/body-syntax` without executing user source. The parser path normalizes the
-workflow body and passes it to SWC with `syntax: "ecmascript"` and `jsx: false`.
-That configuration accepts ECMAScript source, not TypeScript-only syntax.
+workflow body and passes it to SWC with `syntax: "ecmascript"` and
+`jsx: false`. That configuration accepts ECMAScript source, not TypeScript-only
+syntax.
 
 The adjacent ODW loader compiles workflow bodies through a JavaScript function
 constructor path. A lint diagnostic that accepts TypeScript-only workflow-body

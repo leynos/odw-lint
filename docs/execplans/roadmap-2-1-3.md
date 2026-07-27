@@ -1,9 +1,8 @@
 # Implement metadata classification
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: IMPLEMENTED
 
@@ -11,17 +10,16 @@ This is planning round 3. Do not begin implementation until the roadmap
 workflow approves the plan. This revision preserves the round 2 fixes for
 branch freshness, the ODW loader's first-brace metadata boundary, and the
 invalid-fixture parity contract for task-owned diagnostics, and it adds the
-missing documentation-contents closeout required for a new standalone
-ExecPlan.
+missing documentation-contents closeout required for a new standalone ExecPlan.
 
 ## Purpose / big picture
 
 Roadmap task 2.1.3 turns the envelope facts from task 2.1.2 into metadata
 diagnostics. After this plan is implemented, the static-analysis pipeline can
-distinguish hard ODW (Open Dynamic Workflows) metadata errors from metadata that
-would require unsafe source evaluation to understand. The important observable
-behaviour is that computed metadata, including hostile metadata, receives
-`odw/meta-statically-unprovable` and is never executed.
+distinguish hard ODW (Open Dynamic Workflows) metadata errors from metadata
+that would require unsafe source evaluation to understand. The important
+observable behaviour is that computed metadata, including hostile metadata,
+receives `odw/meta-statically-unprovable` and is never executed.
 
 This task deliberately does not implement the command-line interface, body
 normalization, SWC body parsing, loader-parity execution, or
@@ -54,12 +52,12 @@ computed metadata to `odw/meta-statically-unprovable`.
   failure in this plan and use precise branch-local file inspection for the
   current task.
 - Use `sem` instead of raw Git history commands for codebase history, blame,
-  or semantic diff work. In this planning round, `sem diff --from HEAD --to
-  origin/main` first showed relevant upstream changes in `docs/roadmap.md`,
-  `docs/execplans/roadmap-2-1-7.md`,
+  or semantic diff work. In this planning round,
+  `sem diff --from HEAD --to origin/main` first showed relevant upstream
+  changes in `docs/roadmap.md`, `docs/execplans/roadmap-2-1-7.md`,
   `tests/diagnostics/public-consumer.test.ts`, and
-  `tests/diagnostics/types.test.ts`; after `git fetch origin main && git
-  rebase origin/main`, it reported no changes.
+  `tests/diagnostics/types.test.ts`; after
+  `git fetch origin main && git rebase origin/main`, it reported no changes.
 - Follow `AGENTS.md`, especially the TypeScript, Markdown, quality-gate,
   atomicity, and commit-message guidance.
 - Use en-GB Oxford spelling in prose, comments, and commit messages while
@@ -95,9 +93,9 @@ computed metadata to `odw/meta-statically-unprovable`.
   as the entry boundary. Do not rediscover the top-level metadata declaration
   independently.
 - Top-level metadata values that are statically proven not to contain an object
-  literal in the metadata expression, missing metadata values, and
-  unterminated object literals are runtime-invalid metadata. They produce
-  `odw/meta-object` errors.
+  literal in the metadata expression, missing metadata values, and unterminated
+  object literals are runtime-invalid metadata. They produce `odw/meta-object`
+  errors.
 - A top-level metadata expression that does not start with `{` but contains a
   real `{` within the metadata expression is statically unprovable in this
   slice, not runtime-invalid. This follows ODW's current loader, which searches
@@ -114,17 +112,15 @@ computed metadata to `odw/meta-statically-unprovable`.
   checks `typeof m.description === "string"`.
 - Any metadata value that would require variables, calls, arithmetic, spread,
   computed property keys, template interpolation, or other source evaluation to
-  prove must produce `odw/meta-statically-unprovable`, not
-  `odw/meta-object`, `odw/meta-name`, `odw/meta-description`, or
-  `odw/claude-pure-meta`.
+  prove must produce `odw/meta-statically-unprovable`, not `odw/meta-object`,
+  `odw/meta-name`, `odw/meta-description`, or `odw/claude-pure-meta`.
 - Emit at most one `odw/meta-statically-unprovable` diagnostic per metadata
   object in this slice. Use the first unprovable value encountered in source
   order as the diagnostic span. This matches the existing invalid fixture
   manifest shape and keeps the work review-sized.
 - Keep `odw/claude-pure-meta` user-visible emission out of scope. Roadmap
   lines 513-517 assign that to task 3.1.1, and existing hostile/computed
-  fixture plans assign computed metadata to
-  `odw/meta-statically-unprovable`.
+  fixture plans assign computed metadata to `odw/meta-statically-unprovable`.
 - Every work item below is independently committable and must pass its focused
   validation plus the repository gates before the next item starts.
 - Format only changed files. For Markdown changed by a work item, run
@@ -165,41 +161,31 @@ computed metadata to `odw/meta-statically-unprovable`.
 ## Risks
 
 - Risk: the recursive metadata parser could accidentally evaluate source.
-  Severity: high.
-  Likelihood: low.
-  Mitigation: implement a hand-written static parser over source text, forbid
-  `eval`, `new Function`, and dynamic imports, and add hostile metadata tests
-  that read source without setting the hostile marker.
+  Severity: high. Likelihood: low. Mitigation: implement a hand-written static
+  parser over source text, forbid `eval`, `new Function`, and dynamic imports,
+  and add hostile metadata tests that read source without setting the hostile
+  marker.
 
 - Risk: span calculations could mix UTF-16 string indexes and UTF-8 byte
-  offsets.
-  Severity: high.
-  Likelihood: medium.
-  Mitigation: derive all production spans through existing source-position
-  helpers and add Unicode-before-metadata tests for value spans.
+  offsets. Severity: high. Likelihood: medium. Mitigation: derive all
+  production spans through existing source-position helpers and add
+  Unicode-before-metadata tests for value spans.
 
 - Risk: `odw/meta-statically-unprovable` and `odw/claude-pure-meta` overlap in
-  the design text.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: follow roadmap sequencing. This task emits
-  `odw/meta-statically-unprovable`; task 3.1.1 owns
-  `odw/claude-pure-meta` after parser-backed validation exists.
+  the design text. Severity: medium. Likelihood: medium. Mitigation: follow
+  roadmap sequencing. This task emits `odw/meta-statically-unprovable`; task
+  3.1.1 owns `odw/claude-pure-meta` after parser-backed validation exists.
 
 - Risk: the metadata parser may grow into a general JavaScript evaluator.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: support only object and array literals with primitive literal
-  values. Treat every operator, call, identifier value, spread, and computed key
-  as statically unprovable.
+  Severity: medium. Likelihood: medium. Mitigation: support only object and
+  array literals with primitive literal values. Treat every operator, call,
+  identifier value, spread, and computed key as statically unprovable.
 
 - Risk: fixture refresh may rewrite generated manifests beyond the intended
-  task.
-  Severity: medium.
-  Likelihood: low.
-  Mitigation: run `make refresh-fixtures` only in the work item that consumes
-  invalid fixture manifests, inspect the report, and park unrelated formatter
-  churn with a named stash only if unavoidable.
+  task. Severity: medium. Likelihood: low. Mitigation: run
+  `make refresh-fixtures` only in the work item that consumes invalid fixture
+  manifests, inspect the report, and park unrelated formatter churn with a
+  named stash only if unavoidable.
 
 ## Progress
 
@@ -209,9 +195,10 @@ computed metadata to `odw/meta-statically-unprovable`.
   `origin/main` by one commit and that `sem diff --from HEAD --to origin/main`
   reported relevant upstream changes in the roadmap, task 2.1.7 ExecPlan, and
   public diagnostic tests.
-- [x] (2026-07-01T12:43+01:00) Ran `git fetch origin main && git rebase
-  origin/main`; the rebase completed cleanly and `sem diff --from HEAD --to
-  origin/main` then reported no changes.
+- [x] (2026-07-01T12:43+01:00) Ran
+      `git fetch origin main && git rebase origin/main`; the rebase completed
+      cleanly and `sem diff --from HEAD --to origin/main` then reported no
+      changes.
 - [x] (2026-07-01T12:44+01:00) Reran GrepAI, Leta, and branch-local document
   checks against the rebased worktree.
 - [x] (2026-07-01) Pre-work: refreshed the branch baseline and re-checked task
@@ -235,8 +222,8 @@ computed metadata to `odw/meta-statically-unprovable`.
   fixture parity coverage for task-owned metadata and envelope rules.
 - [x] (2026-07-01) Work item 5: updated `docs/contents.md`,
   `docs/developers-guide.md`, `docs/roadmap.md`, and this ExecPlan to record
-  the completed classifier surface and the deferred
-  `odw/claude-pure-meta` boundary.
+  the completed classifier surface and the deferred `odw/claude-pure-meta`
+  boundary.
 - [x] (2026-07-01) Follow-up review pass: addressed CodeRabbit findings for
   comment-aware metadata balancing, bounded block-comment scans, string line
   continuations, object-literal versus block-body classification, recursive
@@ -246,82 +233,73 @@ computed metadata to `odw/meta-statically-unprovable`.
 ## Surprises & discoveries
 
 - Observation: the first attempt to run `leta files` used an invalid
-  multi-path command.
-  Evidence: `leta files src tests docs | head -240` returned
-  `error: unexpected argument 'tests' found`.
-  Impact: the command was rerun as `leta files src/` and `leta files tests/`,
-  both of which succeeded. This is not a Leta availability issue.
+  multi-path command. Evidence: `leta files src tests docs | head -240` returned
+  `error: unexpected argument 'tests' found`. Impact: the command was rerun as
+  `leta files src/` and `leta files tests/`, both of which succeeded. This is
+  not a Leta availability issue.
 
 - Observation: the assigned worktree was stale at the start of planning round
-  2.
-  Evidence: `git status --short --branch` reported
-  `## roadmap-2-1-3...origin/main [behind 1]`, and `sem diff --from HEAD --to
-  origin/main` listed `docs/roadmap.md`, `docs/execplans/roadmap-2-1-7.md`,
+  1. Evidence: `git status --short --branch` reported
+  `## roadmap-2-1-3...origin/main [behind 1]`, and
+  `sem diff --from HEAD --to origin/main` listed `docs/roadmap.md`,
+  `docs/execplans/roadmap-2-1-7.md`,
   `tests/diagnostics/public-consumer.test.ts`, and
-  `tests/diagnostics/types.test.ts`.
-  Impact: this plan now requires branch refresh/rebase before implementation,
-  scope re-check against the changed files, and `make branch-freshness` before
-  review.
+  `tests/diagnostics/types.test.ts`. Impact: this plan now requires branch
+  refresh/rebase before implementation, scope re-check against the changed
+  files, and `make branch-freshness` before review.
 
 - Observation: roadmap task 3.1.1 explicitly owns
-  `odw/claude-pure-meta` emission.
-  Evidence: `docs/roadmap.md` lines 513-517 say pure-literal metadata
-  compatibility checks produce `odw/claude-pure-meta` in task 3.1.1.
-  Impact: task 2.1.3 must classify computed metadata as
+  `odw/claude-pure-meta` emission. Evidence: `docs/roadmap.md` lines 513-517
+  say pure-literal metadata compatibility checks produce `odw/claude-pure-meta`
+  in task 3.1.1. Impact: task 2.1.3 must classify computed metadata as
   `odw/meta-statically-unprovable` and leave user-visible
   `odw/claude-pure-meta` diagnostics for the later roadmap task.
 
 - Observation: ODW's current runtime loader requires the metadata assignment to
   contain an object literal brace and evaluates the sliced object with
-  `new Function`.
-  Evidence: `../open-dynamic-workflows/src/loader.ts` lines
+  `new Function`. Evidence: `../open-dynamic-workflows/src/loader.ts` lines
   302-331 find `export const meta`, look for `{`, match braces, slice the
-  original source, and call `new Function`.
-  Impact: `odw-lint` must not call the loader or replicate the evaluation path.
-  A non-object expression with a real object literal inside it is not
-  statically proven runtime-invalid; this task reports it as
-  `odw/meta-statically-unprovable`.
+  original source, and call `new Function`. Impact: `odw-lint` must not call
+  the loader or replicate the evaluation path. A non-object expression with a
+  real object literal inside it is not statically proven runtime-invalid; this
+  task reports it as `odw/meta-statically-unprovable`.
 
 - Observation: ODW only enforces `meta.name` as a non-empty string and
-  `meta.description` as a string.
-  Evidence: `../open-dynamic-workflows/src/loader.ts` lines
-  456-466 implement those checks.
-  Impact: empty `description` remains runtime-valid in this slice unless a
-  later product decision tightens the linter beyond runtime parity.
+  `meta.description` as a string. Evidence:
+  `../open-dynamic-workflows/src/loader.ts` lines 456-466 implement those
+  checks. Impact: empty `description` remains runtime-valid in this slice
+  unless a later product decision tightens the linter beyond runtime parity.
 
 - Observation: the envelope scanner's earlier value-start scan skipped masked
   string metadata and classified `export const meta = "not an object";` as a
-  missing value.
-  Evidence: the new focused classifier test expected the span text
-  `"not an object"` but initially received an empty span.
-  Impact: `scanWorkflowEnvelope` now skips comments from original source when
-  finding the metadata value start, while still allowing quoted and other
-  non-object tokens to be classified by metadata diagnostics.
+  missing value. Evidence: the new focused classifier test expected the span
+  text `"not an object"` but initially received an empty span. Impact:
+  `scanWorkflowEnvelope` now skips comments from original source when finding
+  the metadata value start, while still allowing quoted and other non-object
+  tokens to be classified by metadata diagnostics.
 
 ## Decision log
 
 - Decision: implement a repository-owned metadata parser in
-  `src/static-analysis/workflow-metadata.ts`.
-  Rationale: `docs/technical-design.md` §5 and ADR 0001 forbid production
-  imports of ODW runtime paths, and ODW does not export a safe static API.
-  Date/Author: 2026-07-01, planning agent.
+  `src/static-analysis/workflow-metadata.ts`. Rationale:
+  `docs/technical-design.md` §5 and ADR 0001 forbid production imports of ODW
+  runtime paths, and ODW does not export a safe static API. Date/Author:
+  2026-07-01, planning agent.
 
 - Decision: use a recursive-descent static parser rather than TypeScript's
-  compiler API for metadata literal parsing in this task.
-  Rationale: the supported grammar is intentionally smaller than JavaScript:
-  object, array, string, number, boolean, and null literals only. A small owned
-  parser can attach exact source spans and reject every computed construct
-  without inventing a safe evaluator. TypeScript's compiler API remains
-  verified for future syntax-tree work but is not necessary for this metadata
-  slice.
+  compiler API for metadata literal parsing in this task. Rationale: the
+  supported grammar is intentionally smaller than JavaScript: object, array,
+  string, number, boolean, and null literals only. A small owned parser can
+  attach exact source spans and reject every computed construct without
+  inventing a safe evaluator. TypeScript's compiler API remains verified for
+  future syntax-tree work but is not necessary for this metadata slice.
   Date/Author: 2026-07-01, planning agent.
 
 - Decision: emit `odw/meta-statically-unprovable` for computed metadata in
-  this task and do not emit `odw/claude-pure-meta`.
-  Rationale: roadmap task 2.1.3 success is specifically that computed metadata
-  receives `odw/meta-statically-unprovable`, while roadmap task 3.1.1 owns
-  `odw/claude-pure-meta`.
-  Date/Author: 2026-07-01, planning agent.
+  this task and do not emit `odw/claude-pure-meta`. Rationale: roadmap task
+  2.1.3 success is specifically that computed metadata receives
+  `odw/meta-statically-unprovable`, while roadmap task 3.1.1 owns
+  `odw/claude-pure-meta`. Date/Author: 2026-07-01, planning agent.
 
 - Decision: parse and report the first unprovable metadata expression only.
   Rationale: the existing invalid fixture manifests pin one diagnostic per
@@ -330,47 +308,42 @@ computed metadata to `odw/meta-statically-unprovable`.
   Date/Author: 2026-07-01, planning agent.
 
 - Decision: refresh the task branch before implementation and require
-  `make branch-freshness` before review.
-  Rationale: `make all` does not fetch or validate roadmap-branch freshness,
-  and planning round 2 began with this branch one commit behind `origin/main`.
-  Date/Author: 2026-07-01, planning agent.
+  `make branch-freshness` before review. Rationale: `make all` does not fetch
+  or validate roadmap-branch freshness, and planning round 2 began with this
+  branch one commit behind `origin/main`. Date/Author: 2026-07-01, planning
+  agent.
 
 - Decision: distinguish proven primitive/no-object metadata expressions from
-  computed expressions that contain an object literal.
-  Rationale: ODW's loader searches for the first `{` after `export const meta
-  =` and evaluates that sliced object. A value such as `makeMeta({ ... })` is
-  not statically proven runtime-invalid, but `odw-lint` cannot evaluate it
-  safely. The task-owned diagnostic is therefore
-  `odw/meta-statically-unprovable`, not `odw/meta-object`.
-  Date/Author: 2026-07-01, planning agent.
+  computed expressions that contain an object literal. Rationale: ODW's loader
+  searches for the first `{` after `export const meta =` and evaluates that
+  sliced object. A value such as `makeMeta({ ... })` is not statically proven
+  runtime-invalid, but `odw-lint` cannot evaluate it safely. The task-owned
+  diagnostic is therefore `odw/meta-statically-unprovable`, not
+  `odw/meta-object`. Date/Author: 2026-07-01, planning agent.
 
 - Decision: fixture parity in this task compares only task-owned metadata and
-  envelope rules.
-  Rationale: syntax-error fixture manifests already expect `odw/body-syntax`,
-  but body parsing and body-syntax emission belong to the deferred body parser
-  slice. Filtering the parity comparison to
-  `odw/meta-required`, `odw/meta-object`,
-  `odw/meta-statically-unprovable`, `odw/meta-name`,
-  `odw/meta-description`, and `odw/no-import-export` keeps the red/green test
-  implementable without pulling task 2.2 work forward.
+  envelope rules. Rationale: syntax-error fixture manifests already expect
+  `odw/body-syntax`, but body parsing and body-syntax emission belong to the
+  deferred body parser slice. Filtering the parity comparison to
+  `odw/meta-required`, `odw/meta-object`, `odw/meta-statically-unprovable`,
+  `odw/meta-name`, `odw/meta-description`, and `odw/no-import-export` keeps the
+  red/green test implementable without pulling task 2.2 work forward.
   Date/Author: 2026-07-01, planning agent.
 
 - Decision: keep the metadata classifier passive and expose it through the
-  current private package facade.
-  Rationale: invalid fixture parity and public-consumer tests need one reviewed
-  API surface for downstream parser and rule-engine tasks, but the
-  implementation still belongs under `src/static-analysis/` and must not
-  evaluate workflow source.
-  Date/Author: 2026-07-01, implementation agent.
+  current private package facade. Rationale: invalid fixture parity and
+  public-consumer tests need one reviewed API surface for downstream parser and
+  rule-engine tasks, but the implementation still belongs under
+  `src/static-analysis/` and must not evaluate workflow source. Date/Author:
+  2026-07-01, implementation agent.
 
 - Decision: treat non-object metadata expressions as statically unprovable
   only when the expression contains an object literal candidate, not merely any
-  brace.
-  Rationale: function and arrow block bodies are not metadata object literals,
-  and classifying them as unprovable would hide a hard `odw/meta-object`
-  error. The scanner now skips block bodies after non-expression braces while
-  preserving `makeMeta({ ... })`, conditional object expressions, and
-  parenthesized object expressions as unprovable.
+  brace. Rationale: function and arrow block bodies are not metadata object
+  literals, and classifying them as unprovable would hide a hard
+  `odw/meta-object` error. The scanner now skips block bodies after
+  non-expression braces while preserving `makeMeta({ ... })`, conditional
+  object expressions, and parenthesized object expressions as unprovable.
   Date/Author: 2026-07-01, implementation agent.
 
 ## Outcomes & retrospective
@@ -394,12 +367,11 @@ Claude pure-metadata diagnostics assigned to roadmap task 3.1.1.
 
 ## Context and orientation
 
-The current source model begins with
-`src/static-analysis/workflow-envelope.ts`. `scanWorkflowEnvelope` accepts an
-`OriginalSourceFile`, masks inert source regions, finds the real top-level
-`export const meta =` declaration, records `WorkflowMetaValue`, and emits
-existing envelope diagnostics for missing metadata and unsupported top-level
-imports or exports.
+The current source model begins with `src/static-analysis/workflow-envelope.ts`.
+`scanWorkflowEnvelope` accepts an `OriginalSourceFile`, masks inert source
+regions, finds the real top-level `export const meta =` declaration, records
+`WorkflowMetaValue`, and emits existing envelope diagnostics for missing
+metadata and unsupported top-level imports or exports.
 
 `src/static-analysis/types.ts` defines `WorkflowMetaValue` as a discriminated
 union:
@@ -448,47 +420,46 @@ The current useful hits were `docs/rules/meta-required.md`,
 `docs/rules/meta-statically-unprovable.md`, `docs/rules/meta-object.md`, and
 `docs/execplans/roadmap-2-1-7.md`. Earlier planning-round searches also found
 `docs/technical-design.md`, `docs/roadmap.md`, invalid fixture manifests, and
-prior ExecPlans for tasks 1.3.2, 1.3.4, 2.1.2, and 2.1.6. Because GrepAI
-indexes `main`, every source and fixture claim above was verified directly
-inside this rebased worktree with Leta, exact text search, or file inspection.
+prior ExecPlans for tasks 1.3.2, 1.3.4, 2.1.2, and 2.1.6. Because GrepAI indexes
+`main`, every source and fixture claim above was verified directly inside this
+rebased worktree with Leta, exact text search, or file inspection.
 
-The ODW reference checkout at
-`../open-dynamic-workflows` was inspected as the source-backed
-runtime reference:
+The ODW reference checkout at `../open-dynamic-workflows` was inspected as the
+source-backed runtime reference:
 
 - `src/loader.ts` lines 302-347 show the runtime extraction path. It finds
   `export const meta`, looks for an object brace, matches braces, evaluates the
   original slice with `new Function`, validates metadata, rejects extra imports
   or exports, and returns the stripped body.
 - `src/loader.ts` lines 456-466 show runtime metadata validation: metadata must
-  be an object, `meta.name` must be a non-empty string, and
-  `meta.description` must be a string.
+  be an object, `meta.name` must be a non-empty string, and `meta.description`
+  must be a string.
 - `src/dual-compat.ts` lines 1-17 explain the pure-literal portability
   boundary: Claude reads metadata statically, while ODW's loader is lenient.
 - `src/dual-compat.ts` lines 64-229 show the current pure-literal grammar:
-  object and array literals with strings, numbers, booleans, and null; variables,
-  calls, spreads, operators, computed property keys, and template interpolation
-  are impure.
+  object and array literals with strings, numbers, booleans, and null;
+  variables, calls, spreads, operators, computed property keys, and template
+  interpolation are impure.
 
 Firecrawl tool discovery in this session exposed `firecrawl_scrape`,
 `firecrawl_map`, `firecrawl_agent`, `firecrawl_interact`, and
-`firecrawl_parse`, but not `firecrawl_search` or
-`firecrawl_search_feedback`. The available Firecrawl scrape tool was therefore
-used against the known official TypeScript documentation URL
+`firecrawl_parse`, but not `firecrawl_search` or `firecrawl_search_feedback`.
+The available Firecrawl scrape tool was therefore used against the known
+official TypeScript documentation URL
 <https://www.typescriptlang.org/docs/handbook/compiler-options.html>. It
 confirmed the official CLI contract that local `tsc` compiles the closest
-`tsconfig.json`, and that `--noEmit`, `--strict`,
-`--noUncheckedIndexedAccess`, `--exactOptionalPropertyTypes`, and
-`--noPropertyAccessFromIndexSignature` are documented compiler options. The
-locked repository gate uses `bun run check:types`, which delegates to
-`bunx tsc --noEmit` in `package.json` and `Makefile`.
+`tsconfig.json`, and that `--noEmit`, `--strict`, `--noUncheckedIndexedAccess`,
+`--exactOptionalPropertyTypes`, and `--noPropertyAccessFromIndexSignature` are
+documented compiler options. The locked repository gate uses
+`bun run check:types`, which delegates to `bunx tsc --noEmit` in `package.json`
+and `Makefile`.
 
 This plan does not lean on the TypeScript compiler API or any external parser
 library for metadata classification. The locked dependency evidence is:
 
 - `bun.lock` resolves `typescript@5.9.3`,
-  `@biomejs/biome@2.5.1`, `oxlint@1.71.0`,
-  `fast-check@4.8.0`, and `bun-types@1.3.14`.
+  `@biomejs/biome@2.5.1`, `oxlint@1.71.0`, `fast-check@4.8.0`, and
+  `bun-types@1.3.14`.
 - `package.json` scripts define `bun test`, `bunx tsc --noEmit`, Biome, and
   Oxlint command shapes.
 - `Makefile` defines `make all`, `make markdownlint`, `make nixie`, and
@@ -598,8 +569,8 @@ Implementation steps:
    `"pure-literal"` and `"not-statically-provable"`; do not expose
    `odw/claude-pure-meta` diagnostics yet.
 4. Implement `parseWorkflowMetadataLiteral(sourceFile, envelope)` for
-   `WorkflowMetaValue.kind === "object"`. It should parse only the metadata span
-   already found by the envelope scanner.
+   `WorkflowMetaValue.kind === "object"`. It should parse only the metadata
+   span already found by the envelope scanner.
 5. Support object literals, array literals, string literals with single,
    double, and no-interpolation template quotes, number literals, booleans,
    null, unquoted identifier keys, string keys, numeric keys, nested objects,
@@ -655,8 +626,7 @@ Validation:
 ### Work item 2: Emit runtime-invalid metadata diagnostics
 
 Purpose: map parser and envelope states to the hard ODW runtime-invalid
-metadata rules: `odw/meta-object`, `odw/meta-name`, and
-`odw/meta-description`.
+metadata rules: `odw/meta-object`, `odw/meta-name`, and `odw/meta-description`.
 
 Documentation to read before editing:
 
@@ -665,8 +635,7 @@ Documentation to read before editing:
   `docs/rules/meta-description.md`.
 - `docs/terms-of-reference.md` §§6-9.
 - ODW loader source at
-  `../open-dynamic-workflows/src/loader.ts` lines 302-347
-  and 456-466.
+  `../open-dynamic-workflows/src/loader.ts` lines 302-347 and 456-466.
 
 Skills to load:
 
@@ -699,8 +668,8 @@ Implementation steps:
    `odw/meta-object`. Return a structured classification result that work item
    3 will turn into `odw/meta-statically-unprovable`. This covers expressions
    such as `makeMeta({ ... })`, `condition ? { ... } : { ... }`, `({ ... })`,
-   and arrays containing object literals. The point of the rule is not that
-   ODW definitely accepts every example; it is that `odw-lint` cannot prove the
+   and arrays containing object literals. The point of the rule is not that ODW
+   definitely accepts every example; it is that `odw-lint` cannot prove the
    runtime result without executing source, and ADR 0001 forbids doing so.
 5. For `WorkflowMetaValue.kind === "unterminated-object"`, emit
    `odw/meta-object` with message
@@ -729,9 +698,10 @@ Tests to add or update:
   missing `name`, empty `name`, numeric `name`, missing `description`, numeric
   `description`, and empty string `description` accepted.
 - Include explicit split tests for `export const meta = "not an object";`
-  producing `odw/meta-object`, and `export const meta = makeMeta({ name:
-  "n", description: "d" });` producing a structured unprovable
-  classification with no `odw/meta-object` diagnostic in work item 2.
+  producing `odw/meta-object`, and
+  `export const meta = makeMeta({ name: "n", description: "d" });` producing a
+  structured unprovable classification with no `odw/meta-object` diagnostic in
+  work item 2.
 - Add semantic assertions for rule, severity, message, and span text.
 - Add a combined-diagnostics helper in tests that concatenates envelope
   diagnostics with metadata diagnostics, but keep production pipeline wiring
@@ -818,8 +788,9 @@ Tests to add or update:
 - Extend `tests/static-analysis/workflow-metadata.test.ts` with unprovable
   diagnostic tests for computed string concatenation and both hostile metadata
   fixtures.
-- Add unprovable diagnostic tests for `makeMeta({ name: "n", description:
-  "d" })`, `condition ? { name: "n", description: "d" } : fallback`, and
+- Add unprovable diagnostic tests for
+  `makeMeta({ name: "n", description: "d" })`,
+  `condition ? { name: "n", description: "d" } : fallback`, and
   `({ name: "n", description: "d" })`. These pin the ODW loader evidence that
   such expressions are not blanket `odw/meta-object` cases.
 - Add one test that classification does not emit `odw/claude-pure-meta`.
@@ -891,9 +862,8 @@ Implementation steps:
    metadata diagnostics.
 5. Filter both the produced diagnostics and each fixture's
    `expectedDiagnostics` to this exact task-owned rule set before comparing:
-   `odw/meta-required`, `odw/meta-object`,
-   `odw/meta-statically-unprovable`, `odw/meta-name`,
-   `odw/meta-description`, and `odw/no-import-export`.
+   `odw/meta-required`, `odw/meta-object`, `odw/meta-statically-unprovable`,
+   `odw/meta-name`, `odw/meta-description`, and `odw/no-import-export`.
 6. Compare the filtered diagnostics for rule, severity, message, span, and
    span text. This means syntax-error fixtures compare `[]` to `[]` in this
    task because their existing `odw/body-syntax` expectations are owned by the
@@ -1004,8 +974,8 @@ Implementation steps:
    standalone ExecPlan.
 5. Mark roadmap task 2.1.3 complete in `docs/roadmap.md` with a concise
    completion note. Do not mark task 2.1.5 or 3.1.1 complete.
-6. Update this ExecPlan's `Progress`, `Decision Log`, `Outcomes &
-   Retrospective`, and revision note.
+6. Update this ExecPlan's `Progress`, `Decision Log`,
+   `Outcomes & Retrospective`, and revision note.
 
 Tests to add or update:
 
@@ -1062,11 +1032,11 @@ git status --short --branch
 sem diff --from HEAD --to origin/main
 ```
 
-After the rebase, re-read `docs/roadmap.md`,
-`docs/execplans/roadmap-2-1-7.md`, and any diagnostic or fixture tests listed
-by `sem diff --from HEAD --to origin/main` before proceeding. In planning round
-2, the branch was behind one commit; rebasing made `sem diff --from HEAD --to
-origin/main` report no changes.
+After the rebase, re-read `docs/roadmap.md`, `docs/execplans/roadmap-2-1-7.md`,
+and any diagnostic or fixture tests listed by
+`sem diff --from HEAD --to origin/main` before proceeding. In planning round 2,
+the branch was behind one commit; rebasing made
+`sem diff --from HEAD --to origin/main` report no changes.
 
 For each work item:
 
@@ -1208,8 +1178,8 @@ export const classifyWorkflowMetadata = (
 ) => WorkflowMetadataClassification;
 ```
 
-`WorkflowMetadataFacts` should include parsed `name`, parsed `description`,
-the metadata object span, and portability. It may include additional internal
+`WorkflowMetadataFacts` should include parsed `name`, parsed `description`, the
+metadata object span, and portability. It may include additional internal
 property facts if that keeps diagnostics clear and tests small.
 
 Use existing project modules:

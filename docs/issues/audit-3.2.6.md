@@ -36,12 +36,12 @@ Skills and tools used:
 - Branch-local file inspection and `git show`: source and entity-history
   verification.
 
-Tooling note: `grepai` intent search and the `git-donkey`/`git`/`leta`
-network- and write-backed commands were unavailable in this agent session (each
-was auto-denied by the sandbox permission layer). The fresh inspection worktree
-was therefore created with the harness `EnterWorktree` mechanism off
-`origin/main`, and every finding below is grounded in direct branch-local file
-inspection rather than the canonical `main` `grepai` index.
+Tooling note: `grepai` intent search and the `git-donkey`/`git`/`leta` network-
+and write-backed commands were unavailable in this agent session (each was
+auto-denied by the sandbox permission layer). The fresh inspection worktree was
+therefore created with the harness `EnterWorktree` mechanism off `origin/main`,
+and every finding below is grounded in direct branch-local file inspection
+rather than the canonical `main` `grepai` index.
 
 ## Finding 1: body-extraction and identifier helpers are duplicated verbatim across the two binding collectors
 
@@ -73,8 +73,8 @@ that shared module:
 - `userBodyStatements` (`workflow-ast-bindings.ts:70`,
   `workflow-ast-scopes.ts:207`) — identical.
 - `syntheticWrapperBody` (`workflow-ast-bindings.ts:82`,
-  `workflow-ast-scopes.ts:219`) — identical, including the three-branch guard
-  on `module.body.length`, `FunctionDeclaration`, and the
+  `workflow-ast-scopes.ts:219`) — identical, including the three-branch guard on
+  `module.body.length`, `FunctionDeclaration`, and the
   `WORKFLOW_BODY_WRAP_FUNCTION_NAME` identifier.
 - `addIdentifierBinding` (`workflow-ast-bindings.ts:200`,
   `workflow-ast-scopes.ts:237`) — identical.
@@ -116,10 +116,10 @@ Location:
 
 Description:
 
-The 3.2.5 audit's Finding 1 showed that the alias prepass silently skipped alias
-declarations nested inside call or `new` argument wrappers, and its Finding 2
-asked for a regression test covering that path. Task 3.2.6 fixed the code by
-routing `collectDeterministicTimeAliases`
+The 3.2.5 audit's Finding 1 showed that the alias prepass silently skipped
+alias declarations nested inside call or `new` argument wrappers, and its
+Finding 2 asked for a regression test covering that path. Task 3.2.6 fixed the
+code by routing `collectDeterministicTimeAliases`
 (`workflow-deterministic-time-aliases.ts:64`) through the shared
 `traverseAstSubtree` driver, which carries the non-node record branch that
 descends argument wrappers. The behaviour is therefore now correct — but the
@@ -169,11 +169,11 @@ narrowers left scattered across the modules that consume the `swc-ast.ts` seam;
 `isExpression` is byte-identical — `(value) => isAstNode(value)` — in both
 `workflow-deterministic-time-aliases.ts:224` and
 `workflow-global-object-reference.ts:141`. `isMemberExpression` is defined in
-both (`aliases.ts:219`, `global-object-reference.ts:136`), differing only in the
-guard's declared parameter type (`unknown` plus an `isAstNode` check versus
-`Expression | Node` plus a bare `type` check). `isIdentifier` is defined in both
-too, but with genuinely divergent contracts: `aliases.ts:214` accepts `unknown`
-(`isAstNode(value) && value.type === "Identifier"`) while
+both (`aliases.ts:219`, `global-object-reference.ts:136`), differing only in
+the guard's declared parameter type (`unknown` plus an `isAstNode` check versus
+`Expression | Node` plus a bare `type` check). `isIdentifier` is defined in
+both too, but with genuinely divergent contracts: `aliases.ts:214` accepts
+`unknown` (`isAstNode(value) && value.type === "Identifier"`) while
 `global-object-reference.ts:131` accepts `Expression | Node` and only checks
 `node.type === "Identifier"`. Same names, two shapes, is a readability hazard
 for anyone tracing narrowing logic across the two modules and a maintenance
@@ -183,11 +183,11 @@ Proposed fix:
 
 Add one typed narrower to `swc-ast.ts`, for example
 `isNodeOfType<T extends Node["type"]>(value: unknown, type: T)`, and derive the
-per-type guards (`Identifier`, `MemberExpression`, `CallExpression`) from it, or
-export the concrete narrowers directly. Replace the module-local copies, drop
-the trivial `isExpression` aliases in favour of `isAstNode`, and settle
-`isIdentifier` on a single `unknown`-accepting contract so the two modules share
-one definition.
+per-type guards (`Identifier`, `MemberExpression`, `CallExpression`) from it,
+or export the concrete narrowers directly. Replace the module-local copies,
+drop the trivial `isExpression` aliases in favour of `isAstNode`, and settle
+`isIdentifier` on a single `unknown`-accepting contract so the two modules
+share one definition.
 
 ## Summary of prior-audit status
 

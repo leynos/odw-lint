@@ -3,10 +3,9 @@
 This post-step audit was run after roadmap task 3.1.4, which taught the
 deterministic-time scanner to recognize `globalThis` and string-key member
 forms, merged into `origin/main` at commit `c344083`. The audit used `grepai`
-against the canonical
-`main` index for intent search, then verified every branch-local fact in a fresh
-worktree off `origin/main` with `leta`, targeted file inspection, and `sem`
-entity history.
+against the canonical `main` index for intent search, then verified every
+branch-local fact in a fresh worktree off `origin/main` with `leta`, targeted
+file inspection, and `sem` entity history.
 
 Normative references used:
 
@@ -30,10 +29,10 @@ Skills and tools used:
 
 The 3.1.4 change extracted global-object resolution out of the
 deterministic-time scanner into a new `workflow-global-object-reference.ts`
-module and taught it to recognize `globalThis` chains, string-key member access,
-and lexical shadowing. The findings below concentrate on that newly merged
-surface, with a small number of adjacent observations in the shared traversal
-and guard helpers it depends on.
+module and taught it to recognize `globalThis` chains, string-key member
+access, and lexical shadowing. The findings below concentrate on that newly
+merged surface, with a small number of adjacent observations in the shared
+traversal and guard helpers it depends on.
 
 ## Finding 1: `workflow-global-object-reference.ts` has no dedicated unit test
 
@@ -101,11 +100,11 @@ const TRANSPARENT_WRAPPER_TYPES = Object.freeze([
 
 The five `Ts…` entries are TypeScript-only AST nodes. The workflow body parser
 in `workflow-body-parse.ts` is pinned to `syntax: "ecmascript"` with a comment
-citing ADR 0002, which records that workflow bodies stay ECMAScript-only for ODW
-parity. SWC therefore never emits any `Ts…` node for a workflow body, so those
-five branches are unreachable, untested, and — per the complexity-antipatterns
-guide — speculative generality that a reader must still reason about when
-auditing the shadowing logic.
+citing ADR 0002, which records that workflow bodies stay ECMAScript-only for
+ODW parity. SWC therefore never emits any `Ts…` node for a workflow body, so
+those five branches are unreachable, untested, and — per the
+complexity-antipatterns guide — speculative generality that a reader must still
+reason about when auditing the shadowing logic.
 
 Proposed fix:
 
@@ -114,8 +113,7 @@ short comment referencing ADR 0002 to explain why TypeScript wrappers are
 intentionally excluded, or, if TypeScript workflow bodies are a planned dialect
 expansion, record that intent at the declaration and add a guarding fixture so
 the branches are exercised rather than dormant. Either way, add the parenthesis
-coverage from
-Finding 1 so the one reachable wrapper type is pinned.
+coverage from Finding 1 so the one reachable wrapper type is pinned.
 
 ## Finding 3: Node/record type guards are re-implemented instead of shared
 
@@ -139,13 +137,13 @@ Description:
 return typeof value === "object" && value !== null && "type" in value;
 ```
 
-A third guard, `isObjectRecord` in `workflow-deterministic-time.ts`, expresses a
-near-identical concept (`typeof value === "object" && value !== null`) to the
-already-shared `isUnknownRecord` in `value-guards.ts`, differing only in that it
-does not exclude arrays — a distinction that happens not to matter at its single
-call site because the array case is handled earlier. The static-analysis layer
-already has a `value-guards.ts` module for exactly this purpose, yet the 3.1.4
-modules grew their own copies rather than extending it.
+A third guard, `isObjectRecord` in `workflow-deterministic-time.ts`, expresses
+a near-identical concept (`typeof value === "object" && value !== null`) to the
+already-shared `isUnknownRecord` in `value-guards.ts`, differing only in that
+it does not exclude arrays — a distinction that happens not to matter at its
+single call site because the array case is handled earlier. The static-analysis
+layer already has a `value-guards.ts` module for exactly this purpose, yet the
+3.1.4 modules grew their own copies rather than extending it.
 
 Proposed fix:
 
@@ -168,15 +166,15 @@ Location:
 
 Description:
 
-Two modules independently re-derive "walk into an SWC node's children, recursing
-through arrays and nested record values". `workflow-deterministic-time.ts` does
-it with `visitChildValue`/`childRecordValues`/`isTraversableChildKey` (a
-pre-order full-tree walk that skips `span`, `type`, and `ctxt`), while
-`workflow-ast-bindings.ts` does it with `collectChildBindings` (an
-`Object.values` recursion). The two strategies diverge in detail but share the
-same underlying traversal concern, and neither reuses the other. A future
-node-shape assumption (for example, a new wrapper field that holds child nodes)
-would need to be taught to both walkers.
+Two modules independently re-derive "walk into an SWC node's children,
+recursing through arrays and nested record values".
+`workflow-deterministic-time.ts` does it with `visitChildValue`/
+`childRecordValues`/`isTraversableChildKey` (a pre-order full-tree walk that
+skips `span`, `type`, and `ctxt`), while `workflow-ast-bindings.ts` does it with
+`collectChildBindings` (an `Object.values` recursion). The two strategies
+diverge in detail but share the same underlying traversal concern, and neither
+reuses the other. A future node-shape assumption (for example, a new wrapper
+field that holds child nodes) would need to be taught to both walkers.
 
 Proposed fix:
 
@@ -204,9 +202,9 @@ const childValues = (node: Node): readonly unknown[] => {
 };
 ```
 
-`childValues` forwards to `childRecordValues` with the same argument and adds no
-behaviour. It has a single caller (`visitNode`). The extra name adds a layer of
-indirection that a reader must resolve to confirm nothing else happens,
+`childValues` forwards to `childRecordValues` with the same argument and adds
+no behaviour. It has a single caller (`visitNode`). The extra name adds a layer
+of indirection that a reader must resolve to confirm nothing else happens,
 mirroring the `textIndexForOffset` pass-through called out in the 2.1.12 audit.
 
 Proposed fix:
@@ -226,13 +224,14 @@ Location:
 
 Description:
 
-`collectLexicalBindings` returns `boundNames` as a frozen sorted `readonly
-string[]`, and `isIdentifierBound` looks names up with
+`collectLexicalBindings` returns `boundNames` as a frozen sorted
+`readonly string[]`, and `isIdentifierBound` looks names up with
 `facts.boundNames.includes(name)`. During a full-tree hazard walk,
 `unshadowedGlobalIdentity` calls `isIdentifierBound` for every candidate global
-identifier, so lookup cost is `O(bindings)` per identifier and `O(bindings ×
-identifiers)` for the body. The sorted array is deliberate for stable,
-deterministic output, but the lookup does not need to pay for that ordering.
+identifier, so lookup cost is `O(bindings)` per identifier and
+`O(bindings × identifiers)` for the body. The sorted array is deliberate for
+stable, deterministic output, but the lookup does not need to pay for that
+ordering.
 
 Proposed fix:
 
@@ -259,18 +258,16 @@ Description:
 string-key form `globalThis["Date"]` via `resolveStaticMemberName`, so
 `new globalThis["Date"]()` is detected by `odw/no-argless-new-date` just as
 `new globalThis.Date()` is. The rule documentation only mentions the dotted
-`globalThis` chain, and the positive test cases include
-`new globalThis.Date()` but no computed-key equivalent. By contrast,
-`no-date-now.md` and the `Date.now` positive cases do document and test the
-`Date["now"]()` and `globalThis["Date"]["now"]()` forms. The argless-new-date
-surface is therefore documented and pinned less precisely than the sibling rule
-it shares resolution logic with.
+`globalThis` chain, and the positive test cases include `new globalThis.Date()`
+but no computed-key equivalent. By contrast, `no-date-now.md` and the
+`Date.now` positive cases do document and test the `Date["now"]()` and
+`globalThis["Date"]["now"]()` forms. The argless-new-date surface is therefore
+documented and pinned less precisely than the sibling rule it shares resolution
+logic with.
 
 Proposed fix:
 
 Add a `new globalThis["Date"]()` positive case to the `POSITIVE_CASES` table in
 `workflow-deterministic-time.test.ts`, and extend the "Limitations" section of
 `no-argless-new-date.md` to state that string-key `globalThis` access is
-detected, matching the wording already in `no-date-now.md`.
-</content>
-</invoke>
+detected, matching the wording already in `no-date-now.md`. </content> </invoke>

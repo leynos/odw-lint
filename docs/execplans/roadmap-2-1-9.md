@@ -1,9 +1,8 @@
 # Split source-mask token scanners into focused modules
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -55,30 +54,31 @@ fixture refresh behaviour, a command-line interface, or new dependencies.
   `leta workspace add /data/leynos/Projects/odw-lint.worktrees/roadmap-2-1-9`
   succeeded and `leta calls --from maskNonCodeSource --max-depth 3` produced
   the source-mask call graph. Some `leta grep`, `leta refs`, and `leta show`
-  queries intermittently failed with `Error: Connection closed unexpectedly`
-  and `Error: EOF while parsing a value at line 1 column 0`; implementation
-  agents should retry `leta` and, if it fails in the same way, record the exact
-  failed command here and use precise branch-local file inspection.
+  queries intermittently failed with `Error: Connection closed unexpectedly` and
+  `Error: EOF while parsing a value at line 1 column 0`; implementation agents
+  should retry `leta` and, if it fails in the same way, record the exact failed
+  command here and use precise branch-local file inspection.
 - Use `sem` instead of raw Git history commands if implementation needs
   history, entity-level diffs, blame, or change impact analysis. In this
   planning round, `sem blame src/static-analysis/source-mask.ts` showed the
   whole source-mask module landed together in commit `073132bc` with subject
   `Add inert source masking`.
 - Follow `AGENTS.md` "Code Style and Structure", "Documentation Maintenance",
-  "Tooling Defaults", "Change Quality & Committing", "Refactoring Heuristics
-  & Workflow", "Markdown Guidance", and "TypeScript Guidance".
+  "Tooling Defaults", "Change Quality & Committing", "Refactoring Heuristics &
+  Workflow", "Markdown Guidance", and "TypeScript Guidance".
 - Use en-GB Oxford spelling in prose, comments, and commit messages while
   preserving code identifiers and external API names.
 - Load the relevant skills before implementation work: `execplans`, `grepai`,
-  `leta`, `sem`, `firecrawl-mcp`, and `biome-typescript`. This environment
-  does not list a TypeScript router skill; use `biome-typescript` plus
-  `AGENTS.md` TypeScript Guidance for TypeScript formatting and linting work.
-  If a future environment provides a TypeScript router skill, load that router
-  before touching TypeScript.
+  `leta`, `sem`, `firecrawl-mcp`, and `biome-typescript`. This environment does
+  not list a TypeScript router skill; use `biome-typescript` plus `AGENTS.md`
+  TypeScript Guidance for TypeScript formatting and linting work. If a future
+  environment provides a TypeScript router skill, load that router before
+  touching TypeScript.
 - Keep `src/static-analysis/source-mask.ts` as the only public source-mask
   facade. Callers must continue importing `maskNonCodeSource`, `MaskedSource`,
-  `SourceMaskKind`, and `SourceMaskRange` through `src/static-analysis/index.ts`
-  or `src/index.ts`; no caller should import a token-family module directly.
+  `SourceMaskKind`, and `SourceMaskRange` through
+  `src/static-analysis/index.ts` or `src/index.ts`; no caller should import a
+  token-family module directly.
 - Preserve the public package entry shape. Do not remove or rename root exports
   listed in `tests/diagnostics/public-api-fixtures.ts`.
 - Production code must not import executable ODW runtime paths. ADR
@@ -164,41 +164,32 @@ conflict in `Decision Log`, and escalate.
 ## Risks
 
 - Risk: the split accidentally changes regex-vs-division classification.
-  Severity: high.
-  Likelihood: medium.
-  Mitigation: move regex logic in one work item, keep the existing property
-  oracle unchanged except for imports if needed, and run
+  Severity: high. Likelihood: medium. Mitigation: move regex logic in one work
+  item, keep the existing property oracle unchanged except for imports if
+  needed, and run
   `bun test ./tests/static-analysis/source-mask.property.test.ts` before and
   after the move.
 
 - Risk: token modules import through the public facade and create import
-  cycles.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: move shared mask data types into `source-mask-types.ts`, shared
-  blanking and delimiter helpers into `source-mask-delimiters.ts`, then have
-  the facade re-export public types while composing token modules.
+  cycles. Severity: medium. Likelihood: medium. Mitigation: move shared mask
+  data types into `source-mask-types.ts`, shared blanking and delimiter helpers
+  into `source-mask-delimiters.ts`, then have the facade re-export public types
+  while composing token modules.
 
 - Risk: architecture tests become too loose and stop proving ownership.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: update `tests/static-analysis/source-file-architecture.test.ts`
-  to pin the new module set and the top-level declarations owned by each
-  source-mask module.
+  Severity: medium. Likelihood: medium. Mitigation: update
+  `tests/static-analysis/source-file-architecture.test.ts` to pin the new
+  module set and the top-level declarations owned by each source-mask module.
 
 - Risk: documentation says the source-mask facade owns all internals after the
-  code split.
-  Severity: low.
-  Likelihood: high.
-  Mitigation: update the developer guide and repository layout only after the
-  code split lands, naming the facade and each internal scanner home.
+  code split. Severity: low. Likelihood: high. Mitigation: update the developer
+  guide and repository layout only after the code split lands, naming the
+  facade and each internal scanner home.
 
 - Risk: a broad formatter command rewrites unrelated files.
-  Severity: medium.
-  Likelihood: low.
-  Mitigation: use file-scoped `biome format --write`, `mdtablefix`, and
-  `markdownlint-cli2 --fix` commands, then inspect `git status --short` before
-  gates.
+  Severity: medium. Likelihood: low. Mitigation: use file-scoped
+  `biome format --write`, `mdtablefix`, and `markdownlint-cli2 --fix` commands,
+  then inspect `git status --short` before gates.
 
 ## Progress
 
@@ -209,9 +200,8 @@ conflict in `Decision Log`, and escalate.
   `leta`, `firecrawl-mcp`, and `biome-typescript` skills.
 - [x] (2026-07-01T16:54:45+01:00) Ran GrepAI intent search against the
   canonical main-branch index for "source mask token scanners split focused
-  modules lexer parser"; the top hit was
-  `src/static-analysis/source-mask.ts`, followed by earlier source-mask
-  ExecPlan and audit documents.
+  modules lexer parser"; the top hit was `src/static-analysis/source-mask.ts`,
+  followed by earlier source-mask ExecPlan and audit documents.
 - [x] (2026-07-01T16:54:45+01:00) Added this worktree to Leta and captured the
   branch-local `maskNonCodeSource` call graph. Some Leta symbol queries failed
   intermittently as recorded in `Constraints`.
@@ -223,12 +213,10 @@ conflict in `Decision Log`, and escalate.
   `docs/scripting-standards.md`,
   `docs/complexity-antipatterns-and-refactoring-strategies.md`,
   `docs/documentation-style-guide.md`, `docs/repository-layout.md`,
-  `docs/users-guide.md`, `docs/issues/audit-2.1.7.md`, and
-  `docs/roadmap.md`.
+  `docs/users-guide.md`, `docs/issues/audit-2.1.7.md`, and `docs/roadmap.md`.
 - [x] (2026-07-01T16:54:45+01:00) Read current source-mask production and test
-  files: `src/static-analysis/source-mask.ts`,
-  `src/static-analysis/index.ts`, `src/index.ts`,
-  `tests/static-analysis/source-file-architecture.test.ts`,
+  files: `src/static-analysis/source-mask.ts`, `src/static-analysis/index.ts`,
+  `src/index.ts`, `tests/static-analysis/source-file-architecture.test.ts`,
   `tests/static-analysis/source-mask.test.ts`,
   `tests/static-analysis/source-mask.property.test.ts`,
   `tests/static-analysis/source-mask-fixtures.test.ts`,
@@ -238,8 +226,8 @@ conflict in `Decision Log`, and escalate.
   dependencies and verified local package versions and declarations for Bun
   test, Biome, and Fast-check.
 - [x] (2026-07-01T16:54:45+01:00) Verified official Bun test, Fast-check, and
-  Biome formatter documentation with Firecrawl search and submitted
-  Firecrawl search feedback.
+  Biome formatter documentation with Firecrawl search and submitted Firecrawl
+  search feedback.
 - [x] (2026-07-01T16:54:45+01:00) Read the sibling ODW checkout at
   `/data/leynos/Projects/open-dynamic-workflows` commit `ecc4867` for
   source-mask-adjacent loader behaviour.
@@ -258,14 +246,13 @@ conflict in `Decision Log`, and escalate.
 - [x] (2026-07-01T18:16:23+01:00) Validated work item 1 with focused tests,
   `make all`, `make markdownlint`, and `make nixie`. CodeRabbit was run once
   plus three retries; the final retry still reported two medium and two low
-  findings, all of which were fixed locally before the final deterministic
-  gate.
+  findings, all of which were fixed locally before the final deterministic gate.
 - [x] (2026-07-01T20:54:00+01:00) Completed work item 2. Added
   `source-mask-comments.ts`, `source-mask-strings.ts`, and
-  `source-mask-templates.ts`, moved the non-regex token-family scanners out
-  of the facade, added focused comment and string scanner tests, extended
-  internal template coverage, and kept `source-mask.ts` as the facade and
-  orchestration home.
+  `source-mask-templates.ts`, moved the non-regex token-family scanners out of
+  the facade, added focused comment and string scanner tests, extended internal
+  template coverage, and kept `source-mask.ts` as the facade and orchestration
+  home.
 - [x] (2026-07-01T20:54:00+01:00) Validated work item 2 with focused scanner
   and architecture tests, `make all`, `make markdownlint`, and `make nixie`.
   CodeRabbit was run once plus the permitted three retries. The final retry
@@ -281,12 +268,12 @@ conflict in `Decision Log`, and escalate.
 - [x] (2026-07-01T22:58:00+01:00) Validated work item 3 with focused
   architecture, source-mask, property, fixture, internal, and regex scanner
   tests, followed by `make all`, `make markdownlint`, and `make nixie`.
-  CodeRabbit initially hit a recoverable rate limit, so the required
-  randomized `vsleep` backoff was used before retrying. CodeRabbit then ran
-  once plus the permitted three retries. The final retry reported empty regex
-  body handling and direct regex scanner coverage; both were fixed locally and
-  the deterministic gates then passed. No further CodeRabbit retry was run
-  because the configured retry cap had been reached.
+  CodeRabbit initially hit a recoverable rate limit, so the required randomized
+  `vsleep` backoff was used before retrying. CodeRabbit then ran once plus the
+  permitted three retries. The final retry reported empty regex body handling
+  and direct regex scanner coverage; both were fixed locally and the
+  deterministic gates then passed. No further CodeRabbit retry was run because
+  the configured retry cap had been reached.
 - [x] (2026-07-01T23:16:00+01:00) Completed work item 4. Updated the
   developer guide, repository layout, roadmap, and this ExecPlan to describe
   the final source-mask ownership split and mark roadmap task 2.1.9 complete.
@@ -299,145 +286,135 @@ conflict in `Decision Log`, and escalate.
 
 - Observation: GrepAI was available and the canonical `main` index already
   points at `src/static-analysis/source-mask.ts` as the relevant source for
-  this task.
-  Evidence: `grepai search --workspace 'Projects' --project 'odw-lint'
-  "source mask token scanners split focused modules lexer parser" --toon
-  --compact --limit 8` returned `Projects/odw-lint/src/static-analysis/source-mask.ts`
-  as the highest-scoring result.
-  Impact: this plan can use canonical-main intent search as intended, while
-  still verifying all branch-local facts in the worktree.
+  this task. Evidence:
+  `grepai search --workspace 'Projects' --project 'odw-lint'`
+  `"source mask token scanners split focused modules lexer parser" --toon`
+  `--compact --limit 8` returned
+  `Projects/odw-lint/src/static-analysis/source-mask.ts` as the highest-scoring
+  result. Impact: this plan can use canonical-main intent search as intended,
+  while still verifying all branch-local facts in the worktree.
 
 - Observation: Leta worked for the call graph but not consistently for all
-  symbol queries in this session.
-  Evidence: `leta calls --from maskNonCodeSource --max-depth 3` showed the
-  facade calling `scanMaskRange`, `blankMaskedRange`, and
+  symbol queries in this session. Evidence:
+  `leta calls --from maskNonCodeSource --max-depth 3` showed the facade calling
+  `scanMaskRange`, `blankMaskedRange`, and
   `nextSignificantCharacterAfterRange`, with token-family calls under
   `scanMaskRange`. Earlier and later `leta grep`, `leta refs`, and `leta show`
-  attempts failed with `Error: Connection closed unexpectedly` and `Error: EOF
-  while parsing a value at line 1 column 0`.
-  Impact: implementation must retry Leta but may fall back to exact
-  branch-local file inspection if the same transient tool failure recurs.
+  attempts failed with `Error: Connection closed unexpectedly` and
+  `Error: EOF while parsing a value at line 1 column 0`. Impact: implementation
+  must retry Leta but may fall back to exact branch-local file inspection if
+  the same transient tool failure recurs.
 
 - Observation: `source-mask.ts` is exactly the file-size risk described by the
-  audit.
-  Evidence: `wc -l src/static-analysis/source-mask.ts` reported 398 lines, and
-  `docs/issues/audit-2.1.7.md` Finding 1 describes the same near-limit module
-  after roadmap task 2.1.7.
-  Impact: the split should happen before feature work adds branches or helpers
-  to the module.
+  audit. Evidence: `wc -l src/static-analysis/source-mask.ts` reported 398
+  lines, and `docs/issues/audit-2.1.7.md` Finding 1 describes the same
+  near-limit module after roadmap task 2.1.7. Impact: the split should happen
+  before feature work adds branches or helpers to the module.
 
 - Observation: the current architecture test pins all source-mask helper
-  declarations to one file.
-  Evidence: `tests/static-analysis/source-file-architecture.test.ts` contains
+  declarations to one file. Evidence:
+  `tests/static-analysis/source-file-architecture.test.ts` contains
   `SOURCE_HELPER_MODULES` with only `source-mask.ts` for masking, and the
   `keeps inert-region masking in source-mask` test expects every mask helper
-  declaration in that one file.
-  Impact: each extraction work item must update architecture tests as part of
-  the same atomic change.
+  declaration in that one file. Impact: each extraction work item must update
+  architecture tests as part of the same atomic change.
 
 - Observation: the sibling ODW loader distinguishes envelope masking from
-  dual-compatibility scanning.
-  Evidence: `/data/leynos/Projects/open-dynamic-workflows/src/loader.ts` at
-  commit `ecc4867` uses `maskNonCode(source)` for metadata extraction, while
+  dual-compatibility scanning. Evidence:
+  `/data/leynos/Projects/open-dynamic-workflows/src/loader.ts` at commit
+  `ecc4867` uses `maskNonCode(source)` for metadata extraction, while
   `scanDualCompat(source)` uses `maskForDualScan(source)` so template
-  interpolation code remains visible for compatibility warnings.
-  Impact: this plan preserves the current `odw-lint` whole-template masking
-  contract and does not introduce a dual-scan mask.
+  interpolation code remains visible for compatibility warnings. Impact: this
+  plan preserves the current `odw-lint` whole-template masking contract and
+  does not introduce a dual-scan mask.
 
 - Observation: the locked toolchain supports the focused validation commands
-  listed in this plan.
-  Evidence: `make build` installed `@biomejs/biome@2.5.1`,
+  listed in this plan. Evidence: `make build` installed `@biomejs/biome@2.5.1`,
   `bun-types@1.3.14`, `fast-check@4.8.0`, `oxlint@1.71.0`, and
   `typescript@5.9.3`. `bun test --help` accepts file filters and
   `--test-name-pattern`. `bunx biome format --help` accepts
   `biome format [--write] [PATH]...`. Fast-check `4.8.0` declarations expose
-  `assert`, `property`, `array`, and `constantFrom`.
-  Impact: no dependency change is needed for this refactor or its tests.
+  `assert`, `property`, `array`, and `constantFrom`. Impact: no dependency
+  change is needed for this refactor or its tests.
 
 - Observation: the roadmap branch freshness gate is separate from `make all`.
   Evidence: `docs/developers-guide.md` says to run `make branch-freshness`
   before requesting review for roadmap task branches and explains that the
   target refreshes `origin/main`, checks protected docs and tests changes, and
-  requires a clean worktree. `Makefile` defines `all: build check-fmt
-  whitespace-hygiene lint typecheck test` and a separate `branch-freshness`
-  target. Current `git status --short --branch` reports
-  `roadmap-2-1-9...origin/main [behind 1]`.
-  Impact: final validation must include a clean-worktree `make
-  branch-freshness` step, and this plan must not claim `make all` alone proves
-  current-`origin/main` freshness.
+  requires a clean worktree. `Makefile` defines
+  `all: build check-fmt whitespace-hygiene lint typecheck test` and a separate
+  `branch-freshness` target. Current `git status --short --branch` reports
+  `roadmap-2-1-9...origin/main [behind 1]`. Impact: final validation must
+  include a clean-worktree `make branch-freshness` step, and this plan must not
+  claim `make all` alone proves current-`origin/main` freshness.
 
 - Observation: splitting the scanners exposed two valid quoted-string and
-  template edge cases that the old facade tests did not isolate.
-  Evidence: CodeRabbit reported that unterminated quoted strings consumed
-  following-line code, escaped CRLF string continuations were not consumed as a
-  single line-terminator sequence, and keyword-led regex literals inside
-  template expressions needed to ignore comments before `/x/`. Focused tests
-  now cover those cases in `tests/static-analysis/source-mask-strings.test.ts`
-  and `tests/static-analysis/source-mask-internals.test.ts`.
-  Impact: work item 2 made small behaviour corrections with direct regression
-  coverage rather than preserving bugs during the mechanical split.
+  template edge cases that the old facade tests did not isolate. Evidence:
+  CodeRabbit reported that unterminated quoted strings consumed following-line
+  code, escaped CRLF string continuations were not consumed as a single
+  line-terminator sequence, and keyword-led regex literals inside template
+  expressions needed to ignore comments before `/x/`. Focused tests now cover
+  those cases in `tests/static-analysis/source-mask-strings.test.ts` and
+  `tests/static-analysis/source-mask-internals.test.ts`. Impact: work item 2
+  made small behaviour corrections with direct regression coverage rather than
+  preserving bugs during the mechanical split.
 
 - Observation: extracting regex scanning exposed missing token context in the
-  previous character-only heuristic.
-  Evidence: CodeRabbit reported keyword-led regex contexts such as `return
-  /x/`, `typeof /x/`, `case /x/:`, `else /x/`, and `for (x of /x/)`, plus the
-  counter-example `counter++ / divisor`. The facade now tracks both previous
-  significant character and previous significant token, while
-  `source-mask-regex.ts` rejects postfix `++` and `--` before applying keyword
-  and character allowlists.
-  Impact: regex-vs-division behaviour is more precise than the original
-  character-only heuristic and is covered by direct scanner, facade, fixture,
-  and property tests.
+  previous character-only heuristic. Evidence: CodeRabbit reported keyword-led
+  regex contexts such as `return /x/`, `typeof /x/`, `case /x/:`, `else /x/`,
+  and `for (x of /x/)`, plus the counter-example `counter++ / divisor`. The
+  facade now tracks both previous significant character and previous
+  significant token, while `source-mask-regex.ts` rejects postfix `++` and `--`
+  before applying keyword and character allowlists. Impact: regex-vs-division
+  behaviour is more precise than the original character-only heuristic and is
+  covered by direct scanner, facade, fixture, and property tests.
 
 - Observation: the source-mask regex scanner and the mirrored template regex
-  scanner had the same character-class boundary edge case.
-  Evidence: both scanners treated any `]` as a class close, so a regex such as
-  `/[]/]/g` could close at the slash inside the class. The fix teaches both
-  scanners that leading `]` and `[^]` positions are literals.
-  Impact: the two regex scan implementations remain behaviourally aligned for
-  class-leading `]` and slash characters.
+  scanner had the same character-class boundary edge case. Evidence: both
+  scanners treated any `]` as a class close, so a regex such as `/[]/]/g` could
+  close at the slash inside the class. The fix teaches both scanners that
+  leading `]` and `[^]` positions are literals. Impact: the two regex scan
+  implementations remain behaviourally aligned for class-leading `]` and slash
+  characters.
 
 ## Decision log
 
 - Decision: keep `source-mask.ts` as the public facade and move shared public
   data types into a private `source-mask-types.ts` module that the facade
-  re-exports.
-  Rationale: token-family modules need the mask range types, but importing
-  those types from the facade would create a cycle once the facade imports the
-  scanners. A private type module preserves the public surface while keeping
-  dependencies acyclic.
-  Date/Author: 2026-07-01T16:54:45+01:00 / Codex.
+  re-exports. Rationale: token-family modules need the mask range types, but
+  importing those types from the facade would create a cycle once the facade
+  imports the scanners. A private type module preserves the public surface
+  while keeping dependencies acyclic. Date/Author: 2026-07-01T16:54:45+01:00 /
+  Codex.
 
 - Decision: create one shared delimiter/range-support module named
-  `src/static-analysis/source-mask-delimiters.ts`.
-  Rationale: `isLineTerminatorCharacter`, `blankMaskedRange`,
-  `createMaskedRange`, `scanEscapedDelimitedEnd`, and
-  `isStringLikeDelimiter` are shared by more than one scanner family. Grouping
-  them separately avoids duplicating low-level delimiter handling in token
-  modules.
-  Date/Author: 2026-07-01T16:54:45+01:00 / Codex.
+  `src/static-analysis/source-mask-delimiters.ts`. Rationale:
+  `isLineTerminatorCharacter`, `blankMaskedRange`, `createMaskedRange`,
+  `scanEscapedDelimitedEnd`, and `isStringLikeDelimiter` are shared by more
+  than one scanner family. Grouping them separately avoids duplicating
+  low-level delimiter handling in token modules. Date/Author:
+  2026-07-01T16:54:45+01:00 / Codex.
 
 - Decision: split token-family implementation homes as
   `source-mask-comments.ts`, `source-mask-strings.ts`,
-  `source-mask-templates.ts`, and `source-mask-regex.ts`.
-  Rationale: these names match the roadmap success criteria and the audit's
-  proposed ownership shape. Each module has one token-family responsibility.
-  Date/Author: 2026-07-01T16:54:45+01:00 / Codex.
+  `source-mask-templates.ts`, and `source-mask-regex.ts`. Rationale: these
+  names match the roadmap success criteria and the audit's proposed ownership
+  shape. Each module has one token-family responsibility. Date/Author:
+  2026-07-01T16:54:45+01:00 / Codex.
 
 - Decision: keep `scanMaskRange`, `nextSignificantCharacterAfterRange`, and
-  `lastSignificantCharacterInRange` in `source-mask.ts`.
-  Rationale: these helpers compose token-family scanners and maintain the
+  `lastSignificantCharacterInRange` in `source-mask.ts`. Rationale: these
+  helpers compose token-family scanners and maintain the
   previous-significant-character state across ranges. They are facade
-  orchestration, not a token-family implementation.
-  Date/Author: 2026-07-01T16:54:45+01:00 / Codex.
+  orchestration, not a token-family implementation. Date/Author:
+  2026-07-01T16:54:45+01:00 / Codex.
 
 - Decision: preserve current unit, property, and fixture tests rather than
-  replacing them with snapshots.
-  Rationale: this is a refactor. Existing tests already cover token families,
-  fixture behaviour, line terminators, freezing, regex-vs-division handling,
-  and generated segment combinations. Snapshot tests would add review noise
-  without improving the behavioural contract for this split.
-  Date/Author: 2026-07-01T16:54:45+01:00 / Codex.
+  replacing them with snapshots. Rationale: this is a refactor. Existing tests
+  already cover token families, fixture behaviour, line terminators, freezing,
+  regex-vs-division handling, and generated segment combinations. Snapshot
+  tests would add review noise without improving the behavioural contract for
+  this split. Date/Author: 2026-07-01T16:54:45+01:00 / Codex.
 
 - Decision: keep `make branch-freshness` outside per-work-item gates and run
   it only after the final implementation commit leaves a clean worktree.
@@ -445,34 +422,31 @@ conflict in `Decision Log`, and escalate.
   task branches and states it exits with a usage error when the worktree is
   dirty. Per-work-item validation happens before each commit and therefore may
   be intentionally dirty; the correct point is after all intended changes are
-  committed and before requesting review.
-  Date/Author: 2026-07-01T18:04:00+01:00 / Codex.
+  committed and before requesting review. Date/Author:
+  2026-07-01T18:04:00+01:00 / Codex.
 
 - Decision: localize quoted-string line-terminator handling in
   `source-mask-strings.ts` instead of delegating to the shared escaped
-  delimiter scanner.
-  Rationale: quoted strings and template literals have different unterminated
-  token rules. Quoted strings must stop before unescaped line terminators so
-  valid code on the next line remains visible, while template literals may
-  span lines and still use the shared escaped-delimiter scanner for nested
-  delimiters.
-  Date/Author: 2026-07-01T20:54:00+01:00 / Codex.
+  delimiter scanner. Rationale: quoted strings and template literals have
+  different unterminated token rules. Quoted strings must stop before unescaped
+  line terminators so valid code on the next line remains visible, while
+  template literals may span lines and still use the shared escaped-delimiter
+  scanner for nested delimiters. Date/Author: 2026-07-01T20:54:00+01:00 / Codex.
 
 - Decision: track previous significant token in `source-mask.ts` while keeping
-  previous significant character tracking.
-  Rationale: regex recognition needs token context for keyword-led regexes and
-  postfix-operator division, but the existing character heuristic remains
-  useful for punctuation contexts such as `(`, `{`, `=`, and `,`. Keeping both
-  values lets `source-mask-regex.ts` reject `++` and `--`, allow expression
-  starter keywords, and preserve the previous punctuation behaviour.
-  Date/Author: 2026-07-01T22:58:00+01:00 / Codex.
+  previous significant character tracking. Rationale: regex recognition needs
+  token context for keyword-led regexes and postfix-operator division, but the
+  existing character heuristic remains useful for punctuation contexts such as
+  `(`, `{`, `=`, and `,`. Keeping both values lets `source-mask-regex.ts` reject
+  `++` and `--`, allow expression starter keywords, and preserve the previous
+  punctuation behaviour. Date/Author: 2026-07-01T22:58:00+01:00 / Codex.
 
 ## Outcomes & retrospective
 
 Work item 1 extracted the shared type and delimiter/range foundations without
 changing public imports or source-mask behaviour. The public `source-mask.ts`
-facade still exports `maskNonCodeSource`, `MaskedSource`, `SourceMaskKind`,
-and `SourceMaskRange`; helper modules are internal implementation details. The
+facade still exports `maskNonCodeSource`, `MaskedSource`, `SourceMaskKind`, and
+`SourceMaskRange`; helper modules are internal implementation details. The
 focused unit, architecture, and public API tests pass, and the full repository
 gate plus Markdown and Mermaid gates passed after the final local fixes.
 
@@ -488,12 +462,12 @@ Work item 3 extracted regex scanning into `source-mask-regex.ts` and made the
 regex-vs-division heuristic token-aware. Regex tests now cover keyword-led
 regexes, operator-keyword regexes, postfix-operator division, escaped line
 terminators, empty regex bodies, flag scanning, leading `]` literals inside
-character classes, and the mirrored template-expression regex scanner. The
-full repository gate plus Markdown and Mermaid gates passed after the final
-local fixes.
+character classes, and the mirrored template-expression regex scanner. The full
+repository gate plus Markdown and Mermaid gates passed after the final local
+fixes.
 
-Work item 4 closed the documentation and roadmap loop. Maintainer docs now
-name `source-mask.ts` as the facade and orchestrator, name the internal
+Work item 4 closed the documentation and roadmap loop. Maintainer docs now name
+`source-mask.ts` as the facade and orchestrator, name the internal
 `source-mask-*` scanner modules by token family, and keep external scanner code
 on `maskNonCodeSource`. Roadmap task 2.1.9 is marked complete. The final
 focused suite, repository gate, Markdown lint, Mermaid validation, and
@@ -557,10 +531,10 @@ The implementation must not expose token-family modules from `src/index.ts` or
   masking behaviour, each token family has a named implementation home, and
   existing masking fixture and property tests remain green.
 - `docs/issues/audit-2.1.7.md` Finding 1 says `source-mask.ts` is 398 lines
-  and combines the public entry point, range creation, comment scanning,
-  quoted string scanning, whole-template scanning, regex-literal heuristics,
-  and regex flag scanning. It proposes keeping the facade while splitting
-  token-family helpers.
+  and combines the public entry point, range creation, comment scanning, quoted
+  string scanning, whole-template scanning, regex-literal heuristics, and regex
+  flag scanning. It proposes keeping the facade while splitting token-family
+  helpers.
 - `docs/technical-design.md` §§5, 6.2, and 6.4 require an owned static-analysis
   implementation, a string/comment/template/regex masking strategy before
   envelope scanning, and no workflow source execution.
@@ -596,8 +570,8 @@ The implementation must not expose token-family modules from `src/index.ts` or
 - The official Bun test runner documentation at <https://bun.sh/docs/test>
   confirms `bun test`, TypeScript test files, file filters, and non-zero exit
   on failure. The locked local runtime is Bun `1.3.11`, and
-  `node_modules/bun-types/test.d.ts` exposes `describe`, `it`, `test`,
-  `expect`, `toBe`, and `toEqual`.
+  `node_modules/bun-types/test.d.ts` exposes `describe`, `it`, `test`, `expect`,
+  `toBe`, and `toEqual`.
 - The official Fast-check documentation at
   <https://fast-check.dev/docs/introduction/getting-started/> confirms
   `fc.assert(fc.property(...))`, test-runner-agnostic integration, and
@@ -614,17 +588,17 @@ The implementation must not expose token-family modules from `src/index.ts` or
   `/data/leynos/Projects/open-dynamic-workflows` commit `ecc4867` shows
   `src/loader.ts` using `maskNonCode(source)` for metadata extraction and a
   separate `maskForDualScan(source)` for dual-compatibility scanning where
-  template interpolation code remains visible. This task preserves
-  `odw-lint`'s current whole-template envelope masking and does not implement
-  dual-scan behaviour.
+  template interpolation code remains visible. This task preserves `odw-lint`'s
+  current whole-template envelope masking and does not implement dual-scan
+  behaviour.
 
 ## Plan of work
 
 Each work item below follows Red-Green-Refactor. The "red" step updates the
 smallest relevant test expectation first and runs the focused command to prove
-the current code does not yet satisfy the new module boundary. The "green"
-step moves code without changing observable behaviour. The "refactor" step
-cleans imports, documentation, and formatting while rerunning focused tests and
+the current code does not yet satisfy the new module boundary. The "green" step
+moves code without changing observable behaviour. The "refactor" step cleans
+imports, documentation, and formatting while rerunning focused tests and
 repository gates.
 
 ### Work item 1: Extract source-mask types and delimiter support
@@ -781,9 +755,8 @@ Green:
    line terminators while template literals do not.
 3. Add `src/static-analysis/source-mask-templates.ts` and move template
    scanning into it. Include a `/** @file ... */` module block. It imports
-   `createMaskedRange`,
-   `scanEscapedDelimitedEnd`, and `isStringLikeDelimiter` from
-   `source-mask-delimiters.ts`.
+   `createMaskedRange`, `scanEscapedDelimitedEnd`, and `isStringLikeDelimiter`
+   from `source-mask-delimiters.ts`.
 4. Update `src/static-analysis/source-mask.ts` so `scanMaskRange` calls the
    imported `scanCommentRange`, `scanQuotedStringRange`, and
    `scanTemplateRange`.
@@ -1003,18 +976,17 @@ Refactor and validation:
    make branch-freshness
    ```
 
-   Expect `git status --short` to print no paths and `make branch-freshness`
-   to pass. If `git status --short` prints any path, do not request review;
-   commit intended changes or park unrelated churn with the named stash policy
-   from `Constraints`, then rerun the command sequence.
+   Expect `git status --short` to print no paths and `make branch-freshness` to
+   pass. If `git status --short` prints any path, do not request review; commit
+   intended changes or park unrelated churn with the named stash policy from
+   `Constraints`, then rerun the command sequence.
 
 4. Acceptance: documentation describes the implemented module split, roadmap
    task 2.1.9 is complete, and all repository gates pass.
 
 ## Concrete steps
 
-Run all commands from
-`/data/leynos/Projects/odw-lint.worktrees/roadmap-2-1-9`.
+Run all commands from `/data/leynos/Projects/odw-lint.worktrees/roadmap-2-1-9`.
 
 Before implementation starts, refresh the branch-local research state:
 
@@ -1097,16 +1069,18 @@ make branch-freshness
 
 `git status --short` must print no paths. `make branch-freshness` refreshes
 `origin/main`, checks protected docs and tests changes for roadmap task
-branches, and fails when the branch would present unrelated newer
-`origin/main` work as review deletions.
+branches, and fails when the branch would present unrelated newer `origin/main`
+work as review deletions.
 
 ## Idempotence and recovery
 
 The planned edits are file moves and import updates. They are safe to repeat
 when applied in work-item order. If a work item partially applies and tests
-fail, inspect `git diff -- src/static-analysis tests/static-analysis
-docs/execplans/roadmap-2-1-9.md` and finish or revert only the partial changes
-from that same work item. Do not reset or revert unrelated user changes.
+fail, inspect
+`git diff -- src/static-analysis tests/static-analysis
+docs/execplans/roadmap-2-1-9.md`
+and finish or revert only the partial changes from that same work item. Do not
+reset or revert unrelated user changes.
 
 If a file-scoped formatter changes unrelated files, park only the unrelated
 formatter churn with the named stash command in `Constraints`, then continue
@@ -1354,19 +1328,18 @@ Planning round 2 resolved the design-review blocker about validation. The plan
 now includes a final clean-worktree `make branch-freshness` step before
 requesting review, records why that gate is separate from per-work-item dirty
 worktree validation, and corrects the `make all` wording so it only claims
-build, formatting, whitespace, lint, typecheck, and test coverage. It no
-longer claims that `make all` fetches or compares against current
-`origin/main`.
+build, formatting, whitespace, lint, typecheck, and test coverage. It no longer
+claims that `make all` fetches or compares against current `origin/main`.
 
-Work item 1 revision completed the shared source-mask foundation extraction.
-It added internal type and delimiter modules, focused internal tests for their
+Work item 1 revision completed the shared source-mask foundation extraction. It
+added internal type and delimiter modules, focused internal tests for their
 contracts, and the technical-design source-mask ownership note requested by
 review. CodeRabbit review reached the configured retry cap; the final reported
 items were fixed locally and then `make all`, `make markdownlint`, and
 `make nixie` passed.
 
-Work item 2 revision completed the comment, quoted-string, and template
-scanner extraction. CodeRabbit review found valid edge cases in template
+Work item 2 revision completed the comment, quoted-string, and template scanner
+extraction. CodeRabbit review found valid edge cases in template
 regex-predecessor handling and quoted-string line-terminator handling; those
 were fixed with focused tests. The final CodeRabbit retry reached the
 configured cap, so the last accepted fix was validated deterministically with

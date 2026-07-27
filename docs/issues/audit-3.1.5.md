@@ -1,10 +1,10 @@
 # Audit after roadmap task 3.1.5
 
-This post-step audit was run after roadmap task 3.1.5, which added scope-precise
-deterministic-time shadowing, merged into `origin/main` at commit `1d2f09a`. The
-audit used `grepai` against the canonical `main` index for intent search, then
-verified every branch-local fact in a fresh worktree off `origin/main` with
-`leta`, targeted file inspection, and `sem` entity history.
+This post-step audit was run after roadmap task 3.1.5, which added
+scope-precise deterministic-time shadowing, merged into `origin/main` at commit
+`1d2f09a`. The audit used `grepai` against the canonical `main` index for
+intent search, then verified every branch-local fact in a fresh worktree off
+`origin/main` with `leta`, targeted file inspection, and `sem` entity history.
 
 Normative references used:
 
@@ -28,13 +28,12 @@ Skills and tools used:
 - `sem`: entity-level diff and blame inspection.
 
 The 3.1.5 change split the reusable binding-pattern collectors into a new
-`workflow-ast-binding-patterns.ts` module, added a new
-`workflow-ast-scopes.ts` module that layers a function-scope binding view over
-the whole-body model (`rootScopeView`/`enterScope`), and rewired
-`scanDeterministicTimeWarnings` so bare `Date`, `Math`, and `globalThis`
-warnings are suppressed only when the name is shadowed at the use site. The
-findings below concentrate on that newly merged surface and the shared traversal
-helpers it depends on.
+`workflow-ast-binding-patterns.ts` module, added a new `workflow-ast-scopes.ts`
+module that layers a function-scope binding view over the whole-body model
+(`rootScopeView`/`enterScope`), and rewired `scanDeterministicTimeWarnings` so
+bare `Date`, `Math`, and `globalThis` warnings are suppressed only when the
+name is shadowed at the use site. The findings below concentrate on that newly
+merged surface and the shared traversal helpers it depends on.
 
 ## Finding 1: `workflow-ast-scopes.ts` reimplements the shared child-value walker
 
@@ -65,8 +64,8 @@ Delete the local `childValues` in `workflow-ast-scopes.ts` and import
 `astChildValues` from `./swc-ast`. The signatures are compatible
 (`astChildValues(value: object)` accepts the `AstNode` argument), so the change
 is behaviour-preserving. Re-run
-`tests/static-analysis/workflow-deterministic-time-scopes.test.ts` to confirm no
-output change.
+`tests/static-analysis/workflow-deterministic-time-scopes.test.ts` to confirm
+no output change.
 
 ## Finding 2: Synthetic-wrapper unwrapping is duplicated across two binding modules
 
@@ -86,11 +85,11 @@ Description:
 191-219). Both unwrap the synthetic `WORKFLOW_BODY_WRAP_FUNCTION_NAME` wrapper
 to recover the user-written statements, and both re-derive the same
 `EXCLUDED_BINDING_NAMES` set, the same `addIdentifierBinding` guard, and the
-same `compareIdentifierNames` comparator. The two modules were split in the same
-change, so the duplication is fresh and the drift risk is immediate: a change to
-how the wrapper is detected (for example, a normalizer rename) must be applied
-in both files or the flat and scope-precise binding views will disagree about
-which statements are user code.
+same `compareIdentifierNames` comparator. The two modules were split in the
+same change, so the duplication is fresh and the drift risk is immediate: a
+change to how the wrapper is detected (for example, a normalizer rename) must
+be applied in both files or the flat and scope-precise binding views will
+disagree about which statements are user code.
 
 Proposed fix:
 
@@ -129,10 +128,10 @@ the "which nodes introduce bindings" policy is now encoded twice.
 Proposed fix:
 
 Unify the two collectors behind one parametrized walk whose only variation is a
-`stopAtFunctionScope` (or equivalent) flag, so the node-shape knowledge lives in
-one place and the flat view is expressed as the scope view without the boundary
-stop. This is a larger, higher-risk refactor than Findings 1 and 2; gate it on
-the existing `workflow-ast-bindings.test.ts` and
+`stopAtFunctionScope` (or equivalent) flag, so the node-shape knowledge lives
+in one place and the flat view is expressed as the scope view without the
+boundary stop. This is a larger, higher-risk refactor than Findings 1 and 2;
+gate it on the existing `workflow-ast-bindings.test.ts` and
 `workflow-deterministic-time-scopes.test.ts` suites passing unedited, and treat
 it as a roadmap follow-up rather than an inline change.
 
@@ -186,10 +185,10 @@ test). Consequently a `Date` or `Math` binding in an unrelated nested scope
 suppresses recognition of a top-level alias declaration such as
 `const D = Date; ... new D();`, producing exactly the unrelated-scope
 false-negative that 3.1.5 removed for direct references. The `roadmap-3-1-5.md`
-ExecPlan explicitly scoped alias precision out as future work, and the rule docs
-note the whole-body alias limit, so this is a known and documented gap rather
-than a defect — but the behaviour is currently unpinned by any fixture, so a
-future refactor could change it silently in either direction.
+ExecPlan explicitly scoped alias precision out as future work, and the rule
+docs note the whole-body alias limit, so this is a known and documented gap
+rather than a defect — but the behaviour is currently unpinned by any fixture,
+so a future refactor could change it silently in either direction.
 
 Proposed fix:
 
@@ -221,9 +220,9 @@ through `scanDeterministicTimeWarnings`. The integration suite does exercise
 class methods, getters, setters, named class expressions, and catch clauses, so
 behaviour is reasonably covered — but the module's own output (the exact sorted
 `boundNames` set produced for a given scope, and the block/`for`/`catch`
-attribution to the enclosing function scope documented as a limitation) is never
-asserted. That makes the structural refactors proposed in Findings 1-3 harder to
-land safely, because the only guard is end-to-end diagnostic output.
+attribution to the enclosing function scope documented as a limitation) is
+never asserted. That makes the structural refactors proposed in Findings 1-3
+harder to land safely, because the only guard is end-to-end diagnostic output.
 
 Proposed fix:
 

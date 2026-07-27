@@ -1,9 +1,8 @@
 # Resolve the body-syntax span-narrowing surface
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -21,8 +20,8 @@ in production that seam always falls through to the conservative whole-body
 span. The narrowing machinery is therefore **dormant**: built and unit-tested
 against synthetic structured errors, but never exercised by the shipped parser.
 
-Roadmap task 5.5.1 (`docs/roadmap.md` lines 1378-1384) requires a decision: wire
-a real structured-offset parser channel, or explicitly quarantine
+Roadmap task 5.5.1 (`docs/roadmap.md` lines 1378-1384) requires a decision:
+wire a real structured-offset parser channel, or explicitly quarantine
 `workflow-body-parser-spans.ts` — and then align the rule docs, ADR 0002, and
 design guidance with the current whole-body fallback. The verbatim success line
 reads: "documentation and code agree on whether span narrowing is active,
@@ -69,8 +68,8 @@ Markdown; and a human can read `docs/rules/body-syntax.md`, ADR 0003, and the
 - **5.5.1 must not** change the `Diagnostic` object shape
   (`docs/technical-design.md` section 8) or the public signature of
   `parseWorkflowBody`. The whole-body span for real SWC failures must remain
-  byte-for-byte unchanged (snapshots in
-  `tests/static-analysis/__snapshots__/` and the span-equality assertions in
+  byte-for-byte unchanged (snapshots in `tests/static-analysis/__snapshots__/`
+  and the span-equality assertions in
   `tests/static-analysis/workflow-body-parser.test.ts`).
 - **5.5.1 requires 2.2.6 and 2.3.4** (`docs/roadmap.md` line 1379). 2.2.6
   (COMPLETE, `docs/execplans/roadmap-2-2-6.md`) built the seam and pinned the
@@ -87,10 +86,10 @@ Markdown; and a human can read `docs/rules/body-syntax.md`, ADR 0003, and the
 - Do not recover offsets by parsing `error.message` or any rendered diagnostic
   text (roadmap 2.2.6, `docs/roadmap.md` line 585; ADR 0002 parser contract).
 - Do not add a new external dependency and do not bump `@swc/core`
-  (`docs/technical-design.md` section 13, `package.json`). The
-  span-narrowing seam stays internal: it must not be re-exported from
-  `src/index.ts` or `src/static-analysis/index.ts` (developers guide lines
-  61-65; audit decisions 2.2.6.2 and 2.2.6.4).
+  (`docs/technical-design.md` section 13, `package.json`). The span-narrowing
+  seam stays internal: it must not be re-exported from `src/index.ts` or
+  `src/static-analysis/index.ts` (developers guide lines 61-65; audit decisions
+  2.2.6.2 and 2.2.6.4).
 - Every emitted diagnostic `span` must continue to point into **original**
   source (`docs/technical-design.md` sections 8 and 11.5). This plan does not
   change any span value.
@@ -126,31 +125,28 @@ Markdown; and a human can read `docs/rules/body-syntax.md`, ADR 0003, and the
 ## Risks
 
 - Risk: the locked `@swc/core@^1.15.43` parse-error surface cannot be inspected
-  empirically during planning (`node_modules` is absent in the worktree, and
-  the `firecrawl_*` web tools require interactive approval that is denied in
-  this non-interactive session).
-  Severity: medium. Likelihood: low that the pinned conclusion is wrong.
-  Mitigation: the fact is already pinned at HEAD by
+  empirically during planning (`node_modules` is absent in the worktree, and the
+  `firecrawl_*` web tools require interactive approval that is denied in this
+  non-interactive session). Severity: medium. Likelihood: low that the pinned
+  conclusion is wrong. Mitigation: the fact is already pinned at HEAD by
   `tests/static-analysis/swc-parse-error-surface.test.ts` (an inline-snapshot
   characterization test the implementer re-runs with `node_modules` present),
   and WI-3 re-pins the same fact through the extractor. The Tolerances
   "Discovery" trigger covers the contradicting outcome.
 - Risk: a reviewer expects a new ADR whereas the roadmap names "ADR 0002",
-  or vice versa.
-  Severity: low. Likelihood: medium.
-  Mitigation: the plan records the decision in a new ADR 0003 **and** aligns
-  ADR 0002 with a cross-reference, satisfying both readings; the Tolerances
-  "Ambiguity" trigger escalates if a reviewer rejects that.
+  or vice versa. Severity: low. Likelihood: medium. Mitigation: the plan
+  records the decision in a new ADR 0003 **and** aligns ADR 0002 with a
+  cross-reference, satisfying both readings; the Tolerances "Ambiguity" trigger
+  escalates if a reviewer rejects that.
 - Risk: a future `@swc/core` upgrade changes the error surface and silently
-  activates or misdirects narrowing.
-  Severity: medium. Likelihood: low.
+  activates or misdirects narrowing. Severity: medium. Likelihood: low.
   Mitigation: the existing characterization test plus the WI-3 quarantine
   contract test convert any such change into a red suite, and ADR 0003 records
   the re-observation trigger tied to the SWC upgrade checklist.
 - Risk: doc churn accidentally reformats unrelated Markdown.
-  Severity: low. Likelihood: low.
-  Mitigation: format only the touched files with `mdtablefix` then
-  `markdownlint-cli2 --fix`, then gate with the repository targets.
+  Severity: low. Likelihood: low. Mitigation: format only the touched files with
+  `mdtablefix` then `markdownlint-cli2 --fix`, then gate with the repository
+  targets.
 
 ## Progress
 
@@ -166,106 +162,97 @@ Markdown; and a human can read `docs/rules/body-syntax.md`, ADR 0003, and the
 ## Surprises & discoveries
 
 - Observation: the documentation is already partly aligned, but the
-  user-facing rule doc is not.
-  Evidence: `docs/developers-guide.md` lines 61-65 and
-  `docs/technical-design.md` lines 117-123 already call the seam "intentionally
-  internal" and note the whole-body fallback, whereas `docs/rules/body-syntax.md`
-  lines 22-25 still tell users "the diagnostic span narrows to that offending
-  token", a capability the shipped parser never triggers.
-  Impact: WI-2 focuses the biggest correction on the rule doc; the design and
-  developer edits are cross-reference and staleness fixes (for example
-  `docs/developers-guide.md` line 654 still points "future narrowing" at the
-  now-complete task 2.2.6).
+  user-facing rule doc is not. Evidence: `docs/developers-guide.md` lines 61-65
+  and `docs/technical-design.md` lines 117-123 already call the seam
+  "intentionally internal" and note the whole-body fallback, whereas
+  `docs/rules/body-syntax.md` lines 22-25 still tell users "the diagnostic span
+  narrows to that offending token", a capability the shipped parser never
+  triggers. Impact: WI-2 focuses the biggest correction on the rule doc; the
+  design and developer edits are cross-reference and staleness fixes (for
+  example `docs/developers-guide.md` line 654 still points "future narrowing"
+  at the now-complete task 2.2.6).
 - Observation: the shipped whole-body fallback is already test-pinned.
   Evidence: `tests/static-analysis/workflow-body-parser.test.ts` ("emits
   original-source body span text for %s") asserts `diagnostic.span` equals
   `envelope.bodySpan` for both syntax-error fixtures, and
   `tests/static-analysis/workflow-body-parser-ranges.test.ts` line 41 asserts
   `structuredNormalizedRangeFromParserError(realError, normalized)` is
-  `undefined`.
-  Impact: WI-3 adds a single named quarantine-contract test that composes these
-  facts and adds the "not publicly exported" assertion, rather than duplicating
-  existing coverage.
+  `undefined`. Impact: WI-3 adds a single named quarantine-contract test that
+  composes these facts and adds the "not publicly exported" assertion, rather
+  than duplicating existing coverage.
 - Observation: `leta` could not open the linked worktree as a workspace.
   Evidence: `leta grep "span-narrowing" docs/adr` returned
-  `Error: No workspace found for current directory`.
-  Impact: WI-1 used GrepAI for canonical intent search and bounded
-  branch-local file inspection for the ADR-only change, matching the standing
-  fallback rule for transient Leta workspace failures.
+  `Error: No workspace found for current directory`. Impact: WI-1 used GrepAI
+  for canonical intent search and bounded branch-local file inspection for the
+  ADR-only change, matching the standing fallback rule for transient Leta
+  workspace failures.
 - Observation: the first WI-1 gate run exposed repository documentation
-  freshness issues outside the ADR files.
-  Evidence: scrutineer reported `make test` failing because
-  `execplans/roadmap-5-5-1.md` was missing from `docs/contents.md`, and
-  `make markdownlint` failing on long lines in this ExecPlan.
-  Impact: WI-1 includes a narrow `docs/contents.md` index update and mechanical
-  ExecPlan reflow so the required deterministic gates can pass at HEAD.
+  freshness issues outside the ADR files. Evidence: scrutineer reported
+  `make test` failing because `execplans/roadmap-5-5-1.md` was missing from
+  `docs/contents.md`, and `make markdownlint` failing on long lines in this
+  ExecPlan. Impact: WI-1 includes a narrow `docs/contents.md` index update and
+  mechanical ExecPlan reflow so the required deterministic gates can pass at
+  HEAD.
 - Observation: WI-2 found the rule page was the only user-facing document that
-  still described token narrowing as observable behaviour.
-  Evidence: `docs/rules/body-syntax.md` still promised a narrowed offending
-  token span when a parser exposed a structured range, while
-  `docs/technical-design.md` and `docs/developers-guide.md` already named the
-  whole-body fallback but lacked ADR 0003 cross-references.
-  Impact: WI-2 replaced the rule-page promise with the shipped whole-body
-  contract and refreshed the design/developer guide wording instead of adding
-  new behaviour or tests.
+  still described token narrowing as observable behaviour. Evidence:
+  `docs/rules/body-syntax.md` still promised a narrowed offending token span
+  when a parser exposed a structured range, while `docs/technical-design.md` and
+  `docs/developers-guide.md` already named the whole-body fallback but lacked
+  ADR 0003 cross-references. Impact: WI-2 replaced the rule-page promise with
+  the shipped whole-body contract and refreshed the design/developer guide
+  wording instead of adding new behaviour or tests.
 - Observation: WI-3 confirmed the locked SWC parser still leaves the
-  span-narrowing seam dormant.
-  Evidence: `bun test
-  tests/static-analysis/body-syntax-span-narrowing-quarantine.test.ts` passed
-  after asserting that the real `parseSync` error yields
+  span-narrowing seam dormant. Evidence:
+  `bun test tests/static-analysis/body-syntax-span-narrowing-quarantine.test.ts`
+  passed after asserting that the real `parseSync` error yields
   `structuredNormalizedRangeFromParserError(...) === undefined`,
   `parseWorkflowBody(...)` emits `envelope.bodySpan`, and the narrowing helpers
-  are absent from the `odw-lint` public entry.
-  Impact: the plan's Discovery tolerance did not trigger; WI-3 adds only a
-  characterization test and a one-line ADR 0003 pointer in
+  are absent from the `odw-lint` public entry. Impact: the plan's Discovery
+  tolerance did not trigger; WI-3 adds only a characterization test and a
+  one-line ADR 0003 pointer in
   `src/static-analysis/workflow-body-parser-spans.ts`, with no production
   behaviour change.
 
 ## Decision log
 
 - Decision: quarantine `workflow-body-parser-spans.ts` as an intentionally
-  deferred, internal fallback seam rather than wiring a structured-offset parser
-  channel.
-  Rationale: the load-bearing input is that the locked `@swc/core@^1.15.43`
-  `parseSync` throws a JavaScript `Error` carrying rendered prose in `message`
-  and no structured, base-resolvable byte offset (pinned by
-  `tests/static-analysis/swc-parse-error-surface.test.ts` and the 2.2.6 decision
-  log, which explains SWC renders the Rust diagnostic to a caret string before
-  it crosses the N-API boundary). Wiring a real channel would require either an
-  `@swc/core` bump / different parser (a new dependency — a Tolerances breach)
-  or parsing rendered prose (forbidden by ADR 0002 and roadmap 2.2.6). The
-  roadmap clause "align ... with the current whole-body fallback" presumes the
-  fallback stays shipped. Quarantine is therefore the only in-scope, evidence-
-  backed disposition.
-  Date/Author: 2026-07-05, planning agent.
+  deferred, internal fallback seam rather than wiring a structured-offset
+  parser channel. Rationale: the load-bearing input is that the locked
+  `@swc/core@^1.15.43` `parseSync` throws a JavaScript `Error` carrying
+  rendered prose in `message` and no structured, base-resolvable byte offset
+  (pinned by `tests/static-analysis/swc-parse-error-surface.test.ts` and the
+  2.2.6 decision log, which explains SWC renders the Rust diagnostic to a caret
+  string before it crosses the N-API boundary). Wiring a real channel would
+  require either an `@swc/core` bump / different parser (a new dependency — a
+  Tolerances breach) or parsing rendered prose (forbidden by ADR 0002 and
+  roadmap 2.2.6). The roadmap clause "align … with the current whole-body
+  fallback" presumes the fallback stays shipped. Quarantine is therefore the
+  only in-scope, evidence- backed disposition. Date/Author: 2026-07-05,
+  planning agent.
 - Decision: keep the seam wired into production (`bodySyntaxDiagnosticsForParse`
   keeps calling `narrowedSpanForParserError`) rather than removing the call to
-  make the module test-only.
-  Rationale: the seam's fallback branches ARE the mechanism that yields the
-  shipped whole-body span (the extractor returns `undefined` for real SWC, so
-  `narrowBodySyntaxSpan` returns `bodySpan`), so it is not dead code; audit
-  decisions 2.2.6.2 and 2.2.6.4 deliberately kept it internal and wired.
-  Removing the call would create a production module with no production consumer
-  and force a future re-wire. Rejected alternative recorded so a reviewer can
-  weigh it.
-  Date/Author: 2026-07-05, planning agent.
+  make the module test-only. Rationale: the seam's fallback branches ARE the
+  mechanism that yields the shipped whole-body span (the extractor returns
+  `undefined` for real SWC, so `narrowBodySyntaxSpan` returns `bodySpan`), so
+  it is not dead code; audit decisions 2.2.6.2 and 2.2.6.4 deliberately kept it
+  internal and wired. Removing the call would create a production module with
+  no production consumer and force a future re-wire. Rejected alternative
+  recorded so a reviewer can weigh it. Date/Author: 2026-07-05, planning agent.
 - Decision: record the decision in a new ADR 0003 and add a one-line
   cross-reference to ADR 0002 rather than amending ADR 0002 in place.
   Rationale: ADR 0002 records the dialect-scope decision; span-narrowing
-  disposition is a distinct decision about the same adapter. ADR hygiene favours
-  a new record over mixing two decisions; the cross-reference satisfies the
-  roadmap's "align ... ADR 0002" wording. Tolerances "Ambiguity" escalates if a
-  reviewer rejects this split.
-  Date/Author: 2026-07-05, planning agent.
+  disposition is a distinct decision about the same adapter. ADR hygiene
+  favours a new record over mixing two decisions; the cross-reference satisfies
+  the roadmap's "align … ADR 0002" wording. Tolerances "Ambiguity" escalates if
+  a reviewer rejects this split. Date/Author: 2026-07-05, planning agent.
 - Decision: prove the chosen contract with a characterization test rather than
-  Red-Green-Refactor.
-  Rationale: the decision is "keep the shipped behaviour and document it", so
-  the pinned behaviour is already correct; there is no natural failing state to
-  drive. The execplans skill allows a characterization/golden substitute when
-  strict Red-Green does not apply. The test's value is regression protection
-  against a silent SWC upgrade and against accidental public export of the
-  seam.
-  Date/Author: 2026-07-05, planning agent.
+  Red-Green-Refactor. Rationale: the decision is "keep the shipped behaviour
+  and document it", so the pinned behaviour is already correct; there is no
+  natural failing state to drive. The execplans skill allows a
+  characterization/golden substitute when strict Red-Green does not apply. The
+  test's value is regression protection against a silent SWC upgrade and
+  against accidental public export of the seam. Date/Author: 2026-07-05,
+  planning agent.
 
 ## Outcomes & retrospective
 
@@ -333,9 +320,9 @@ Tests and fixtures:
 
 Terms of art:
 
-- *Structured offset*: a machine-readable numeric byte offset or `{ start, end }`
-  range on a parser error object, as opposed to text scraped from a rendered
-  message.
+- *Structured offset*: a machine-readable numeric byte offset or
+  `{ start, end }` range on a parser error object, as opposed to text scraped
+  from a rendered message.
 - *Dormant / quarantined seam*: production code that is present, wired, and
   unit-tested but whose non-fallback branch is never reached by the shipped
   parser.
@@ -409,11 +396,11 @@ Docs to read: `docs/rules/body-syntax.md`, `docs/technical-design.md` (lines
 Edits:
 
 1. `docs/rules/body-syntax.md` — replace the "When the parser exposes a
-   structured byte range ... the diagnostic span narrows to that offending
-   token" paragraph (lines 22-25) with an accurate statement: the diagnostic
-   spans the whole normalized body (always pointing into original source), and
-   token narrowing is an intentionally deferred capability (link ADR 0003). Do
-   not promise narrowing users will not observe.
+   structured byte range … the diagnostic span narrows to that offending token"
+   paragraph (lines 22-25) with an accurate statement: the diagnostic spans the
+   whole normalized body (always pointing into original source), and token
+   narrowing is an intentionally deferred capability (link ADR 0003). Do not
+   promise narrowing users will not observe.
 2. `docs/technical-design.md` lines 117-123 — keep the description of the span
    mapper, but state the narrowing path is intentionally deferred per ADR 0003
    and add the cross-reference; ensure it does not imply an active user-facing
@@ -441,11 +428,11 @@ path-safe.
 Goal: a named regression test that proves the shipped quarantine contract, plus
 a one-line code pointer so the seam's docstring names its decision record.
 
-Docs to read: `docs/technical-design.md` sections 8 and 11.5; the 2.2.6
-execplan `Decision Log`; `AGENTS.md` "TypeScript Guidance" and the testing
-rules. Skills to load: `leta` for symbol navigation and to confirm the export
-surface; `en-gb-oxendict` for the test/docstring prose. (Hypothesis, CrossHair,
-and mutmut are Python verification tools and do not apply to this Bun/TypeScript
+Docs to read: `docs/technical-design.md` sections 8 and 11.5; the 2.2.6 execplan
+`Decision Log`; `AGENTS.md` "TypeScript Guidance" and the testing rules.
+Skills to load: `leta` for symbol navigation and to confirm the export surface;
+`en-gb-oxendict` for the test/docstring prose. (Hypothesis, CrossHair, and
+mutmut are Python verification tools and do not apply to this Bun/TypeScript
 suite; property coverage here uses the repo's `fast-check`, already exercising
 the narrowing helper.)
 
@@ -493,8 +480,8 @@ make nixie
 ```
 
 The Markdown commands touch only this ExecPlan (updated `Progress`), which
-exists, so the list is path-safe. `make all` covers the new test, the
-`@file` docstring change, lint, and typecheck.
+exists, so the list is path-safe. `make all` covers the new test, the `@file`
+docstring change, lint, and typecheck.
 
 ### Work Item 4 — Tick roadmap task 5.5.1 and record completion
 
@@ -566,9 +553,9 @@ make markdownlint
 make nixie
 ```
 
-Acceptance (behaviour a human can verify), mapping to the verbatim success
-line "documentation and code agree on whether span narrowing is active, inert,
-or intentionally deferred, with tests pinning the chosen contract":
+Acceptance (behaviour a human can verify), mapping to the verbatim success line
+"documentation and code agree on whether span narrowing is active, inert, or
+intentionally deferred, with tests pinning the chosen contract":
 
 1. Decision recorded: `docs/adr/0003-body-syntax-span-narrowing-quarantine.md`
    exists and states the quarantine decision; ADR 0002 cross-references it.
@@ -576,10 +563,11 @@ or intentionally deferred, with tests pinning the chosen contract":
    `docs/technical-design.md`, and `docs/developers-guide.md` describe the
    shipped whole-body span with narrowing intentionally deferred, and the
    `workflow-body-parser-spans.ts` `@file` docstring names ADR 0003.
-3. Contract pinned: `bun test
-   tests/static-analysis/body-syntax-span-narrowing-quarantine.test.ts` passes,
-   proving the real SWC error yields no structured range, `parseWorkflowBody`
-   emits the whole-body span, and the seam is absent from the public entry.
+3. Contract pinned:
+   `bun test tests/static-analysis/body-syntax-span-narrowing-quarantine.test.ts`
+   passes, proving the real SWC error yields no structured range,
+   `parseWorkflowBody` emits the whole-body span, and the seam is absent from
+   the public entry.
 4. No behaviour drift: the whole-body snapshots and the span-equality
    assertions in `tests/static-analysis/workflow-body-parser.test.ts` remain
    unchanged.
@@ -592,28 +580,29 @@ Quality criteria ("done"):
 - Docs: `make markdownlint` and `make nixie` pass for the Markdown changes.
 
 Quality method: run the commands above in the worktree; the workflow host
-independently re-runs `make all` (and the Markdown gates) against committed HEAD
-before review and integration.
+independently re-runs `make all` (and the Markdown gates) against committed
+HEAD before review and integration.
 
 ## Idempotence and recovery
 
-Each Work Item is a separate commit; re-running `make all`, `make markdownlint`,
-and `make nixie` is safe and repeatable. If a whole-body snapshot changes in
-WI-3, do **not** run `--update-snapshots`: a changed snapshot signals an
-unintended behaviour change, so investigate before re-recording. If the WI-3
-test cannot be written to pass because SWC now exposes a structured offset,
-stop and escalate per the Tolerances "Discovery" trigger rather than weakening
-the assertion.
+Each Work Item is a separate commit; re-running `make all`,
+`make markdownlint`, and `make nixie` is safe and repeatable. If a whole-body
+snapshot changes in WI-3, do **not** run `--update-snapshots`: a changed
+snapshot signals an unintended behaviour change, so investigate before
+re-recording. If the WI-3 test cannot be written to pass because SWC now
+exposes a structured offset, stop and escalate per the Tolerances "Discovery"
+trigger rather than weakening the assertion.
 
 ## Artefacts and notes
 
 Planning-session tool notes (per the standing rules): `firecrawl_search`
-required interactive approval and was denied in this non-interactive session, so
-the external SWC error-surface behaviour was corroborated from the in-repo
-pinned characterization test (`tests/static-analysis/swc-parse-error-surface.test.ts`)
-and the 2.2.6 `Decision Log` rather than from a live web fetch; `node_modules`
-is absent in the worktree, so `parseSync` could not be invoked during planning.
-GrepAI and `leta` were available for branch-local navigation.
+required interactive approval and was denied in this non-interactive session,
+so the external SWC error-surface behaviour was corroborated from the in-repo
+pinned characterization test
+(`tests/static-analysis/swc-parse-error-surface.test.ts`) and the 2.2.6
+`Decision Log` rather than from a live web fetch; `node_modules` is absent in
+the worktree, so `parseSync` could not be invoked during planning. GrepAI and
+`leta` were available for branch-local navigation.
 
 ## Interfaces and dependencies
 
@@ -650,8 +639,8 @@ pinned conclusion is contradicted at implementation time.
 
 WI-1 update (2026-07-05). Added ADR 0003, cross-referenced it from ADR 0002,
 and indexed the new ADR plus this ExecPlan in `docs/contents.md` so the
-repository documentation freshness gate can pass. Remaining work starts at
-WI-2 and must not broaden the ADR-only decision already recorded here.
+repository documentation freshness gate can pass. Remaining work starts at WI-2
+and must not broaden the ADR-only decision already recorded here.
 
 WI-3 update (2026-07-05). Added
 `tests/static-analysis/body-syntax-span-narrowing-quarantine.test.ts` as a

@@ -1,9 +1,8 @@
 # Implement the diagnostic contract spine
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -96,45 +95,34 @@ for JSON reports.
 
 - Risk: `docs/technical-design.md` section 8 shows `summary.errors`,
   `summary.warnings`, and `summary.infos`, while the severity invariant also
-  includes `hint`.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: work item 3 must update section 8 to include `summary.hints`,
-  and work items 3 and 4 must pin the `hints` field with tests and schema
-  assertions. Do not count hints under `infos`.
+  includes `hint`. Severity: medium. Likelihood: medium. Mitigation: work item
+  3 must update section 8 to include `summary.hints`, and work items 3 and 4
+  must pin the `hints` field with tests and schema assertions. Do not count
+  hints under `infos`.
 
 - Risk: the package entry point could drift from the tested source API.
-  Severity: high.
-  Likelihood: medium.
-  Mitigation: work item 1 adds explicit `package.json` `exports`, `types`, and
-  `main` metadata, then updates tests to import from the package name
-  `odw-lint`. All later tests must keep importing through `odw-lint`, not
-  `../src/index`.
+  Severity: high. Likelihood: medium. Mitigation: work item 1 adds explicit
+  `package.json` `exports`, `types`, and `main` metadata, then updates tests to
+  import from the package name `odw-lint`. All later tests must keep importing
+  through `odw-lint`, not `../src/index`.
 
 - Risk: a thrown-only rule-id constructor would be awkward for later
   configuration parsing, where unknown or malformed rule IDs are recoverable
-  user input.
-  Severity: high.
-  Likelihood: medium.
-  Mitigation: work item 2 defines a discriminated `parseRuleId` result and
-  predicate for boundaries, plus a throwing `makeRuleId` convenience for
-  trusted literals. Tests pin both contracts.
+  user input. Severity: high. Likelihood: medium. Mitigation: work item 2
+  defines a discriminated `parseRuleId` result and predicate for boundaries,
+  plus a throwing `makeRuleId` convenience for trusted literals. Tests pin both
+  contracts.
 
 - Risk: a broad JSON Schema validator dependency could expand the task beyond
-  the diagnostic model.
-  Severity: medium.
-  Likelihood: low.
-  Mitigation: export the schema as a literal, use structural unit tests and
-  snapshots, and defer runtime schema validation until a real I/O boundary
-  needs it.
+  the diagnostic model. Severity: medium. Likelihood: low. Mitigation: export
+  the schema as a literal, use structural unit tests and snapshots, and defer
+  runtime schema validation until a real I/O boundary needs it.
 
 - Risk: source-position helper behaviour could leak into this task.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: define `SourcePosition` and `SourceSpan` shapes only. The schema
-  uses `minimum` to encode offset, line, and column invariants, but tests use
-  literal positions and do not calculate offsets, snippets, or Unicode display
-  columns.
+  Severity: medium. Likelihood: medium. Mitigation: define `SourcePosition` and
+  `SourceSpan` shapes only. The schema uses `minimum` to encode offset, line,
+  and column invariants, but tests use literal positions and do not calculate
+  offsets, snippets, or Unicode display columns.
 
 ## Progress
 
@@ -161,8 +149,8 @@ for JSON reports.
   CodeRabbit reported zero findings.
 - [x] (2026-06-28 05:14Z) Implementation work item 3: added severity-aware
   summary counts, report envelope creation, and the `summary.hints`
-  design-contract clarification; `make all`, `make markdownlint`,
-  `make nixie`, and CodeRabbit passed.
+  design-contract clarification; `make all`, `make markdownlint`, `make nixie`,
+  and CodeRabbit passed.
 - [x] (2026-06-28 05:18Z) Implementation work item 4: published the
   versioned diagnostic JSON Schema with source-position and summary-count
   minimums, structural tests, and a snapshot; `make all` passed. CodeRabbit
@@ -175,83 +163,78 @@ for JSON reports.
 ## Surprises & discoveries
 
 - Observation: GrepAI returned no existing diagnostic model code for the first
-  diagnostic-contract query.
-  Evidence: `grepai search --workspace Projects --project odw-lint
+  diagnostic-contract query. Evidence:
+  `grepai search --workspace Projects --project odw-lint
   "diagnostic output model severity rule identifiers summary counts JSON
-  schema" --toon --compact` returned no results.
-  Impact: the implementation should replace the template `greet` module rather
-  than extending a hidden diagnostic module.
+  schema" --toon --compact`
+  returned no results. Impact: the implementation should replace the template
+  `greet` module rather than extending a hidden diagnostic module.
 
 - Observation: the branch-local source is still the repository template.
-  Evidence: `leta grep ".*" -k function,method,class,interface,type,enum,
-  constant,variable --head 300` reported only `src/index.ts:greet` and its
-  tests. `leta refs greet -n 2` showed tests importing `../src/index`.
-  Impact: work item 1 must move tests to the package entry point before the
-  diagnostic API replaces `greet`.
+  Evidence:
+  `leta grep ".*" -k function,method,class,interface,type,enum,
+  constant,variable --head 300`
+  reported only `src/index.ts:greet` and its tests. `leta refs greet -n 2`
+  showed tests importing `../src/index`. Impact: work item 1 must move tests to
+  the package entry point before the diagnostic API replaces `greet`.
 
 - Observation: `package.json` is private, has `"type": "module"`, and has no
-  current `exports`, `types`, or `main` entry.
-  Evidence: direct inspection of `package.json` in this worktree.
-  Impact: the public TypeScript API must not be described as package-exported
-  until work item 1 adds explicit package metadata and package-name tests.
+  current `exports`, `types`, or `main` entry. Evidence: direct inspection of
+  `package.json` in this worktree. Impact: the public TypeScript API must not
+  be described as package-exported until work item 1 adds explicit package
+  metadata and package-name tests.
 
 - Observation: Bun's official module-resolution documentation says Bun reads
   `exports`, checks conditions in order, respects subpath exports, and can
   import untranspiled TypeScript through the special `"bun"` condition.
   Evidence: Firecrawl scrape of
-  `https://bun.sh/docs/runtime/module-resolution`.
-  Impact: work item 1 can use the current private source entry
-  `./src/index.ts` under `"types"`, `"bun"`, `"import"`, and `"default"`
-  conditions, and tests can import `odw-lint` without creating a dist build in
-  this task.
+  `https://bun.sh/docs/runtime/module-resolution`. Impact: work item 1 can use
+  the current private source entry `./src/index.ts` under `"types"`, `"bun"`,
+  `"import"`, and `"default"` conditions, and tests can import `odw-lint`
+  without creating a dist build in this task.
 
 - Observation: Node's official package documentation says `exports` defines
   package entry points, encapsulates unexported subpaths, takes precedence over
-  `main`, and enables self-reference by package name. Its community
-  conditions list says `"types"` is a typing-system condition and should be
-  first.
+  `main`, and enables self-reference by package name. Its community conditions
+  list says `"types"` is a typing-system condition and should be first.
   Evidence: Firecrawl scrape of
-  `https://nodejs.org/api/packages.html#package-entry-points`.
-  Impact: work item 1 must put the `"types"` condition first, include an
-  explicit `"."` export, and test package self-reference.
+  `https://nodejs.org/api/packages.html#package-entry-points`. Impact: work
+  item 1 must put the `"types"` condition first, include an explicit `"."`
+  export, and test package self-reference.
 
 - Observation: JSON Schema's official numeric reference says `integer` accepts
   integral values, negative integers are valid unless constrained, and ranges
-  use `minimum` and `maximum`; `minimum` is inclusive.
-  Evidence: Firecrawl scrape of
+  use `minimum` and `maximum`; `minimum` is inclusive. Evidence: Firecrawl
+  scrape of
   `https://json-schema.org/understanding-json-schema/reference/numeric`.
   Impact: work item 4 must add `minimum: 0` to `offset` and summary count
   fields, and `minimum: 1` to `line` and `column`.
 
 - Observation: ODW's runtime loader evaluates metadata with `new Function`,
-  while `dual-compat.ts` implements a separate pure-literal parser.
-  Evidence: `open-dynamic-workflows/src/loader.ts` function `extractMeta`
-  slices the metadata literal and calls `new Function`; `src/dual-compat.ts`
-  function `checkMeta` uses `LiteralParser`.
-  Impact: this task must not import ODW runtime code. It only defines inert
-  diagnostic data structures.
+  while `dual-compat.ts` implements a separate pure-literal parser. Evidence:
+  `open-dynamic-workflows/src/loader.ts` function `extractMeta` slices the
+  metadata literal and calls `new Function`; `src/dual-compat.ts` function
+  `checkMeta` uses `LiteralParser`. Impact: this task must not import ODW
+  runtime code. It only defines inert diagnostic data structures.
 
 - Observation: ODW's own schema helper is dependency-free and implements a
-  small JSON Schema subset.
-  Evidence: `open-dynamic-workflows/src/schema.ts` exports `JsonSchema`,
-  constructors, `describeSchema`, `extractJson`, and `validate` without an
-  external validator package.
-  Impact: `odw-lint` can export a JSON Schema literal now and defer validator
-  dependency decisions.
+  small JSON Schema subset. Evidence: `open-dynamic-workflows/src/schema.ts`
+  exports `JsonSchema`, constructors, `describeSchema`, `extractJson`, and
+  `validate` without an external validator package. Impact: `odw-lint` can
+  export a JSON Schema literal now and defer validator dependency decisions.
 
 - Observation: the locked install resolved `@biomejs/biome@2.5.1`,
-  `bun-types@1.3.14`, `oxlint@1.71.0`, `typescript@5.9.3`, and
-  `df12-lints` pinned at commit `08ca59b`.
-  Evidence: `node_modules/*/package.json`, `bun.lock`, and `make build`.
-  Impact: tests can rely on `bun:test`, `expectTypeOf`, and snapshots from the
-  locked Bun types, and gates should use the Makefile.
+  `bun-types@1.3.14`, `oxlint@1.71.0`, `typescript@5.9.3`, and `df12-lints`
+  pinned at commit `08ca59b`. Evidence: `node_modules/*/package.json`,
+  `bun.lock`, and `make build`. Impact: tests can rely on `bun:test`,
+  `expectTypeOf`, and snapshots from the locked Bun types, and gates should use
+  the Makefile.
 
 - Observation: TypeScript requires an explicit `rootDir` once the package
-  self-reference is resolved through the export map.
-  Evidence: `make all` failed with `TS2209` until `tsconfig.json` set
-  `"rootDir": "."`.
-  Impact: the source-level package entry remains viable without switching to
-  `dist`, and `tsc --noEmit` can resolve the package name in tests.
+  self-reference is resolved through the export map. Evidence: `make all`
+  failed with `TS2209` until `tsconfig.json` set `"rootDir": "."`. Impact: the
+  source-level package entry remains viable without switching to `dist`, and
+  `tsc --noEmit` can resolve the package name in tests.
 
 ## Decision Log
 
@@ -261,67 +244,58 @@ for JSON reports.
   Date/Author: 2026-06-28, Codex.
 
 - Decision: expose the current public TypeScript API through a source-level
-  package entry in this task.
-  Rationale: `AGENTS.md` requires explicit `package.json` `exports` and
-  `types` for public APIs. The package is currently private, Bun supports a
-  `"bun"` condition pointing at TypeScript source, and the Makefile does not
-  build `dist` as part of `make all`. Work item 1 pins the source entry with
-  package-name tests. A later packaging task may redirect runtime import paths
-  to generated `dist` artefacts after it changes the build contract.
-  Date/Author: 2026-06-28, Codex.
+  package entry in this task. Rationale: `AGENTS.md` requires explicit
+  `package.json` `exports` and `types` for public APIs. The package is
+  currently private, Bun supports a `"bun"` condition pointing at TypeScript
+  source, and the Makefile does not build `dist` as part of `make all`. Work
+  item 1 pins the source entry with package-name tests. A later packaging task
+  may redirect runtime import paths to generated `dist` artefacts after it
+  changes the build contract. Date/Author: 2026-06-28, Codex.
 
 - Decision: set TypeScript `rootDir` to the repository root for package
-  self-reference.
-  Rationale: the export map points at `./src/index.ts` while tests import the
-  package by name. TypeScript needs an unambiguous project root to resolve that
-  entry, and the repository root preserves both `src` and `tests` in the
-  current `noEmit` gate.
-  Date/Author: 2026-06-28, Codex.
+  self-reference. Rationale: the export map points at `./src/index.ts` while
+  tests import the package by name. TypeScript needs an unambiguous project
+  root to resolve that entry, and the repository root preserves both `src` and
+  `tests` in the current `noEmit` gate. Date/Author: 2026-06-28, Codex.
 
 - Decision: make `parseRuleId` the recoverable boundary API and `makeRuleId`
-  the trusted-literal convenience API.
-  Rationale: later configuration parsing needs programmatic handling of
-  unknown or invalid rule identifiers, so a discriminated result is the stable
-  public contract. A throwing convenience remains useful for hard-coded rule
-  IDs in tests and rule definitions.
+  the trusted-literal convenience API. Rationale: later configuration parsing
+  needs programmatic handling of unknown or invalid rule identifiers, so a
+  discriminated result is the stable public contract. A throwing convenience
+  remains useful for hard-coded rule IDs in tests and rule definitions.
   Date/Author: 2026-06-28, Codex.
 
 - Decision: encode source-position numeric invariants in the exported JSON
-  Schema with `minimum`.
-  Rationale: `docs/technical-design.md` section 8 requires zero-based offsets
-  and one-based line and column positions. Official JSON Schema numeric docs
-  verify that `minimum` is the inclusive keyword needed to reject negative
-  offsets and zero line or column values in the exported contract.
-  Date/Author: 2026-06-28, Codex.
+  Schema with `minimum`. Rationale: `docs/technical-design.md` section 8
+  requires zero-based offsets and one-based line and column positions. Official
+  JSON Schema numeric docs verify that `minimum` is the inclusive keyword
+  needed to reject negative offsets and zero line or column values in the
+  exported contract. Date/Author: 2026-06-28, Codex.
 
 - Decision: include `hints` as a first-class summary count.
   Rationale: section 8 lists `hint` as a valid severity and says summary counts
-  diagnostics after severity overrides. Counting hints under `infos` would
-  hide a released severity from JSON consumers.
-  Date/Author: 2026-06-28, Codex.
+  diagnostics after severity overrides. Counting hints under `infos` would hide
+  a released severity from JSON consumers. Date/Author: 2026-06-28, Codex.
 
 - Decision: do not add Ajv, Zod, `fast-check`, or another validator
-  dependency.
-  Rationale: the current lockfile has no runtime validator, official JSON
-  Schema docs cover the literal schema keywords needed, and this task does not
-  yet validate untrusted JSON input at a boundary.
-  Date/Author: 2026-06-28, Codex.
+  dependency. Rationale: the current lockfile has no runtime validator,
+  official JSON Schema docs cover the literal schema keywords needed, and this
+  task does not yet validate untrusted JSON input at a boundary. Date/Author:
+  2026-06-28, Codex.
 
 - Decision: use Bun unit, type, and snapshot tests for this task. Do not add
-  behavioural or end-to-end tests until the CLI exists.
-  Rationale: the observable surface here is a pure TypeScript library contract
-  and package entry point, not a command-line workflow.
-  Date/Author: 2026-06-28, Codex.
+  behavioural or end-to-end tests until the CLI exists. Rationale: the
+  observable surface here is a pure TypeScript library contract and package
+  entry point, not a command-line workflow. Date/Author: 2026-06-28, Codex.
 
 - Decision: keep work item 4's JSON Schema limited to the approved keyword set
-  and producer contract.
-  Rationale: CodeRabbit suggested adding a `pattern` rule for `rule` and
-  widening `tool.name` beyond `odw-lint`. The ExecPlan explicitly permits only
-  `type`, `properties`, `required`, `additionalProperties`, `items`,
-  `minItems`, `enum`, and `minimum`, and requires `tool.name` as
-  `enum: ["odw-lint"]`. The snapshot suggestion was already satisfied by the
-  `DIAGNOSTIC_REPORT_SCHEMA` snapshot plus structural assertions.
-  Date/Author: 2026-06-28, Codex.
+  and producer contract. Rationale: CodeRabbit suggested adding a `pattern`
+  rule for `rule` and widening `tool.name` beyond `odw-lint`. The ExecPlan
+  explicitly permits only `type`, `properties`, `required`,
+  `additionalProperties`, `items`, `minItems`, `enum`, and `minimum`, and
+  requires `tool.name` as `enum: ["odw-lint"]`. The snapshot suggestion was
+  already satisfied by the `DIAGNOSTIC_REPORT_SCHEMA` snapshot plus structural
+  assertions. Date/Author: 2026-06-28, Codex.
 
 ## Outcomes & Retrospective
 
@@ -367,8 +341,8 @@ source path. The diagnostic model does not exist yet.
 
 The governing roadmap item is `docs/roadmap.md` task 1.2.1 under step 1.2,
 "Build the diagnostic and source-position spine". The task is complete when
-JSON output includes `schemaVersion`, `tool`, `summary`, and `diagnostics`,
-and text output is generated from the same diagnostics.
+JSON output includes `schemaVersion`, `tool`, `summary`, and `diagnostics`, and
+text output is generated from the same diagnostics.
 
 The primary design source is `docs/technical-design.md` section 8. It defines
 the versioned JSON object shape, stable rule identifiers, severity values,
@@ -381,8 +355,8 @@ must not import ODW executable runtime helpers.
 The project documentation also matters:
 
 - `AGENTS.md` "Tooling Defaults", "Change Quality & Committing",
-  "TypeScript Guidance", and "Markdown Guidance" define Makefile gates,
-  package entry expectations, strict typing, test shape, and formatting rules.
+  "TypeScript Guidance", and "Markdown Guidance" define Makefile gates, package
+  entry expectations, strict typing, test shape, and formatting rules.
 - `docs/terms-of-reference.md` sections 5, 6, 8, and 9 define the job,
   diagnostic goals, success criteria, and trust-boundary constraints.
 - `docs/developers-guide.md` sections "Static-Analysis Boundary",
@@ -394,8 +368,8 @@ The project documentation also matters:
   through 5 explain the complexity and refactoring rules behind the local
   Oxlint thresholds.
 - `docs/documentation-style-guide.md` sections "Spelling", "Markdown rules",
-  "Formatting", and "Roadmap task writing guidelines" govern prose and
-  Markdown changes.
+  "Formatting", and "Roadmap task writing guidelines" govern prose and Markdown
+  changes.
 
 There is no `docs/users-guide.md` in the current tree. Do not invent one for
 this task unless a later user-facing command or public usage guide requires it.
@@ -407,21 +381,23 @@ test or gate proves they are wrong.
 
 - GrepAI main-index search:
   `grepai search --workspace Projects --project odw-lint "static analysis
-  diagnostics reported as machine readable JSON" --toon --compact` found only
-  design documentation, not implementation code.
+  diagnostics reported as machine readable JSON" --toon --compact`
+  found only design documentation, not implementation code.
 - Branch-local verification:
-  `leta files`, `leta grep ".*" -k function,method,class,interface,type,enum,
-  constant,variable --head 300`, `leta show greet`, and `leta refs greet -n 2`
-  show only the template `greet` export and tests.
+  `leta files`,
+  `leta grep ".*" -k function,method,class,interface,type,enum,
+  constant,variable --head 300`,
+  `leta show greet`, and `leta refs greet -n 2` show only the template `greet`
+  export and tests.
 - Semantic history verification:
   `sem diff --from origin/main --to HEAD --format json` shows the branch
   currently adds this ExecPlan relative to `origin/main`.
 - Package metadata:
   `package.json` is private, ESM-first through `"type": "module"`, and has no
-  current `exports`, `types`, or `main` entry. `tsconfig.json` has `outDir:
-  "dist"`, `declaration: true`, and strict compiler settings, but `make all`
-  currently runs `make build` as dependency installation rather than a dist
-  emission step.
+  current `exports`, `types`, or `main` entry. `tsconfig.json` has
+  `outDir: "dist"`, `declaration: true`, and strict compiler settings, but
+  `make all` currently runs `make build` as dependency installation rather than
+  a dist emission step.
 - Official Bun module-resolution docs verified with Firecrawl:
   `https://bun.sh/docs/runtime/module-resolution` says Bun reads `exports`,
   checks conditions in order, respects subpath exports, and can execute
@@ -476,10 +452,10 @@ test or gate proves they are wrong.
   `node_modules/df12-lints/package.json` confirms the local Oxlint plugin
   package export.
 - ODW sibling source:
-  `open-dynamic-workflows/src/loader.ts` function `loadWorkflowScript`
-  extracts `meta`, strips the `export` keyword, injects workflow globals, and
-  uses `extractMeta`. Its private `extractMeta` calls `new Function` on the
-  metadata literal, so it is not safe for production lint of untrusted input.
+  `open-dynamic-workflows/src/loader.ts` function `loadWorkflowScript` extracts
+  `meta`, strips the `export` keyword, injects workflow globals, and uses
+  `extractMeta`. Its private `extractMeta` calls `new Function` on the metadata
+  literal, so it is not safe for production lint of untrusted input.
 - ODW sibling source:
   `open-dynamic-workflows/src/dual-compat.ts` function `checkMeta` uses
   `LiteralParser` to accept pure object and array literals and reject
@@ -491,8 +467,8 @@ test or gate proves they are wrong.
   validation, not a host-side lint dependency.
 - ODW sibling source:
   `open-dynamic-workflows/src/schema.ts` type `JsonSchema` is
-  `Record<string, unknown>` and its validator is a small dependency-free
-  subset covering keywords such as `type`, `properties`, `required`,
+  `Record<string, unknown>` and its validator is a small dependency-free subset
+  covering keywords such as `type`, `properties`, `required`,
   `additionalProperties`, `items`, `minItems`, and `enum`. This task does not
   import that helper because ADR 0001 requires `odw-lint` to own its static
   analysis boundary.
@@ -503,9 +479,8 @@ test or gate proves they are wrong.
 
 This work item makes the current source API importable through the package name
 before the diagnostic model is added. It implements `AGENTS.md` "Public APIs",
-`docs/technical-design.md` section 13, `docs/developers-guide.md` "Bun
-Scripts" and "Type Checking", and `docs/roadmap.md` step 1.1's package
-boundary intent.
+`docs/technical-design.md` section 13, `docs/developers-guide.md` "Bun Scripts"
+and "Type Checking", and `docs/roadmap.md` step 1.1's package boundary intent.
 
 Files to edit:
 
@@ -533,10 +508,10 @@ Add explicit package entry metadata to `package.json`:
 Keep the `"types"` condition first. This matches Node's documented community
 condition ordering. Pointing at `src/index.ts` is intentional for this private
 Bun-first source slice because the Makefile does not build `dist` in
-`make all`, and Bun's official docs support untranspiled TypeScript through
-the `"bun"` condition. Do not point to `dist` in this task. A later packaging
-task may switch runtime entries to generated artefacts only after it changes
-the build contract and tests that contract.
+`make all`, and Bun's official docs support untranspiled TypeScript through the
+`"bun"` condition. Do not point to `dist` in this task. A later packaging task
+may switch runtime entries to generated artefacts only after it changes the
+build contract and tests that contract.
 
 Update `tests/index.test.ts` so the current template test imports from
 `"odw-lint"` rather than `../src/index`. This is a temporary test over the
@@ -585,10 +560,10 @@ Files to edit:
 - `src/index.ts`
 - `tests/index.test.ts`
 
-Define these public types and constants in `src/index.ts` unless the file
-would exceed the 400-line limit. If a split is needed, create
-`src/diagnostics.ts` and explicitly re-export the public names from
-`src/index.ts`. Tests must continue importing from `"odw-lint"`.
+Define these public types and constants in `src/index.ts` unless the file would
+exceed the 400-line limit. If a split is needed, create `src/diagnostics.ts`
+and explicitly re-export the public names from `src/index.ts`. Tests must
+continue importing from `"odw-lint"`.
 
 ```typescript
 export const DIAGNOSTIC_SCHEMA_VERSION = 1;
@@ -715,9 +690,9 @@ Files to edit:
 - `docs/technical-design.md`
 
 Update the JSON example and invariant prose in `docs/technical-design.md`
-section 8 so `summary` includes `hints`. This is a design clarification, not
-an optional fork. The severity model includes `hint`, so the summary contract
-must expose a first-class hint count.
+section 8 so `summary` includes `hints`. This is a design clarification, not an
+optional fork. The severity model includes `hint`, so the summary contract must
+expose a first-class hint count.
 
 Define:
 
@@ -807,8 +782,8 @@ Commit after all relevant gates pass.
 
 This work item exports the schema describing the report envelope and encodes
 the source-position invariants from `docs/technical-design.md` section 8. It
-implements section 8 and the JSON-output success criterion in
-`docs/roadmap.md` task 1.2.1.
+implements section 8 and the JSON-output success criterion in `docs/roadmap.md`
+task 1.2.1.
 
 Files to edit:
 
@@ -888,8 +863,7 @@ Commit after the gate passes.
 This work item satisfies the roadmap success criterion that text output is
 generated from the same diagnostics as JSON output, without implementing CLI
 I/O. It implements `docs/technical-design.md` section 8,
-`docs/terms-of-reference.md` sections 6 and 8, and `docs/roadmap.md` task
-1.2.1.
+`docs/terms-of-reference.md` sections 6 and 8, and `docs/roadmap.md` task 1.2.1.
 
 Files to edit:
 
@@ -903,8 +877,8 @@ export function formatTextDiagnostics(diagnostics: readonly Diagnostic[]): strin
 ```
 
 The formatter returns an empty string for no diagnostics. For diagnostics, it
-formats one stable line per diagnostic with enough information to fix a
-fixture without JSON:
+formats one stable line per diagnostic with enough information to fix a fixture
+without JSON:
 
 ```plaintext
 examples/fan-out-reduce.js:1:1 error odw/meta-required workflow must export const meta
@@ -944,8 +918,7 @@ Commit after the gate passes.
 
 ## Concrete steps
 
-Run all commands from
-`/data/leynos/Projects/odw-lint.worktrees/roadmap-1-2-1`.
+Run all commands from `/data/leynos/Projects/odw-lint.worktrees/roadmap-1-2-1`.
 
 Before implementation, re-check the branch and plan path:
 
@@ -1075,9 +1048,9 @@ git stash push -m 'df12-stash v1 task=1.2.1 kind=discard reason="unrelated forma
 Do not use a bare `git stash`. Do not use `git reset --hard` or
 `git checkout --` unless explicitly authorized.
 
-If a work item fails midway, leave the plan's `Progress`, `Surprises &
-Discoveries`, and `Decision Log` updated before stopping. The next agent must
-be able to resume from this file alone.
+If a work item fails midway, leave the plan's `Progress`,
+`Surprises & Discoveries`, and `Decision Log` updated before stopping. The next
+agent must be able to resume from this file alone.
 
 ## Artefacts and notes
 

@@ -1,9 +1,8 @@
 # Add hostile metadata fixtures
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -11,9 +10,9 @@ Status: COMPLETE
 
 Roadmap task 1.3.4 adds deliberately hostile Open Dynamic Workflows (ODW)
 metadata fixtures to the invalid workflow corpus. A hostile metadata fixture is
-workflow source whose `export const meta` object contains code that would make a
-visible change if an executable metadata loader evaluated it. The fixtures prove
-that `odw-lint` treats workflow source as untrusted input and records the
+workflow source whose `export const meta` object contains code that would make
+a visible change if an executable metadata loader evaluated it. The fixtures
+prove that `odw-lint` treats workflow source as untrusted input and records the
 expected static diagnostic contract before parser and rule-engine tasks run.
 
 After this work, maintainers can inspect raw fixture files under
@@ -36,10 +35,12 @@ roadmap task 2.1.5.
   `git branch --show` before editing. Do not edit the root/control worktree at
   `/data/leynos/Projects/odw-lint`.
 - Treat `origin/main` as the canonical integration branch.
-- Use `grepai search --workspace Projects --project odw-lint "<English intent
-  query>" --toon --compact` as the primary intent search tool. The GrepAI index
-  reflects canonical `main` only, so every branch-local fact must be rechecked
-  with `leta`, exact text search, or file inspection inside this worktree.
+- Use
+  `grepai search --workspace Projects --project odw-lint`
+  `"<English intent query>" --toon --compact` as the primary intent search
+  tool. The GrepAI index reflects canonical `main` only, so every branch-local
+  fact must be rechecked with `leta`, exact text search, or file inspection
+  inside this worktree.
 - Use `leta` for branch-local TypeScript symbol navigation, references, call
   graphs, and refactoring. Use exact text search only for Markdown, JSON, raw
   fixture text, or other non-symbol literals.
@@ -138,13 +139,14 @@ conflict in `Decision Log`, and escalate.
 - Risk: hostile fixture metadata drifts out of ODW loader reality. Severity:
   high. Likelihood: medium. Mitigation: keep both fixtures as object-literal
   `meta` declarations with computed `description` values. The sibling ODW
-  loader slices object literals and evaluates them with `new Function`, so these
-  expressions are load-bearing examples of code that would run if evaluated.
+  loader slices object literals and evaluates them with `new Function`, so
+  these expressions are load-bearing examples of code that would run if
+  evaluated.
 
 - Risk: Bun snapshot updates obscure reviewer signal. Severity: medium.
   Likelihood: medium. Mitigation: keep the existing compact manifest snapshot
-  shape and update it only through the focused invalid fixture test. Inspect the
-  snapshot diff before committing.
+  shape and update it only through the focused invalid fixture test. Inspect
+  the snapshot diff before committing.
 
 - Risk: fixture family ordering becomes unstable. Severity: low. Likelihood:
   medium. Mitigation: extend the existing `FAMILY_ORDER` and
@@ -161,15 +163,14 @@ conflict in `Decision Log`, and escalate.
   `docs/complexity-antipatterns-and-refactoring-strategies.md`, and
   `docs/documentation-style-guide.md`.
 - [x] (2026-06-28T10:20Z) Loaded the `execplans`, `leta`, `grepai`,
-  `firecrawl-mcp`, `odw-authoring`, `en-gb-oxendict-style`,
-  `biome-typescript`, and `sem` skills.
+  `firecrawl-mcp`, `odw-authoring`, `en-gb-oxendict-style`, `biome-typescript`,
+  and `sem` skills.
 - [x] (2026-06-28T10:26Z) Used GrepAI intent searches against canonical `main`
   for metadata fixture validation and hostile metadata risk, then verified
   branch-local fixture code with `leta` and file inspection inside this
   worktree.
 - [x] (2026-06-28T10:36Z) Researched sibling ODW loader, primitive validation,
-  and pure metadata behaviour in
-  `/data/leynos/Projects/open-dynamic-workflows`.
+  and pure metadata behaviour in `/data/leynos/Projects/open-dynamic-workflows`.
 - [x] (2026-06-28T10:45Z) Used Firecrawl to verify official Bun snapshot docs
   and Node file-system docs for load-bearing test-runner and file-reading
   behaviour.
@@ -205,24 +206,23 @@ conflict in `Decision Log`, and escalate.
   Evidence: sibling `src/loader.ts` `extractMeta` slices the original metadata
   object literal and evaluates it with `new Function`, while
   `src/primitives.ts` runtime `validate(source)` calls `loadWorkflowScript`.
-  Impact: tests for hostile fixtures must not call ODW loader or primitive
-  APIs.
+  Impact: tests for hostile fixtures must not call ODW loader or primitive APIs.
 
 - Observation: ODW's pure metadata checker rejects computed forms without
-  executing workflow bodies. Evidence: sibling `src/dual-compat.ts`
-  `checkMeta` uses `LiteralParser`, and `parseValue` treats identifiers,
-  calls, template interpolation, and other computed values as impure. Impact:
-  hostile fixture expectations should use `odw/meta-statically-unprovable`.
+  executing workflow bodies. Evidence: sibling `src/dual-compat.ts` `checkMeta`
+  uses `LiteralParser`, and `parseValue` treats identifiers, calls, template
+  interpolation, and other computed values as impure. Impact: hostile fixture
+  expectations should use `odw/meta-statically-unprovable`.
 
 - Observation: a file-write hostile fixture would be stronger but riskier in
   this early corpus task. Evidence: the technical design allows writes,
   environment reads, thrown markers, or any observable side effect. Impact: use
-  a `globalThis` property assignment and a thrown custom marker error now; leave
-  actual file-marker security regression checks to roadmap task 2.1.5.
+  a `globalThis` property assignment and a thrown custom marker error now;
+  leave actual file-marker security regression checks to roadmap task 2.1.5.
 
 - Observation: Biome 2.5.1 does not process the Bun `.snap` fixture snapshot.
-  Evidence: `bun.lock` resolves `@biomejs/biome` to 2.5.1. Running Biome
-  format against
+  Evidence: `bun.lock` resolves `@biomejs/biome` to 2.5.1. Running Biome format
+  against
   `tests/static-analysis/__snapshots__/invalid-workflow-fixtures.test.ts.snap`
   exits non-zero with `No files were processed in the specified paths`. The
   same formatter command against the two TypeScript fixture harness files
@@ -251,8 +251,8 @@ conflict in `Decision Log`, and escalate.
   `odw/meta-statically-unprovable`. Rationale: ODW's executable loader could
   enter these computed metadata property values, but `odw-lint` cannot prove
   them safely without evaluation. This matches `docs/technical-design.md`
-  section 6.3 and the existing computed metadata fixture contract.
-  Date/Author: 2026-06-28, planning agent.
+  section 6.3 and the existing computed metadata fixture contract. Date/Author:
+  2026-06-28, planning agent.
 
 - Decision: do not add a real linter execution assertion in task 1.3.4.
   Rationale: roadmap task 2.1.5 explicitly depends on 1.3.4 and 2.1.3 and owns
@@ -273,8 +273,7 @@ conflict in `Decision Log`, and escalate.
   ignore or cannot process that file, and the official Bun snapshot workflow is
   `bun test --update-snapshots`. The scoped alternative is to update snapshots
   through Bun, review the snapshot diff, and rely on the focused test plus
-  `make all` for validation.
-  Date/Author: 2026-06-28, planning-round-2 agent.
+  `make all` for validation. Date/Author: 2026-06-28, planning-round-2 agent.
 
 ## Outcomes & retrospective
 
@@ -442,8 +441,8 @@ Repository evidence:
   "Workflow Fixture Corpus" require raw invalid fixtures to stay passive and
   manifest-backed.
 - `AGENTS.md` sections "Change Quality & Committing", "TypeScript Guidance",
-  and "Testing" require tests for behaviour changes, focused validation,
-  strict TypeScript, Bun tests, and Markdown gates for Markdown changes.
+  and "Testing" require tests for behaviour changes, focused validation, strict
+  TypeScript, Bun tests, and Markdown gates for Markdown changes.
 - Branch-local `tests/static-analysis/invalid-workflow-fixtures.test.ts`
   already validates invalid fixture hashes, ASCII source text, byte-aware
   spans, rule/status coverage, and compact snapshots.
@@ -459,8 +458,7 @@ Repository evidence:
   `tests/static-analysis/__snapshots__/invalid-workflow-fixtures.test.ts.snap`
   exits 1 with `No files were processed in the specified paths`, while
   formatting `tests/static-analysis/fixtures/invalid-workflows.ts` and
-  `tests/static-analysis/invalid-workflow-fixtures.test.ts` processes two
-  files.
+  `tests/static-analysis/invalid-workflow-fixtures.test.ts` processes two files.
 
 Sibling ODW evidence:
 
@@ -486,13 +484,13 @@ Official documentation evidence:
   and that unmatched or unprocessed path sets are errors unless suppressed with
   `--no-errors-on-unmatched`.
 - Biome's official configuration documentation at
-  <https://biomejs.dev/reference/configuration/> documents
-  `files.includes`, `files.ignoreUnknown`, and `formatter.includes`, including
-  the rule that formatter includes are applied after file includes. This
-  matches the branch-local `.snap` non-processing behaviour.
+  <https://biomejs.dev/reference/configuration/> documents `files.includes`,
+  `files.ignoreUnknown`, and `formatter.includes`, including the rule that
+  formatter includes are applied after file includes. This matches the
+  branch-local `.snap` non-processing behaviour.
 - Node's official file-system documentation at
-  <https://nodejs.org/api/fs.html> documents synchronous file APIs and that
-  most `node:fs` functions accept `file:` `URL` objects, matching the existing
+  <https://nodejs.org/api/fs.html> documents synchronous file APIs and that most
+  `node:fs` functions accept `file:` `URL` objects, matching the existing
   fixture harness style.
 - Local Node v24.13.1 runtime probe confirmed that `new Function` evaluation
   can set `globalThis.__odwLintHostileMetadataWasEvaluated` and can throw an
@@ -545,9 +543,9 @@ Edit:
   `tests/static-analysis/fixtures/invalid-workflows/hostile-metadata/global-marker.js`
   with the exact source shown in `Context and orientation`.
 - Update `tests/static-analysis/fixtures/invalid-workflows.ts`:
-  add `hostile-metadata` to `InvalidWorkflowFixtureFamily` and add one
-  manifest entry for `global-marker.js` using the precomputed SHA-256, warning
-  status, `odw/meta-statically-unprovable` diagnostic, span, and `spanText`.
+  add `hostile-metadata` to `InvalidWorkflowFixtureFamily` and add one manifest
+  entry for `global-marker.js` using the precomputed SHA-256, warning status,
+  `odw/meta-statically-unprovable` diagnostic, span, and `spanText`.
 - Update `tests/static-analysis/invalid-workflow-fixtures.test.ts`:
   add the new fixture path to `EXPECTED_FILE_NAMES`, add one
   `odw/meta-statically-unprovable` entry to `EXPECTED_RULES`, extend
@@ -555,8 +553,8 @@ Edit:
   clear and inspect the hostile global marker.
 - Add or update a unit test that reads hostile fixture source as plain text,
   validates the source contains the hostile marker string, and verifies
-  `globalThis.__odwLintHostileMetadataWasEvaluated` remains unset after
-  fixture validation.
+  `globalThis.__odwLintHostileMetadataWasEvaluated` remains unset after fixture
+  validation.
 - Update `docs/execplans/roadmap-1-3-4.md` progress and any new discoveries.
 
 Tests to add or update:
@@ -615,8 +613,8 @@ Read:
   updating the compact snapshot.
 - Biome official CLI and configuration docs at
   <https://biomejs.dev/reference/cli/> and
-  <https://biomejs.dev/reference/configuration/> before changing formatter
-  file lists.
+  <https://biomejs.dev/reference/configuration/> before changing formatter file
+  lists.
 
 Load or keep active these skills:
 
@@ -827,8 +825,7 @@ Quality criteria:
 - Snapshot: the compact invalid manifest snapshot includes both hostile
   fixtures and remains reviewer-sized.
 - Documentation: `docs/developers-guide.md` explains hostile fixture
-  maintenance, and `docs/roadmap.md` marks 1.3.4 complete without closing
-  2.1.5.
+  maintenance, and `docs/roadmap.md` marks 1.3.4 complete without closing 2.1.5.
 - No production code: no `src/**` file changes are required.
 - No dependencies: `package.json` and `bun.lock` should not change.
 - Formatting and linting: changed Markdown and TypeScript files are formatted,
@@ -950,14 +947,13 @@ No new package dependency is permitted for this task.
 
 - 2026-06-28: Initial draft for roadmap task 1.3.4. It defines the hostile
   metadata fixture mechanisms, manifest expectations, passive no-marker test
-  contract, documentation closure, validation commands, and three
-  independently committable work items. Implementation has not begun.
+  contract, documentation closure, validation commands, and three independently
+  committable work items. Implementation has not begun.
 - 2026-06-28: Planning round 2 removed the unsupported `.snap` path from both
   Biome formatter command lists, added snapshot diff review under the
   Bun-backed snapshot update flow, recorded the locked Biome 2.5.1 behaviour
   and official Biome docs evidence, and added missing scripting and complexity
-  standards citations to the work-item read lists. Implementation has not
-  begun.
+  standards citations to the work-item read lists. Implementation has not begun.
 - 2026-06-28: Follow-up planning-round-2 amendment added explicit
   `docs/terms-of-reference.md` section citations to the repository evidence and
   work-item read lists, and labelled the snapshot diff command as Bun-managed

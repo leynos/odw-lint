@@ -1,9 +1,8 @@
 # Import ODW example workflow fixture snapshots
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -20,21 +19,23 @@ sibling checkout.
 Success is visible when `make all` passes with the committed fixture corpus in
 place, and the new tests prove all imported ODW example snapshot files are
 listed in a manifest, match recorded SHA-256 content hashes, expose immutable
-fixture metadata, and carry empty expected diagnostics for the current
-roadmap slice.
+fixture metadata, and carry empty expected diagnostics for the current roadmap
+slice.
 
 Implementation must not begin until this draft is reviewed and approved.
 
 ## Constraints
 
 - Run implementation commands from the repository root of the git-donkey
-  worktree selected by the automation for branch `roadmap-1-3-1`. Confirm
-  this with `git branch --show-current` before editing. Do not edit any
-  control or integration worktree.
-- Use `grepai search --workspace Projects --project odw-lint "<English intent
-  query>" --toon --compact` as the primary intent search tool. The index is a
-  canonical `main` snapshot only, so branch-local facts must be rechecked with
-  `leta`, exact text search, or direct file inspection inside this worktree.
+  worktree selected by the automation for branch `roadmap-1-3-1`. Confirm this
+  with `git branch --show-current` before editing. Do not edit any control or
+  integration worktree.
+- Use
+  `grepai search --workspace Projects --project odw-lint`
+  `"<English intent query>" --toon --compact` as the primary intent search
+  tool. The index is a canonical `main` snapshot only, so branch-local facts
+  must be rechecked with `leta`, exact text search, or direct file inspection
+  inside this worktree.
 - Use `leta` for branch-local symbol navigation, references, and call graphs.
   Standard exact text search is acceptable for Markdown, JSON, and config
   literals that are not code symbols.
@@ -76,37 +77,31 @@ Implementation must not begin until this draft is reviewed and approved.
   environment variable is a workflow-local execution detail and must not be
   replaced by a committed host-specific absolute path.
 - Fixture drift: stop and record the drift if any upstream example hash differs
-  from the values in this plan before import. Decide whether to update the
-  plan first or import the newly observed sibling state.
+  from the values in this plan before import. Decide whether to update the plan
+  first or import the newly observed sibling state.
 - Gate attempts: stop and escalate if the same gate fails after three
   targeted fix attempts.
 
 ## Risks
 
 - Risk: copied upstream examples violate local Biome or Oxlint style.
-  Severity: medium.
-  Likelihood: high.
-  Mitigation: add scoped tool ignore configuration before importing the raw
-  snapshots. Preserve source fidelity and validate config with `make all`.
+  Severity: medium. Likelihood: high. Mitigation: add scoped tool ignore
+  configuration before importing the raw snapshots. Preserve source fidelity
+  and validate config with `make all`.
 
 - Risk: the manifest duplicates source truth and can drift from files.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: add tests that compare manifest filenames, sorted order, and
-  SHA-256 hashes to the committed files.
+  Severity: medium. Likelihood: medium. Mitigation: add tests that compare
+  manifest filenames, sorted order, and SHA-256 hashes to the committed files.
 
 - Risk: later implementers mistake this fixture import for loader parity.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: document that roadmap task 2.3.1 owns loader-parity execution.
-  This task records expected `no-error` fixture status only.
+  Severity: medium. Likelihood: medium. Mitigation: document that roadmap task
+  2.3.1 owns loader-parity execution. This task records expected `no-error`
+  fixture status only.
 
 - Risk: hidden execution enters through a convenience import from the sibling
-  ODW runtime.
-  Severity: high.
-  Likelihood: low.
-  Mitigation: keep all ODW imports out of production code and out of this
-  task's tests. Use only committed copied files plus static hashes.
+  ODW runtime. Severity: high. Likelihood: low. Mitigation: keep all ODW
+  imports out of production code and out of this task's tests. Use only
+  committed copied files plus static hashes.
 
 ## Progress
 
@@ -135,8 +130,7 @@ Implementation must not begin until this draft is reviewed and approved.
 - [x] (2026-06-28 10:02Z) Work item 1: Prepare tooling to preserve raw copied
   fixtures. Added scoped Biome and Oxlint ignores for the future copied ODW
   example snapshot directory, ran `make all`, ran `coderabbit review --agent`
-  with zero findings, and committed
-  `Preserve raw ODW fixture snapshots`.
+  with zero findings, and committed `Preserve raw ODW fixture snapshots`.
 - [x] (2026-06-28 10:13Z) Work item 2: Import ODW example snapshots and pin
   the fixture manifest. Copied all nine ODW example `.js` snapshots from the
   sibling checkout, added the frozen TypeScript manifest and hash tests, kept
@@ -146,45 +140,41 @@ Implementation must not begin until this draft is reviewed and approved.
   skipped because this task must preserve those files byte-for-byte as
   read-only fixture snapshots rather than repair upstream workflow behaviour.
 - [x] (2026-06-28 10:13Z) Work item 3: Document fixture maintenance and close
-  the roadmap task. Documented the workflow fixture corpus refresh convention
-  in `docs/developers-guide.md`, marked roadmap task 1.3.1 complete in
+  the roadmap task. Documented the workflow fixture corpus refresh convention in
+  `docs/developers-guide.md`, marked roadmap task 1.3.1 complete in
   `docs/roadmap.md`, updated this ExecPlan, ran `make all`,
-  `make markdownlint`, and `make nixie`, and ran
-  `coderabbit review --agent` with zero findings.
+  `make markdownlint`, and `make nixie`, and ran `coderabbit review --agent`
+  with zero findings.
 
 ## Surprises & discoveries
 
 - Observation: raw upstream ODW examples are not expected to match this
-  repository's JavaScript formatting style.
-  Evidence: `biome.jsonc` enforces double quotes and semicolons across
-  `tests/**/*`, while the ODW examples intentionally use the upstream style.
-  Impact: the plan must first add narrow Biome and Oxlint ignores for the
-  copied snapshot directory.
+  repository's JavaScript formatting style. Evidence: `biome.jsonc` enforces
+  double quotes and semicolons across `tests/**/*`, while the ODW examples
+  intentionally use the upstream style. Impact: the plan must first add narrow
+  Biome and Oxlint ignores for the copied snapshot directory.
 
 - Observation: the worktree does not currently contain `docs/users-guide.md`.
   Evidence: `leta files` listed the documentation tree and no users guide was
-  present.
-  Impact: do not invent a users guide for this internal fixture-corpus task;
-  update `docs/developers-guide.md` instead.
+  present. Impact: do not invent a users guide for this internal fixture-corpus
+  task; update `docs/developers-guide.md` instead.
 
 - Observation: local `bunx @biomejs/biome` used before `make build` selected
-  an incompatible Biome version.
-  Evidence: it reported a schema-version mismatch against
-  `biome.jsonc`; `make build` then installed locked `@biomejs/biome@2.5.1`.
-  Impact: all implementation validation must run through repository targets or
-  `./node_modules/.bin/...` after `make build`. The repository Makefile proves
-  this ordering: `node_modules` runs `bun install`, and `build` depends on
-  `node_modules`.
+  an incompatible Biome version. Evidence: it reported a schema-version
+  mismatch against `biome.jsonc`; `make build` then installed locked
+  `@biomejs/biome@2.5.1`. Impact: all implementation validation must run
+  through repository targets or `./node_modules/.bin/...` after `make build`.
+  The repository Makefile proves this ordering: `node_modules` runs
+  `bun install`, and `build` depends on `node_modules`.
 
 - Observation: Biome `overrides` can disable formatting and linting for raw
   snapshot files, but `make check-fmt` still asks Biome to parse every file
-  matched by the top-level `tests/**/*` include.
-  Evidence: after copying the ODW example snapshots, `make all` failed in
-  `make check-fmt` with Biome parse errors for the ODW dialect's top-level
-  `return` statements.
-  Impact: the Biome configuration must also exclude the copied ODW example
-  `.js` snapshots from `files.includes`; otherwise the fixture corpus cannot
-  preserve upstream source byte-for-byte.
+  matched by the top-level `tests/**/*` include. Evidence: after copying the
+  ODW example snapshots, `make all` failed in `make check-fmt` with Biome parse
+  errors for the ODW dialect's top-level `return` statements. Impact: the Biome
+  configuration must also exclude the copied ODW example `.js` snapshots from
+  `files.includes`; otherwise the fixture corpus cannot preserve upstream
+  source byte-for-byte.
 
 - Observation: CodeRabbit reviews copied ODW example snapshots as ordinary
   workflow code and can identify upstream behavioural risks inside them.
@@ -198,46 +188,41 @@ Implementation must not begin until this draft is reviewed and approved.
 ## Decision log
 
 - Decision: preserve upstream ODW example `.js` source exactly and exclude the
-  copied snapshot directory from Biome and Oxlint checks.
-  Rationale: roadmap task 1.3.1 is a snapshot import. Reformatting upstream
-  examples would make the fixture corpus less useful for drift review and
-  later loader-parity work.
+  copied snapshot directory from Biome and Oxlint checks. Rationale: roadmap
+  task 1.3.1 is a snapshot import. Reformatting upstream examples would make
+  the fixture corpus less useful for drift review and later loader-parity work.
   Date/Author: 2026-06-28, planning agent.
 
 - Decision: represent expected fixture outcomes in a TypeScript manifest
-  rather than JSON.
-  Rationale: TypeScript keeps the manifest type-checked, supports immutable
-  `readonly` arrays, avoids a runtime JSON-import contract, and follows the
-  existing test style in `tests/diagnostics/fixtures.ts`.
+  rather than JSON. Rationale: TypeScript keeps the manifest type-checked,
+  supports immutable `readonly` arrays, avoids a runtime JSON-import contract,
+  and follows the existing test style in `tests/diagnostics/fixtures.ts`.
   Date/Author: 2026-06-28, planning agent.
 
 - Decision: use content hashes and semantic manifest assertions rather than
-  Bun snapshots for the full workflow source bodies.
-  Rationale: Bun snapshots are appropriate for small reviewer-useful output,
-  but the ODW example files include one large 31 KB example. Hashes protect
-  exact source content without producing a noisy generated `.snap` file for
-  entire workflow bodies.
+  Bun snapshots for the full workflow source bodies. Rationale: Bun snapshots
+  are appropriate for small reviewer-useful output, but the ODW example files
+  include one large 31 KB example. Hashes protect exact source content without
+  producing a noisy generated `.snap` file for entire workflow bodies.
   Date/Author: 2026-06-28, planning agent.
 
 - Decision: loader-parity execution is explicitly deferred to roadmap task
-  2.3.1.
-  Rationale: `docs/technical-design.md` section 11.2 makes parity
+  2.3.1. Rationale: `docs/technical-design.md` section 11.2 makes parity
   release-blocking for the first dialect slice, while task 1.3.1 only imports
   ODW examples as valid fixture snapshots with expected `no-error` status.
   Date/Author: 2026-06-28, planning agent.
 
 - Decision: every direct local formatter command that calls
   `./node_modules/.bin/biome` must be preceded in the same work item by
-  `make build 2>&1 | tee /tmp/build-odw-lint-roadmap-1-3-1.out`.
-  Rationale: the Makefile makes `build` the dependency-installing target through
+  `make build 2>&1 | tee /tmp/build-odw-lint-roadmap-1-3-1.out`. Rationale: the
+  Makefile makes `build` the dependency-installing target through
   `node_modules: package.json` and `build: node_modules`, so a clean worktree
   cannot rely on `./node_modules/.bin/biome` until that target has completed.
   Date/Author: 2026-06-28, planning agent.
 
 - Decision: exclude copied ODW example `.js` snapshots from Biome's top-level
-  `files.includes` as well as disabling formatter and linter tools for the
-  same path.
-  Rationale: Biome parses files matched by top-level includes even when
+  `files.includes` as well as disabling formatter and linter tools for the same
+  path. Rationale: Biome parses files matched by top-level includes even when
   formatter and linter overrides are disabled. The ODW dialect intentionally
   contains top-level `return`, so the scanner-level exclusion is required to
   preserve exact upstream snapshots while keeping the normal gate green.
@@ -349,8 +334,8 @@ runtime-compatible APIs:
 
 - Bun snapshots: local `bun --version` is `1.3.11`; `bun.lock` installs
   `bun-types@1.3.14`. Firecrawl scraped the official Bun snapshots page
-  `https://bun.sh/docs/test/snapshots` on 2026-06-28 with status 200
-  (`scrapeId` `019f0d91-d485-700b-ae0c-1c2c117ccb0e`). The page documents
+  `https://bun.sh/docs/test/snapshots` on 2026-06-28 with status 200 (`scrapeId`
+  `019f0d91-d485-700b-ae0c-1c2c117ccb0e`). The page documents
   `.toMatchSnapshot()`, says snapshots are written under a `__snapshots__`
   directory beside the test file, documents `bun test --update-snapshots`, and
   advises keeping snapshots focused. This plan therefore uses Bun snapshots
@@ -360,31 +345,30 @@ runtime-compatible APIs:
   already use `toMatchSnapshot()`.
 - `bun:test`: the locked declaration file
   `node_modules/bun-types/test.d.ts` declares `module "bun:test"` at line 16
-  and declares `toMatchSnapshot(...)` overloads around lines 1457 and 1470.
-  A local smoke command confirmed that `test` and `expect` import as functions
+  and declares `toMatchSnapshot(...)` overloads around lines 1457 and 1470. A
+  local smoke command confirmed that `test` and `expect` import as functions
   under Bun 1.3.11.
 - Node file reads: Firecrawl scraped the official Node file-system page
   `https://nodejs.org/api/fs.html` on 2026-06-28 with status 200 (`scrapeId`
-  `019f0d91-e139-73fe-86ac-cc428bd3f8a7`). The page documents that string
-  paths may be relative to `process.cwd()` and that most `node:fs` functions
-  accept `file:` URL objects. A local Bun smoke command read `package.json`
-  through `readFileSync(new URL("./package.json", import.meta.url), "utf8")`.
+  `019f0d91-e139-73fe-86ac-cc428bd3f8a7`). The page documents that string paths
+  may be relative to `process.cwd()` and that most `node:fs` functions accept
+  `file:` URL objects. A local Bun smoke command read `package.json` through
+  `readFileSync(new URL("./package.json", import.meta.url), "utf8")`.
 - Node hashing: Firecrawl scraped the official Node crypto page
-  `https://nodejs.org/api/crypto.html` on 2026-06-28 with status 200
-  (`scrapeId` `019f0d91-f5db-728a-b53d-799500cda41b`). The page marks
-  `node:crypto` as stable and documents `crypto.createHash(algorithm[,
-  options])`, `Hash.update`, and `Hash.digest`. A local Bun smoke command
-  confirmed that
+  `https://nodejs.org/api/crypto.html` on 2026-06-28 with status 200 (`scrapeId`
+  `019f0d91-f5db-728a-b53d-799500cda41b`). The page marks `node:crypto` as
+  stable and documents `crypto.createHash(algorithm[, options])`,
+  `Hash.update`, and `Hash.digest`. A local Bun smoke command confirmed that
   `createHash("sha256").update(text, "utf8").digest("hex")` returns a
   64-character hex digest.
 - Biome: `bun.lock` installs `@biomejs/biome@2.5.1`. Firecrawl scraped the
   official Biome configuration reference
   `https://biomejs.dev/reference/configuration/` on 2026-06-28 with status 200
   (`scrapeId` `019f0d92-109f-7548-bd90-c6c1ebebf48c`). The page documents
-  `overrides`, `overrides.<ITEM>.includes`,
-  `overrides.<ITEM>.formatter`, and `overrides.<ITEM>.linter`. The locked
-  schema `node_modules/@biomejs/biome/configuration_schema.json` confirms this
-  for version 2.5.1: top-level `overrides` appears around line 58,
+  `overrides`, `overrides.<ITEM>.includes`, `overrides.<ITEM>.formatter`, and
+  `overrides.<ITEM>.linter`. The locked schema
+  `node_modules/@biomejs/biome/configuration_schema.json` confirms this for
+  version 2.5.1: top-level `overrides` appears around line 58,
   `$defs.OverridePattern` exposes `includes`, `formatter`, and `linter` around
   lines 7273-7335, `OverrideFormatterConfiguration.enabled` appears around
   lines 7193-7254, and `OverrideLinterConfiguration.enabled` appears around
@@ -392,11 +376,10 @@ runtime-compatible APIs:
 - Oxlint: `bun.lock` installs `oxlint@1.71.0`. Firecrawl scraped the official
   Oxlint configuration guide
   `https://oxc.rs/docs/guide/usage/linter/config.html` on 2026-06-28 with
-  status 200 (`scrapeId` `019f0d92-1fce-7519-a1dc-e522169a0ae5`). The page
-  says Oxlint automatically looks for `.oxlintrc.json`, lists
-  `ignorePatterns` as a top-level configuration field, and documents
-  `overrides` for file patterns. The locked schema
-  `node_modules/oxlint/configuration_schema.json` confirms
+  status 200 (`scrapeId` `019f0d92-1fce-7519-a1dc-e522169a0ae5`). The page says
+  Oxlint automatically looks for `.oxlintrc.json`, lists `ignorePatterns` as a
+  top-level configuration field, and documents `overrides` for file patterns.
+  The locked schema `node_modules/oxlint/configuration_schema.json` confirms
   `ignorePatterns` around line 50 and describes those globs as resolved from
   the configuration file path.
 
@@ -407,13 +390,13 @@ Every work item must apply these project documents:
 - `AGENTS.md`: code style, documentation maintenance, TypeScript guidance,
   testing expectations, formatter policy, and quality gates.
 - `docs/terms-of-reference.md`: section 6 goal to align diagnostics with ODW
-  examples, section 8 success criteria for a representative ODW example
-  corpus, and section 9 constraints against executing workflow source.
+  examples, section 8 success criteria for a representative ODW example corpus,
+  and section 9 constraints against executing workflow source.
 - `docs/technical-design.md`: sections 5, 6.1, 6.2, 8, 11.1, 11.2, 11.3,
   11.5, 12.1, 13, and 15.
 - `docs/adr/0001-static-analysis-boundary.md`: accepted decision forbidding
-  production imports of executable ODW runtime paths and requiring parity to
-  be maintained by fixtures and drift tests.
+  production imports of executable ODW runtime paths and requiring parity to be
+  maintained by fixtures and drift tests.
 - `docs/developers-guide.md`: Static-Analysis Boundary, Commit Gate, Bun
   Scripts, Formatting, Linting, Type Checking, Tests, Markdown, and
   Documentation Upkeep sections, especially the requirement to avoid
@@ -458,8 +441,8 @@ Documentation implemented:
 - `docs/technical-design.md` section 11.1, which requires every ODW example
   workflow in the fixture corpus.
 - `docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences",
-  because fixture parity must not be achieved by importing executable ODW
-  paths into production code.
+  because fixture parity must not be achieved by importing executable ODW paths
+  into production code.
 - `docs/developers-guide.md` "Formatting" and "Linting".
 
 Skills to load:
@@ -520,9 +503,9 @@ Commit this work item only if `make all` exits 0.
 
 ### Work item 2: Import ODW example snapshots and pin the fixture manifest
 
-This work item imports the trusted upstream source snapshots and adds
-test-only metadata that future static-analysis tests can consume without
-touching the sibling checkout.
+This work item imports the trusted upstream source snapshots and adds test-only
+metadata that future static-analysis tests can consume without touching the
+sibling checkout.
 
 Documentation implemented:
 
@@ -586,11 +569,11 @@ export const ODW_EXAMPLE_FIXTURE_SNAPSHOTS =
   Object.freeze([...]) satisfies readonly OdwExampleFixtureSnapshot[];
 ```
 
-  Each entry must use `fixturePath:
-  "tests/static-analysis/fixtures/odw-examples/<fileName>"`,
+  Each entry must use
+  `fixturePath: "tests/static-analysis/fixtures/odw-examples/<fileName>"`,
   `upstreamPath: "open-dynamic-workflows/examples/<fileName>"`, the observed
-  metadata name, the SHA-256 value recorded in this plan, `expectedStatus:
-  "no-error"`, and `expectedDiagnostics: []`.
+  metadata name, the SHA-256 value recorded in this plan,
+  `expectedStatus: "no-error"`, and `expectedDiagnostics: []`.
 
 - Add `tests/static-analysis/odw-example-fixtures.test.ts`. The test file must
   import from `bun:test`, `node:crypto`, and `node:fs`, plus the manifest and
@@ -704,10 +687,10 @@ Commit this work item only if all three gates exit 0.
 ## Concrete steps
 
 Run every command from the repository root of the current git-donkey worktree,
-confirmed with `git branch --show-current`. Use `tee` for long-running gates
-so truncated terminal output can be reviewed from `/tmp`. When commands need
-the sibling ODW checkout, set `ODW_REFERENCE_CHECKOUT`; with the df12 build
-tree convention, this relative value is expected to work from the worktree:
+confirmed with `git branch --show-current`. Use `tee` for long-running gates so
+truncated terminal output can be reviewed from `/tmp`. When commands need the
+sibling ODW checkout, set `ODW_REFERENCE_CHECKOUT`; with the df12 build tree
+convention, this relative value is expected to work from the worktree:
 
 ```bash
 export ODW_REFERENCE_CHECKOUT="${ODW_REFERENCE_CHECKOUT:-../../open-dynamic-workflows}"
@@ -733,8 +716,8 @@ For work item 1:
 
 1. Edit `biome.jsonc` and `.oxlintrc.json`.
 2. Run `make build 2>&1 | tee /tmp/build-odw-lint-roadmap-1-3-1.out` so
-   locked dependencies and `./node_modules/.bin/biome` exist before direct local
-   formatter use.
+   locked dependencies and `./node_modules/.bin/biome` exist before direct
+   local formatter use.
 3. Format the two config files with the direct Biome command listed in work
    item 1.
 4. Run `make all` through `tee`.
@@ -753,8 +736,8 @@ For work item 2:
 1. Copy the nine `.js` files exactly from the sibling checkout.
 2. Add the TypeScript fixture manifest and tests.
 3. Run `make build 2>&1 | tee /tmp/build-odw-lint-roadmap-1-3-1.out` so
-   locked dependencies and `./node_modules/.bin/biome` exist before direct local
-   formatter use.
+   locked dependencies and `./node_modules/.bin/biome` exist before direct
+   local formatter use.
 4. Format only the new TypeScript files with the direct Biome command listed
    in work item 2.
 5. Run `make all` through `tee`.

@@ -1,10 +1,11 @@
 # Audit after roadmap task 1.5.10
 
-This post-step audit was run after roadmap task 1.5.10 (`Add an executable
-artefact check for recorded review evidence`) merged into `origin/main` at
-commit `10594a6`. The audit used `grepai` against the canonical `main` index for
-intent search, then verified every branch-local fact in a fresh worktree off
-`origin/main` with `leta`, targeted file inspection, and exact text search.
+This post-step audit was run after roadmap task 1.5.10
+(`Add an executable artefact check for recorded review evidence`) merged into
+`origin/main` at commit `10594a6`. The audit used `grepai` against the canonical
+`main` index for intent search, then verified every branch-local fact in a
+fresh worktree off `origin/main` with `leta`, targeted file inspection, and
+exact text search.
 
 Task 1.5.10 added a recording path for review-evidence reports
 (`review-evidence-recording.ts`), a reviewer-run artefact gate
@@ -61,8 +62,8 @@ sharing one. This compounds the CLI-orchestration duplication that
 Proposed fix:
 
 Promote `parseFlagValue` to `tests/build-gate/cli-support.ts` (the shared
-build-gate CLI seam) and import it from both evidence CLIs. This aligns with the
-run-and-exit consolidation already scheduled as roadmap task 1.5.11.
+build-gate CLI seam) and import it from both evidence CLIs. This aligns with
+the run-and-exit consolidation already scheduled as roadmap task 1.5.11.
 
 ## Finding 2: The `errorMessage` unknown-to-text helper is triplicated
 
@@ -87,18 +88,19 @@ const errorMessage = (error: unknown): string => {
 };
 ```
 
-Task 1.5.10 added two of the three copies (`review-evidence-artefact-cli.ts`
-and `review-evidence-recording.ts`); the third has existed since the whitespace
-gate landed. The identical body has no shared home, so error-text policy for the
-gate family is defined in three places.
+Task 1.5.10 added two of the three copies (`review-evidence-artefact-cli.ts` and
+`review-evidence-recording.ts`); the third has existed since the whitespace
+gate landed. The identical body has no shared home, so error-text policy for
+the gate family is defined in three places.
 
 Proposed fix:
 
 Add a single `errorMessage` (or `errorText`) helper to
 `tests/build-gate/report-format-helpers.ts` — which already hosts the shared
-`singleLine` and `assertNever` formatting helpers — and delete the three private
-copies. `report-format-helpers.ts` is the natural home because the recording
-path already passes the result through `singleLine(errorMessage(error))`.
+`singleLine` and `assertNever` formatting helpers — and delete the three
+private copies. `report-format-helpers.ts` is the natural home because the
+recording path already passes the result through
+`singleLine(errorMessage(error))`.
 
 ## Finding 3: `review-evidence-cli.ts` keeps a private `assertNever`
 
@@ -125,15 +127,17 @@ const assertNever = (value: never): never => {
 ```
 
 The module imports from `cli-support`, `git-support`, and several
-`review-evidence-*` modules, but not from the new `report-format-helpers`, so it
-diverged from the shared exhaustiveness helper the same change set created. Two
-`assertNever` shapes now coexist in one gate family with different signatures.
+`review-evidence-*` modules, but not from the new `report-format-helpers`, so
+it diverged from the shared exhaustiveness helper the same change set created.
+Two `assertNever` shapes now coexist in one gate family with different
+signatures.
 
 Proposed fix:
 
-Import `assertNever` from `report-format-helpers.ts` in `review-evidence-cli.ts`
-and pass a `"review evidence result"` label, then delete the private variant.
-This leaves one exhaustiveness helper for the whole build-gate family.
+Import `assertNever` from `report-format-helpers.ts` in
+`review-evidence-cli.ts` and pass a `"review evidence result"` label, then
+delete the private variant. This leaves one exhaustiveness helper for the whole
+build-gate family.
 
 ## Finding 4: Build-gate CLIs disagree on process-exit style
 
@@ -151,13 +155,14 @@ Location:
 Description:
 
 The four build-gate CLI module-main guards end two different ways.
-`review-evidence-cli.ts` assigns `process.exitCode = runReviewEvidenceCli(...)`,
-which lets Node drain buffered output before exiting. The other three, including
-the artefact CLI that task 1.5.10 added, call `exit(run...())`, which requests
-an immediate exit. On a pipe, `process.exit()` can truncate not-yet-flushed
-`stdout` writes, so the two styles carry different output-delivery guarantees for
-gates that all emit a report immediately before returning. The new artefact CLI
-adopted the `exit()` form rather than the safer sibling pattern.
+`review-evidence-cli.ts` assigns
+`process.exitCode = runReviewEvidenceCli(...)`, which lets Node drain buffered
+output before exiting. The other three, including the artefact CLI that task
+1.5.10 added, call `exit(run...())`, which requests an immediate exit. On a
+pipe, `process.exit()` can truncate not-yet-flushed `stdout` writes, so the two
+styles carry different output-delivery guarantees for gates that all emit a
+report immediately before returning. The new artefact CLI adopted the `exit()`
+form rather than the safer sibling pattern.
 
 Proposed fix:
 
@@ -179,10 +184,10 @@ Location:
 
 Description:
 
-`runReviewEvidenceArtefactCli` accepts `--evidence-path=<path>` as a first-class
-flag (`parseCliArgs`, `review-evidence-artefact-cli.ts:57`), and it is exercised
-by tests (`review-evidence-artefact-cli.test.ts`). The developers guide
-documents the artefact check's environment variable
+`runReviewEvidenceArtefactCli` accepts `--evidence-path=<path>` as a
+first-class flag (`parseCliArgs`, `review-evidence-artefact-cli.ts:57`), and it
+is exercised by tests (`review-evidence-artefact-cli.test.ts`). The developers
+guide documents the artefact check's environment variable
 (`ODW_LINT_REVIEW_EVIDENCE_PATH`) and its default
 (`.review-evidence/report.txt`), but never the explicit flag. A reviewer
 following the guide has no documented way to point the artefact check at an
@@ -192,8 +197,8 @@ undocumented-flag pattern recorded in `audit-1.5.9.md` Finding 5.
 Proposed fix:
 
 Add `--evidence-path=<path>` to the `make review-evidence-artefact` paragraph of
-`docs/developers-guide.md`, noting its precedence over the environment variable
-and default, so the documented surface matches the tested one.
+`docs/developers-guide.md`, noting its precedence over the environment
+variable and default, so the documented surface matches the tested one.
 
 ## Finding 6: Trailing-trivia trimming is duplicated between two scanners
 
@@ -221,17 +226,17 @@ while (trimmedEndIndex > startIndex && isWhitespaceCharacter(text[trimmedEndInde
 return trimmedEndIndex;
 ```
 
-Both take `(text, startIndex, endIndex)` and both rely on `isWhitespaceCharacter`.
-Maintaining one trimming rule in two places risks the two spans-trimmers drifting
-apart, which is exactly the drift class `audit-1.5.9.md` Finding 2 raised for the
-low-level scanners.
+Both take `(text, startIndex, endIndex)` and both rely on
+`isWhitespaceCharacter`. Maintaining one trimming rule in two places risks the
+two spans-trimmers drifting apart, which is exactly the drift class
+`audit-1.5.9.md` Finding 2 raised for the low-level scanners.
 
 Proposed fix:
 
-Extract one `trimTrailingWhitespaceIndex(text, startIndex, endIndex)` helper into
-a shared source-scanning module (for example alongside the existing
-`workflow-metadata-comment-scan.ts` primitives) and have both call sites consume
-it, deleting the duplicate.
+Extract one `trimTrailingWhitespaceIndex(text, startIndex, endIndex)` helper
+into a shared source-scanning module (for example alongside the existing
+`workflow-metadata-comment-scan.ts` primitives) and have both call sites
+consume it, deleting the duplicate.
 
 ## Finding 7: `workflow-envelope-meta-value.ts` re-implements exported comment scanners
 
@@ -249,19 +254,19 @@ Location:
 Description:
 
 `workflow-metadata-comment-scan.ts` already exports `scanLineCommentEnd` and
-`scanBlockCommentEnd`. `workflow-envelope-meta-value.ts` imports `scanDelimitedEnd`
-from that same module (line 12), yet defines its own private `scanLineCommentEnd`
-(line 122) and `scanBlockCommentEnd` (line 133) that shadow the exported names.
-The private copies also diverge in semantics: the local block-comment scanner
-uses `text.indexOf("*/", startIndex)` and returns `text.length` on failure,
-whereas the exported version loops to an explicit `endIndex` bound. Two comment
-scanners with the same names and subtly different termination rules now live one
-import apart.
+`scanBlockCommentEnd`. `workflow-envelope-meta-value.ts` imports
+`scanDelimitedEnd` from that same module (line 12), yet defines its own private
+`scanLineCommentEnd` (line 122) and `scanBlockCommentEnd` (line 133) that
+shadow the exported names. The private copies also diverge in semantics: the
+local block-comment scanner uses `text.indexOf("*/", startIndex)` and returns
+`text.length` on failure, whereas the exported version loops to an explicit
+`endIndex` bound. Two comment scanners with the same names and subtly different
+termination rules now live one import apart.
 
 Proposed fix:
 
-Delete the two private scanners in `workflow-envelope-meta-value.ts` and call the
-exported `scanLineCommentEnd` / `scanBlockCommentEnd` from
+Delete the two private scanners in `workflow-envelope-meta-value.ts` and call
+the exported `scanLineCommentEnd` / `scanBlockCommentEnd` from
 `workflow-metadata-comment-scan.ts`, threading the module's `endIndex` bound so
 the shared, explicitly-bounded semantics apply uniformly.
 
@@ -279,14 +284,14 @@ Description:
 
 `validateSourceSpan` guards the diagnostics boundary with four distinct throw
 branches: a non-span-like input, a reversed span (`end.offset < start.offset`),
-a start-position mismatch, and an end-position mismatch (lines 152-168). The only
-test-tree references to `validateSourceSpan` are in
-`source-file-architecture.test.ts`, which asserts on the export/import structure
-as string literals rather than exercising behaviour. The function is reached only
-indirectly through `source-snippet.ts`, and there is no `source-snippet` test
-file, so none of the four defensive branches has a direct behavioural test.
-Sibling validators `positionAtOffset` and `spanFromOffsets` are, by contrast,
-covered directly by both example and property tests.
+a start-position mismatch, and an end-position mismatch (lines 152-168). The
+only test-tree references to `validateSourceSpan` are in
+`source-file-architecture.test.ts`, which asserts on the export/import
+structure as string literals rather than exercising behaviour. The function is
+reached only indirectly through `source-snippet.ts`, and there is no
+`source-snippet` test file, so none of the four defensive branches has a direct
+behavioural test. Sibling validators `positionAtOffset` and `spanFromOffsets`
+are, by contrast, covered directly by both example and property tests.
 
 Proposed fix:
 
@@ -309,14 +314,14 @@ Description:
 
 `ParserCursor` exposes a mutable `index` (line 31), and the recursive-descent
 parse functions advance it in place (`cursor.index += 1` and `cursor.index =`
-at lines 113, 119, 135, 178, 220, 229, 263, 285, ...) while simultaneously
+at lines 113, 119, 135, 178, 220, 229, 263, 285, …) while simultaneously
 returning `ValueParseResult` query values. Each parse helper therefore both
 mutates shared cursor state and yields a result, so the "how far did we get"
-side effect is implicit in the shared reference rather than in the return value.
-This is idiomatic for hand-written parsers and is well tested, but the aliasing
-of a single mutable cursor across many functions is a known footgun and blurs
-command-query separation. Recorded here as a design-level observation, not a
-defect.
+side effect is implicit in the shared reference rather than in the return
+value. This is idiomatic for hand-written parsers and is well tested, but the
+aliasing of a single mutable cursor across many functions is a known footgun
+and blurs command-query separation. Recorded here as a design-level
+observation, not a defect.
 
 Proposed fix:
 
@@ -334,30 +339,30 @@ only.
 ### Consolidate build-gate CLI helper duplication
 
 Rationale: task 1.5.10's new artefact CLI and recording module re-derived
-`parseFlagValue`, `errorMessage`, and an `assertNever` variant, and the four gate
-CLIs disagree on process-exit style. Lift these into `cli-support.ts` and
+`parseFlagValue`, `errorMessage`, and an `assertNever` variant, and the four
+gate CLIs disagree on process-exit style. Lift these into `cli-support.ts` and
 `report-format-helpers.ts` and standardize the module-main guard (this audit,
-Findings 1-4). This extends and overlaps roadmap task 1.5.11 and `audit-1.5.9.md`
-Finding 3.
+Findings 1-4). This extends and overlaps roadmap task 1.5.11 and
+`audit-1.5.9.md` Finding 3.
 
 Severity: low
 
 ### Unify the static-analysis trivia and comment scanners
 
-Rationale: `workflow-metadata-parser-scan.ts` and `workflow-envelope-meta-value.ts`
-duplicate the trailing-trivia trimmer, and `workflow-envelope-meta-value.ts`
-re-implements the already-exported line and block comment scanners with divergent
-termination rules. Share one trimmer and the exported comment scanners (this
-audit, Findings 6-7). This continues the scanner-consolidation direction of
-`audit-1.5.9.md` Finding 2.
+Rationale: `workflow-metadata-parser-scan.ts` and
+`workflow-envelope-meta-value.ts` duplicate the trailing-trivia trimmer, and
+`workflow-envelope-meta-value.ts` re-implements the already-exported line and
+block comment scanners with divergent termination rules. Share one trimmer and
+the exported comment scanners (this audit, Findings 6-7). This continues the
+scanner-consolidation direction of `audit-1.5.9.md` Finding 2.
 
 Severity: medium
 
 ### Add direct coverage for source-position validators
 
 Rationale: `validateSourceSpan` guards the diagnostics boundary with four
-rejection branches that are exercised only indirectly, and `spanFromTextIndexes`
-has no direct behavioural test despite heavy production use. Add focused unit
-tests for these validators (this audit, Finding 8).
+rejection branches that are exercised only indirectly, and
+`spanFromTextIndexes` has no direct behavioural test despite heavy production
+use. Add focused unit tests for these validators (this audit, Finding 8).
 
 Severity: low

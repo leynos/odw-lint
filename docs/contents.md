@@ -45,9 +45,9 @@ entry; that index enumerates every current rule page.
   records the decision that token-level body-syntax span narrowing remains an
   intentionally deferred internal fallback.
 - [ADR 0004: machine-readable IO-error channel](adr/0004-machine-readable-io-error-channel.md)
-  records the decision that unreadable input files are represented as
-  top-level JSON `ioErrors` and `summary.filesSkipped`, rather than as
-  catalogued lint-rule diagnostics.
+  records the decision that unreadable input files are represented as top-level
+  JSON `ioErrors` and `summary.filesSkipped`, rather than as catalogued
+  lint-rule diagnostics.
 
 ## Maintainer practices
 

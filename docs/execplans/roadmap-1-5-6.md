@@ -1,9 +1,8 @@
 # Add Independent Roadmap Audit Review Evidence Gates
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -27,8 +26,8 @@ sub-agent) runs it in the task worktree to produce structured evidence that:
 1. the repository gates were re-executed here, with command execution enabled,
    rather than accepting the task agent's self-reported output;
 2. when command execution is unavailable (a sandboxed reviewer that cannot
-   spawn `make`), the gate reports an explicit `degraded` status and a non-zero,
-   non-`failed` exit code, never a silent pass; and
+   spawn `make`), the gate reports an explicit `degraded` status and a
+   non-zero, non-`failed` exit code, never a silent pass; and
 3. the dual-review path is selected and named explicitly — primary
    `scrutineer`, explicit fallback `coderabbit`, and a terminal degraded
    `local-self-run` when neither independent reviewer is available — so a
@@ -47,8 +46,7 @@ gates truly ran to success here and an independent dual-review path was
 selected; prints `failed` (exit 1) when a re-run gate fails; prints `degraded`
 (exit 3) when execution is unavailable or no independent reviewer remains; and
 when `make all`, `make markdownlint`, and `make nixie` all pass for the change
-itself. Implementation must not begin until this draft is reviewed and
-approved.
+itself. Implementation must not begin until this draft is reviewed and approved.
 
 ## Constraints
 
@@ -70,8 +68,9 @@ approved.
   guaranteed-absent binary); it must never run `make all`, so `make test` stays
   fast and non-recursive.
 - Keep command execution behind the shared, injectable build-gate runner so
-  tests inject fake command results, per AGENTS.md "Environment-dependent tests:
-  Prefer dependency injection over direct mutation of process-wide state".
+  tests inject fake command results, per AGENTS.md "Environment-dependent
+  tests: Prefer dependency injection over direct mutation of process-wide
+  state".
 - Do **not** fork a second subprocess or output-capture contract. Roadmap task
   1.5.5's success criterion (`docs/roadmap.md` line 281) requires that "no gate
   carries a forked subprocess or tracked-file enumeration contract", and the
@@ -82,10 +81,11 @@ approved.
   (`createGitRunner`) into one shared `createCommandRunner` in `git-support.ts`
   (work item 3) and then reusing it — the same `spawnSync` wrapper and the same
   `CommandResult` output contract — for the review-evidence CLI (work item 4).
-  The review-evidence CLI must **not** define its own `spawnSync` wrapper or its
-  own command-result type; `branch-freshness-git.ts` (a reviewer-run build-gate
-  CLI) already reuses the git-support seam (`branch-freshness-git.ts` line 17),
-  and review-evidence follows the same precedent.
+  The review-evidence CLI must **not** define its own `spawnSync` wrapper or
+  its own command-result type; `branch-freshness-git.ts` (a reviewer-run
+  build-gate CLI) already reuses the git-support seam
+  (`branch-freshness-git.ts` line 17), and review-evidence follows the same
+  precedent.
 - Every code file stays at or below 400 lines (AGENTS.md "Keep file size
   manageable").
 - Use GrepAI as the primary intent-search tool with this shape:
@@ -99,9 +99,9 @@ approved.
   inspection before acting.
 - Use `leta` for branch-local TypeScript symbol navigation, references, and
   refactoring. Exact text search is acceptable for Markdown, the Makefile, and
-  string literals that are not code symbols. If `leta` fails transiently, record
-  the exact command and failure in `Surprises & Discoveries`, then continue with
-  bounded file inspection.
+  string literals that are not code symbols. If `leta` fails transiently,
+  record the exact command and failure in `Surprises & Discoveries`, then
+  continue with bounded file inspection.
 - Use `sem` instead of raw Git history or blame when history navigation is
   needed. Ordinary `git status`, scoped diffs, and the Git commands used by the
   build-gate tests remain acceptable.
@@ -144,60 +144,58 @@ approved.
 ## Risks
 
 - Risk: the reviewer misreads the task as requiring changes to the external
-  df12-build workflow harness rather than a repository-owned gate.
-  Severity: medium. Likelihood: medium.
-  Mitigation: the roadmap wording permits "a roadmap review or audit workflow
-  check, permission profile, **or equivalent gate**". Phase 1.5 has consistently
-  delivered repository-owned `tests/build-gate/*.ts` gates wired through the
-  Makefile (`file-size`, `branch-freshness`, `whitespace-hygiene`). This plan
-  delivers the same repository-owned shape; the harness cannot be edited from
-  here.
+  df12-build workflow harness rather than a repository-owned gate. Severity:
+  medium. Likelihood: medium. Mitigation: the roadmap wording permits "a
+  roadmap review or audit workflow check, permission profile, **or equivalent
+  gate**". Phase 1.5 has consistently delivered repository-owned
+  `tests/build-gate/*.ts` gates wired through the Makefile (`file-size`,
+  `branch-freshness`, `whitespace-hygiene`). This plan delivers the same
+  repository-owned shape; the harness cannot be edited from here.
 - Risk: the review-evidence gate accidentally lands inside `make all` and
-  recurses or slows the commit gate.
-  Severity: high. Likelihood: low.
+  recurses or slows the commit gate. Severity: high. Likelihood: low.
   Mitigation: work item 5 adds a `makefile.test.ts` dry-run assertion that
   `make all` does **not** schedule the review-evidence script, alongside the
   positive wiring assertion.
 - Risk: unit tests spawn `make all` and make `make test` slow or recursive.
-  Severity: high. Likelihood: low.
-  Mitigation: the classifier and report are pure; the CLI test injects a fake
-  runner factory for the state matrix and only spawns trivial `true`/absent-binary
-  commands via an overridable gate-command list. This is a hard Constraint.
+  Severity: high. Likelihood: low. Mitigation: the classifier and report are
+  pure; the CLI test injects a fake runner factory for the state matrix and
+  only spawns trivial `true`/absent-binary commands via an overridable
+  gate-command list. This is a hard Constraint.
 - Risk: a supervisor treats a `degraded` result as a pass.
-  Severity: high. Likelihood: medium.
-  Mitigation: `degraded` maps to a distinct non-zero exit code (3), separate
-  from `verified` (0) and `failed` (1), and the report names each degraded
-  reason on its own line. Exit codes are pinned by CLI tests.
+  Severity: high. Likelihood: medium. Mitigation: `degraded` maps to a distinct
+  non-zero exit code (3), separate from `verified` (0) and `failed` (1), and
+  the report names each degraded reason on its own line. Exit codes are pinned
+  by CLI tests.
 - Risk: generalizing `git-support.ts`'s runner breaks existing importers
   (`branch-freshness-git.ts`, `file-size-support.ts`,
-  `git-support-fixtures.test.ts`) or the `git-support.test.ts` contract asserts.
-  Severity: high. Likelihood: low.
-  Mitigation: work item 3 keeps `GitCommandResult` and `GitRunner` as aliases of
-  the new `CommandResult` and `CommandRunner` (identical shapes), preserves
-  `createGitRunner`'s signature, defaults, and `GIT_TERMINAL_PROMPT` env exactly,
-  and reruns the existing `git-support.test.ts` contract and spawn tests
-  unchanged. `make all` (typecheck + test) gates the refactor before the CLI
-  consumes the new seam.
+  `git-support-fixtures.test.ts`) or the `git-support.test.ts` contract
+  asserts. Severity: high. Likelihood: low. Mitigation: work item 3 keeps
+  `GitCommandResult` and `GitRunner` as aliases of the new `CommandResult` and
+  `CommandRunner` (identical shapes), preserves `createGitRunner`'s signature,
+  defaults, and `GIT_TERMINAL_PROMPT` env exactly, and reruns the existing
+  `git-support.test.ts` contract and spawn tests unchanged. `make all`
+  (typecheck + test) gates the refactor before the CLI consumes the new seam.
 - Risk: `spawnSync` behaviour for a missing binary differs from assumption.
-  Severity: medium. Likelihood: low.
-  Mitigation: existing `tests/build-gate/git-support.ts` already relies on
-  `spawnSync` surfacing a missing executable as `result.error` (see
-  `createGitRunner` and `runFixtureGit`), and `git-support.test.ts` already pins
-  the empty-`PATH` spawn-failure case. The generalized `createCommandRunner`
-  inherits this behaviour, and the CLI test pins spawn-failure →
-  `unavailable` → `degraded` against a guaranteed-absent binary.
+  Severity: medium. Likelihood: low. Mitigation: existing
+  `tests/build-gate/git-support.ts` already relies on `spawnSync` surfacing a
+  missing executable as `result.error` (see `createGitRunner` and
+  `runFixtureGit`), and `git-support.test.ts` already pins the empty-`PATH`
+  spawn-failure case. The generalized `createCommandRunner` inherits this
+  behaviour, and the CLI test pins spawn-failure → `unavailable` → `degraded`
+  against a guaranteed-absent binary.
 
 ## Progress
 
 - [x] Work item 0: Refresh `origin/main` and confirm branch-local evidence
-  (completed: 2026-07-02; remaining: none). `git fetch origin
-  main:refs/remotes/origin/main` succeeded, `git rebase origin/main` advanced
-  the branch, and `git merge-base --is-ancestor origin/main HEAD` then returned
-  `behind=0`. Branch-local evidence was recomputed with GrepAI, Leta, exact
-  text search, and `sem --version`. `make all` and `make markdownlint` passed;
-  `make nixie` first hit a transient `BlockingIOError` after reporting all
-  diagrams valid, then passed on rerun. `coderabbit review --agent` completed
-  with zero findings.
+  (completed: 2026-07-02; remaining: none).
+  `git fetch origin main:refs/remotes/origin/main` succeeded,
+  `git rebase origin/main` advanced the branch, and
+  `git merge-base --is-ancestor origin/main HEAD` then returned `behind=0`.
+  Branch-local evidence was recomputed with GrepAI, Leta, exact text search, and
+  `sem --version`. `make all` and `make markdownlint` passed; `make nixie`
+  first hit a transient `BlockingIOError` after reporting all diagrams valid,
+  then passed on rerun. `coderabbit review --agent` completed with zero
+  findings.
 - [x] Work item 1: Add the review-evidence classifier and result contract
   (completed: 2026-07-02; remaining: none). The red test pass failed because
   `tests/build-gate/review-evidence.ts` did not exist. The green slice added
@@ -221,22 +219,23 @@ approved.
   `git-support.ts` (completed: 2026-07-02; remaining: none). The red test pass
   failed because `createCommandRunner`, `CommandResult`, `CommandRunner`, and
   `CommandRunnerOptions` did not exist. The green slice added the generic
-  runner contract, kept `GitCommandResult`/`GitRunner` as compatibility aliases,
-  refactored `createGitRunner` onto `createCommandRunner("git", ...)`, and
-  preserved the Git runner's prompt, timeout, output-buffer, and spawn-failure
-  behaviour. Focused `git-support` tests passed with 14 tests, 4 snapshots, and
-  30 assertions. `make all` passed with 529 tests, 52 snapshots, and 25117
-  assertions. `coderabbit review --agent` completed with zero findings.
+  runner contract, kept `GitCommandResult`/`GitRunner` as compatibility
+  aliases, refactored `createGitRunner` onto `createCommandRunner("git", ...)`,
+  and preserved the Git runner's prompt, timeout, output-buffer, and
+  spawn-failure behaviour. Focused `git-support` tests passed with 14 tests, 4
+  snapshots, and 30 assertions. `make all` passed with 529 tests, 52 snapshots,
+  and 25117 assertions. `coderabbit review --agent` completed with zero
+  findings.
 - [x] Work item 4: Add the CLI entry that reuses the shared runner, with real
-  execution, degraded/spawn-failure handling, and pinned exit codes
-  (completed: 2026-07-02; remaining: none). The red test pass failed because
+  execution, degraded/spawn-failure handling, and pinned exit codes (completed:
+  2026-07-02; remaining: none). The red test pass failed because
   `tests/build-gate/review-evidence-cli.ts` did not exist. The green slice
-  added the CLI, a keyed `GateCommand` contract, shared
-  `createCommandRunner` reuse, injected runner coverage, real trivial-command
-  coverage, and exit-code mapping. Focused CLI tests passed with 12 tests, 4
-  snapshots, and 46 assertions. `make all` passed with 541 tests, 56 snapshots,
-  and 25163 assertions. `coderabbit review --agent` was run after deterministic
-  gates; final review completed with zero findings.
+  added the CLI, a keyed `GateCommand` contract, shared `createCommandRunner`
+  reuse, injected runner coverage, real trivial-command coverage, and exit-code
+  mapping. Focused CLI tests passed with 12 tests, 4 snapshots, and 46
+  assertions. `make all` passed with 541 tests, 56 snapshots, and 25163
+  assertions. `coderabbit review --agent` was run after deterministic gates;
+  final review completed with zero findings.
 - [x] Work item 5: Wire the `make review-evidence` target, prove it is outside
   `make all`, and document the gate (and the generalized seam) in the
   developers' guide (completed: 2026-07-02; remaining: none). The red test pass
@@ -259,22 +258,23 @@ approved.
 
 - Observation (implementation, work item 0): the branch was one commit behind
   `origin/main` at handoff, while the ExecPlan existed only as an untracked
-  branch-local Markdown file. Evidence: after `git fetch origin
-  main:refs/remotes/origin/main`, `git merge-base --is-ancestor origin/main
-  HEAD` returned `behind=1`; `git rebase origin/main` completed successfully;
-  the same check then returned `behind=0`. Impact: implementation now proceeds
-  from current `origin/main`, and the ExecPlan is staged as the first
-  branch-local artefact.
+  branch-local Markdown file. Evidence: after
+  `git fetch origin main:refs/remotes/origin/main`,
+  `git merge-base --is-ancestor origin/main HEAD` returned `behind=1`;
+  `git rebase origin/main` completed successfully; the same check then returned
+  `behind=0`. Impact: implementation now proceeds from current `origin/main`,
+  and the ExecPlan is staged as the first branch-local artefact.
 - Observation (implementation, work item 0): GrepAI and Leta were available for
   the required evidence pass. Evidence: `grepai version` reported `0.35.0`,
-  `grepai workspace status Projects` listed `odw-lint`, `grepai search
+  `grepai workspace status Projects` listed `odw-lint`,
+  `grepai search
   --workspace 'Projects' --project 'odw-lint' "roadmap audit review evidence
-  gates independent audit implementation" --toon --compact --limit 8` returned
-  current roadmap and audit-plan matches, `leta workspace add
-  /data/leynos/Projects/odw-lint.worktrees/roadmap-1-5-6` succeeded, and
-  `leta grep` found the expected build-gate symbols in this worktree. Impact:
-  GrepAI remained the main-branch intent-search input, while branch-local code
-  facts were verified directly inside the worktree.
+  gates independent audit implementation" --toon --compact --limit 8`
+  returned current roadmap and audit-plan matches,
+  `leta workspace add /data/leynos/Projects/odw-lint.worktrees/roadmap-1-5-6`
+  succeeded, and `leta grep` found the expected build-gate symbols in this
+  worktree. Impact: GrepAI remained the main-branch intent-search input, while
+  branch-local code facts were verified directly inside the worktree.
 - Observation (implementation, work item 0): `sem` is installed for semantic
   history navigation. Evidence: `sem --version` reported `sem 0.3.9`. Impact:
   no history question was needed before work item 1, but the required tool is
@@ -290,9 +290,10 @@ approved.
 - Observation (implementation, work item 0): `make nixie` had one transient
   output-write failure after successful validation, not a diagram failure.
   Evidence: the first `make nixie` run printed "All diagrams validated
-  successfully!" and then raised `BlockingIOError: [Errno 11] write could not
-  complete without blocking`; rerunning `make nixie` exited 0. Impact: no
-  Markdown content change was needed.
+  successfully!" and then raised
+  `BlockingIOError: [Errno 11] write could not complete without blocking`;
+  rerunning `make nixie` exited 0. Impact: no Markdown content change was
+  needed.
 - Observation (implementation, work item 1): `scrutineer` was still
   quota-blocked when the Work item 1 deterministic gate was due. Evidence:
   spawning the `scrutineer` sub-agent again returned "You've hit your usage
@@ -302,13 +303,13 @@ approved.
   `coderabbit review --agent` locally.
 - Observation (implementation, work item 1): CodeRabbit found several edge
   cases that became part of the classifier contract before the item closed.
-  Evidence: review passes requested scoping unavailable and failed gate evidence
-  to `requiredGates`, rejecting duplicate per-gate execution evidence as a
-  `usage-error`, broadening path-availability generators, proving both positive
-  and negative property outcomes, snapshotting review-path reasons, and naming
-  `local-self-run` availability in the degraded selection reason. Impact: the
-  implementation now rejects contradictory caller evidence and ignores
-  non-required gate failures or unavailability.
+  Evidence: review passes requested scoping unavailable and failed gate
+  evidence to `requiredGates`, rejecting duplicate per-gate execution evidence
+  as a `usage-error`, broadening path-availability generators, proving both
+  positive and negative property outcomes, snapshotting review-path reasons,
+  and naming `local-self-run` availability in the degraded selection reason.
+  Impact: the implementation now rejects contradictory caller evidence and
+  ignores non-required gate failures or unavailability.
 - Observation (implementation, work item 1): the first combined classifier test
   file exceeded the 400-line file-size policy after CodeRabbit-driven coverage
   was added. Evidence: `wc -l` reported
@@ -322,33 +323,33 @@ approved.
   workflow followed the task instruction and ran `vsleep 59m` before retrying.
 - Observation (implementation, work item 2): `scrutineer` remained unavailable
   for delegated deterministic gates and review. Evidence: both configured
-  sub-agent ids returned "You've hit your usage limit for
-  GPT-5.3-Codex-Spark. Switch to another model now, or try again at Jul 7th,
-  2026 11:20 AM." Impact: Work item 2 used the recorded degraded fallback path:
-  local deterministic gates first, then local `coderabbit review --agent`.
+  sub-agent ids returned "You've hit your usage limit for GPT-5.3-Codex-Spark.
+  Switch to another model now, or try again at Jul 7th, 2026 11:20 AM." Impact:
+  Work item 2 used the recorded degraded fallback path: local deterministic
+  gates first, then local `coderabbit review --agent`.
 - Observation (implementation, work item 2): CodeRabbit converted formatter
   edge cases into explicit report contracts. Evidence: review passes requested
-  normalizing caller-owned free text, covering unavailable gate lines, narrowing
-  impossible review-path flag combinations, deriving the path label from
-  `isFallback`/`isDegraded`, throwing from the `assertNever` default branch, and
-  adding a runtime malformed-result test. Impact: the report now preserves one
-  fact per line, rejects impossible path states at compile time, and keeps the
-  defensive default branch observable in tests.
+  normalizing caller-owned free text, covering unavailable gate lines,
+  narrowing impossible review-path flag combinations, deriving the path label
+  from `isFallback`/`isDegraded`, throwing from the `assertNever` default
+  branch, and adding a runtime malformed-result test. Impact: the report now
+  preserves one fact per line, rejects impossible path states at compile time,
+  and keeps the defensive default branch observable in tests.
 - Observation (implementation, work item 2): one CodeRabbit retry was
   rate-limited. Evidence: `coderabbit review --agent` returned
   `errorType: "rate_limit"` and a recoverable wait-time message. Impact: the
   workflow followed the task instruction and ran `vsleep 64m` before retrying.
 - Observation (implementation, work item 3): `scrutineer` was still
-  quota-blocked for the delegated deterministic gate. Evidence: spawning a
-  fresh `scrutineer` sub-agent returned "You've hit your usage limit for
+  quota-blocked for the delegated deterministic gate. Evidence: spawning a fresh
+  `scrutineer` sub-agent returned "You've hit your usage limit for
   GPT-5.3-Codex-Spark. Switch to another model now, or try again at Jul 7th,
   2026 11:20 AM." Impact: Work item 3 used the recorded degraded fallback path:
   local `make all`, followed by local `coderabbit review --agent`.
 - Observation (implementation, work item 3): the generic runner extraction
-  initially passed focused tests but failed the repository format gate. Evidence:
-  `make all` reported a Biome import-order fix for
-  `tests/build-gate/git-support.test.ts` after focused tests passed. Impact: the
-  import order was fixed before rerunning the full deterministic gate.
+  initially passed focused tests but failed the repository format gate.
+  Evidence: `make all` reported a Biome import-order fix for
+  `tests/build-gate/git-support.test.ts` after focused tests passed. Impact:
+  the import order was fixed before rerunning the full deterministic gate.
 - Observation (implementation, work item 4): `scrutineer` remained
   quota-blocked for delegated deterministic gates and review. Evidence:
   spawning the `scrutineer` sub-agent returned "You've hit your usage limit for
@@ -361,30 +362,30 @@ approved.
   usage-error report output, compile-time coverage that exit-code mapping is
   updated when the result union changes, and using `process.exitCode` in the
   main guard so output can flush naturally. Impact: the CLI now has stable
-  output contracts for each process status, bounded child-process execution, and
-  a safer executable entrypoint.
+  output contracts for each process status, bounded child-process execution,
+  and a safer executable entrypoint.
 - Observation (implementation, work item 5): `scrutineer` remained
   quota-blocked for delegated deterministic gates and review. Evidence:
-  spawning the `scrutineer` sub-agent returned the same
-  GPT-5.3-Codex-Spark usage-limit message with a reset at Jul 7th, 2026 11:20
-  AM. Impact: Work item 5 used local deterministic gates first, then local
+  spawning the `scrutineer` sub-agent returned the same GPT-5.3-Codex-Spark
+  usage-limit message with a reset at Jul 7th, 2026 11:20 AM. Impact: Work item
+  5 used local deterministic gates first, then local
   `coderabbit review --agent`; the final CodeRabbit review completed with zero
   findings.
 - Observation (implementation, work item 6): the delivered gate itself produced
   both degraded and verified evidence at close-out. Evidence:
   `bun run tests/build-gate/review-evidence-cli.ts --no-exec` printed
-  `Review evidence: degraded` and exited 3, while `make review-evidence`
-  printed `Review evidence: verified` with all three required gates passed and
-  the primary `scrutineer` path named. Impact: the observable contract in the
-  roadmap task is exercised from the repository target, and degraded evidence is
-  distinguishable from a gate failure or success.
+  `Review evidence: degraded` and exited 3, while `make review-evidence` printed
+  `Review evidence: verified` with all three required gates passed and the
+  primary `scrutineer` path named. Impact: the observable contract in the
+  roadmap task is exercised from the repository target, and degraded evidence
+  is distinguishable from a gate failure or success.
 - Observation: the planning agent's Bash sandbox allowed only the root worktree
   (`/data/leynos/Projects/odw-lint`), so early direct reads of the assigned
   worktree were blocked until the session entered the worktree explicitly.
   Evidence: "Claude Code may only … the allowed working directories for this
-  session: '/data/leynos/Projects/odw-lint'". Impact: planning research used the
-  shared `main`-based docs and sources in the root worktree (identical at this
-  base commit) and was then re-confirmed inside the worktree
+  session: '/data/leynos/Projects/odw-lint'". Impact: planning research used
+  the shared `main`-based docs and sources in the root worktree (identical at
+  this base commit) and was then re-confirmed inside the worktree
   (`git branch --show-current` reported `roadmap-1-5-6`; `tests/build-gate`
   listing and the `docs/roadmap.md` task line matched). The implementing agent
   must still re-verify every branch-local fact directly, per the Constraints.
@@ -396,64 +397,62 @@ approved.
   (`createGitRunner` hardcodes `spawnSync("git", …)`, line 60) with no generic
   command runner. Evidence: `git-support.ts` lines 11-77; `grep` across
   `tests/build-gate/*.ts` shows the only `spawnSync` call sites are
-  `git-support.ts` line 60 and `makefile.test.ts` line 60 (dry-run wiring), with
-  no generic runner. `branch-freshness-git.ts` line 17 imports the git-support
-  runner, proving a build-gate CLI already reuses that seam. Impact: work item 3
-  now generalizes the seam and work item 4 reuses it, so no second contract is
-  forked; see `Decision Log`.
+  `git-support.ts` line 60 and `makefile.test.ts` line 60 (dry-run wiring),
+  with no generic runner. `branch-freshness-git.ts` line 17 imports the
+  git-support runner, proving a build-gate CLI already reuses that seam.
+  Impact: work item 3 now generalizes the seam and work item 4 reuses it, so no
+  second contract is forked; see `Decision Log`.
 - Observation (round 3): the planning session's Bash sandbox denied approval for
   commands run against the worktree path, so the Markdown formatter
   (`mdtablefix`, `markdownlint-cli2 --fix`) and the `make markdownlint` /
   `make nixie` gates could not be executed against this ExecPlan during
   planning. Evidence: `markdownlint-cli2 --fix docs/execplans/roadmap-1-5-6.md`
-  returned "This command requires approval". Impact: the document was authored to
-  the surrounding execplans' wrapping discipline; the implementing agent must run
-  `mdtablefix docs/execplans/roadmap-1-5-6.md`, `markdownlint-cli2 --fix
-  docs/execplans/roadmap-1-5-6.md`, then `make markdownlint` and `make nixie`
-  before committing any change that touches this file.
+  returned "This command requires approval". Impact: the document was authored
+  to the surrounding execplans' wrapping discipline; the implementing agent
+  must run `mdtablefix docs/execplans/roadmap-1-5-6.md`,
+  `markdownlint-cli2 --fix docs/execplans/roadmap-1-5-6.md`, then
+  `make markdownlint` and `make nixie` before committing any change that
+  touches this file.
 
 ## Decision Log
 
 - Decision (implementation, work item 0): continue with local deterministic
   gates and local CodeRabbit review when `scrutineer` is quota-blocked, and
   record that as degraded evidence rather than silently treating it as the
-  intended independent path.
-  Rationale: the required `scrutineer` role cannot run in this environment
-  until the reported quota reset, but the repository gates and CodeRabbit
-  command are available locally. Recording the deviation preserves the audit
-  trail while keeping the roadmap task executable. Date/Author: 2026-07-02,
-  implementation agent.
+  intended independent path. Rationale: the required `scrutineer` role cannot
+  run in this environment until the reported quota reset, but the repository
+  gates and CodeRabbit command are available locally. Recording the deviation
+  preserves the audit trail while keeping the roadmap task executable.
+  Date/Author: 2026-07-02, implementation agent.
 - Decision (implementation, work item 1): classify duplicate execution
   evidence for the same gate as `usage-error`, even if one duplicate is a pass.
-  Rationale: a reviewer-run gate must not choose between contradictory facts for
-  the same required gate. Rejecting the input keeps the CLI and any future
+  Rationale: a reviewer-run gate must not choose between contradictory facts
+  for the same required gate. Rejecting the input keeps the CLI and any future
   callers honest. Date/Author: 2026-07-02, implementation agent.
 - Decision (implementation, work item 1): scope failed and unavailable gate
-  evidence to `requiredGates` during classification.
-  Rationale: the CLI may later report focused evidence for a subset of gates,
-  and non-required extra facts must not make a focused evidence run fail or
-  degrade spuriously. Date/Author: 2026-07-02, implementation agent.
+  evidence to `requiredGates` during classification. Rationale: the CLI may
+  later report focused evidence for a subset of gates, and non-required extra
+  facts must not make a focused evidence run fail or degrade spuriously.
+  Date/Author: 2026-07-02, implementation agent.
 - Decision (implementation, work item 1): keep the classifier as the pure
   decision core and split property/exhaustiveness coverage into a second test
-  file.
-  Rationale: CodeRabbit-requested edge coverage was useful, but the repository
-  file-size policy still applies. Splitting tests preserves coverage without
-  forcing an oversized file. Date/Author: 2026-07-02, implementation agent.
+  file. Rationale: CodeRabbit-requested edge coverage was useful, but the
+  repository file-size policy still applies. Splitting tests preserves coverage
+  without forcing an oversized file. Date/Author: 2026-07-02, implementation
+  agent.
 - Decision (implementation, work item 2): narrow `ReviewPathSelection` to the
   three legal path variants instead of leaving `isFallback` and `isDegraded` as
-  broad booleans.
-  Rationale: the report formatter and later CLI should not be able to express a
-  degraded primary `scrutineer` path or a non-degraded `local-self-run` path.
-  Encoding only legal states makes silent substitution and contradictory
-  reviewer labels harder to introduce. Date/Author: 2026-07-02, implementation
-  agent.
-- Decision (implementation, work item 2): normalize caller-owned report fields
-  at the formatter boundary.
-  Rationale: gate details, degraded reasons, and path-selection reasons can be
-  sourced from subprocess output or reviewer context. Collapsing whitespace
-  keeps the reviewer-facing report greppable and preserves one fact per line
-  without changing the classifier's pure data contract. Date/Author:
+  broad booleans. Rationale: the report formatter and later CLI should not be
+  able to express a degraded primary `scrutineer` path or a non-degraded
+  `local-self-run` path. Encoding only legal states makes silent substitution
+  and contradictory reviewer labels harder to introduce. Date/Author:
   2026-07-02, implementation agent.
+- Decision (implementation, work item 2): normalize caller-owned report fields
+  at the formatter boundary. Rationale: gate details, degraded reasons, and
+  path-selection reasons can be sourced from subprocess output or reviewer
+  context. Collapsing whitespace keeps the reviewer-facing report greppable and
+  preserves one fact per line without changing the classifier's pure data
+  contract. Date/Author: 2026-07-02, implementation agent.
 - Decision (implementation, work item 3): keep `GitCommandResult` and
   `GitRunner` as direct aliases of the new generic command contracts.
   Rationale: existing build-gate callers and tests depend on the Git names, but
@@ -461,67 +460,64 @@ approved.
   making `createCommandRunner` the single subprocess wrapper that later gates
   can reuse. Date/Author: 2026-07-02, implementation agent.
 - Decision (implementation, work item 4): derive both required gates and gate
-  executions from one keyed `GateCommand` list in the CLI.
-  Rationale: the CLI should not be able to claim one set of required gates while
-  executing another. Using the keyed list as the single source means a
-  single-entry test override produces one required gate and one matching
-  execution, while the classifier's missing-required-gate guard remains a
-  defensive contract for direct callers. Date/Author: 2026-07-02,
-  implementation agent.
+  executions from one keyed `GateCommand` list in the CLI. Rationale: the CLI
+  should not be able to claim one set of required gates while executing
+  another. Using the keyed list as the single source means a single-entry test
+  override produces one required gate and one matching execution, while the
+  classifier's missing-required-gate guard remains a defensive contract for
+  direct callers. Date/Author: 2026-07-02, implementation agent.
 - Decision (implementation, work item 4): bound real gate command execution in
-  the default CLI runner.
-  Rationale: the reviewer-run target can spawn `make all`, `make markdownlint`,
-  and `make nixie`; a hung or noisy child process must surface as degraded
-  evidence rather than leaving the reviewer with an unbounded wait or buffer
-  growth. Date/Author: 2026-07-02, implementation agent.
+  the default CLI runner. Rationale: the reviewer-run target can spawn
+  `make all`, `make markdownlint`, and `make nixie`; a hung or noisy child
+  process must surface as degraded evidence rather than leaving the reviewer
+  with an unbounded wait or buffer growth. Date/Author: 2026-07-02,
+  implementation agent.
 - Decision: deliver a repository-owned reviewer-run gate
   (`make review-evidence` backed by `tests/build-gate/review-evidence-cli.ts`),
-  not an edit to the external df12-build workflow harness.
-  Rationale: this repository cannot own or gate the external harness; the
-  roadmap permits an "equivalent gate"; phase 1.5 precedent is exactly this
-  shape. Date/Author: 2026-07-02, planning agent.
+  not an edit to the external df12-build workflow harness. Rationale: this
+  repository cannot own or gate the external harness; the roadmap permits an
+  "equivalent gate"; phase 1.5 precedent is exactly this shape. Date/Author:
+  2026-07-02, planning agent.
 - Decision: keep the review-evidence gate outside `make all` (reviewer-run
-  only), mirroring `make branch-freshness`.
-  Rationale: the gate re-runs `make all`; including it in `make all` would
-  recurse. Date/Author: 2026-07-02, planning agent.
+  only), mirroring `make branch-freshness`. Rationale: the gate re-runs
+  `make all`; including it in `make all` would recurse. Date/Author:
+  2026-07-02, planning agent.
 - Decision: model the dual-review path as an ordered discriminated union
-  `scrutineer` → `coderabbit` → `local-self-run`, with an explicit
-  `isFallback`/`isDegraded` record.
-  Rationale: the ExecPlan history (2.1.5, 2.1.10, 1.5.5) shows exactly this
-  primary/fallback/local sequence; encoding it makes silent substitution
-  impossible. Date/Author: 2026-07-02, planning agent.
+  `scrutineer` → `coderabbit` → `local-self-run`, with an explicit `isFallback`/
+  `isDegraded` record. Rationale: the ExecPlan history (2.1.5, 2.1.10, 1.5.5)
+  shows exactly this primary/fallback/local sequence; encoding it makes silent
+  substitution impossible. Date/Author: 2026-07-02, planning agent.
 - Decision: exit-code contract `verified=0`, `failed=1`, `usage-error=2`,
-  `degraded=3`.
-  Rationale: `degraded` must be non-zero and distinguishable from a genuine gate
-  failure so a supervisor cannot conflate the two; `2` is reserved for
-  usage errors to match `branch-freshness-git.ts`. Date/Author: 2026-07-02,
-  planning agent.
+  `degraded=3`. Rationale: `degraded` must be non-zero and distinguishable from
+  a genuine gate failure so a supervisor cannot conflate the two; `2` is
+  reserved for usage errors to match `branch-freshness-git.ts`. Date/Author:
+  2026-07-02, planning agent.
 - Decision: document the gate in `docs/developers-guide.md` and do not add a new
-  ADR.
-  Rationale: phase 1.5 gates (`file-size`, `branch-freshness`,
+  ADR. Rationale: phase 1.5 gates (`file-size`, `branch-freshness`,
   `whitespace-hygiene`) are documented in the developers' guide, not ADRs; ADR
   0001 covers the static-analysis boundary, which this does not change. If
   review requires an ADR, escalate. Date/Author: 2026-07-02, planning agent.
 - Decision (round 3): satisfy the "no forked subprocess contract" rule by
   generalizing `git-support.ts`'s git-only runner into one shared
-  `createCommandRunner` (generic `CommandResult`/`CommandRunner`), reused by both
-  the git specialization (`createGitRunner`) and the review-evidence CLI, rather
-  than defining a distinct `CommandRunner`/`CommandResult` inside the CLI.
-  Rationale: the round-2 plan's CLI defined a second `spawnSync` wrapper and a
-  second command-result type, which the round-3 design review correctly flagged
-  as violating both the plan's own hard Constraint and roadmap task 1.5.5's
-  success criterion (`docs/roadmap.md` line 281: "no gate carries a forked
-  subprocess … contract"). The reviewer offered two resolutions: (a) generalize
-  the git-support seam into one shared runner reused by both gates, or (b)
-  reword the constraint and add a Decision Log entry justifying a distinct
-  `CommandRunner`. Option (b) is rejected: it would leave the delivered gate in
-  violation of roadmap 1.5.5's still-open success criterion, and the developers'
-  guide already places build-gate command execution in `git-support.ts`. Option
-  (a) is chosen: `branch-freshness-git.ts` (a reviewer-run build-gate CLI)
-  already imports the git-support runner (`branch-freshness-git.ts` line 17), so
-  reusing the shared seam from another gate CLI is established precedent, and
-  generalizing keeps exactly one subprocess wrapper and one output contract.
-  Date/Author: 2026-07-02, planning agent (round 3).
+  `createCommandRunner` (generic `CommandResult`/`CommandRunner`), reused by
+  both the git specialization (`createGitRunner`) and the review-evidence CLI,
+  rather than defining a distinct `CommandRunner`/`CommandResult` inside the
+  CLI. Rationale: the round-2 plan's CLI defined a second `spawnSync` wrapper
+  and a second command-result type, which the round-3 design review correctly
+  flagged as violating both the plan's own hard Constraint and roadmap task
+  1.5.5's success criterion (`docs/roadmap.md` line 281: "no gate carries a
+  forked subprocess … contract"). The reviewer offered two resolutions: (a)
+  generalize the git-support seam into one shared runner reused by both gates,
+  or (b) reword the constraint and add a Decision Log entry justifying a
+  distinct `CommandRunner`. Option (b) is rejected: it would leave the
+  delivered gate in violation of roadmap 1.5.5's still-open success criterion,
+  and the developers' guide already places build-gate command execution in
+  `git-support.ts`. Option (a) is chosen: `branch-freshness-git.ts` (a
+  reviewer-run build-gate CLI) already imports the git-support runner
+  (`branch-freshness-git.ts` line 17), so reusing the shared seam from another
+  gate CLI is established precedent, and generalizing keeps exactly one
+  subprocess wrapper and one output contract. Date/Author: 2026-07-02, planning
+  agent (round 3).
 
 ## Outcomes & Retrospective
 
@@ -551,8 +547,7 @@ Final evidence:
   Work item 5, and final `make all` passed at HEAD after close-out.
 - `make markdownlint` and `make nixie` passed after Markdown close-out edits.
 - `coderabbit review --agent` was run after deterministic gates for each
-  implementation work item; final close-out review completed with zero
-  findings.
+  implementation work item; final close-out review completed with zero findings.
 
 The requested `scrutineer` sub-agent could not execute in this environment
 because its fixed GPT-5.3-Codex-Spark quota was exhausted until Jul 7th, 2026
@@ -591,17 +586,17 @@ executable guards to the repository gate so review no longer depends on manual
 post-commit audits.
 
 The build gates live under `tests/build-gate/`. Each gate is a small Bun CLI
-script that can be run directly (for example `bun run
-tests/build-gate/branch-freshness-git.ts`) and is also exercised by unit tests.
-The gates share one Git and process seam:
+script that can be run directly (for example
+`bun run tests/build-gate/branch-freshness-git.ts`) and is also exercised by
+unit tests. The gates share one Git and process seam:
 
 - `tests/build-gate/git-support.ts` — the shared, build-gate seam for Git
   command execution (`createGitRunner`, `runGit`), tracked-file listing
   (`lsTrackedFiles`, `parseNulSeparatedPaths`), temporary repositories
   (`createTemporaryRepository`, `writeRepositoryFile`, `commitAll`,
   `runFixtureGit`), and captured CLI output (`createCapturedCliOutput`). The
-  runner uses Node/Bun `spawnSync` (line 60, hardcoding the `git` executable); a
-  missing executable surfaces as `result.error` and a non-zero status as
+  runner uses Node/Bun `spawnSync` (line 60, hardcoding the `git` executable);
+  a missing executable surfaces as `result.error` and a non-zero status as
   `result.status`. Consolidated by task 1.5.5. Work item 3 of this plan
   generalizes `createGitRunner`'s `spawnSync` body into a shared
   `createCommandRunner` (generic `CommandResult`/`CommandRunner`) in this same
@@ -623,18 +618,18 @@ The gates share one Git and process seam:
   It imports `createGitRunner`, `GitCommandResult`, `GitRunner`, and `runGit`
   from `git-support.ts` (line 17) — the reuse precedent for review-evidence.
 - `tests/build-gate/whitespace-hygiene.ts` — a compact CLI gate
-  (`runWhitespaceHygieneCli`) showing the writers pattern
-  (`writeOut`/`writeErr`) and exit codes `0`/`1`/`2`.
+  (`runWhitespaceHygieneCli`) showing the writers pattern (`writeOut`/
+  `writeErr`) and exit codes `0`/`1`/`2`.
 - `tests/build-gate/makefile.test.ts` — dry-run wiring tests that assert each
   Make target invokes the expected `bun run …` command and that `make all`
   schedules gates in the right order. New targets are proven here.
 
-The Makefile (`Makefile`) declares each gate target. `make all` is `build
-check-fmt whitespace-hygiene lint typecheck test`. `make branch-freshness` is a
-standalone target, documented in `docs/developers-guide.md` (Commit Gate
-section) as deliberately outside `make all` because it performs a network
-fetch. The review-evidence target follows that same "outside `make all`,
-reviewer-run" convention.
+The Makefile (`Makefile`) declares each gate target. `make all` is
+`build check-fmt whitespace-hygiene lint typecheck test`.
+`make branch-freshness` is a standalone target, documented in
+`docs/developers-guide.md` (Commit Gate section) as deliberately outside
+`make all` because it performs a network fetch. The review-evidence target
+follows that same "outside `make all`, reviewer-run" convention.
 
 The terms of art in the roadmap task come from the roadmap workflow's review
 step, evidenced in prior ExecPlans:
@@ -648,8 +643,8 @@ step, evidenced in prior ExecPlans:
   `scrutineer` is quota-blocked (its fixed Codex Spark quota is exhausted), the
   documented fallback is `coderabbit review --agent`; when that too is
   unavailable, the agent re-runs gates locally and records degraded,
-  single-reviewer evidence (see `docs/execplans/roadmap-2-1-5.md` lines
-  197-227; `docs/execplans/roadmap-1-5-5.md` lines 252-256).
+  single-reviewer evidence (see `docs/execplans/roadmap-2-1-5.md` lines 197-227;
+  `docs/execplans/roadmap-1-5-5.md` lines 252-256).
 - **degraded-mode evidence** — evidence explicitly stating that a gate or
   reviewer could not run here, rather than a silent pass or a silent
   substitution.
@@ -668,8 +663,8 @@ without changing its behaviour; work item 4 wires the CLI, so the only new
 ### Stage A — Work item 0: refresh and confirm evidence (no code changes)
 
 Docs to read: `AGENTS.md` (Tooling Defaults, Change Quality & Committing);
-`docs/developers-guide.md` (Commit Gate); `docs/roadmap.md` §1.5.
-Skills to load: `execplans` (this skill), `leta`, `sem`, `grepai`.
+`docs/developers-guide.md` (Commit Gate); `docs/roadmap.md` §1.5. Skills to
+load: `execplans` (this skill), `leta`, `sem`, `grepai`.
 
 Refresh `origin/main` and confirm the branch is not behind. Recompute the
 branch-local file evidence this plan depends on (the build-gate file list, the
@@ -681,20 +676,19 @@ item; it is a go/no-go checkpoint.
 
 ### Stage B/C/D — Work item 1: review-evidence classifier and result contract
 
-Implements the decision core for the roadmap task
-(`docs/roadmap.md` lines 282-291). Follows AGENTS.md "Error Handling"
-(discriminated unions for recoverable conditions), "Runtime Validation & Types"
-(narrow domain types), and "Testing" (table-driven for finite case sets,
-`fast-check` for behaviour over a range of inputs).
+Implements the decision core for the roadmap task (`docs/roadmap.md` lines
+282-291). Follows AGENTS.md "Error Handling" (discriminated unions for
+recoverable conditions), "Runtime Validation & Types" (narrow domain types),
+and "Testing" (table-driven for finite case sets, `fast-check` for behaviour
+over a range of inputs).
 
 Docs to read: `AGENTS.md` (TypeScript Guidance — Error Handling, Runtime
 Validation & Types, Testing);
-`docs/complexity-antipatterns-and-refactoring-strategies.md` (keep
-`switch`/branching flat, extract predicates).
-Skills to load: `leta` (symbol navigation and references). No Python
-verification skill (`hypothesis`, `crosshair`, `mutmut`) applies because this is
-TypeScript — `fast-check` is the property-test tool per AGENTS.md; the Rust
-router skills do not apply either.
+`docs/complexity-antipatterns-and-refactoring-strategies.md` (keep `switch`
+/branching flat, extract predicates). Skills to load: `leta` (symbol navigation
+and references). No Python verification skill (`hypothesis`, `crosshair`,
+`mutmut`) applies because this is TypeScript — `fast-check` is the
+property-test tool per AGENTS.md; the Rust router skills do not apply either.
 
 Add `tests/build-gate/review-evidence.ts` defining:
 
@@ -707,8 +701,8 @@ Add `tests/build-gate/review-evidence.ts` defining:
 - `ReviewPathSelection` — `{ selected, reason, isFallback, isDegraded }`.
 - `ReviewEvidenceResult` — union of `verified`, `failed` (with `failedGates`),
   `degraded` (with `reasons`), and `usage-error` (with `message`).
-- `ClassifyReviewEvidenceInput` — `{ executionEnabled, executions,
-  requiredGates, pathAvailability }`.
+- `ClassifyReviewEvidenceInput` —
+  `{ executionEnabled, executions, requiredGates, pathAvailability }`.
 - `classifyReviewEvidence(input): ReviewEvidenceResult` and a small
   `selectReviewPath(pathAvailability): ReviewPathSelection` helper.
 
@@ -751,8 +745,8 @@ property tests asserting the load-bearing invariants: (a) a `degraded` or
 `failed` classification is never simultaneously `verified`; (b) a
 `quota-blocked` or `unavailable` `scrutineer` is never selected as a
 non-fallback primary; (c) whenever `executionEnabled` is false the status is
-`degraded` regardless of other inputs. Green: implement the classifier. Refactor
-for flat branching and named predicates; keep the file under 400 lines.
+`degraded` regardless of other inputs. Green: implement the classifier.
+Refactor for flat branching and named predicates; keep the file under 400 lines.
 
 Validation: `make all`.
 
@@ -763,8 +757,8 @@ Implements the "reports explicit … evidence" surface of the task
 diagnostics with stable fields).
 
 Docs to read: `AGENTS.md` (Observability; Testing — snapshot scope);
-`docs/documentation-style-guide.md` for reviewer-facing prose wording.
-Skills to load: `leta`.
+`docs/documentation-style-guide.md` for reviewer-facing prose wording. Skills
+to load: `leta`.
 
 Add `tests/build-gate/review-evidence-report.ts` exporting
 `formatReviewEvidenceResult(result: ReviewEvidenceResult): string`, a `switch`
@@ -795,18 +789,19 @@ Validation: `make all`.
 
 ### Work item 3: generalize the shared build-gate command runner
 
-Implements the "no forked subprocess contract" rule (`docs/roadmap.md` line 281)
-that governs how work item 4 spawns `make`. Follows AGENTS.md "Error Handling"
-(one project-owned command boundary) and the DI testing rule; keeps the shared
-seam that the developers' guide documents as living in `git-support.ts`.
+Implements the "no forked subprocess contract" rule (`docs/roadmap.md` line
+281) that governs how work item 4 spawns `make`. Follows AGENTS.md "Error
+Handling" (one project-owned command boundary) and the DI testing rule; keeps
+the shared seam that the developers' guide documents as living in
+`git-support.ts`.
 
 Docs to read: `docs/developers-guide.md` (the "Build-gate Git command execution
 … live in `tests/build-gate/git-support.ts`" paragraph); `AGENTS.md` (Error
 Handling; Testing — DI; file-size);
-`docs/complexity-antipatterns-and-refactoring-strategies.md`.
-Skills to load: `leta` (to enumerate every importer of `createGitRunner`,
-`GitRunner`, and `GitCommandResult` before refactoring), `sem` (to confirm the
-`git-support.ts` `spawnSync` contract).
+`docs/complexity-antipatterns-and-refactoring-strategies.md`. Skills to load:
+`leta` (to enumerate every importer of `createGitRunner`, `GitRunner`, and
+`GitCommandResult` before refactoring), `sem` (to confirm the `git-support.ts`
+`spawnSync` contract).
 
 Generalize `tests/build-gate/git-support.ts` so it owns one shared subprocess
 runner:
@@ -815,20 +810,22 @@ runner:
   `signal`, `stdout`, `stderr`, optional `error`) and re-express
   `GitCommandResult` as `type GitCommandResult = CommandResult` so existing
   importers and the `git-support.test.ts` contract asserts are unchanged.
-- Add `CommandRunner` (`{ readonly run: (args: readonly string[]) =>
-  CommandResult }`) and re-express `GitRunner` as `type GitRunner =
-  CommandRunner` (identical structural shape, so
-  `branch-freshness-git.ts:GitRunner` usages still compile).
+- Add `CommandRunner`
+  (`{ readonly run: (args: readonly string[]) => CommandResult }`) and
+  re-express `GitRunner` as `type GitRunner = CommandRunner` (identical
+  structural shape, so `branch-freshness-git.ts:GitRunner` usages still
+  compile).
 - Add `CommandRunnerOptions` (`{ cwd?, env?, timeoutMs?, maxBufferBytes? }`) and
   `createCommandRunner(command: string, options?: CommandRunnerOptions):
-  CommandRunner` — the single `spawnSync` wrapper, factored out of the current
+  CommandRunner` —
+  the single `spawnSync` wrapper, factored out of the current
   `createGitRunner` body verbatim (same `encoding: "utf8"`, same result
   normalization, same optional-`error` spread).
 - Reimplement `createGitRunner(repositoryPath, options)` as a thin
-  specialization that calls `createCommandRunner("git", { cwd: repositoryPath,
-  env: { ...process.env, GIT_TERMINAL_PROMPT: "0" }, timeoutMs: options.timeoutMs
-  ?? gitCommandTimeoutMs, maxBufferBytes: options.maxBufferBytes ??
-  gitCommandMaxBufferBytes })`. Its public signature, defaults, and env stay
+  specialization that calls `createCommandRunner("git", { cwd: repositoryPath,`
+  `env: { ...process.env, GIT_TERMINAL_PROMPT: "0" }, timeoutMs: options.timeoutMs`
+  `?? gitCommandTimeoutMs, maxBufferBytes: options.maxBufferBytes ??`
+  `gitCommandMaxBufferBytes })`. Its public signature, defaults, and env stay
   byte-for-byte equivalent.
 
 Red: extend `tests/build-gate/git-support.test.ts` first with new asserts that
@@ -841,11 +838,11 @@ guaranteed-absent binary surfaces `error !== undefined` (mirrors the existing
 empty-`PATH` git spawn-failure test at `git-support.test.ts` lines 294-309).
 The existing `createGitRunner`, `lsTrackedFiles`, and fixture tests must stay
 unchanged and green — that is the regression guard for the refactor. Green:
-perform the extraction and aliasing above. Refactor: keep `git-support.ts` under
-400 lines (255 today; expected ≈ 290).
+perform the extraction and aliasing above. Refactor: keep `git-support.ts`
+under 400 lines (255 today; expected ≈ 290).
 
-Validation: `make all`. This item touches only TypeScript and its unit tests, so
-no Markdown gate runs here.
+Validation: `make all`. This item touches only TypeScript and its unit tests,
+so no Markdown gate runs here.
 
 ### Work item 4: CLI entry reusing the shared runner
 
@@ -858,9 +855,8 @@ wrapper and **no** new command-result type.
 
 Docs to read: `AGENTS.md` (Error Handling; Testing — end-to-end for
 command-line behaviour); `docs/developers-guide.md` (Commit Gate; the
-`git-support.ts` seam paragraph).
-Skills to load: `leta`, `sem` (to confirm the reused `createCommandRunner`
-contract from work item 3).
+`git-support.ts` seam paragraph). Skills to load: `leta`, `sem` (to confirm the
+reused `createCommandRunner` contract from work item 3).
 
 Add `tests/build-gate/review-evidence-cli.ts` that imports `CommandResult`,
 `CommandRunner`, `CommandRunnerOptions`, and `createCommandRunner` from
@@ -883,14 +879,15 @@ exports:
   cover exactly the required gates, so the classifier's rule-1 usage-error
   (execution enabled but a required gate missing) is unreachable from the CLI
   and remains a pure defensive guard.
-- Runner injection: an option `createRunner?: (command: string, options?:
-  CommandRunnerOptions) => CommandRunner`, defaulting to the shared
-  `createCommandRunner`. For each `GateCommand` `[id, command, args]`, the CLI
-  calls `(options.createRunner ?? createCommandRunner)(command, { env,
-  timeoutMs }).run(args)`. Tests inject a fake `createRunner` that returns a fake
-  `CommandRunner` whose `.run(args)` yields a canned `CommandResult`, so the
-  matrix never spawns a real process. Both `CommandRunner` and `CommandResult`
-  are the shared git-support types — nothing is forked.
+- Runner injection: an option
+  `createRunner?: (command: string, options?: CommandRunnerOptions) => CommandRunner`,
+  defaulting to the shared `createCommandRunner`. For each `GateCommand`
+  `[id, command, args]`, the CLI calls
+  `(options.createRunner ?? createCommandRunner)(command, { env, timeoutMs }).run(args)`.
+  Tests inject a fake `createRunner` that returns a fake `CommandRunner` whose
+  `.run(args)` yields a canned `CommandResult`, so the matrix never spawns a
+  real process. Both `CommandRunner` and `CommandResult` are the shared
+  git-support types — nothing is forked.
 - Signals: `--no-exec` (or env `ODW_LINT_REVIEW_EXEC=0`) sets
   `executionEnabled = false`, modelling a sandboxed reviewer;
   `--scrutineer=<availability>` and `--coderabbit=<availability>` (defaulting to
@@ -898,13 +895,14 @@ exports:
   `branch-freshness-git.ts` style; unknown flags produce a `usage-error`.
 - An overridable `gateCommands` option, typed `readonly GateCommand[]` and
   defaulting to the three keyed `make` gate commands
-  (`["make all", "make", ["all"]]`, `["make markdownlint", "make",
-  ["markdownlint"]]`, `["make nixie", "make", ["nixie"]]`), so tests substitute
-  trivial keyed commands and never spawn `make`. Overriding it with a single
-  entry yields a single required gate and a single execution.
+  (`["make all", "make", ["all"]]`,
+  `["make markdownlint", "make", ["markdownlint"]]`,
+  `["make nixie", "make", ["nixie"]]`), so tests substitute trivial keyed
+  commands and never spawn `make`. Overriding it with a single entry yields a
+  single required gate and a single execution.
 - Exit-code mapping: `verified` → 0, `failed` → 1, `usage-error` → 2,
-  `degraded` → 3. Run as `main` when invoked directly via the
-  `import.meta.url` guard.
+  `degraded` → 3. Run as `main` when invoked directly via the `import.meta.url`
+  guard.
 
 Red: write `tests/build-gate/review-evidence-cli.test.ts` first. Cover: (a) the
 full state matrix with an injected fake `createRunner` (no real spawn),
@@ -912,61 +910,62 @@ asserting status, report text, and exit code; (b) one real-runner test that
 substitutes `gateCommands` with a single keyed guaranteed-present no-op
 (`[["make all", "true", []]]`) and the default `createRunner`, so
 `requiredGates` derives to the single `"make all"` gate and the one execution
-passes, proving the shared `createCommandRunner` path yields `verified` and exit
-0; (c) one real-runner test substituting a single keyed guaranteed-absent binary
-(`[["make all", "<absent-binary>", []]]`) so the one required gate's execution is
-`unavailable`, proving spawn-failure → `unavailable` → `degraded` and exit 3;
-(d) `--no-exec` yields `degraded` and exit 3 without spawning; (e)
+passes, proving the shared `createCommandRunner` path yields `verified` and
+exit 0; (c) one real-runner test substituting a single keyed guaranteed-absent
+binary (`[["make all", "<absent-binary>", []]]`) so the one required gate's
+execution is `unavailable`, proving spawn-failure → `unavailable` → `degraded`
+and exit 3; (d) `--no-exec` yields `degraded` and exit 3 without spawning; (e)
 `--scrutineer=quota-blocked` with `coderabbit` available yields an explicit
 `coderabbit` fallback in the report; (f) both reviewers unavailable yields
 `degraded` `local-self-run`. Also add (g) a `requiredGates`-derivation
 assertion: overriding `gateCommands` with one keyed entry produces exactly one
 `- gate …` line in the report (guarding that the CLI derives `requiredGates`
-from `gateCommands` rather than the three fixed ids). Use `createCapturedCliOutput`
-from `git-support.ts` for output capture. Green: implement the CLI. Refactor; if
-the module nears 400 lines, split the runner-to-execution mapping into
-`tests/build-gate/review-evidence-run.ts` and record it in `Decision Log`.
+from `gateCommands` rather than the three fixed ids). Use
+`createCapturedCliOutput` from `git-support.ts` for output capture. Green:
+implement the CLI. Refactor; if the module nears 400 lines, split the
+runner-to-execution mapping into `tests/build-gate/review-evidence-run.ts` and
+record it in `Decision Log`.
 
 Validation: `make all`.
 
 ### Work item 5: Makefile target and documentation
 
-Implements the "gate" delivery and keeps it independent
-(`docs/roadmap.md` lines 282-291). Follows AGENTS.md "Tooling Defaults" (prefer
-Makefile targets) and "Documentation Maintenance".
+Implements the "gate" delivery and keeps it independent (`docs/roadmap.md`
+lines 282-291). Follows AGENTS.md "Tooling Defaults" (prefer Makefile targets)
+and "Documentation Maintenance".
 
 Docs to read: `docs/developers-guide.md` (Commit Gate section, and the
 `git-support.ts` seam paragraph); `docs/documentation-style-guide.md`;
-`AGENTS.md` (Markdown Guidance).
-Skills to load: `leta`.
+`AGENTS.md` (Markdown Guidance). Skills to load: `leta`.
 
 Red: extend `tests/build-gate/makefile.test.ts` first with two dry-run
-assertions: `make review-evidence` schedules `bun run
-tests/build-gate/review-evidence-cli.ts`, and `make all` does **not** schedule
-that command (guarding against accidental inclusion and recursion). Green: add a
-`review-evidence` target to the `Makefile` (and to `.PHONY`) invoking `bun run
-tests/build-gate/review-evidence-cli.ts`, mirroring the `branch-freshness`
-target. Then update `docs/developers-guide.md`: (1) broaden the `git-support.ts`
-seam paragraph to state that build-gate command execution now flows through one
-shared `createCommandRunner` (`git` via `createGitRunner`, other gate commands
-directly), so gates share one subprocess contract; and (2) add a subsection
-under the Commit Gate area explaining that `make review-evidence` re-runs the
-repository gates with command execution enabled to produce independent evidence;
-that it is deliberately outside `make all`; the `verified` / `failed` /
-`degraded` / usage-error statuses and their exit codes (0/1/3/2); the
-`--no-exec` degraded signal for sandboxed reviewers; and the explicit
-`scrutineer` → `coderabbit` → `local-self-run` dual-review fallback ordering.
+assertions: `make review-evidence` schedules
+`bun run tests/build-gate/review-evidence-cli.ts`, and `make all` does **not**
+schedule that command (guarding against accidental inclusion and recursion).
+Green: add a `review-evidence` target to the `Makefile` (and to `.PHONY`)
+invoking `bun run tests/build-gate/review-evidence-cli.ts`, mirroring the
+`branch-freshness` target. Then update `docs/developers-guide.md`: (1) broaden
+the `git-support.ts` seam paragraph to state that build-gate command execution
+now flows through one shared `createCommandRunner` (`git` via
+`createGitRunner`, other gate commands directly), so gates share one subprocess
+contract; and (2) add a subsection under the Commit Gate area explaining that
+`make review-evidence` re-runs the repository gates with command execution
+enabled to produce independent evidence; that it is deliberately outside
+`make all`; the `verified` / `failed` / `degraded` / usage-error statuses and
+their exit codes (0/1/3/2); the `--no-exec` degraded signal for sandboxed
+reviewers; and the explicit `scrutineer` → `coderabbit` → `local-self-run`
+dual-review fallback ordering.
 
 Validation: `make all`, then `make markdownlint` and `make nixie` (Markdown
 changed). Before the Markdown gates, format only the changed Markdown with
-`mdtablefix docs/developers-guide.md` then `markdownlint-cli2 --fix
-docs/developers-guide.md` (this file is edited in this work item, so the path
-exists).
+`mdtablefix docs/developers-guide.md` then
+`markdownlint-cli2 --fix docs/developers-guide.md` (this file is edited in this
+work item, so the path exists).
 
 ### Work item 6: close-out
 
-Docs to read: `docs/roadmap.md` §1.5; this ExecPlan.
-Skills to load: `execplans`, `commit-message`, `pr-creation` (for the PR).
+Docs to read: `docs/roadmap.md` §1.5; this ExecPlan. Skills to load:
+`execplans`, `commit-message`, `pr-creation` (for the PR).
 
 Tick `- [ ] 1.5.6` to `- [x] 1.5.6` in `docs/roadmap.md` and finalize this
 ExecPlan's `Progress`, `Surprises & Discoveries`, `Decision Log`, and
@@ -1058,8 +1057,8 @@ Acceptance is behavioural. From the worktree:
   names a dual-review path, and exits 3 — proving degraded-mode evidence rather
   than a silent pass.
 - With execution enabled and the required gates passing and `scrutineer`
-  available, the report status is `verified`, the path line reads `scrutineer
-  (primary)`, and the exit code is 0.
+  available, the report status is `verified`, the path line reads
+  `scrutineer (primary)`, and the exit code is 0.
 - With `--scrutineer=quota-blocked` and `coderabbit` available, the report names
   `coderabbit (fallback; scrutineer quota-blocked)` and does not silently claim
   `scrutineer` — proving no silent substitution of the dual-review path.
@@ -1068,9 +1067,9 @@ Acceptance is behavioural. From the worktree:
 - `make all` does not schedule the review-evidence script (dry-run assertion),
   proving the gate stays independent and non-recursive.
 - The review-evidence CLI imports `createCommandRunner` from `git-support.ts`
-  and defines no `spawnSync` call of its own — grep confirms `spawnSync` appears
-  only in `git-support.ts` and `makefile.test.ts`, proving no forked subprocess
-  contract.
+  and defines no `spawnSync` call of its own — grep confirms `spawnSync`
+  appears only in `git-support.ts` and `makefile.test.ts`, proving no forked
+  subprocess contract.
 
 Red-Green-Refactor evidence to record in `Progress` and `Decision Log`: the red
 command and its expected failure, the green command and expected pass, and the
@@ -1083,9 +1082,9 @@ repositories via `git-support.ts` helpers and inject fake runners, so reruns do
 not drift. The only mutating filesystem changes are the new source and test
 files, the generalized `git-support.ts` seam, the Makefile target, and the
 documentation and roadmap edits; re-editing is safe. If a formatter parks
-unrelated churn, name any stash precisely, for example `df12-stash v1
-task=1.5.6 kind=discard reason="formatter churn"`, and discard it. No
-destructive or irreversible operations are involved.
+unrelated churn, name any stash precisely, for example
+`df12-stash v1 task=1.5.6 kind=discard reason="formatter churn"`, and discard
+it. No destructive or irreversible operations are involved.
 
 ## Artefacts and Notes
 
@@ -1263,8 +1262,8 @@ entry in `gateCommands` (in order) and, for each entry, obtains a runner via
 `(options.createRunner ?? createCommandRunner)(command, { env, timeoutMs })`,
 runs `args` through it, and tags the resulting `GateExecution` with that same
 `ReviewGateId`. This keyed structure is the single source of both
-`requiredGates` and each `GateExecution.gate`, so overriding `gateCommands` with
-one entry (for example `[["make all", "true", []]]`) produces exactly one
+`requiredGates` and each `GateExecution.gate`, so overriding `gateCommands`
+with one entry (for example `[["make all", "true", []]]`) produces exactly one
 required gate and one matching execution. Because both `CommandRunner` and
 `CommandResult` are the shared `git-support.ts` types and the default factory is
 `createCommandRunner`, the CLI reuses one subprocess contract rather than
@@ -1283,13 +1282,13 @@ Verified against branch-local sources inside the worktree (re-confirmed after
 - The git-only runner and its `spawnSync` body to be generalized:
   `tests/build-gate/git-support.ts` lines 11-77 — `GitCommandResult` (11-17),
   `GitRunner` (20-22), `createGitRunner` hardcoding `spawnSync("git", …)` at
-  line 60, capturing `result.error`/`result.status`/`result.signal`. There is no
-  generic command runner today (a `grep` for `spawnSync`/`CommandRunner` across
-  `tests/build-gate/*.ts` returns only `git-support.ts` line 60 and
+  line 60, capturing `result.error`/`result.status`/`result.signal`. There is
+  no generic command runner today (a `grep` for `spawnSync`/`CommandRunner`
+  across `tests/build-gate/*.ts` returns only `git-support.ts` line 60 and
   `makefile.test.ts` line 60), so work item 3 must add one rather than reuse a
   nonexistent symbol.
-- Reuse precedent — a reviewer-run build-gate CLI already imports the git-support
-  seam: `tests/build-gate/branch-freshness-git.ts` line 17 imports
+- Reuse precedent — a reviewer-run build-gate CLI already imports the
+  git-support seam: `tests/build-gate/branch-freshness-git.ts` line 17 imports
   `createGitRunner`, `GitCommandResult`, `GitRunner`, and `runGit` from
   `./git-support`. `tests/build-gate/whitespace-hygiene.ts` line 9 and
   `tests/build-gate/file-size-support.ts` line 5 reuse other git-support
@@ -1297,17 +1296,17 @@ Verified against branch-local sources inside the worktree (re-confirmed after
   with existing coupling, not a new dependency direction.
 - The `git-support.test.ts` contract asserts to preserve across the refactor:
   `tests/build-gate/git-support.test.ts` lines 21-52 (`GitCommandResult`,
-  `GitRunner`, `GitRunnerOptions`, and run-args assignability) and lines 294-309
-  (empty-`PATH` spawn-failure surfaced as `result.error`).
+  `GitRunner`, `GitRunnerOptions`, and run-args assignability) and lines
+  294-309 (empty-`PATH` spawn-failure surfaced as `result.error`).
 - Roadmap task 1.5.5 success criterion forbidding forked contracts:
   `docs/roadmap.md` line 281 — "no gate carries a forked subprocess or
   tracked-file enumeration contract". This is the rule work item 3 satisfies by
   generalizing rather than forking.
 - Developers' guide seam ownership: `docs/developers-guide.md` — the "Build-gate
   Git command execution, tracked-file listing, temporary repository setup … and
-  captured CLI output live in `tests/build-gate/git-support.ts`" paragraph. This
-  places the shared runner in `git-support.ts`, so the generic runner belongs
-  there too.
+  captured CLI output live in `tests/build-gate/git-support.ts`" paragraph.
+  This places the shared runner in `git-support.ts`, so the generic runner
+  belongs there too.
 - Makefile target list and `make all` composition: `Makefile` lines 1-5 and
   39-49; `make branch-freshness` is a standalone target (lines 42-43).
 - Dry-run wiring-test pattern for new targets:
@@ -1326,20 +1325,20 @@ Verified against branch-local sources inside the worktree (re-confirmed after
 
 Tooling note: the sibling ODW checkout at
 `/data/leynos/Projects/open-dynamic-workflows` was not consulted, because this
-task is roadmap-workflow review tooling and does not touch ODW loader, workflow,
-or example behaviour. No locked external library beyond Node/Bun `spawnSync` and
-`fast-check` is load-bearing, so no Firecrawl documentation research was
-required. GrepAI, `leta`, and `sem` were available for planning; the planning
-session's Bash sandbox initially blocked direct worktree access, so file
-evidence was first read from the shared `main`-based root worktree and then
-re-confirmed inside the worktree (see `Surprises & Discoveries`).
+task is roadmap-workflow review tooling and does not touch ODW loader,
+workflow, or example behaviour. No locked external library beyond Node/Bun
+`spawnSync` and `fast-check` is load-bearing, so no Firecrawl documentation
+research was required. GrepAI, `leta`, and `sem` were available for planning;
+the planning session's Bash sandbox initially blocked direct worktree access,
+so file evidence was first read from the shared `main`-based root worktree and
+then re-confirmed inside the worktree (see `Surprises & Discoveries`).
 
 ## Revision note
 
 - 2026-07-02: Initial DRAFT. Decomposed roadmap task 1.5.6 into six work items
   (0-5): refresh, pure classifier, report formatter, injectable-runner CLI,
-  Makefile target plus documentation, and close-out. Pinned the deliverable to a
-  repository-owned reviewer-run gate (`make review-evidence`) mirroring
+  Makefile target plus documentation, and close-out. Pinned the deliverable to
+  a repository-owned reviewer-run gate (`make review-evidence`) mirroring
   `make branch-freshness`, kept it outside `make all` to avoid recursion,
   modelled the explicit `scrutineer` → `coderabbit` → `local-self-run`
   dual-review fallback and the `degraded` exit-code contract, and cited the
@@ -1350,46 +1349,46 @@ re-confirmed inside the worktree (see `Surprises & Discoveries`).
   `ReviewGateId`, leaving no specified way to tag each `GateExecution.gate` or
   to derive `requiredGates`, which made the CLI real-runner tests (b)/(c)
   unsatisfiable (a single overridden command classified as `usage-error`, not
-  `verified`/`degraded`). Introduced `GateCommand =
-  readonly [ReviewGateId, string, readonly string[]]`; retyped `gateCommands` to
-  `readonly GateCommand[]`; pinned a default keyed list mapping the three fixed
-  `ReviewGateId`s to their `make` invocations; and specified that
-  `runReviewEvidenceCli` derives both `requiredGates` and every
+  `verified`/`degraded`). Introduced
+  `GateCommand = readonly [ReviewGateId, string, readonly string[]]`; retyped
+  `gateCommands` to `readonly GateCommand[]`; pinned a default keyed list
+  mapping the three fixed `ReviewGateId`s to their `make` invocations; and
+  specified that `runReviewEvidenceCli` derives both `requiredGates` and every
   `GateExecution.gate` from that one keyed list. Documented that a single-entry
   override yields exactly one required gate and one matching execution, so the
-  (b) `verified`/exit 0 and (c) `degraded`/exit 3 tests hold; clarified that the
-  classifier's rule-1 usage-error is thereby unreachable from the CLI and
+  (b) `verified`/exit 0 and (c) `degraded`/exit 3 tests hold; clarified that
+  the classifier's rule-1 usage-error is thereby unreachable from the CLI and
   remains a pure defensive guard, and added explicit rule-1 unit cases (work
-  item 1) plus a `requiredGates`-derivation assertion (CLI test (g)).
-  No implementation performed.
+  item 1) plus a `requiredGates`-derivation assertion (CLI test (g)). No
+  implementation performed.
 - 2026-07-02 (round 3): Resolved the design reviewer's sole blocking point — the
-  round-2 CLI (then work item 3) forked a second subprocess contract by defining
-  its own `CommandRunner`/`CommandResult` and a `spawnSync`-wrapping default
-  runner in `review-evidence-cli.ts`, directly violating the plan's own hard
-  Constraint and roadmap task 1.5.5's success criterion (`docs/roadmap.md` line
-  281: "no gate carries a forked subprocess … contract"). Verified that
+  round-2 CLI (then work item 3) forked a second subprocess contract by
+  defining its own `CommandRunner`/`CommandResult` and a `spawnSync`-wrapping
+  default runner in `review-evidence-cli.ts`, directly violating the plan's own
+  hard Constraint and roadmap task 1.5.5's success criterion (`docs/roadmap.md`
+  line 281: "no gate carries a forked subprocess … contract"). Verified that
   `git-support.ts` exposes only a git-specific runner (`createGitRunner`
   hardcodes `spawnSync("git", …)`, line 60) with no generic command runner, and
   that `branch-freshness-git.ts` (line 17) — a reviewer-run build-gate CLI —
-  already reuses that seam. Adopted reviewer option (a): added a new work item 3
-  that generalizes `createGitRunner`'s `spawnSync` body into one shared
+  already reuses that seam. Adopted reviewer option (a): added a new work item
+  3 that generalizes `createGitRunner`'s `spawnSync` body into one shared
   `createCommandRunner` (generic `CommandResult`/`CommandRunner`) in
   `git-support.ts`, keeping `createGitRunner` as a git specialization and
   preserving all existing importers and `git-support.test.ts` contract asserts
   via `GitCommandResult = CommandResult` / `GitRunner = CommandRunner` aliases.
   Renumbered the CLI to work item 4, which now imports and reuses
   `createCommandRunner` via an injectable runner **factory** (`createRunner`)
-  and defines no subprocess wrapper or command-result type of its own; renumbered
-  Makefile+docs to work item 5 (now also broadening the developers' guide seam
-  paragraph) and close-out to work item 6. Rewrote the offending Constraint to
-  state the generalize-then-reuse approach, added a Decision Log entry recording
-  the choice of option (a) over option (b) (rejected because it would leave the
-  gate in violation of roadmap 1.5.5), added a generalization-regression Risk,
-  a `git-support.ts` file-size Tolerance, a `Surprises & Discoveries`
-  observation, and Research-evidence citations (roadmap line 281,
-  `git-support.ts` lines 11-77, `branch-freshness-git.ts` line 17,
-  `git-support.test.ts` lines 21-52 and 294-309, the developers' guide seam
-  paragraph). No implementation performed.
+  and defines no subprocess wrapper or command-result type of its own;
+  renumbered Makefile+docs to work item 5 (now also broadening the developers'
+  guide seam paragraph) and close-out to work item 6. Rewrote the offending
+  Constraint to state the generalize-then-reuse approach, added a Decision Log
+  entry recording the choice of option (a) over option (b) (rejected because it
+  would leave the gate in violation of roadmap 1.5.5), added a
+  generalization-regression Risk, a `git-support.ts` file-size Tolerance, a
+  `Surprises & Discoveries` observation, and Research-evidence citations
+  (roadmap line 281, `git-support.ts` lines 11-77, `branch-freshness-git.ts`
+  line 17, `git-support.test.ts` lines 21-52 and 294-309, the developers' guide
+  seam paragraph). No implementation performed.
 - 2026-07-02 (implementation, work item 2): Added
   `tests/build-gate/review-evidence-report.ts` and
   `tests/build-gate/review-evidence-report.test.ts`; updated
@@ -1402,13 +1401,13 @@ re-confirmed inside the worktree (see `Surprises & Discoveries`).
   `make all` passed; CodeRabbit completed with zero findings after one
   rate-limit sleep and several edge-case fixes.
 - 2026-07-02 (implementation, work item 3): Generalized
-  `tests/build-gate/git-support.ts` by adding `CommandResult`,
-  `CommandRunner`, `CommandRunnerOptions`, and `createCommandRunner`. Refactored
+  `tests/build-gate/git-support.ts` by adding `CommandResult`, `CommandRunner`,
+  `CommandRunnerOptions`, and `createCommandRunner`. Refactored
   `createGitRunner` into a thin Git specialization that preserves the previous
-  terminal-prompt, timeout, and buffer defaults. Extended `git-support` tests to
-  assert the new contracts, a successful generic no-op command, and a missing
-  command spawn failure. Focused tests and `make all` passed; CodeRabbit
-  completed with zero findings.
+  terminal-prompt, timeout, and buffer defaults. Extended `git-support` tests
+  to assert the new contracts, a successful generic no-op command, and a
+  missing command spawn failure. Focused tests and `make all` passed;
+  CodeRabbit completed with zero findings.
 - 2026-07-02 (implementation, work item 4): Added
   `tests/build-gate/review-evidence-cli.ts` and its CLI tests. The CLI derives
   required gates and executions from keyed `GateCommand` entries, reuses the

@@ -3,10 +3,10 @@
 - Status: Proposed findings
 - Scope: `origin/main` inspected from the `audit-1-2-3` git-donkey worktree
 
-This audit was run after the diagnostic contract split landed on
-`origin/main`. It used `grepai` for canonical main-branch intent search,
-`leta` for branch-local symbol, reference, and call-graph verification, and
-`sem` for entity-level history and blame.
+This audit was run after the diagnostic contract split landed on `origin/main`.
+It used `grepai` for canonical main-branch intent search, `leta` for
+branch-local symbol, reference, and call-graph verification, and `sem` for
+entity-level history and blame.
 
 ## Finding 1: The diagnostic JSON Schema repeats nested object shapes
 
@@ -77,9 +77,9 @@ The diagnostic contract example and representative diagnostic test both use a
 directory. No shipped rule currently emits that URL, so this is not a
 user-visible broken link yet.
 
-It is still an adoption gap to close before the first rule becomes
-user-facing. The diagnostic model has already reserved a documentation field,
-and the roadmap expects rule documentation parity once the catalogue exists.
+It is still an adoption gap to close before the first rule becomes user-facing.
+The diagnostic model has already reserved a documentation field, and the
+roadmap expects rule documentation parity once the catalogue exists.
 
 Proposed fix:
 
@@ -104,9 +104,8 @@ workflow source fixture. Branch-local symbol search found no architecture test
 that scans production imports for forbidden ODW runtime paths.
 
 This is not an immediate defect in the current passive scaffold, but it is a
-security-boundary test gap. The next dialect tasks will add parser and
-envelope code, which is exactly when accidental runtime parity shortcuts become
-tempting.
+security-boundary test gap. The next dialect tasks will add parser and envelope
+code, which is exactly when accidental runtime parity shortcuts become tempting.
 
 Proposed fix:
 

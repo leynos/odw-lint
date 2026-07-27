@@ -1,9 +1,8 @@
 # Narrow body-syntax spans when parser offsets are structured
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`,
-`Surprises & Discoveries`, `Decision Log`, and
-`Outcomes & Retrospective` must be kept up to date as work proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -41,11 +40,10 @@ still points into original source.
 Observable proof (see `Validation and acceptance`):
 
 1. A new characterization test proves the locked `@swc/core@1.15.43`
-   `parseSync` throws an `Error` whose only failure detail is a prose
-   `message` string and which exposes **no** structured numeric byte offset.
-   This pins the load-bearing fact that today's SWC error channel yields no
-   offset, and turns a silent SWC upgrade that changes this into a test
-   failure.
+   `parseSync` throws an `Error` whose only failure detail is a prose `message`
+   string and which exposes **no** structured numeric byte offset. This pins
+   the load-bearing fact that today's SWC error channel yields no offset, and
+   turns a silent SWC upgrade that changes this into a test failure.
 2. A new pure helper `narrowBodySyntaxSpan` maps a structured
    normalized-source byte range back to a **narrowed** original-source span
    whose sliced text equals the offending token, and falls back to the
@@ -69,9 +67,8 @@ This is the most important design decision in the plan.
   recover offsets. The roadmap wording forbids it and prose is unstable across
   SWC versions and locales.
 - **2.2.6 must not** touch metadata, envelope, dual-compat, or any rule other
-  than `odw/body-syntax`. It must not add or change any public message
-  template (that is task 2.2.5) and must not add AST-fact collection (task
-  2.2.4).
+  than `odw/body-syntax`. It must not add or change any public message template
+  (that is task 2.2.5) and must not add AST-fact collection (task 2.2.4).
 - **2.2.6 requires 2.2.3** (`docs/roadmap.md` line 582), which is COMPLETE: the
   span-mapping invariant of `docs/technical-design.md` section 11.5 (every
   diagnostic span points into original source) is already proven for
@@ -82,11 +79,11 @@ This is the most important design decision in the plan.
 ## Constraints
 
 - The static-analysis boundary is a security boundary
-  (`docs/adr/0001-static-analysis-boundary.md`,
-  `docs/technical-design.md` section 12.1). Production code must not execute,
-  import, or evaluate workflow source, and must not import
-  `loadWorkflowScript`, `createPrimitives`, `validate(source)`, or any ODW
-  runtime module. This task only builds strings, spans, and diagnostics.
+  (`docs/adr/0001-static-analysis-boundary.md`, `docs/technical-design.md`
+  section 12.1). Production code must not execute, import, or evaluate workflow
+  source, and must not import `loadWorkflowScript`, `createPrimitives`,
+  `validate(source)`, or any ODW runtime module. This task only builds strings,
+  spans, and diagnostics.
 - Every emitted diagnostic `span` must point into **original** source, not
   normalized source (`docs/technical-design.md` sections 8 and 11.5). `offset`
   is a zero-based UTF-8 byte offset into the original file (section 8).
@@ -113,8 +110,8 @@ This is the most important design decision in the plan.
 - Scope: if implementation requires changing more than 6 files or more than
   ~250 net lines of code, stop and escalate.
 - Interface: if narrowing forces a change to the public `Diagnostic` shape or
-  to the signature of `parseWorkflowBody` observable to package consumers,
-  stop and escalate.
+  to the signature of `parseWorkflowBody` observable to package consumers, stop
+  and escalate.
 - Dependencies: if narrowing appears to require a new dependency or a SWC
   version bump, stop and escalate.
 - Discovery: if the Work Item 1 characterization test reveals that
@@ -132,31 +129,29 @@ This is the most important design decision in the plan.
 
 - Risk: the locked `@swc/core@1.15.43` `parseSync` error surface could not be
   empirically verified in the planning session (network egress and
-  `bun install` were both blocked; see `Surprises & Discoveries`).
-  Severity: medium. Likelihood: low that the pinned conclusion is wrong.
-  Mitigation: Work Item 1 is a characterization test that the implementer runs
-  with `node_modules` present; it pins the real behaviour and gates the rest of
-  the plan. The Tolerances "Discovery" trigger handles the contradicting case.
+  `bun install` were both blocked; see `Surprises & Discoveries`). Severity:
+  medium. Likelihood: low that the pinned conclusion is wrong. Mitigation: Work
+  Item 1 is a characterization test that the implementer runs with
+  `node_modules` present; it pins the real behaviour and gates the rest of the
+  plan. The Tolerances "Discovery" trigger handles the contradicting case.
 - Risk: a future SWC upgrade changes the error surface (adds or removes an
-  offset field), silently altering spans.
-  Severity: medium. Likelihood: low.
+  offset field), silently altering spans. Severity: medium. Likelihood: low.
   Mitigation: the Work Item 1 characterization test asserts the current
   surface, so any change fails the suite and forces a conscious update.
 - Risk: a structured offset could map into injected wrapper text
   (`async function __odwLintWorkflowBody__() {` / `\n}`) and produce a
-  misleading or out-of-range span.
-  Severity: medium. Likelihood: medium if the extractor is ever wired to a real
-  parser.
-  Mitigation: `originalSpanFromNormalizedOffsets` already throws
-  `SourceOffsetError` for wrapper-touching or reversed ranges
+  misleading or out-of-range span. Severity: medium. Likelihood: medium if the
+  extractor is ever wired to a real parser. Mitigation:
+  `originalSpanFromNormalizedOffsets` already throws `SourceOffsetError` for
+  wrapper-touching or reversed ranges
   (`src/static-analysis/workflow-body-normalizer.ts`); `narrowBodySyntaxSpan`
   catches it and falls back to the whole-body span, and a unit test pins that
   fallback.
 - Risk: narrowing changes an existing snapshot unexpectedly.
-  Severity: low. Likelihood: low.
-  Mitigation: for the real SWC fixtures the extractor returns no offset, so the
-  whole-body snapshots must remain unchanged; the plan treats any change to
-  those snapshots as a regression, not a re-record.
+  Severity: low. Likelihood: low. Mitigation: for the real SWC fixtures the
+  extractor returns no offset, so the whole-body snapshots must remain
+  unchanged; the plan treats any change to those snapshots as a regression, not
+  a re-record.
 
 ## Progress
 
@@ -199,16 +194,15 @@ This is the most important design decision in the plan.
 ## Surprises & discoveries
 
 - Observation: the SWC parse-error object surface could not be inspected
-  empirically during planning.
-  Evidence: `bun install` and all network tools (`firecrawl_*`, `WebFetch`)
-  required interactive approval and were denied in this non-interactive
-  session; `node_modules` is absent in the worktree, so `parseSync` could not
-  be invoked. Filesystem search is sandboxed to the worktree, so no sibling
-  `@swc/core` checkout was reachable.
-  Impact: the load-bearing claim (SWC's parse error exposes no structured byte
-  offset today) is pinned by the Work Item 1 characterization test rather than
-  by a planning-time transcript. The plan is written to be correct whichever
-  way that test lands, with the Tolerances "Discovery" trigger covering the
+  empirically during planning. Evidence: `bun install` and all network tools
+  (`firecrawl_*`, `WebFetch`) required interactive approval and were denied in
+  this non-interactive session; `node_modules` is absent in the worktree, so
+  `parseSync` could not be invoked. Filesystem search is sandboxed to the
+  worktree, so no sibling `@swc/core` checkout was reachable. Impact: the
+  load-bearing claim (SWC's parse error exposes no structured byte offset
+  today) is pinned by the Work Item 1 characterization test rather than by a
+  planning-time transcript. The plan is written to be correct whichever way
+  that test lands, with the Tolerances "Discovery" trigger covering the
   contradicting outcome.
 - Observation: the narrowing mechanism already exists and is proven.
   Evidence: `originalSpanFromNormalizedOffsets`
@@ -218,16 +212,15 @@ This is the most important design decision in the plan.
   `tests/static-analysis/workflow-body-parser.test.ts` ("maps a real SWC body
   node span back to original source") shows SWC AST nodes expose
   `{ span: { start, end } }` byte offsets in a module-global coordinate space
-  whose base is `program.span.start`.
-  Impact: Work Item 2 reuses this mapper rather than inventing a new mapping,
-  and the "structured-offset fixture" can supply a real normalized byte range.
+  whose base is `program.span.start`. Impact: Work Item 2 reuses this mapper
+  rather than inventing a new mapping, and the "structured-offset fixture" can
+  supply a real normalized byte range.
 - Observation: Work Item 1 confirmed the current `@swc/core@1.15.43`
   parse-error surface exposes rendered prose but no allow-listed structured
-  numeric byte offset.
-  Evidence: `bun test tests/static-analysis/swc-parse-error-surface.test.ts`
-  passes and asserts the thrown value is an `Error`, has a non-empty `message`,
-  and lacks finite numeric `span`, `byteOffset`, `pos`, `start`, or `offset`
-  fields.
+  numeric byte offset. Evidence:
+  `bun test tests/static-analysis/swc-parse-error-surface.test.ts` passes and
+  asserts the thrown value is an `Error`, has a non-empty `message`, and lacks
+  finite numeric `span`, `byteOffset`, `pos`, `start`, or `offset` fields.
   Impact: the Work Item 3 real-SWC path remains a no-offset fallback path; the
   structured-offset narrowing path must be exercised with synthetic structured
   data rather than by parsing SWC prose.
@@ -235,81 +228,75 @@ This is the most important design decision in the plan.
   to a test helper, is the source of truth for normalized body offsets.
   Evidence: the first Work Item 2 green attempt mapped a synthetic `"marker"`
   range to `" marke"` until the test computed byte offsets from
-  `sliceSourceSpan(envelope.sourceFile, envelope.bodySpan)`.
-  Impact: the structured-offset fixture now mirrors production normalization
-  by deriving its byte range from the exact scanned body span text.
+  `sliceSourceSpan(envelope.sourceFile, envelope.bodySpan)`. Impact: the
+  structured-offset fixture now mirrors production normalization by deriving
+  its byte range from the exact scanned body span text.
 - Observation: CodeRabbit rate-limited the first Work Item 3 review attempt.
   Evidence: scrutineer reported two rate-limited `coderabbit review --agent`
   attempts with service guidance to wait six minutes; the workflow-mandated
   random `vsleep` window selected 85 minutes. The subsequent CodeRabbit retry
-  completed with zero findings.
-  Impact: no parser wiring review issue remained open, but the Work Item 3
-  review took a delayed retry rather than a single pass.
+  completed with zero findings. Impact: no parser wiring review issue remained
+  open, but the Work Item 3 review took a delayed retry rather than a single
+  pass.
 
 ## Decision log
 
 - Decision: treat "the locked `@swc/core@1.15.43` `parseSync` error exposes no
   structured, base-resolvable byte offset" as the working truth, pinned by a
   characterization test, and build the narrowing as a parser-agnostic seam that
-  activates only when a structured range is resolvable.
-  Rationale: `@swc/core` formats the Rust parser diagnostic to a rendered caret
-  string before it crosses the N-API boundary, so the thrown JavaScript `Error`
-  carries prose in `message` and no structured span; unlike an AST node, a
-  thrown error also has no accompanying `program.span.start` base, so even a
-  raw offset would not be convertible to normalized coordinates. The roadmap
-  wording ("once it exposes stable syntax-error byte offsets", "without parsing
-  rendered diagnostic prose", "the fallback for parsers that expose no offset")
-  frames the offset as conditional and expects a fallback, which matches this
-  reality. Escalate via the Tolerances "Discovery" trigger if Work Item 1
-  contradicts this.
+  activates only when a structured range is resolvable. Rationale: `@swc/core`
+  formats the Rust parser diagnostic to a rendered caret string before it
+  crosses the N-API boundary, so the thrown JavaScript `Error` carries prose in
+  `message` and no structured span; unlike an AST node, a thrown error also has
+  no accompanying `program.span.start` base, so even a raw offset would not be
+  convertible to normalized coordinates. The roadmap wording ("once it exposes
+  stable syntax-error byte offsets", "without parsing rendered diagnostic
+  prose", "the fallback for parsers that expose no offset") frames the offset
+  as conditional and expects a fallback, which matches this reality. Escalate
+  via the Tolerances "Discovery" trigger if Work Item 1 contradicts this.
   Date/Author: 2026-07-03, planning agent.
 - Decision: the narrowing seam consumes a structured normalized-source byte
-  **range** `{ start, end }`, not a single caret offset.
-  Rationale: the proven mapper `originalSpanFromNormalizedOffsets` takes a
-  start and an end and is what already round-trips a real SWC node span to the
-  token text "marker". Narrowing to a full token span (rather than a zero-width
-  caret) is what the success line means by "the failure token", and it reuses
-  the proven path verbatim. Synthesizing a token end by re-lexing a broken body
-  is out of scope and would hit the Tolerances "Ambiguity" trigger.
-  Date/Author: 2026-07-03, planning agent.
+  **range** `{ start, end }`, not a single caret offset. Rationale: the proven
+  mapper `originalSpanFromNormalizedOffsets` takes a start and an end and is
+  what already round-trips a real SWC node span to the token text "marker".
+  Narrowing to a full token span (rather than a zero-width caret) is what the
+  success line means by "the failure token", and it reuses the proven path
+  verbatim. Synthesizing a token end by re-lexing a broken body is out of scope
+  and would hit the Tolerances "Ambiguity" trigger. Date/Author: 2026-07-03,
+  planning agent.
 - Decision: prove end-to-end narrowing at the helper-composition level (unit
   tests over `narrowBodySyntaxSpan` and the range extractor) plus an
   integration test that pins the real-SWC fallback, rather than forcing SWC to
-  throw a structured error it does not produce.
-  Rationale: honest evidence. The production mapping path is exercised with a
-  real normalized range and real source text; the `parseWorkflowBody` wiring is
-  proven to use the fallback for real SWC and to compose the extractor with the
-  narrower. This satisfies the success line without a fake parser masquerading
-  as SWC in an end-to-end assertion.
-  Date/Author: 2026-07-03, planning agent.
+  throw a structured error it does not produce. Rationale: honest evidence. The
+  production mapping path is exercised with a real normalized range and real
+  source text; the `parseWorkflowBody` wiring is proven to use the fallback for
+  real SWC and to compose the extractor with the narrower. This satisfies the
+  success line without a fake parser masquerading as SWC in an end-to-end
+  assertion. Date/Author: 2026-07-03, planning agent.
 - Decision: remove the host-specific absolute worktree path from the ExecPlan's
   generic run instructions while keeping the automated-workflow standing rule
-  authoritative for this execution.
-  Rationale: CodeRabbit correctly flagged the embedded checkout path as
-  non-portable plan text. The workflow prompt already pins this run to the
-  assigned git-donkey worktree, so the ExecPlan can say "assigned worktree
-  root" without weakening this execution's isolation rule.
+  authoritative for this execution. Rationale: CodeRabbit correctly flagged the
+  embedded checkout path as non-portable plan text. The workflow prompt already
+  pins this run to the assigned git-donkey worktree, so the ExecPlan can say
+  "assigned worktree root" without weakening this execution's isolation rule.
   Date/Author: 2026-07-03, implementation agent.
 - Decision: keep Oxford-style `-ize` spellings such as "characterization" and
-  "normalized" in this ExecPlan and test prose.
-  Rationale: CodeRabbit requested `-ise` spellings, but AGENTS.md and
-  `docs/documentation-style-guide.md` explicitly require en-GB Oxford spelling
-  with `-ize` / `-yse` / `-our` conventions, except where external API names
-  require otherwise.
-  Date/Author: 2026-07-03, implementation agent.
+  "normalized" in this ExecPlan and test prose. Rationale: CodeRabbit requested
+  `-ise` spellings, but AGENTS.md and `docs/documentation-style-guide.md`
+  explicitly require en-GB Oxford spelling with `-ize` / `-yse` / `-our`
+  conventions, except where external API names require otherwise. Date/Author:
+  2026-07-03, implementation agent.
 - Decision: expose `NormalizedByteRange` and `narrowBodySyntaxSpan` through
   the package entry and update the reviewed public export-surface fixture.
   Rationale: the ExecPlan makes the narrowing helper a reusable parser-backed
   span contract, and consumer-style tests import static-analysis helpers from
   `odw-lint`. The export-surface guard correctly forced the public facade to be
-  reviewed explicitly.
-  Date/Author: 2026-07-03, implementation agent.
+  reviewed explicitly. Date/Author: 2026-07-03, implementation agent.
 - Decision: split structured parser-range validation into guard clauses plus
-  `isReversedRange`.
-  Rationale: Oxlint flagged the first implementation's compound conditional as
-  too complex. Named guard clauses keep the extractor readable and make invalid
-  range rejection explicit.
-  Date/Author: 2026-07-03, implementation agent.
+  `isReversedRange`. Rationale: Oxlint flagged the first implementation's
+  compound conditional as too complex. Named guard clauses keep the extractor
+  readable and make invalid range rejection explicit. Date/Author: 2026-07-03,
+  implementation agent.
 
 ## Outcomes & retrospective
 
@@ -380,8 +367,9 @@ supersedes this point-in-time surface list for future upgrade work.
   wraps the body in `async function __odwLintWorkflowBody__() { … \n}` and
   records `prefixByteLength`, `bodyByteOffset`, and `bodyByteLength`.
   `originalSpanFromNormalizedOffsets(sourceFile, normalized, startByte,
-  endByte)` subtracts `prefixByteLength`, rejects wrapper-touching or reversed
-  ranges with `SourceOffsetError`, and returns a validated original-source
+  endByte)`
+  subtracts `prefixByteLength`, rejects wrapper-touching or reversed ranges
+  with `SourceOffsetError`, and returns a validated original-source
   `SourceSpan` via `spanFromOffsets`.
 - `src/static-analysis/source-position.ts` — `spanFromOffsets` /
   `positionAtOffset`, which throw `SourceOffsetError` for invalid offsets.
@@ -441,8 +429,9 @@ inside a `try`/`catch`, and asserts on the caught value:
 2. its `message` is a non-empty string (rendered prose);
 3. it exposes **no** structured numeric byte offset: probe a documented
    allow-list of candidate fields the adapter would ever read — for example
-   `error.span`, `error.byteOffset`, `error.pos`, `error.start`, `error.offset`
-   — and assert none is a finite number (nor a `{ start, end }` numeric pair).
+   `error.span`, `error.byteOffset`, `error.pos`, `error.start`,
+   `error.offset` — and assert none is a finite number (nor a `{ start, end }`
+   numeric pair).
 
 This is a characterization/pinning test (per the execplans skill's allowance
 for a golden/characterization substitute when strict Red-Green does not apply):
@@ -482,17 +471,19 @@ before the helper exists:
    `{ start: 0, end: 4 }`, inside the prefix) or a reversed range, and assert
    the result is exactly `bodySpan` and that the call does not throw.
 4. Property (`fast-check`): for any range wholly inside the body, the narrowed
-   span is within `bodySpan` and non-reversed
-   (`start.offset <= end.offset`).
+   span is within `bodySpan` and non-reversed (`start.offset <= end.offset`).
 
-Green: implement `narrowBodySyntaxSpan(sourceFile, normalized, bodySpan,
-range?: { readonly start: number; readonly end: number })` next to the mapper.
-If it keeps `workflow-body-normalizer.ts` under 400 lines, add it there and
-export it from `src/static-analysis/index.ts` and `src/index.ts`; otherwise put
-it in a new `src/static-analysis/workflow-body-span.ts`. Behaviour: if `range`
-is `undefined`, return `bodySpan`; otherwise `try` to return
+Green: implement
+`narrowBodySyntaxSpan(sourceFile, normalized, bodySpan,
+range?: { readonly start: number; readonly end: number })`
+next to the mapper. If it keeps `workflow-body-normalizer.ts` under 400 lines,
+add it there and export it from `src/static-analysis/index.ts` and
+`src/index.ts`; otherwise put it in a new
+`src/static-analysis/workflow-body-span.ts`. Behaviour: if `range` is
+`undefined`, return `bodySpan`; otherwise `try` to return
 `originalSpanFromNormalizedOffsets(sourceFile, normalized, range.start,
-range.end)` and, on `SourceOffsetError`, return `bodySpan`.
+range.end)`
+and, on `SourceOffsetError`, return `bodySpan`.
 
 Refactor: extract a small predicate if branching grows; keep the JSDoc `@file`
 and per-function docs. Rerun the focused test then `make all`.
@@ -523,20 +514,22 @@ needed, the narrowing test file) with:
    carries the allow-listed structured field(s). It must never read
    `error.message`.
 3. Narrowing composition: given the synthetic structured error plus a real
-   normalized body, the composed `narrowedSpanForParserError(sourceFile,
-   normalized, bodySpan, error)` returns a narrowed span whose sliced text is
-   the intended token; given the real SWC error it returns `bodySpan`.
+   normalized body, the composed
+   `narrowedSpanForParserError(sourceFile, normalized, bodySpan, error)`
+   returns a narrowed span whose sliced text is the intended token; given the
+   real SWC error it returns `bodySpan`.
 
-Green: add `structuredNormalizedRangeFromParserError(error: unknown):
-{ readonly start: number; readonly end: number } | undefined` that reads only
-the documented allow-list of structured numeric fields (never prose) and
-returns `undefined` when none is present or when a base offset needed to
-normalize the coordinate is unavailable (the SWC-today case). Change
+Green: add
+`structuredNormalizedRangeFromParserError(error: unknown):
+{ readonly start: number; readonly end: number } | undefined`
+that reads only the documented allow-list of structured numeric fields (never
+prose) and returns `undefined` when none is present or when a base offset
+needed to normalize the coordinate is unavailable (the SWC-today case). Change
 `bodySyntaxDiagnostic` to accept the resolved span, and change the
 `parseWorkflowBody` catch handler from `} catch {` to `} catch (error) {`,
 computing `span = narrowedSpanForParserError(...)` before building the
-diagnostic. Keep `parseWorkflowBody` total: the whole catch body must not
-throw (narrowing already degrades to `bodySpan`).
+diagnostic. Keep `parseWorkflowBody` total: the whole catch body must not throw
+(narrowing already degrades to `bodySpan`).
 
 Refactor: keep `workflow-body-parser.ts` under 400 lines; move the extractor to
 its own module if needed. Rerun focused tests, then `make all`. Confirm the
@@ -549,9 +542,9 @@ Tests added/updated: adapter test additions; extractor and composition units.
 
 Goal: keep `docs/` the source of truth and record completion.
 
-Docs to read: `docs/documentation-style-guide.md`, `docs/scripting-standards.md`
-(Markdown/prose conventions), `AGENTS.md` (documentation maintenance). Skills to
-load: `en-gb-oxendict`.
+Docs to read: `docs/documentation-style-guide.md`,
+`docs/scripting-standards.md` (Markdown/prose conventions), `AGENTS.md`
+(documentation maintenance). Skills to load: `en-gb-oxendict`.
 
 Edits:
 
@@ -622,8 +615,7 @@ make markdownlint
 make nixie
 ```
 
-Acceptance (behaviour a human can verify), mapping to the verbatim success
-line:
+Acceptance (behaviour a human can verify), mapping to the verbatim success line:
 
 1. Original-source spans preserved: for both syntax-error fixtures,
    `sliceSourceSpan(file, diagnostic.span)` equals the sliced whole body and

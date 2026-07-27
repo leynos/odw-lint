@@ -1,18 +1,18 @@
 # Audit after roadmap task 1.5.11
 
-This post-step audit was run after roadmap task 1.5.11 (`Consolidate build-gate
-CLI orchestration`) merged into `origin/main` at commit `5c1a015`. The audit
-used `grepai` against the canonical `main` index for intent search, then
-verified every branch-local fact in a fresh worktree off `origin/main` with
-`leta`, targeted file inspection, and exact text search.
+This post-step audit was run after roadmap task 1.5.11
+(`Consolidate build-gate CLI orchestration`) merged into `origin/main` at commit
+`5c1a015`. The audit used `grepai` against the canonical `main` index for
+intent search, then verified every branch-local fact in a fresh worktree off
+`origin/main` with `leta`, targeted file inspection, and exact text search.
 
-Task 1.5.11 added the shared run-and-exit entrypoint helper
-(`runCliEntrypoint` in `tests/build-gate/cli-support.ts`), a structural seam
-test (`tests/build-gate/cli-entrypoint-test-support.ts`), and reviewer
-availability consolidation (`tests/build-gate/review-evidence-availability.ts`),
-and rewired the four build-gate CLIs to call the shared entrypoint. The audit
-therefore concentrates on the consolidated build-gate CLI surface, then extends
-across the wider `tests/build-gate/` and `src/static-analysis/` trees.
+Task 1.5.11 added the shared run-and-exit entrypoint helper (`runCliEntrypoint`
+in `tests/build-gate/cli-support.ts`), a structural seam test
+(`tests/build-gate/cli-entrypoint-test-support.ts`), and reviewer availability
+consolidation (`tests/build-gate/review-evidence-availability.ts`), and rewired
+the four build-gate CLIs to call the shared entrypoint. The audit therefore
+concentrates on the consolidated build-gate CLI surface, then extends across
+the wider `tests/build-gate/` and `src/static-analysis/` trees.
 
 Normative references used:
 
@@ -95,21 +95,22 @@ Description:
 `audit-1.5.10.md` Finding 4 recorded that the build-gate CLIs disagreed on
 process-exit style, and proposed folding the guard into a shared helper so the
 exit contract is defined once. Task 1.5.11 delivered that shared helper
-(`runCliEntrypoint`), but the underlying divergence survives. `runCliEntrypoint`
-defaults its `mode` to `"exit"`, which calls `process.exit(code)`; only
-`review-evidence-cli.ts` opts into `mode: "exitCode"`, which sets
-`process.exitCode` and lets Node drain buffered output. The other three gates
-take the default and therefore still call `process.exit()`, which can truncate
-not-yet-flushed `stdout` on a pipe. All four gates emit their report immediately
-before returning, so the two styles still carry different output-delivery
-guarantees — and the consolidation made the truncation-prone form the default
-that three of the four gates silently inherit.
+(`runCliEntrypoint`), but the underlying divergence survives.
+`runCliEntrypoint` defaults its `mode` to `"exit"`, which calls
+`process.exit(code)`; only `review-evidence-cli.ts` opts into
+`mode: "exitCode"`, which sets `process.exitCode` and lets Node drain buffered
+output. The other three gates take the default and therefore still call
+`process.exit()`, which can truncate not-yet-flushed `stdout` on a pipe. All
+four gates emit their report immediately before returning, so the two styles
+still carry different output-delivery guarantees — and the consolidation made
+the truncation-prone form the default that three of the four gates silently
+inherit.
 
 Proposed fix:
 
 Change the `runCliEntrypoint` default to `"exitCode"` (the form that preserves
-buffered output) and reserve explicit `mode: "exit"` for any gate that genuinely
-needs an immediate exit, or convert the remaining three gates to
+buffered output) and reserve explicit `mode: "exit"` for any gate that
+genuinely needs an immediate exit, or convert the remaining three gates to
 `mode: "exitCode"` so all four share the output-preserving contract. Add a
 comment on the default recording why `exitCode` is the safe choice for
 report-emitting gates.
@@ -144,9 +145,10 @@ returns without descending into that call's children. If the first identifier
 call encountered is not `runCliEntrypoint`, the whole subtree beneath it is
 pruned. For the current four gates — each of which calls `runCliEntrypoint` at
 statement top level — this is correct, but a future gate that nests the call
-(for example `wrap(runCliEntrypoint({ ... }))`) would be reported as not calling
-the shared helper, producing a false `build-gate CLI must call runCliEntrypoint`
-failure. The guard is more brittle than its sibling checks, which recurse fully.
+(for example `wrap(runCliEntrypoint({ ... }))`) would be reported as not
+calling the shared helper, producing a false
+`build-gate CLI must call runCliEntrypoint` failure. The guard is more brittle
+than its sibling checks, which recurse fully.
 
 Proposed fix:
 
@@ -172,8 +174,8 @@ The developers guide paragraph on `cli-support.ts` describes only writer
 resolution, default `stdout`/`stderr` streams, and single-report dispatch, and
 still states that "Gate modules keep their own report formatting and exit-code
 mapping." Task 1.5.11's headline change — the shared `runCliEntrypoint`
-run-and-exit orchestration seam, its `exit` vs `exitCode` termination modes, and
-the structural test that enforces its use — is not mentioned. A developer
+run-and-exit orchestration seam, its `exit` vs `exitCode` termination modes,
+and the structural test that enforces its use — is not mentioned. A developer
 reading the guide would not learn that the module-main guard is now shared, nor
 which termination mode to select for a new gate, even though the seam test
 (`cli-entrypoint-test-support.ts`) will reject a gate that inlines its own
@@ -182,11 +184,11 @@ guard.
 Proposed fix:
 
 Extend the `cli-support.ts` paragraph in `docs/developers-guide.md` to document
-`runCliEntrypoint`: that new gates invoke it from their module-main guard rather
-than inlining `process.argv`/`process.exit` handling, and that report-emitting
-gates should select `mode: "exitCode"` to preserve buffered output (see
-Finding 2). Update the now-partly-stale "keep their own ... exit-code mapping"
-sentence accordingly.
+`runCliEntrypoint`: that new gates invoke it from their module-main guard
+rather than inlining `process.argv`/`process.exit` handling, and that
+report-emitting gates should select `mode: "exitCode"` to preserve buffered
+output (see Finding 2). Update the now-partly-stale "keep their own … exit-code
+mapping" sentence accordingly.
 
 ## Finding 5: `parseFlagValue` remains duplicated across two evidence CLIs
 
@@ -235,25 +237,26 @@ Location:
 
 Description:
 
-`audit-1.5.10.md` Finding 2 recorded three private copies of the unknown-to-text
-error helper. All three survive after 1.5.11, and they are not even written
-consistently: two are `const` arrow expressions and the third is a hoisted
-`function` declaration, though every body is identical:
+`audit-1.5.10.md` Finding 2 recorded three private copies of the
+unknown-to-text error helper. All three survive after 1.5.11, and they are not
+even written consistently: two are `const` arrow expressions and the third is a
+hoisted `function` declaration, though every body is identical:
 
 ```ts
 error instanceof Error ? error.message : String(error)
 ```
 
-Error-text policy for the gate family is therefore still defined in three places
-and in two syntactic forms.
+Error-text policy for the gate family is therefore still defined in three
+places and in two syntactic forms.
 
 Proposed fix:
 
 Add a single `errorMessage(error: unknown): string` to
 `tests/build-gate/report-format-helpers.ts` — which already hosts the shared
-`singleLine` and `assertNever` formatting helpers — and delete the three private
-copies. The recording path already composes `singleLine(errorMessage(error))`,
-so `report-format-helpers.ts` is the natural home.
+`singleLine` and `assertNever` formatting helpers — and delete the three
+private copies. The recording path already composes
+`singleLine(errorMessage(error))`, so `report-format-helpers.ts` is the natural
+home.
 
 ## Finding 7: The artefact CLI `--evidence-path=` flag is still undocumented
 
@@ -281,8 +284,8 @@ at an ad-hoc path.
 Proposed fix:
 
 Add `--evidence-path=<path>` to the `make review-evidence-artefact` paragraph of
-`docs/developers-guide.md`, noting its precedence over the environment variable
-and default, so the documented surface matches the tested one.
+`docs/developers-guide.md`, noting its precedence over the environment
+variable and default, so the documented surface matches the tested one.
 
 ## Proposed roadmap items
 

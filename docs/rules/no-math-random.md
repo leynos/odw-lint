@@ -12,8 +12,7 @@ This rule reports direct calls to `Math.random()`. It does not report a bare
 `Math.random` reference that is not called. Hidden randomness makes workflow
 runs non-reproducible and complicates review of agent decisions.
 
-It is a warning by default and is promoted to an error under
-`--strict-claude`.
+It is a warning by default and is promoted to an error under `--strict-claude`.
 
 Pass seeded randomness or a chosen value into the workflow explicitly. Keep the
 source of randomness at the host boundary where it can be logged and tested.

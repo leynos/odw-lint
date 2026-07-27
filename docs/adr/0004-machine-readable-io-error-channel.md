@@ -1,7 +1,6 @@
 # 0004. Machine-readable IO-error channel
 
-Status: Accepted
-Date: 2026-07-06
+Status: Accepted Date: 2026-07-06
 
 ## Context
 
@@ -34,8 +33,7 @@ Each IO error has:
 
 `ioErrors` is always emitted and is empty when no input read failed.
 `summary.files` continues to count readable files that were checked.
-`summary.filesSkipped` counts unreadable input files represented in
-`ioErrors`.
+`summary.filesSkipped` counts unreadable input files represented in `ioErrors`.
 
 The command-line interface keeps emitting the existing stderr line for each
 read failure. Text report footers also mention skipped files, including

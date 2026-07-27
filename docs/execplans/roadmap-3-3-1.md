@@ -1,9 +1,8 @@
 # Implement optional configuration loading (include, exclude, strictness, rule severities)
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -41,8 +40,8 @@ and run `odw-lint check <paths>` so that:
    promotion mechanism delivered by roadmap task 3.1.3
    (`promoteStrictClaudeSeverity` /
    `lintWorkflowSource(source, { strictClaude: true })`), so a workflow whose
-   only findings are Claude-compatibility warnings then reports errors and exits
-   non-zero.
+   only findings are Claude-compatibility warnings then reports errors and
+   exits non-zero.
 4. A `rules` entry overrides a rule's effective severity, and the special value
    `"off"` suppresses that rule's diagnostics entirely.
 
@@ -50,8 +49,8 @@ Observable success (the roadmap success criteria for 3.3.1):
 
 - Running `odw-lint check f.js --config bad.json`, where `bad.json` names an
   unknown rule identifier, exits 2 and prints a configuration error naming the
-  offending identifier. This is the "unknown rule identifiers fail configuration
-  validation" criterion.
+  offending identifier. This is the "unknown rule identifiers fail
+  configuration validation" criterion.
 - Running `odw-lint check claude-warn.js --config strict.json`, where
   `strict.json` sets `"strictClaude": true`, produces error-severity
   Claude-compatibility diagnostics and exits 1, whereas the same file without
@@ -71,14 +70,13 @@ rejected correctly. Their glob-based application — directory discovery when no
 paths are passed, and exclusion filtering — is deferred. The developers' guide
 already records that "configured discovery, glob expansion" and the wider
 Ruff-compatible flag surface "remain deferred"
-([docs/developers-guide.md](../developers-guide.md), "JSON output …" paragraph),
-and file discovery is owned by roadmap task 2.4.4 and phase 4. Building
-directory traversal and `.gitignore` handling here would duplicate that surface
-and break this task's atomicity. See the Decision Log entry "Validate
-include/exclude now, apply during discovery later".
+([docs/developers-guide.md](../developers-guide.md), "JSON output …"
+paragraph), and file discovery is owned by roadmap task 2.4.4 and phase 4.
+Building directory traversal and `.gitignore` handling here would duplicate
+that surface and break this task's atomicity. See the Decision Log entry
+"Validate include/exclude now, apply during discovery later".
 
-The following are explicitly out of scope and deferred, each with a cited
-owner:
+The following are explicitly out of scope and deferred, each with a cited owner:
 
 - The `--strict-claude` CLI flag, and any CLI flag that competes with a
   configuration key: owned by roadmap task 2.4.4
@@ -86,9 +84,9 @@ owner:
   [docs/developers-guide.md](../developers-guide.md) records the flag as owned
   by roadmap 2.4). This task feeds `strictClaude` through configuration only.
 - The `--config "key = value"` inline override form
-  ([technical-design.md](../technical-design.md) §10): its inline
-  key/value grammar is separable from file loading and is deferred to the CLI
-  flag task. In this task `--config` takes a file path only.
+  ([technical-design.md](../technical-design.md) §10): its inline key/value
+  grammar is separable from file loading and is deferred to the CLI flag task.
+  In this task `--config` takes a file path only.
 - `--exclude`, `--extend-exclude`, `--force-exclude`, `--respect-gitignore`,
   `--no-respect-gitignore`, and `--stdin-filename`
   ([technical-design.md](../technical-design.md) §7.2): part of the deferred
@@ -117,14 +115,15 @@ owner:
   ([src/diagnostics/rule-id.ts](../../src/diagnostics/rule-id.ts)).
 - CLI flags override configuration, unknown rule identifiers are errors, unknown
   configuration keys are pre-1.0 warnings, and `--isolated` disables
-  configuration-file discovery
-  ([technical-design.md](../technical-design.md) §10). No configuration key may
-  weaken exit-code policy ([technical-design.md](../technical-design.md) §7.4).
+  configuration-file discovery ([technical-design.md](../technical-design.md)
+  §10). No configuration key may weaken exit-code policy
+  ([technical-design.md](../technical-design.md) §7.4).
 - Reuse the existing catalogue and severity vocabularies: rule identifiers come
   from `RULE_IDS` / `parseRuleId`
   ([src/diagnostics/rule-catalogue.ts](../../src/diagnostics/rule-catalogue.ts),
-  [src/diagnostics/rule-id.ts](../../src/diagnostics/rule-id.ts)) and severities
-  from `DIAGNOSTIC_SEVERITIES`
+
+  [src/diagnostics/rule-id.ts](../../src/diagnostics/rule-id.ts)) and
+  severities from `DIAGNOSTIC_SEVERITIES`
   ([src/diagnostics/severity.ts](../../src/diagnostics/severity.ts)). The
   configuration `off` value is the only severity-like token not already in
   `DIAGNOSTIC_SEVERITIES`; model it explicitly rather than mutating the shared
@@ -143,7 +142,8 @@ owner:
   and the package-entry module-specifier list
   `EXPECTED_PACKAGE_ENTRY_MODULE_SPECIFIERS`
   ([tests/diagnostics/architecture-fixtures.ts](../../tests/diagnostics/architecture-fixtures.ts),
-  asserted by [tests/diagnostics/package-entry.test.ts](../../tests/diagnostics/package-entry.test.ts)).
+  asserted by
+  [tests/diagnostics/package-entry.test.ts](../../tests/diagnostics/package-entry.test.ts)).
 - Prose and comments use en-GB Oxford spelling ("-ize"/"-yse"/"-our").
 
 ## Tolerances (exception triggers)
@@ -151,8 +151,8 @@ owner:
 - Scope: if any single work item needs to change more than 6 source/test files
   or more than roughly 400 net lines, stop and escalate.
 - Interface: if a public interface already exported from
-  [src/index.ts](../../src/index.ts) must change signature (as opposed to gaining
-  new exports), stop and escalate.
+  [src/index.ts](../../src/index.ts) must change signature (as opposed to
+  gaining new exports), stop and escalate.
 - Dependencies: if any work item appears to require a new runtime dependency
   (for example a glob or schema library), stop and escalate — the plan is
   designed to need none.
@@ -169,14 +169,14 @@ owner:
   `--isolated` regresses the existing "unknown option" and usage handling.
   Severity: medium. Likelihood: medium. Mitigation: keep the existing
   positional-path and usage tests green; add flag tests before the parser
-  change (WI-4 red step); the parser stays a pure function over `readonly
-  string[]`.
+  change (WI-4 red step); the parser stays a pure function over
+  `readonly string[]`.
 - Risk: default configuration discovery introduces working-directory-dependent
   behaviour that makes existing CLI tests flaky. Severity: medium. Likelihood:
   medium. Mitigation: make the config reader a fully injected seam (mirroring
   `ReadFileText` in
-  [src/cli/read-workflow-source.ts](../../src/cli/read-workflow-source.ts)); the
-  default lookup only runs through that seam, so tests inject a reader that
+  [src/cli/read-workflow-source.ts](../../src/cli/read-workflow-source.ts));
+  the default lookup only runs through that seam, so tests inject a reader that
   reports "no default config" and existing behaviour is unchanged.
 - Risk: config severity application and strict-Claude promotion interact in a
   surprising order (for example a rule set to `warning` under
@@ -198,8 +198,10 @@ owner:
 ## Progress
 
 - [x] WI-1: Add the configuration schema and validator
-- [x] WI-2: Apply configured rule severities and `off` suppression to diagnostics
-- [x] WI-3: Add the configuration file loader with default discovery and isolation
+- [x] WI-2: Apply configured rule severities and `off` suppression to
+      diagnostics
+- [x] WI-3: Add the configuration file loader with default discovery and
+      isolation
 - [x] WI-4: Wire `--config` and `--isolated` into the `check` command
 
 2026-07-06: WI-1 implemented in `src/config/linter-config.ts` with public
@@ -215,27 +217,28 @@ updated export-surface fixtures, added unit/property coverage in
 `tests/config/apply-config-severities.test.ts`, and documented the
 severity-then-strict-Claude ordering in the developers' guide. Red evidence:
 `bun test tests/config/apply-config-severities.test.ts` failed before the
-production export existed with `Export named 'applyConfiguredRuleSeverities'
-not found`. Green/refactor evidence: the focused test passed with `7 pass, 0
-fail`; the package-entry/public-surface focused suite passed with `28 pass, 0
-fail`; delegated deterministic gates passed: `make all`, `make markdownlint`,
-and `make nixie`.
+production export existed with
+`Export named 'applyConfiguredRuleSeverities' not found`. Green/refactor
+evidence: the focused test passed with `7 pass, 0 fail`; the
+package-entry/public-surface focused suite passed with `28 pass, 0 fail`;
+delegated deterministic gates passed: `make all`, `make markdownlint`, and
+`make nixie`.
 
-2026-07-06: WI-3 implemented `loadLinterConfig` in
-`src/config/load-config.ts` with `DEFAULT_CONFIG_FILENAME`, explicit-path
-loading, optional default discovery, `--isolated` semantics, project-owned
-read/parse/validation errors, and an injected reader seam. It exported the
-loader and load-result types through `src/index.ts`, updated the public export
-and package-entry fixtures, and added `tests/config/load-config.test.ts` for
-explicit config loading, default discovery, malformed JSON, validation errors,
-missing-file handling, and isolation. Red evidence:
-`bun test tests/config/load-config.test.ts` failed before the production export
-existed with `Export named 'DEFAULT_CONFIG_FILENAME' not found`. Green/refactor
-evidence: the focused loader suite passed with `9 pass, 0 fail`; the
- package-entry/public-surface suite passed with `21 pass, 0 fail`; delegated
- deterministic `make all` passed with `1294 pass, 0 fail`; after the ExecPlan
- update, delegated final gates `make all`, `make markdownlint`, and `make nixie`
- passed.
+2026-07-06: WI-3 implemented `loadLinterConfig` in `src/config/load-config.ts`
+with `DEFAULT_CONFIG_FILENAME`, explicit-path loading, optional default
+discovery, `--isolated` semantics, project-owned read/parse/validation errors,
+and an injected reader seam. It exported the loader and load-result types
+through `src/index.ts`, updated the public export and package-entry fixtures,
+and added `tests/config/load-config.test.ts` for explicit config loading,
+default discovery, malformed JSON, validation errors, missing-file handling,
+and isolation. Red evidence: `bun test tests/config/load-config.test.ts` failed
+before the production export existed with
+`Export named 'DEFAULT_CONFIG_FILENAME' not found`. Green/refactor evidence:
+the focused loader suite passed with `9 pass, 0 fail`; the
+package-entry/public-surface suite passed with `21 pass, 0 fail`; delegated
+deterministic `make all` passed with `1294 pass, 0 fail`; after the ExecPlan
+update, delegated final gates `make all`, `make markdownlint`, and `make nixie`
+passed.
 
 2026-07-06: WI-4 wired `--config` and `--isolated` through
 `src/cli/check-cli.ts`, threaded the resolved `LinterConfig` into
@@ -244,101 +247,97 @@ promotion, added CLI-level configuration coverage in
 `tests/cli/check-cli-config.test.ts`, extended `tests/cli/run-check.test.ts`
 for the direct ordering contract, and documented the CLI flags and deferrals in
 the developers' guide. Red evidence:
-`bun test tests/cli/check-cli-config.test.ts` failed with `unknown option:
---config` before the CLI wiring existed, and
+`bun test tests/cli/check-cli-config.test.ts` failed with
+`unknown option: --config` before the CLI wiring existed, and
 `bun test tests/cli/run-check.test.ts` failed because the supplied config did
 not affect summary severities or `off` suppression. Green/refactor evidence:
 `bun test tests/cli/check-cli-config.test.ts tests/cli/run-check.test.ts
-tests/cli/check-cli.test.ts` passed with `26 pass, 0 fail`; manual CLI checks
-showed strict config exiting 1 with an error-severity `odw/no-date-now`
-diagnostic and an unknown configured rule exiting 2 while naming
-`odw/not-a-real-rule`; delegated deterministic gates passed: `make all` with
-`1304 pass, 0 fail`, `make check-fmt`, `make typecheck`, `make lint`,
-`make test` with `1304 pass, 0 fail`, `make markdownlint` with `0 error(s)`,
-and `make nixie`.
+tests/cli/check-cli.test.ts`
+passed with `26 pass, 0 fail`; manual CLI checks showed strict config exiting
+1 with an error-severity `odw/no-date-now` diagnostic and an unknown configured
+rule exiting 2 while naming `odw/not-a-real-rule`; delegated deterministic
+gates passed: `make all` with `1304 pass, 0 fail`, `make check-fmt`,
+`make typecheck`, `make lint`, `make test` with `1304 pass, 0 fail`,
+`make markdownlint` with `0 error(s)`, and `make nixie`.
 
 ## Surprises & discoveries
 
-- Observation: `grepai search --workspace 'Projects' --project 'odw-lint'
-  "existing configuration schema parser rule severity validation include
-  exclude strictClaude" --toon --compact` found only prior planning/document
+- Observation:
+  `grepai search --workspace 'Projects' --project 'odw-lint'`
+  `"existing configuration schema parser rule severity validation include`
+  `exclude strictClaude" --toon --compact` found only prior planning/document
   hits and no implementation helper to reuse. Branch-local `leta` and file
   inspection confirmed the existing reusable surfaces were the rule catalogue,
-  `parseRuleId`, and `DIAGNOSTIC_SEVERITIES`.
-  Impact: WI-1 added a new colocated `src/config/linter-config.ts` validator
-  rather than adapting an existing configuration parser.
+  `parseRuleId`, and `DIAGNOSTIC_SEVERITIES`. Impact: WI-1 added a new colocated
+  `src/config/linter-config.ts` validator rather than adapting an existing
+  configuration parser.
 - Observation: the documentation contents freshness test requires every
-  current ExecPlan to be listed in `docs/contents.md`.
-  Evidence: the first delegated `make test` run failed in
+  current ExecPlan to be listed in `docs/contents.md`. Evidence: the first
+  delegated `make test` run failed in
   `tests/build-gate/documentation-contents.test.ts` until
-  `execplans/roadmap-3-3-1.md` was added to the contents index.
-  Impact: WI-1 includes the contents-index update alongside the other
-  documentation updates, because the repository gate treats that index as part
-  of the documentation contract.
+  `execplans/roadmap-3-3-1.md` was added to the contents index. Impact: WI-1
+  includes the contents-index update alongside the other documentation updates,
+  because the repository gate treats that index as part of the documentation
+  contract.
 - Observation: the `--strict-claude` CLI flag from roadmap 3.1.3 was never
   wired into the CLI; 3.1.3 delivered only the library transform and the
-  `lintWorkflowSource` option.
-  Evidence: `grep -rn "strict-claude" src` finds the transform, the
-  `lintWorkflowSource` option, and documentation only; `parseCheckArgs` rejects
-  every argument beginning with `-`
-  ([src/cli/check-cli.ts](../../src/cli/check-cli.ts)).
-  Impact: this task feeds `strictClaude` through configuration (as the
-  developers' guide assigns to roadmap 3.3), and the CLI flag remains owned by
-  roadmap 2.4.4. No conflict.
+  `lintWorkflowSource` option. Evidence: `grep -rn "strict-claude" src` finds
+  the transform, the `lintWorkflowSource` option, and documentation only;
+  `parseCheckArgs` rejects every argument beginning with `-`
+  ([src/cli/check-cli.ts](../../src/cli/check-cli.ts)). Impact: this task feeds
+  `strictClaude` through configuration (as the developers' guide assigns to
+  roadmap 3.3), and the CLI flag remains owned by roadmap 2.4.4. No conflict.
 - Observation: there is no existing configuration, glob, or discovery code in
   `src/`, and the repository uses `fast-check` for property tests but has not
-  adopted `@aboviq/bun-test-cucumber` or any `.feature` files.
-  Evidence: `find src tests` shows no `config/` directory and no `*.feature`
-  files; `fast-check` is a devDependency in
-  [package.json](../../package.json).
+  adopted `@aboviq/bun-test-cucumber` or any `.feature` files. Evidence:
+  `find src tests` shows no `config/` directory and no `*.feature` files;
+  `fast-check` is a devDependency in [package.json](../../package.json).
   Impact: behavioural coverage uses the existing CLI-level e2e test style
   (`tests/cli/*.e2e.test.ts`) driving `runCheckCli` through injected seams,
   rather than introducing a new Cucumber harness.
 - Observation: WI-3's first delegated gates caught implementation-quality
   issues before the final green run: Biome export/import ordering, then Oxlint
   complexity in `loadLinterConfig`, then a test-only TypeScript generic on
-  `expect.objectContaining`.
-  Evidence: delegated `make all` failed first in `check-fmt`, then
-  `lint:oxlint`, then `typecheck`; after local fixes, delegated `make all`
-  passed.
-  Impact: the final loader keeps discovery and explicit-file loading in small
-  helpers, and the public entry/test imports stay sorted by the repository's
-  formatter and lint rules.
-- Observation: WI-4's first `grepai search --workspace 'Projects' --project
-  'odw-lint' "check command config isolated configuration loading include
-  exclude CLI options" --toon --compact` returned no implementation hits for
-  the branch-local wiring, and branch-local `leta refs` failed with `EOF while
-  parsing a value at line 1 column 0` after `leta show` and `leta files`
-  succeeded.
-  Evidence: implementation proceeded from `leta show parseCheckArgs`,
-  `leta show runCheck`, `leta show applyConfiguredRuleSeverities`,
+  `expect.objectContaining`. Evidence: delegated `make all` failed first in
+  `check-fmt`, then `lint:oxlint`, then `typecheck`; after local fixes,
+  delegated `make all` passed. Impact: the final loader keeps discovery and
+  explicit-file loading in small helpers, and the public entry/test imports
+  stay sorted by the repository's formatter and lint rules.
+- Observation: WI-4's first
+  `grepai search --workspace 'Projects' --project 'odw-lint'`
+  `"check command config isolated configuration loading include exclude CLI`
+  `options" --toon --compact` returned no implementation hits for the
+  branch-local wiring, and branch-local `leta refs` failed with
+  `EOF while parsing a value at line 1 column 0` after `leta show` and
+  `leta files` succeeded. Evidence: implementation proceeded from
+  `leta show parseCheckArgs`, `leta show runCheck`,
+  `leta show applyConfiguredRuleSeverities`,
   `leta show promoteStrictClaudeSeverity`, `leta show loadLinterConfig`, and
-  targeted file inspection of the current worktree.
-  Impact: WI-4 recorded the tooling limitation and used bounded branch-local
-  file inspection for call-site verification; no implementation blocker was
-  added for the transient Leta reference-query failure.
+  targeted file inspection of the current worktree. Impact: WI-4 recorded the
+  tooling limitation and used bounded branch-local file inspection for
+  call-site verification; no implementation blocker was added for the transient
+  Leta reference-query failure.
 - Observation: WI-4's delegated gates caught two maintainability issues before
   the final green run: Biome import ordering and strict TypeScript narrowing,
-  then Oxlint complexity in `parseCheckArgs` and `runCheckCli`.
-  Evidence: delegated gates first failed `make all`, `make check-fmt`,
-  `make lint`, and `make typecheck`; after targeted fixes they failed only
-  `make all`/`make lint` for complexity; after helper extraction all delegated
-  gates passed.
-  Impact: the final CLI keeps token parsing, configuration loading, and request
-  construction in small private helpers while preserving the explicit-path
-  command behaviour.
+  then Oxlint complexity in `parseCheckArgs` and `runCheckCli`. Evidence:
+  delegated gates first failed `make all`, `make check-fmt`, `make lint`, and
+  `make typecheck`; after targeted fixes they failed only `make all`/
+  `make lint` for complexity; after helper extraction all delegated gates
+  passed. Impact: the final CLI keeps token parsing, configuration loading, and
+  request construction in small private helpers while preserving the
+  explicit-path command behaviour.
 
 ## Decision log
 
 - Decision: default configuration filename is `odw-lint.json`, discovered in the
   current working directory when neither `--config` nor `--isolated` is given.
-  Rationale: [technical-design.md](../technical-design.md) §10 states the config
-  file is optional and that `--isolated` disables discovery, but names no
-  default file; §7.2 lists discovery roots for workflow sources, not for the
+  Rationale: [technical-design.md](../technical-design.md) §10 states the
+  config file is optional and that `--isolated` disables discovery, but names
+  no default file; §7.2 lists discovery roots for workflow sources, not for the
   config file. `odw-lint.json` matches the package name and stays distinct from
-  the ODW-owned `odw.config.json` that §10 reserves for workflow-root discovery.
-  Recorded in the technical-design §10 and developers' guide updates (WI-1,
-  WI-4). Date/Author: 2026-07-06, planning agent.
+  the ODW-owned `odw.config.json` that §10 reserves for workflow-root
+  discovery. Recorded in the technical-design §10 and developers' guide updates
+  (WI-1, WI-4). Date/Author: 2026-07-06, planning agent.
 - Decision: validate `include`/`exclude` now, apply during discovery later.
   Rationale: the developers' guide already defers "configured discovery, glob
   expansion", file discovery is owned by roadmap 2.4.4 and phase 4, and the CLI
@@ -359,8 +358,8 @@ and `make nixie`.
   passing `strictClaude: true` there would promote *before* configured
   severities apply, reversing the mandated order; so this task deliberately
   never passes `strictClaude` to `lintWorkflowSource` and re-promotes in
-  `runCheck`. This is feasible because `promoteStrictClaudeSeverity` is exported
-  and operates on `readonly Diagnostic[]`
+  `runCheck`. This is feasible because `promoteStrictClaudeSeverity` is
+  exported and operates on `readonly Diagnostic[]`
   ([src/diagnostics/strict-claude.ts:34](../../src/diagnostics/strict-claude.ts)).
   There is no alternative/fallback ordering. Date/Author: 2026-07-06, planning
   agent (mechanism pinned in round 2 per design review).
@@ -370,16 +369,17 @@ and `make nixie`.
   which contradicts an explicit `--config` path. Date/Author: 2026-07-06,
   planning agent.
 - Decision: WI-2 followed the planned pure transform boundary without
-  deviations. Rationale: the validated `ReadonlyMap<RuleId,
-  ConfiguredRuleSeverity>` supplied by WI-1 is enough to apply overrides and
-  `off` suppression without catalogue lookup, workflow-source imports, or a
-  broader CLI refactor. Date/Author: 2026-07-06, implementation agent.
+  deviations. Rationale: the validated
+  `ReadonlyMap<RuleId, ConfiguredRuleSeverity>` supplied by WI-1 is enough to
+  apply overrides and `off` suppression without catalogue lookup,
+  workflow-source imports, or a broader CLI refactor. Date/Author: 2026-07-06,
+  implementation agent.
 - Decision: WI-3 followed the planned injected-reader boundary and replicated
   only the small filesystem error-code classifier needed to distinguish
-  optional default `ENOENT` from required explicit-file failures. Rationale: the
-  workflow-source read helpers are intentionally module-private, and exporting
-  them would be a separate refactor outside this work item. Date/Author:
-  2026-07-06, implementation agent.
+  optional default `ENOENT` from required explicit-file failures. Rationale:
+  the workflow-source read helpers are intentionally module-private, and
+  exporting them would be a separate refactor outside this work item.
+  Date/Author: 2026-07-06, implementation agent.
 - Decision: WI-4 followed the planned configuration composition path without
   passing `strictClaude` into `lintWorkflowSource`; `runCheck` now lints raw
   diagnostics, applies configured severities and `off` suppression, then
@@ -391,15 +391,15 @@ and `make nixie`.
 
 ## Outcomes & retrospective
 
-Roadmap task 3.3.1 is complete. The checker now accepts optional
-configuration through `odw-lint check --config <path>`, supports `--isolated`
-to disable configuration discovery, exits 2 for invalid or unreadable
-configuration, reports configuration warnings on standard error without
-blocking linting, applies configured rule severities including `off`
-suppression, and promotes Claude-compatibility warnings after configuration
-when `strictClaude` is true. The `include` and `exclude` keys remain validated
-but unapplied, as planned, until configured discovery and glob expansion land
-in their owning roadmap tasks.
+Roadmap task 3.3.1 is complete. The checker now accepts optional configuration
+through `odw-lint check --config <path>`, supports `--isolated` to disable
+configuration discovery, exits 2 for invalid or unreadable configuration,
+reports configuration warnings on standard error without blocking linting,
+applies configured rule severities including `off` suppression, and promotes
+Claude-compatibility warnings after configuration when `strictClaude` is true.
+The `include` and `exclude` keys remain validated but unapplied, as planned,
+until configured discovery and glob expansion land in their owning roadmap
+tasks.
 
 The implementation stayed within the no-new-dependency and file-size
 constraints. The main lesson from WI-4 is that the CLI parser and runner reach
@@ -439,10 +439,10 @@ small private helpers are the right default for future CLI flags.
 relevant modules today are:
 
 - [src/cli/check-cli.ts](../../src/cli/check-cli.ts) — argument parsing and
-  process-stream wiring for `odw-lint check`. `parseCheckArgs` currently accepts
-  only the literal subcommand `check` followed by one or more positional paths,
-  and rejects any argument beginning with `-` as an unknown option. `runCheckCli`
-  returns exit codes `0 | 1 | 2`.
+  process-stream wiring for `odw-lint check`. `parseCheckArgs` currently
+  accepts only the literal subcommand `check` followed by one or more
+  positional paths, and rejects any argument beginning with `-` as an unknown
+  option. `runCheckCli` returns exit codes `0 | 1 | 2`.
 - [src/cli/run-check.ts](../../src/cli/run-check.ts) — `runCheck(request)` reads
   each path via `readWorkflowSource`, lints readable sources with
   `lintWorkflowSource`, and aggregates a `DiagnosticReport`.
@@ -452,9 +452,9 @@ relevant modules today are:
   `ReadFileText` reader seam pattern (`(filePath: string) => string`) with a
   default `readFileSync` implementation, and structured read-failure shapes.
 - [src/static-analysis/workflow-lint.ts](../../src/static-analysis/workflow-lint.ts)
-  — `lintWorkflowSource(source, { strictClaude })` runs the static pipeline and,
-  when `strictClaude` is true, applies `promoteStrictClaudeSeverity` to the
-  merged `diagnostics` stream only.
+  — `lintWorkflowSource(source, { strictClaude })` runs the static pipeline
+  and, when `strictClaude` is true, applies `promoteStrictClaudeSeverity` to
+  the merged `diagnostics` stream only.
 - [src/diagnostics/strict-claude.ts](../../src/diagnostics/strict-claude.ts) —
   `promoteStrictClaudeSeverity` and `STRICT_CLAUDE_PROMOTION_POLICY`, the
   library mechanism this task's `strictClaude` key switches on.
@@ -467,14 +467,15 @@ relevant modules today are:
   `DIAGNOSTIC_SEVERITIES` tuple (`error`, `warning`, `info`, `hint`) and
   `DiagnosticSeverity`.
 - [src/diagnostics/types.ts](../../src/diagnostics/types.ts) — `Diagnostic`
-  (has `rule: RuleId` and `severity: DiagnosticSeverity`) and `DiagnosticReport`.
+  (has `rule: RuleId` and `severity: DiagnosticSeverity`) and
+  `DiagnosticReport`.
 - [src/index.ts](../../src/index.ts) — the single public export surface.
 
 Terms of art:
 
 - Configuration: a JSON object with optional keys `include`, `exclude`,
-  `strictClaude`, and `rules`
-  ([technical-design.md](../technical-design.md) §10).
+  `strictClaude`, and `rules` ([technical-design.md](../technical-design.md)
+  §10).
 - Rule severity setting: a `rules` map entry whose key is a catalogued rule
   identifier and whose value is a diagnostic severity or the string `"off"`
   (suppress the rule).
@@ -487,10 +488,10 @@ AGENTS.md) with matching `tests/config/`.
 ## Plan of work
 
 The work is four ordered, independently committable work items. WI-1 delivers
-the pure schema/validator; WI-2 and WI-3 build the two pure/seam-injected pieces
-that depend only on WI-1; WI-4 wires them into the CLI to produce the observable
-behaviour. Each work item follows Red-Green-Refactor and ends with the full
-gate.
+the pure schema/validator; WI-2 and WI-3 build the two pure/seam-injected
+pieces that depend only on WI-1; WI-4 wires them into the CLI to produce the
+observable behaviour. Each work item follows Red-Green-Refactor and ends with
+the full gate.
 
 ### WI-1: Add the configuration schema and validator
 
@@ -513,9 +514,11 @@ Create `src/config/linter-config.ts` exporting:
   `unknown-rule-id`, `invalid-rule-severity`) with a human message and, where
   relevant, the offending key/value; and a `ConfigValidationWarning` for
   `unknown-key`.
-- `validateLinterConfig(value: unknown): ConfigValidationResult`, a discriminated
-  result `{ ok: true; config: LinterConfig; warnings } | { ok: false; errors;
-  warnings }`. Rules:
+- `validateLinterConfig(value: unknown): ConfigValidationResult`, a
+  discriminated result
+  `{ ok: true; config: LinterConfig; warnings } | { ok: false; errors;
+  warnings }`.
+  Rules:
   - Non-object (or array/null) top-level → `not-an-object` error.
   - `include`/`exclude`: must be arrays of non-empty strings; otherwise an error
     naming the key (glob semantics are validated as string shape only, since
@@ -551,26 +554,27 @@ shape, the unknown-key-warning/unknown-rule-error policy, and the deferrals.
 
 Docs to read: [technical-design.md](../technical-design.md) §10; AGENTS.md
 "Runtime Validation & Types", "Error Handling", "Data shapes"; the
-`en-gb-oxendict` convention; [docs/documentation-style-guide.md](../documentation-style-guide.md)
-for the prose changes.
+`en-gb-oxendict` convention;
+[docs/documentation-style-guide.md](../documentation-style-guide.md) for the
+prose changes.
 
 Skills to load: `execplans` (this document), `leta` (navigate `RULE_IDS`,
 `parseRuleId`, `DIAGNOSTIC_SEVERITIES`, and their references before adding the
-new module), `biomejs` (formatting/lint expectations), `en-gb-oxendict` (prose).
-Use `grepai search` to confirm there is no pre-existing config/severity parser
-to reuse before writing one (AGENTS.md abstraction-sweep policy), then verify
-branch-locally with `leta`.
+new module), `biomejs` (formatting/lint expectations), `en-gb-oxendict`
+(prose). Use `grepai search` to confirm there is no pre-existing
+config/severity parser to reuse before writing one (AGENTS.md abstraction-sweep
+policy), then verify branch-locally with `leta`.
 
 Tests (add first, Red before Green) in `tests/config/linter-config.test.ts`:
 
 - Unit/table-driven: the canonical §10 example validates and yields the expected
   `LinterConfig` (rules map contains branded ids and severities); a config with
   an unknown rule id fails with an `unknown-rule-id` error naming the id; an
-  invalid severity value fails with `invalid-rule-severity`; `include`/`exclude`
-  wrong types (not an array, array with an empty or non-string element) fail;
-  `strictClaude` non-boolean fails; a non-object top level fails; a config with
-  an extra key yields an `unknown-key` warning and still validates; the empty
-  object `{}` validates to an empty config.
+  invalid severity value fails with `invalid-rule-severity`; `include`/
+  `exclude` wrong types (not an array, array with an empty or non-string
+  element) fail; `strictClaude` non-boolean fails; a non-object top level
+  fails; a config with an extra key yields an `unknown-key` warning and still
+  validates; the empty object `{}` validates to an empty config.
 - Property-based (`fast-check`, per AGENTS.md invariant-testing rule): for
   arbitrary objects containing only unknown keys, validation succeeds with one
   warning per unknown key and no errors; for arbitrary strings that are not in
@@ -615,8 +619,8 @@ Docs to read: [technical-design.md](../technical-design.md) §§9.2 and 10;
 [src/diagnostics/strict-claude.ts](../../src/diagnostics/strict-claude.ts) to
 mirror its immutable, frozen-copy style.
 
-Skills to load: `execplans`, `leta` (inspect `Diagnostic`, `promoteStrictClaudeSeverity`),
-`biomejs`.
+Skills to load: `execplans`, `leta` (inspect `Diagnostic`,
+`promoteStrictClaudeSeverity`), `biomejs`.
 
 Tests (Red first) in `tests/config/apply-config-severities.test.ts`:
 
@@ -638,8 +642,8 @@ developers' guide subsection is extended here; if it is, also run
 ### WI-3: Add the configuration file loader with default discovery and isolation
 
 Implements optional configuration loading and `--isolated`
-([technical-design.md](../technical-design.md) §§7.2 and 10), reusing the reader
-seam pattern from
+([technical-design.md](../technical-design.md) §§7.2 and 10), reusing the
+reader seam pattern from
 [src/cli/read-workflow-source.ts](../../src/cli/read-workflow-source.ts).
 
 Create `src/config/load-config.ts` exporting:
@@ -661,18 +665,19 @@ Create `src/config/load-config.ts` exporting:
     `cwd`; a "not found" read failure is treated as "ok, no config" (discovery
     is optional); any other read failure or a malformed/invalid file is a load
     error.
-- `ConfigLoadResult` is a discriminated union: `{ ok: true; config: LinterConfig;
-  warnings }` or `{ ok: false; error: ConfigLoadError }` where `ConfigLoadError`
-  carries a `kind` (`read-failed`, `parse-failed`, `invalid-config`,
-  `usage-error`) and a human message plus the underlying validation errors when
-  applicable. Distinguish "default file absent" (ok, no config) from "named file
-  absent" (error) by **replicating** the `ENOENT` classification approach in
+- `ConfigLoadResult` is a discriminated union:
+  `{ ok: true; config: LinterConfig; warnings }` or
+  `{ ok: false; error: ConfigLoadError }` where `ConfigLoadError` carries a
+  `kind` (`read-failed`, `parse-failed`, `invalid-config`, `usage-error`) and a
+  human message plus the underlying validation errors when applicable.
+  Distinguish "default file absent" (ok, no config) from "named file absent"
+  (error) by **replicating** the `ENOENT` classification approach in
   [src/cli/read-workflow-source.ts](../../src/cli/read-workflow-source.ts): its
   `errnoCodeFor`/`reasonForErrnoCode` helpers are module-private (no `export`),
   so WI-3 writes its own small equivalent classifier inside
   `src/config/load-config.ts` rather than importing those symbols. Do not
-  attempt to import the private helpers; if de-duplication is later wanted, that
-  is a separate refactor to export them, out of scope here.
+  attempt to import the private helpers; if de-duplication is later wanted,
+  that is a separate refactor to export them, out of scope here.
 
 Export `loadLinterConfig`, `DEFAULT_CONFIG_FILENAME`, and the load result/error
 types from [src/index.ts](../../src/index.ts), and add each to
@@ -684,9 +689,9 @@ plus the `src/config/load-config.ts` module specifier to
 so the export-surface and package-entry guards stay green.
 
 Docs to read: [technical-design.md](../technical-design.md) §§7.2, 7.4, and 10;
-[src/cli/read-workflow-source.ts](../../src/cli/read-workflow-source.ts) for the
-errno classification and seam idiom; AGENTS.md "Error Handling" (convert unknown
-thrown values to project-owned shapes at boundaries).
+[src/cli/read-workflow-source.ts](../../src/cli/read-workflow-source.ts)
+for the errno classification and seam idiom; AGENTS.md "Error Handling"
+(convert unknown thrown values to project-owned shapes at boundaries).
 
 Skills to load: `execplans`, `leta` (read `readWorkflowSource` and its private
 `errnoCodeFor`/`reasonForErrnoCode` helpers to replicate — not import — their
@@ -717,16 +722,17 @@ configuration through the CLI. Implements
 Changes:
 
 - Extend `parseCheckArgs` in
-  [src/cli/check-cli.ts](../../src/cli/check-cli.ts) to recognize `--config
-  <path>` (consuming the following token; missing value → usage error) and
-  `--isolated` (boolean), separating them from positional paths. Preserve the
-  existing rules: first token must be `check`; unknown `--…` options are usage
-  errors; at least one positional path is still required (include-driven
-  discovery is deferred). Both flags plus paths in any order should parse.
+  [src/cli/check-cli.ts](../../src/cli/check-cli.ts) to recognize
+  `--config <path>` (consuming the following token; missing value → usage
+  error) and `--isolated` (boolean), separating them from positional paths.
+  Preserve the existing rules: first token must be `check`; unknown `--…`
+  options are usage errors; at least one positional path is still required
+  (include-driven discovery is deferred). Both flags plus paths in any order
+  should parse.
 - In `runCheckCli`, after parsing, call `loadLinterConfig` (WI-3) with the
   parsed `configPath`/`isolated`, the process `cwd`, and — for tests — an
-  injectable `readConfigFile` seam added to `CheckCliIo`. On a load error, write
-  the error to standard error and return exit code 2 (matching
+  injectable `readConfigFile` seam added to `CheckCliIo`. On a load error,
+  write the error to standard error and return exit code 2 (matching
   [technical-design.md](../technical-design.md) §7.4: invalid configuration is
   exit 2). On success, write each validation warning to standard error and
   continue.
@@ -798,9 +804,9 @@ Tests (Red first):
   `runCheck` level, independent of the CLI parser — a Claude-compatibility rule
   set to `"warning"` in the config under `strictClaude: true` ends as `error`
   (configured severity applied, then promotion), and the same rule set to
-  `"off"` is absent from the report even under `strictClaude: true` (suppression
-  wins over promotion). This pins the mandated ordering directly on the compose
-  point.
+  `"off"` is absent from the report even under `strictClaude: true`
+  (suppression wins over promotion). This pins the mandated ordering directly
+  on the compose point.
 - `tests/cli/check-cli.test.ts` / `run-check.test.ts`: extend to prove existing
   no-config behaviour is unchanged (positional paths still lint; the injected
   default reader reports "no default config").
@@ -841,8 +847,8 @@ For each work item:
    bunx @biomejs/biome format --write <changed source and test files>
    ```
 
-   For Markdown files changed in the WI, run
-   `mdtablefix <changed>.md` then `markdownlint-cli2 --fix <changed>.md`.
+   For Markdown files changed in the WI, run `mdtablefix <changed>.md` then
+   `markdownlint-cli2 --fix <changed>.md`.
 6. Run the full gate and, for Markdown changes, the Markdown gates:
 
    ```plaintext
@@ -859,8 +865,9 @@ Deterministic commit gates for every work item: `make all` (which runs build,
 `check-fmt`, `whitespace-hygiene`, `lint`, `typecheck`, and `test` per the
 Makefile). For any work item that changes Markdown, additionally run
 `make markdownlint` and `make nixie`. AGENTS.md is authoritative: `make all`
-already aggregates the format/lint/typecheck/test gates for this repository, but
-the Markdown gates are separate targets and must be run when Markdown changes.
+already aggregates the format/lint/typecheck/test gates for this repository,
+but the Markdown gates are separate targets and must be run when Markdown
+changes.
 
 Red-Green-Refactor evidence must be recorded per work item in `Progress` and
 `Surprises & discoveries`:
@@ -885,16 +892,16 @@ with injected seams and via the manual commands above:
 
 Quality criteria for "done": all four work items committed on the task branch;
 every gate green at HEAD; new public symbols exported from
-[src/index.ts](../../src/index.ts) with the export-surface guard passing; no new
-runtime dependency; every touched code file within the 400-line limit.
+[src/index.ts](../../src/index.ts) with the export-surface guard passing; no
+new runtime dependency; every touched code file within the 400-line limit.
 
 ## Idempotence and recovery
 
 Each work item is an independent commit. Re-running any `make` target is safe.
 The configuration loader performs no writes; it only reads through an injected
 seam, so tests never touch the real filesystem and cannot leave residue. If a
-work item is interrupted mid-way, the `Progress` checklist records "done" versus
-"remaining" so a fresh agent can resume from the next unticked line.
+work item is interrupted mid-way, the `Progress` checklist records "done"
+versus "remaining" so a fresh agent can resume from the next unticked line.
 
 ## Interfaces and dependencies
 
@@ -959,16 +966,17 @@ Round 2 revision (2026-07-06): resolved the design reviewer's single blocking
 item and both advisories.
 
 - Blocking (WI-4 severity/promotion ordering): the previous draft named
-  "pass `strictClaude` to `lintWorkflowSource` then apply configured severities"
-  as the primary instruction with a "compose-then-promote" fallback. Verified
-  against [src/static-analysis/workflow-lint.ts:76-77](../../src/static-analysis/workflow-lint.ts)
-  that `lintWorkflowSource` promotes *inside* the call on raw stage diagnostics,
-  so that primary path applies configured severities *after* promotion —
-  reversing the Decision Log and failing the mandated "warning→error under
-  strict" case. Rewrote WI-4 to make the compose-then-promote sequence the
-  single primary (and only) instruction: `lintWorkflowSource` **without**
-  `strictClaude` → `applyConfiguredRuleSeverities` →
-  explicit `promoteStrictClaudeSeverity`
+  "pass `strictClaude` to `lintWorkflowSource` then apply configured
+  severities" as the primary instruction with a "compose-then-promote"
+  fallback. Verified against
+  [src/static-analysis/workflow-lint.ts:76-77](../../src/static-analysis/workflow-lint.ts)
+  that `lintWorkflowSource` promotes *inside* the call on raw stage
+  diagnostics, so that primary path applies configured severities *after*
+  promotion — reversing the Decision Log and failing the mandated
+  "warning→error under strict" case. Rewrote WI-4 to make the
+  compose-then-promote sequence the single primary (and only) instruction:
+  `lintWorkflowSource` **without** `strictClaude` →
+  `applyConfiguredRuleSeverities` → explicit `promoteStrictClaudeSeverity`
   ([src/diagnostics/strict-claude.ts:34](../../src/diagnostics/strict-claude.ts),
   exported, `readonly Diagnostic[]`). Deleted the contradictory first sentence
   and the false "promotion after WI-2's severities are baked in" claim; pinned

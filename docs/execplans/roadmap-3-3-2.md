@@ -1,9 +1,8 @@
 # Implement the `--max-warnings` warning-budget CLI flag
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -22,8 +21,8 @@ After this change a user can run:
 bun run src/cli/main.ts check --max-warnings 1 workflows/one-warning.js
 ```
 
-and observe exit code `0` when the run produces exactly one warning and no other
-findings, while:
+and observe exit code `0` when the run produces exactly one warning and no
+other findings, while:
 
 ```bash
 bun run src/cli/main.ts check --max-warnings 0 workflows/one-warning.js
@@ -62,9 +61,9 @@ Hard invariants that must hold throughout implementation.
 - Work exclusively inside the git worktree at
   `/data/leynos/Projects/odw-lint.worktrees/roadmap-3-3-2`. Never edit files in
   the root/control worktree.
-- Do not weaken the existing default policy. When `--max-warnings` is **absent**,
-  `checkDiagnosticsExitCode` must behave exactly as it does today (Ruff parity:
-  any diagnostic or read failure exits 1). Existing tests in
+- Do not weaken the existing default policy. When `--max-warnings` is
+  **absent**, `checkDiagnosticsExitCode` must behave exactly as it does today
+  (Ruff parity: any diagnostic or read failure exits 1). Existing tests in
   `tests/cli/run-check.test.ts` and `tests/cli/check-cli.test.ts` must keep
   passing unchanged.
 - The exit-code contract stays `0 | 1 | 2` (`CheckCliExitCode` in
@@ -78,8 +77,7 @@ Hard invariants that must hold throughout implementation.
   layers (import-policy architecture test in
   `tests/diagnostics/import-policy.test.ts`).
 - Prose, comments, and commit subjects use en-GB Oxford spelling
-  ("-ize"/"-yse"/"-our") per [AGENTS.md](../../AGENTS.md) and
-  `en-gb-oxendict`.
+  ("-ize"/"-yse"/"-our") per [AGENTS.md](../../AGENTS.md) and `en-gb-oxendict`.
 - Every new ExecPlan file under `docs/execplans/` must be linked from
   `docs/contents.md`, or `tests/build-gate/documentation-contents.test.ts`
   fails. This plan file is persisted first as the sole uncommitted path (the
@@ -107,24 +105,22 @@ Hard invariants that must hold throughout implementation.
 ## Risks
 
 - Risk: the "warnings within budget no longer fail" loosening could be read as
-  contradicting the §7.4 phrase "Diagnostics remain … exit 1".
-  Severity: medium. Likelihood: medium.
-  Mitigation: the Decision Log pins the ESLint-style budget interpretation and
-  cites the users-guide line ("`--max-warnings <n>` fails the run when warning
-  counts exceed the threshold") and §7.3 ("Exit non-zero when warning count
-  exceeds `n`"). Both are directional and only meaningful if the budget
-  loosens the default, since warnings already fail by default. WI-4 makes the
-  loosening explicit in the docs and reconciles the exit-code TABLE rows (not
-  just adjacent prose) in all three guides so no source-of-truth table asserts a
-  rule the shipped code no longer follows.
+  contradicting the §7.4 phrase "Diagnostics remain … exit 1". Severity:
+  medium. Likelihood: medium. Mitigation: the Decision Log pins the
+  ESLint-style budget interpretation and cites the users-guide line
+  ("`--max-warnings <n>` fails the run when warning counts exceed the
+  threshold") and §7.3 ("Exit non-zero when warning count exceeds `n`"). Both
+  are directional and only meaningful if the budget loosens the default, since
+  warnings already fail by default. WI-4 makes the loosening explicit in the
+  docs and reconciles the exit-code TABLE rows (not just adjacent prose) in all
+  three guides so no source-of-truth table asserts a rule the shipped code no
+  longer follows.
 - Risk: info/hint diagnostics interacting unexpectedly with the budget.
-  Severity: low. Likelihood: low.
-  Mitigation: the budget governs **warnings only**; every non-warning
-  diagnostic keeps failing the run. Covered by explicit table-driven cases in
-  WI-2.
+  Severity: low. Likelihood: low. Mitigation: the budget governs **warnings
+  only**; every non-warning diagnostic keeps failing the run. Covered by
+  explicit table-driven cases in WI-2.
 - Risk: argument-parser regressions (option ordering, `=` form, operand
-  detection) breaking existing flags.
-  Severity: low. Likelihood: low.
+  detection) breaking existing flags. Severity: low. Likelihood: low.
   Mitigation: mirror the existing `--output-format` / `--config` handling in
   `parseCheckOption`, and keep the full existing CLI test suite green.
 
@@ -154,8 +150,8 @@ Hard invariants that must hold throughout implementation.
   so the command runner stayed below the file-size limit and `parseCheckOption`
   stayed below the complexity limit; scrutineer reported `make check-fmt`,
   `make typecheck`, `make lint`, `make test`, and `make all` passed. Addendum
-  3.3.2.3 later removed the orphaned duplicate parser so `src/cli/check-args.ts`
-  remains the only live parser home.
+  3.3.2.3 later removed the orphaned duplicate parser so
+  `src/cli/check-args.ts` remains the only live parser home.
 - [x] (2026-07-06T08:20Z) WI-4: Document the `--max-warnings` warning-budget
   behaviour. Updated the developers guide, users guide, and technical design
   exit-code tables so the warning-budget exception is explicit, removed
@@ -168,122 +164,115 @@ Hard invariants that must hold throughout implementation.
 
 - Observation: The repository declares Gherkin/`@aboviq/bun-test-cucumber`
   behavioural tests in [AGENTS.md](../../AGENTS.md) §Testing, but no `.feature`
-  files exist and no cucumber runner is wired.
-  Evidence: `find . -name '*.feature'` returns nothing; no test imports
-  `bun-test-cucumber`.
-  Impact: the externally observable "behavioural" layer for this change is the
-  CLI-level integration tests in `tests/cli/check-cli.test.ts`, matching the
-  established pattern for `--output-format`, `--config`, and Ruff-parity exit
-  behaviour. This plan uses CLI integration tests plus a fast-check property
-  test rather than introducing new BDD infrastructure.
+  files exist and no cucumber runner is wired. Evidence:
+  `find . -name '*.feature'` returns nothing; no test imports
+  `bun-test-cucumber`. Impact: the externally observable "behavioural" layer
+  for this change is the CLI-level integration tests in
+  `tests/cli/check-cli.test.ts`, matching the established pattern for
+  `--output-format`, `--config`, and Ruff-parity exit behaviour. This plan uses
+  CLI integration tests plus a fast-check property test rather than introducing
+  new BDD infrastructure.
 - Observation: `--strict-claude` is **not** yet a parsed CLI flag; strict-Claude
   promotion is reached only through the `strictClaude` configuration key.
   Evidence: `src/cli/check-cli.ts` `parseCheckOption` handles only `--isolated`,
-  `--config`, and `--output-format`.
-  Impact: `--max-warnings` is the second user-facing policy flag after
-  `--output-format`/`--config`; its parsing must follow the same seam. No
-  dependency on a `--strict-claude` flag exists.
+  `--config`, and `--output-format`. Impact: `--max-warnings` is the second
+  user-facing policy flag after `--output-format`/`--config`; its parsing must
+  follow the same seam. No dependency on a `--strict-claude` flag exists.
 - Observation: The installed `mdtablefix` CLI uses `--in-place` rather than the
-  `--write` spelling shown in the original WI-1 validation snippet.
-  Evidence: `bunx mdtablefix --write docs/contents.md` exited 2 with
-  "unexpected argument '--write'", while the `--in-place` invocation exited 0.
-  Impact: WI-1 formatting still completed against only the touched Markdown
-  path. Future work items should use the installed CLI's `--in-place` spelling
-  unless the project wrapper changes.
+  `--write` spelling shown in the original WI-1 validation snippet. Evidence:
+  `bunx mdtablefix --write docs/contents.md` exited 2 with "unexpected argument
+  '--write'", while the `--in-place` invocation exited 0. Impact: WI-1
+  formatting still completed against only the touched Markdown path. Future
+  work items should use the installed CLI's `--in-place` spelling unless the
+  project wrapper changes.
 - Observation: Adding the user-facing parser cases in `src/cli/check-cli.ts`
   pushed that file over the repository's 400-line limit and raised
-  `parseCheckOption` above the Oxlint complexity threshold.
-  Evidence: scrutineer reported `src/cli/check-cli.ts` at 437 physical lines
-  and `parseCheckOption` complexity 12 where the limit is 8.
-  Impact: WI-3 needed a narrow parser-module extraction rather than keeping the
-  new option handling in the existing CLI orchestration file.
+  `parseCheckOption` above the Oxlint complexity threshold. Evidence:
+  scrutineer reported `src/cli/check-cli.ts` at 437 physical lines and
+  `parseCheckOption` complexity 12 where the limit is 8. Impact: WI-3 needed a
+  narrow parser-module extraction rather than keeping the new option handling
+  in the existing CLI orchestration file.
 
 ## Decision log
 
 - Decision: `--max-warnings n` implements an ESLint-style warning budget that
-  **loosens** the default for warnings only.
-  Semantics, evaluated on the final `report.summary` and `readFailures`:
+  **loosens** the default for warnings only. Semantics, evaluated on the final
+  `report.summary` and `readFailures`:
   1. If any read failure is present, exit 1.
   2. Else if any non-warning diagnostic is present (`errors + infos + hints >
      0`), exit 1.
   3. Else if `warnings > n`, exit 1.
   4. Else exit 0.
   When `--max-warnings` is absent, the existing Ruff-parity default is
-  unchanged: any diagnostic or read failure exits 1.
-  Rationale: warnings already fail by default, so a flag that only *added* a
-  failure condition would be a no-op and could never be observed. The
-  recognized meaning of `--max-warnings` (ESLint) is a tolerance budget, and it
-  is the only interpretation under which
-  [technical-design.md](../technical-design.md) §7.3 ("Exit non-zero when
-  warning count exceeds `n`") and [users-guide.md](../users-guide.md) ("fails
-  the run when warning counts exceed the threshold") describe observable
-  behaviour. This is a product design decision for odw-lint, not a locked
-  third-party API: ESLint is not a dependency, so the contract is pinned by the
-  tests in WI-2 and WI-3 rather than by an external symbol.
-  Date/Author: 2026-07-06, planning agent.
+  unchanged: any diagnostic or read failure exits 1. Rationale: warnings
+  already fail by default, so a flag that only *added* a failure condition
+  would be a no-op and could never be observed. The recognized meaning of
+  `--max-warnings` (ESLint) is a tolerance budget, and it is the only
+  interpretation under which [technical-design.md](../technical-design.md) §7.3
+  ("Exit non-zero when warning count exceeds `n`") and
+  [users-guide.md](../users-guide.md) ("fails the run when warning counts
+  exceed the threshold") describe observable behaviour. This is a product
+  design decision for odw-lint, not a locked third-party API: ESLint is not a
+  dependency, so the contract is pinned by the tests in WI-2 and WI-3 rather
+  than by an external symbol. Date/Author: 2026-07-06, planning agent.
 - Decision: `--max-warnings` value validation. The value must be a base-10
   non-negative integer. Missing value, a non-integer (`abc`, `1.5`, ``), or a
   negative value (`-1`) is a usage error that exits 2 with a stable message,
   consistent with how `--config` reports a missing value and `--output-format`
-  reports an unsupported value.
-  Rationale: keeps the flag unambiguous and matches the existing usage-error
-  posture (exit 2 for invalid CLI options, §7.4). ESLint's `-1 = unlimited`
-  sentinel is deliberately *not* adopted because absence of the flag already
-  expresses "no budget", and admitting negatives would create two ways to mean
-  the same thing.
-  Date/Author: 2026-07-06, planning agent.
+  reports an unsupported value. Rationale: keeps the flag unambiguous and
+  matches the existing usage-error posture (exit 2 for invalid CLI options,
+  §7.4). ESLint's `-1 = unlimited` sentinel is deliberately *not* adopted
+  because absence of the flag already expresses "no budget", and admitting
+  negatives would create two ways to mean the same thing. Date/Author:
+  2026-07-06, planning agent.
 - Decision: both `--max-warnings <n>` and `--max-warnings=<n>` spellings are
-  accepted, mirroring `--output-format` which already supports both.
-  Rationale: consistency across the flag surface; the split form is what CI
-  invocations most often use.
-  Date/Author: 2026-07-06, planning agent.
+  accepted, mirroring `--output-format` which already supports both. Rationale:
+  consistency across the flag surface; the split form is what CI invocations
+  most often use. Date/Author: 2026-07-06, planning agent.
 - Decision: the budget threshold is threaded from the CLI into
   `checkDiagnosticsExitCode` as an optional policy argument rather than through
-  `CheckRequest`/`CheckOutcome`.
-  Rationale: `--max-warnings` is a presentation/exit-policy concern, not a
-  static-analysis input. `run-check.ts` already owns the exit-code decision, so
-  the smallest correct change is an optional policy parameter on the existing
-  decision function. `runCheck` itself stays unaware of the budget.
-  Date/Author: 2026-07-06, planning agent.
+  `CheckRequest`/`CheckOutcome`. Rationale: `--max-warnings` is a
+  presentation/exit-policy concern, not a static-analysis input. `run-check.ts`
+  already owns the exit-code decision, so the smallest correct change is an
+  optional policy parameter on the existing decision function. `runCheck`
+  itself stays unaware of the budget. Date/Author: 2026-07-06, planning agent.
 - Decision: WI-1 added only the `docs/contents.md` ExecPlan entry and left all
-  CLI, exit-policy, and user-guide behaviour untouched.
-  Rationale: the work item exists solely to satisfy the documentation-contents
-  durability gate before implementation begins. Keeping it isolated preserves
-  the next work item's Red-Green-Refactor surface.
-  Date/Author: 2026-07-06T07:50Z, implementation agent.
+  CLI, exit-policy, and user-guide behaviour untouched. Rationale: the work
+  item exists solely to satisfy the documentation-contents durability gate
+  before implementation begins. Keeping it isolated preserves the next work
+  item's Red-Green-Refactor surface. Date/Author: 2026-07-06T07:50Z,
+  implementation agent.
 - Decision: WI-2 kept the warning-budget implementation at the pure
   `checkDiagnosticsExitCode` decision layer and did not parse or wire the CLI
-  flag.
-  Rationale: this preserves the work-item boundary. The optional
+  flag. Rationale: this preserves the work-item boundary. The optional
   `CheckExitPolicy` makes the next work item a straightforward parser/wiring
   change while preserving default Ruff-parity behaviour for all existing
-  callers that omit the policy argument.
-  Date/Author: 2026-07-06T07:57Z, implementation agent.
+  callers that omit the policy argument. Date/Author: 2026-07-06T07:57Z,
+  implementation agent.
 - Decision: WI-3 moved argument parsing out of `src/cli/check-cli.ts` while
   leaving report writing, configuration loading, and process-exit orchestration
   in `src/cli/check-cli.ts`. The maintained parser home is now
   `src/cli/check-args.ts`; addendum 3.3.2.3 deletes the unwired
-  `src/cli/check-cli-args.ts` duplicate.
-  Rationale: the extraction was the smallest way to satisfy the existing
-  file-size and complexity gates after adding `--max-warnings`, without moving
-  analysis, configuration, or reporting responsibilities.
-  Date/Author: 2026-07-06T08:14Z, implementation agent.
+  `src/cli/check-cli-args.ts` duplicate. Rationale: the extraction was the
+  smallest way to satisfy the existing file-size and complexity gates after
+  adding `--max-warnings`, without moving analysis, configuration, or reporting
+  responsibilities. Date/Author: 2026-07-06T08:14Z, implementation agent.
 - Decision: WI-4 corrected the source-of-truth documentation tables rather than
-  adding only adjacent explanatory prose.
-  Rationale: the shipped warning-budget behaviour changes which warning-only
-  runs exit 0, so stale exit-code rows would contradict the implemented CLI
-  contract even if nearby prose were accurate.
-  Date/Author: 2026-07-06T08:20Z, implementation agent.
+  adding only adjacent explanatory prose. Rationale: the shipped warning-budget
+  behaviour changes which warning-only runs exit 0, so stale exit-code rows
+  would contradict the implemented CLI contract even if nearby prose were
+  accurate. Date/Author: 2026-07-06T08:20Z, implementation agent.
 
 ## Outcomes & retrospective
 
-Roadmap task 3.3.2 is complete. The CLI now parses `--max-warnings`, applies the
-warning budget at the exit-policy layer, keeps default Ruff-parity behaviour
-when the flag is absent, and documents the warning-budget exception in the
-developers guide, users guide, and technical design. The implementation matches
-the four-case semantics in the Decision Log: read failures fail, non-warning
-diagnostics fail, warnings fail only when they exceed the supplied budget, and
-the no-policy call preserves the original "any diagnostic fails" rule.
+Roadmap task 3.3.2 is complete. The CLI now parses `--max-warnings`, applies
+the warning budget at the exit-policy layer, keeps default Ruff-parity
+behaviour when the flag is absent, and documents the warning-budget exception
+in the developers guide, users guide, and technical design. The implementation
+matches the four-case semantics in the Decision Log: read failures fail,
+non-warning diagnostics fail, warnings fail only when they exceed the supplied
+budget, and the no-policy call preserves the original "any diagnostic fails"
+rule.
 
 ## Addenda
 
@@ -373,10 +362,11 @@ persisted first by the workflow host as the sole uncommitted path; this work
 item is the first build step and adds the index entry so every subsequent work
 item's `make all` sees a linked ExecPlan.
 
-Docs to read: [documentation-style-guide.md](../documentation-style-guide.md);
-[AGENTS.md](../../AGENTS.md) §Documentation Maintenance; the existing
-`docs/contents.md` ExecPlan list for the exact entry style and ordering.
-Skills to load: `en-gb-oxendict` for spelling.
+Docs to read:
+[documentation-style-guide.md](../documentation-style-guide.md); [AGENTS.md](../../AGENTS.md)
+§Documentation Maintenance; the existing `docs/contents.md` ExecPlan list for
+the exact entry style and ordering. Skills to load: `en-gb-oxendict` for
+spelling.
 
 Red: run the documentation-contents gate before the edit and confirm it fails
 because the committed plan file is not yet linked:
@@ -454,8 +444,8 @@ Expect the new cases to fail (the second parameter is ignored today).
 Also extend the existing fast-check property "exits 1 exactly when diagnostics
 or read failures remain" or add a sibling property: for a generated warning
 count `w` (built from `w` warning-fixture copies) and a generated budget `n`,
-with no errors/read failures, `checkDiagnosticsExitCode(outcome, { maxWarnings:
-n })` is `1` iff `w > n`.
+with no errors/read failures,
+`checkDiagnosticsExitCode(outcome, { maxWarnings: n })` is `1` iff `w > n`.
 
 Green: in `src/cli/run-check.ts`, add an exported policy type and extend the
 decision function:
@@ -488,9 +478,9 @@ export const checkDiagnosticsExitCode = (
 
 Keep or fold `hasRemainingCheckFindings` as appropriate; the default branch
 (`policy.maxWarnings === undefined`) must remain behaviourally identical to the
-current `hasRemainingCheckFindings`-based logic. Update the function doc comment
-to describe the budget branch. Re-run `bun test tests/cli/run-check.test.ts`
-and expect all cases to pass.
+current `hasRemainingCheckFindings`-based logic. Update the function doc
+comment to describe the budget branch. Re-run
+`bun test tests/cli/run-check.test.ts` and expect all cases to pass.
 
 Refactor: ensure naming and comment density match the surrounding module. Run
 the full gate.
@@ -502,23 +492,23 @@ Validation (WI-2): `make all`.
 
 ### WI-3: Parse and wire the `--max-warnings` flag through the check CLI
 
-Implements the user-facing flag from [technical-design.md](../technical-design.md)
-§7.3, wiring the parsed budget into `runCheckCli`.
+Implements the user-facing flag from
+[technical-design.md](../technical-design.md) §7.3, wiring the parsed budget
+into `runCheckCli`.
 
 Docs to read: [technical-design.md](../technical-design.md) §7.3 and §7.4;
 existing `parseCheckOption` handling of `--config` (required value) and
-`--output-format` (space and `=` forms) in `src/cli/check-cli.ts`.
-Skills to load: [AGENTS.md](../../AGENTS.md) §TypeScript Guidance (exact
-optional property types, discriminated results). No Python verification skills
-apply.
+`--output-format` (space and `=` forms) in `src/cli/check-cli.ts`. Skills to
+load: [AGENTS.md](../../AGENTS.md) §TypeScript Guidance (exact optional
+property types, discriminated results). No Python verification skills apply.
 
 Red: in `tests/cli/check-cli.test.ts`, add CLI-level cases using the injected
 reader/writer harness (`runCapturedCheckCli`) and the existing `warningFixture`,
 `errorFixture`, and `cleanFixture` helpers:
 
 1. `["check", "--max-warnings", "1", warning.filePath]` → exit 0, warning text
-   still printed on stdout (diagnostics are reported even when tolerated), empty
-   stderr.
+   still printed on stdout (diagnostics are reported even when tolerated),
+   empty stderr.
 2. `["check", "--max-warnings", "0", warning.filePath]` → exit 1.
 3. `["check", "--max-warnings=1", warning.filePath]` → exit 0 (split form).
 4. `["check", "--max-warnings", "5", error.filePath]` → exit 1 (error ignores
@@ -532,9 +522,9 @@ reader/writer harness (`runCapturedCheckCli`) and the existing `warningFixture`,
    `invalid value for --max-warnings: 1.5`.
 
 Decide the two stable usage-error strings (`missing value for --max-warnings`
-and `invalid value for --max-warnings: <value>`) and assert them exactly, in the
-style of the existing `missing value for --config` and `unsupported output
-format: <value>` messages. Run:
+and `invalid value for --max-warnings: <value>`) and assert them exactly, in
+the style of the existing `missing value for --config` and
+`unsupported output format: <value>` messages. Run:
 
 ```bash
 cd /data/leynos/Projects/odw-lint.worktrees/roadmap-3-3-2
@@ -577,13 +567,13 @@ Validation (WI-3): `make all`.
 
 ### WI-4: Document the `--max-warnings` warning-budget behaviour
 
-Aligns the guides with the shipped behaviour per
-[AGENTS.md](../../AGENTS.md) §Documentation Maintenance.
+Aligns the guides with the shipped behaviour per [AGENTS.md](../../AGENTS.md)
+§Documentation Maintenance.
 
 Because `docs/` is the source of truth and WI-2/WI-3 deliberately **loosen** a
 contract that these guides' exit-code TABLES encode, this work item must
-reconcile the table rows themselves, not merely the surrounding prose. Leaving a
-table row that asserts a rule the shipped code no longer follows is a
+reconcile the table rows themselves, not merely the surrounding prose. Leaving
+a table row that asserts a rule the shipped code no longer follows is a
 design-conformance defect. The three tables to correct are:
 [developers-guide.md](../developers-guide.md) exit-code table (rows for code 0
 and code 1), [users-guide.md](../users-guide.md) `## Exit codes` table (code-0
@@ -592,9 +582,9 @@ row), and [technical-design.md](../technical-design.md) §7.4 exit-code table
 
 Docs to read: [developers-guide.md](../developers-guide.md) lines around the
 deferred-flag paragraph (line 54) and the exit-code table (lines 46–50);
-[users-guide.md](../users-guide.md) flag list and `## Exit codes` table
-(lines 68–74); [technical-design.md](../technical-design.md) §7.3 flag table
-(the `--max-warnings <n>` row) and §7.4 exit-code table (lines 312–322);
+[users-guide.md](../users-guide.md) flag list and `## Exit codes` table (lines
+68–74); [technical-design.md](../technical-design.md) §7.3 flag table (the
+`--max-warnings <n>` row) and §7.4 exit-code table (lines 312–322);
 [documentation-style-guide.md](../documentation-style-guide.md);
 `en-gb-oxendict` skill for spelling.
 
@@ -648,10 +638,10 @@ gates. This work item does not add or remove any `docs/execplans/*.md` file, so
 `docs/contents.md` needs no change here (the plan's index entry was added in
 WI-1).
 
-Tests added/updated (WI-4): none required; `tests/build-gate/documentation-
-contents.test.ts` continues to pass because no ExecPlan/issue file is
-added or removed in this work item. If any doc-contents assertion regresses,
-treat it as a red signal and reconcile `docs/contents.md`.
+Tests added/updated (WI-4): none required;
+`tests/build-gate/documentation- contents.test.ts` continues to pass because no
+ExecPlan/issue file is added or removed in this work item. If any doc-contents
+assertion regresses, treat it as a red signal and reconcile `docs/contents.md`.
 
 Validation (WI-4): all three Markdown files are edited by this work item (the
 technical-design §7.4 edit is now mandatory), so every path below definitely
@@ -703,12 +693,12 @@ the configured gates against committed HEAD, so do not report gates green unless
 Acceptance, phrased as observable behaviour:
 
 - With a single-warning workflow: `check --max-warnings 1 <file>` exits 0 and
-  still prints the warning; `check --max-warnings 0 <file>` exits 1; `check
-  <file>` (no flag) exits 1 (unchanged Ruff parity).
+  still prints the warning; `check --max-warnings 0 <file>` exits 1;
+  `check <file>` (no flag) exits 1 (unchanged Ruff parity).
 - With an error-bearing workflow: `check --max-warnings 9 <file>` exits 1.
 - Invalid usage: `check --max-warnings` (no value), `check --max-warnings abc`,
-  `check --max-warnings -1`, and `check --max-warnings 1.5` each exit 2 with the
-  stable usage message on stderr.
+  `check --max-warnings -1`, and `check --max-warnings 1.5` each exit 2 with
+  the stable usage message on stderr.
 - `checkDiagnosticsExitCode(outcome, { maxWarnings: n })` returns 1 iff a read
   failure is present, a non-warning diagnostic is present, or `warnings > n`;
   otherwise 0. The no-policy call is behaviourally identical to today.
@@ -716,10 +706,11 @@ Acceptance, phrased as observable behaviour:
 Red-Green-Refactor evidence to record in Progress as work proceeds:
 
 - Red: `bun test tests/build-gate/documentation-contents.test.ts` (WI-1) fails
-  while the committed plan file is unlinked; `bun test
-  tests/cli/run-check.test.ts` (WI-2) / `bun test tests/cli/check-cli.test.ts`
-  (WI-3) fail on the new cases before the production edit, for the intended
-  reason (ignored policy / unknown option).
+  while the committed plan file is unlinked;
+  `bun test tests/cli/run-check.test.ts` (WI-2) /
+  `bun test tests/cli/check-cli.test.ts` (WI-3) fail on the new cases before
+  the production edit, for the intended reason (ignored policy / unknown
+  option).
 - Green: the same focused command passes after the minimal edit.
 - Refactor: `make all` passes after cleanup.
 
@@ -728,8 +719,8 @@ Quality criteria ("done"):
 - Tests: new unit, property, and CLI integration cases pass; no existing test
   regresses.
 - Lint/typecheck: `make lint` and `make typecheck` clean (via `make all`).
-- Formatting: `make check-fmt` clean; touched Markdown passes `make
-  markdownlint` and `make nixie`.
+- Formatting: `make check-fmt` clean; touched Markdown passes
+  `make markdownlint` and `make nixie`.
 
 ## Idempotence and recovery
 
@@ -756,9 +747,10 @@ export const checkDiagnosticsExitCode: (
 ```
 
 In `src/cli/check-cli.ts`, the parsed-argument state and successful result gain
-an optional `maxWarnings?: number`, and `runCheckCli` passes a `CheckExitPolicy`
-into `checkDiagnosticsExitCode`. The public `runCheckCli(args, io)` signature
-and the `CheckCliExitCode` (`0 | 1 | 2`) contract are unchanged.
+an optional `maxWarnings?: number`, and `runCheckCli` passes a
+`CheckExitPolicy` into `checkDiagnosticsExitCode`. The public
+`runCheckCli(args, io)` signature and the `CheckCliExitCode` (`0 | 1 | 2`)
+contract are unchanged.
 
 ## Revision note
 
@@ -767,30 +759,30 @@ semantics, three ordered work items (decision layer, CLI wiring, docs), and the
 test matrix. No implementation performed. Status: DRAFT pending design review.
 
 Round-2 revision (2026-07-06). Resolves the design reviewer's durability
-blocking point. The reviewer reported that the workflow host's plan-file salvage
-declined because the worktree held a second uncommitted path
-(`M docs/contents.md`) alongside the untracked plan. To let the host persist the
-plan as the sole uncommitted path, the `docs/contents.md` index entry was
+blocking point. The reviewer reported that the workflow host's plan-file
+salvage declined because the worktree held a second uncommitted path
+(`M docs/contents.md`) alongside the untracked plan. To let the host persist
+the plan as the sole uncommitted path, the `docs/contents.md` index entry was
 reverted here and promoted to a dedicated first build work item (WI-1); the
 former WI-1 to WI-3 shifted to WI-2 to WI-4. This keeps the documentation
 index-link a gate-backed, independently committable step
 (`tests/build-gate/documentation-contents.test.ts`) that runs before any later
-work item's `make all`, while leaving the plan file as the only uncommitted path
-for durable persistence. No implementation performed. Status: DRAFT pending
-design review.
+work item's `make all`, while leaving the plan file as the only uncommitted
+path for durable persistence. No implementation performed. Status: DRAFT
+pending design review.
 
 Round-3 revision (2026-07-06). Resolves the design reviewer's remaining
-blocking point: WI-4 previously reconciled only prose and left the authoritative
-exit-code TABLES stale, so after implementation the source-of-truth guides would
-state exit rules the loosened code no longer follows. WI-4 now mandates
-correcting the table rows themselves — the developers-guide code-0 and code-1
-rows (the code-1 row "Any diagnostic remains, regardless of severity …" becomes
-factually false once a warning within budget yields exit 0), the users-guide
-code-0 row, and the technical-design §7.4 code-0 row — with the exact
-replacement cell text pinned inline. The technical-design §7.4 edit is promoted
-from optional to mandatory, so its formatter path is unconditional and every
-listed path definitely exists. No implementation performed. Status: DRAFT
-pending design review.
+blocking point: WI-4 previously reconciled only prose and left the
+authoritative exit-code TABLES stale, so after implementation the
+source-of-truth guides would state exit rules the loosened code no longer
+follows. WI-4 now mandates correcting the table rows themselves — the
+developers-guide code-0 and code-1 rows (the code-1 row "Any diagnostic
+remains, regardless of severity …" becomes factually false once a warning
+within budget yields exit 0), the users-guide code-0 row, and the
+technical-design §7.4 code-0 row — with the exact replacement cell text pinned
+inline. The technical-design §7.4 edit is promoted from optional to mandatory,
+so its formatter path is unconditional and every listed path definitely exists.
+No implementation performed. Status: DRAFT pending design review.
 
 WI-1 implementation revision (2026-07-06). Sets Status to IN PROGRESS, records
 the completed `docs/contents.md` index-link work item, and captures red/green

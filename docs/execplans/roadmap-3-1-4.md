@@ -1,9 +1,8 @@
 # Apply lexical-binding facts to deterministic-time compatibility detection
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: IN PROGRESS
 
@@ -86,16 +85,16 @@ helpers" (lines 65-77), and the Claude-compatibility merge-order note (lines
 119-153); `docs/complexity-antipatterns-and-refactoring-strategies.md`
 (single-responsibility helpers, extract predicates, files under 400 lines);
 `docs/scripting-standards.md`; `docs/documentation-style-guide.md`;
-`docs/roadmap.md` task 3.1.4 (requires 2.2.4 and 3.1.2, both `[x]`); `AGENTS.md`
-(quality gates, TypeScript guidance, testing rules, file-size limit, en-GB
-Oxford spelling, DRY / separate atomic refactors).
+`docs/roadmap.md` task 3.1.4 (requires 2.2.4 and 3.1.2, both `[x]`);
+`AGENTS.md` (quality gates, TypeScript guidance, testing rules, file-size
+limit, en-GB Oxford spelling, DRY / separate atomic refactors).
 
 ## Constraints
 
 - **Never execute or evaluate workflow source.** Detection is parse-and-walk
   only; the sole permitted parser call remains `@swc/core`'s `parseSync` over
-  normalized text via `parseNormalizedWorkflowBody`
-  (`docs/technical-design.md` §12.1; `docs/adr/0001`;
+  normalized text via `parseNormalizedWorkflowBody` (`docs/technical-design.md`
+  §12.1; `docs/adr/0001`;
   `tests/static-analysis/hostile-metadata-security.test.ts` and
   `tests/diagnostics/import-policy.test.ts` must stay green).
 - **Do not import ODW runtime or ODW static helpers** (`scanDualCompat`,
@@ -145,43 +144,40 @@ Oxford spelling, DRY / separate atomic refactors).
 ## Risks
 
 - Risk: the SWC computed-member shape assumed here
-  (`property` is `ComputedPropName { type: "Computed", expression:
-  StringLiteral { value } }`) does not match the pinned parser, so
-  `Date["now"]()` is silently missed or mis-typed.
-  Severity: high. Likelihood: low.
-  Mitigation: the shape is pinned from
-  `node_modules/@swc/types/index.d.ts` (verified: `MemberExpression.property:
-  Identifier | PrivateName | ComputedPropName`, line 1352; `ComputedPropName`
-  `type: "Computed"`, `expression: Expression`, lines 1723-1726; `StringLiteral
-  { value: string }`, lines 1516-1519). WI1 begins with a one-shot in-repo
-  shape probe that parses `Date["now"](); globalThis.Date.now();` and inspects
-  the tree, then deletes the probe. Every supported form is pinned by a
-  positive test that fails loudly if the shape is wrong.
+  (`property` is
+  `ComputedPropName { type: "Computed", expression: StringLiteral { value } }`)
+  does not match the pinned parser, so `Date["now"]()` is silently missed or
+  mis-typed. Severity: high. Likelihood: low. Mitigation: the shape is pinned
+  from `node_modules/@swc/types/index.d.ts` (verified:
+  `MemberExpression.property: Identifier | PrivateName | ComputedPropName`,
+  line 1352; `ComputedPropName` `type: "Computed"`, `expression: Expression`,
+  lines 1723-1726; `StringLiteral { value: string }`, lines 1516-1519). WI1
+  begins with a one-shot in-repo shape probe that parses
+  `Date["now"](); globalThis.Date.now();` and inspects the tree, then deletes
+  the probe. Every supported form is pinned by a positive test that fails
+  loudly if the shape is wrong.
 - Risk: a `globalThis` chain that should warn is suppressed because the code
   consults the `Date`/`Math` binding on the wrong branch, or a bare shadowed
-  `Date` still warns because the binding check is skipped.
-  Severity: high (this is the task's core behaviour). Likelihood: medium.
-  Mitigation: the resolver only consults the `Date`/`Math` binding on the *bare
-  identifier* branch; the `globalThis.X` branch consults only the `globalThis`
-  binding. WI1 adds the exact cross-shadow test
-  (`const Date = 1; globalThis.Date.now()` still warns;
+  `Date` still warns because the binding check is skipped. Severity: high (this
+  is the task's core behaviour). Likelihood: medium. Mitigation: the resolver
+  only consults the `Date`/`Math` binding on the *bare identifier* branch; the
+  `globalThis.X` branch consults only the `globalThis` binding. WI1 adds the
+  exact cross-shadow test (`const Date = 1; globalThis.Date.now()` still warns;
   `const globalThis = 1; globalThis.Date.now()` does not).
 - Risk: the existing negative case `const value = Date["now"]();`
   (`tests/static-analysis/workflow-deterministic-time.test.ts` line 72) and the
   syntactic-limitation prose in the three rule docs contradict the new
   behaviour, so leaving them unchanged fails the suite or ships stale docs.
-  Severity: medium. Likelihood: high (expected).
-  Mitigation: WI1 moves that line from `NEGATIVE_BODIES` to the positive matrix
-  (this is the headline Red→Green flip); WI3 rewrites the three "Limitations"
-  sections.
+  Severity: medium. Likelihood: high (expected). Mitigation: WI1 moves that
+  line from `NEGATIVE_BODIES` to the positive matrix (this is the headline
+  Red→Green flip); WI3 rewrites the three "Limitations" sections.
 - Risk: reintroducing shadow suppression accidentally changes the source order
   or count pinned by the 3.1.2.1 intra-expression ordering snapshots
-  (`tests/static-analysis/deterministic-time-spans.test.ts`).
-  Severity: medium. Likelihood: low.
-  Mitigation: the walk order is unchanged (node visited before children); the
-  resolver only *filters* matches, never reorders them. The existing ordering
-  snapshots must pass unchanged; WI2 adds new-form spans without editing the
-  ordering fixtures.
+  (`tests/static-analysis/deterministic-time-spans.test.ts`). Severity: medium.
+  Likelihood: low. Mitigation: the walk order is unchanged (node visited before
+  children); the resolver only *filters* matches, never reorders them. The
+  existing ordering snapshots must pass unchanged; WI2 adds new-form spans
+  without editing the ordering fixtures.
 - Risk: the sibling ODW checkout is outside this session's sandbox, so
   `scanDualCompat`'s exact `globalThis`/shadow behaviour cannot be read for a
   parity claim. Severity: low. Likelihood: high (already observed — see Tooling
@@ -195,10 +191,10 @@ Per the standing rules, advisory tooling that was unavailable during planning,
 with the bounded local fallback used instead:
 
 - The sibling ODW checkout `/data/leynos/Projects/open-dynamic-workflows` is
-  outside the session's allowed directories: `grep`/`ls` were blocked
-  ("may only search … allowed working directories"). `scanDualCompat` could not
-  be read. Fallback: `docs/adr/0001` bars importing it; the plan pins behaviour
-  to the roadmap success line and trusted-fixture parity instead.
+  outside the session's allowed directories: `grep`/`ls` were blocked ("may
+  only search … allowed working directories"). `scanDualCompat` could not be
+  read. Fallback: `docs/adr/0001` bars importing it; the plan pins behaviour to
+  the roadmap success line and trusted-fixture parity instead.
 - `bun install` / `bun test` were not run in-session (the worktree has no
   `node_modules` yet); the `@swc/core` AST shapes were pinned by reading the
   pinned `@swc/types` `.d.ts` in the sibling installed tree
@@ -219,25 +215,27 @@ A novice needs these files:
   `isNamedMemberCall` matches only *non-computed* `Object.property` calls with
   bare-identifier objects, and `isArglessNewDate` matches only a bare-identifier
   `Date` callee. This is the module 3.1.4 rewires.
-- `src/static-analysis/workflow-ast-bindings.ts` — `collectLexicalBindings(
-  module): LexicalBindingFacts` returns a frozen, sorted, unique `boundNames`
-  list (the wrapper name is excluded); `isIdentifierBound(facts, name)` is the
-  membership predicate. This is the 2.2.4 fact this task consumes as the
-  shadow oracle.
-- `src/static-analysis/workflow-body-parse.ts` — `parseNormalizedWorkflowBody(
-  envelope): NormalizedBodyParseResult`; on `ok: true` it carries `module`
-  (the SWC `Module`) and `normalized` (the `NormalizedWorkflowBody`). The
-  scanner already reuses this result via its optional `parseResult` parameter
-  and `lintScannedWorkflowBody` passes the shared parse in.
+- `src/static-analysis/workflow-ast-bindings.ts` —
+  `collectLexicalBindings( module): LexicalBindingFacts` returns a frozen,
+  sorted, unique `boundNames` list (the wrapper name is excluded);
+  `isIdentifierBound(facts, name)` is the membership predicate. This is the
+  2.2.4 fact this task consumes as the shadow oracle.
+- `src/static-analysis/workflow-body-parse.ts` —
+  `parseNormalizedWorkflowBody( envelope): NormalizedBodyParseResult`; on
+  `ok: true` it carries `module` (the SWC `Module`) and `normalized` (the
+  `NormalizedWorkflowBody`). The scanner already reuses this result via its
+  optional `parseResult` parameter and `lintScannedWorkflowBody` passes the
+  shared parse in.
 - `src/static-analysis/workflow-body-normalizer.ts` —
   `originalSpanFromNormalizedOffsets(sourceFile, normalized, startByte,
-  endByte)` maps a normalized-text byte range back to an original `SourceSpan`.
+  endByte)`
+  maps a normalized-text byte range back to an original `SourceSpan`.
 - `src/static-analysis/workflow-lint.ts` — `lintScannedWorkflowBody` (lines
   79-95) calls `scanDeterministicTimeWarnings(envelope, bodyParse)` for the
   `claudeCompatibility` stage; this wiring is unchanged by 3.1.4.
 - `tests/static-analysis/workflow-deterministic-time.test.ts` — the positive
-  matrix (`POSITIVE_CASES`), `NEGATIVE_BODIES` (line 67), the `scanBody` helper,
-  and the source-order test. The headline flip lives here.
+  matrix (`POSITIVE_CASES`), `NEGATIVE_BODIES` (line 67), the `scanBody`
+  helper, and the source-order test. The headline flip lives here.
 - `tests/static-analysis/deterministic-time-spans.test.ts` — span-oracle
   snapshots including the 3.1.2.1 intra-expression ordering cases and the
   zero-false-positive proof over `ODW_EXAMPLE_FIXTURE_SNAPSHOTS`.
@@ -270,16 +268,16 @@ Terms:
 ## Detection contract (the behaviour this task pins)
 
 The scanner still walks the parsed body in source order and emits one
-diagnostic per match, but every match is now gated by a *global-object
-identity resolver* that consults the body's lexical binding facts.
+diagnostic per match, but every match is now gated by a *global-object identity
+resolver* that consults the body's lexical binding facts.
 
 Define, over a resolved binding set `bindings = collectLexicalBindings(module)`:
 
 - `resolveStaticMemberName(property)`: `"now"` for `Identifier { value: "now" }`
   and for `ComputedPropName { expression: StringLiteral { value: "now" } }`;
-  `undefined` for `PrivateName`, a computed non-string-literal key
-  (`Date[key]`, `Date[0]`), or anything else. (No source evaluation: only a
-  literal string key resolves.)
+  `undefined` for `PrivateName`, a computed non-string-literal key (`Date[key]`,
+  `Date[0]`), or anything else. (No source evaluation: only a literal string
+  key resolves.)
 - `resolveGlobalObjectIdentity(node, bindings)`:
   - a bare `Identifier { value: N }` resolves to `N` **iff**
     `!isIdentifierBound(bindings, N)` (an unshadowed global); a shadowed name
@@ -321,8 +319,8 @@ Consequences, pinned by tests:
 
 Stages map to work items; each is a single atomic commit that passes `make all`
 (plus `make markdownlint` and `make nixie` for the documentation commit) and
-follows Red → Green → Refactor. No language-router skill applies (the repository
-is TypeScript-only); follow `AGENTS.md` TypeScript Guidance and the
+follows Red → Green → Refactor. No language-router skill applies (the
+repository is TypeScript-only); follow `AGENTS.md` TypeScript Guidance and the
 `code-review` habits. Load `execplans` (this plan), `leta` (symbol navigation
 and branch-local verification before each code touch), `grepai` (intent search
 against the `main` index — treat as a pointer, verify with `leta`/file
@@ -334,8 +332,8 @@ Read first: `docs/technical-design.md` §§6.1, 6.2, 9.2, 11.5; `docs/adr/0001`;
 `docs/developers-guide.md` "Workflow AST facts" and "Source-span helpers";
 `docs/complexity-antipatterns-and-refactoring-strategies.md`;
 `src/static-analysis/workflow-deterministic-time.ts`,
-`workflow-ast-bindings.ts`, and `workflow-body-parse.ts`.
-Skills: `leta`, `biomejs`, `en-gb-oxendict`.
+`workflow-ast-bindings.ts`, and `workflow-body-parse.ts`. Skills: `leta`,
+`biomejs`, `en-gb-oxendict`.
 
 Step 1 (shape probe — before writing the resolver). Add a temporary scratch
 test that parses, through `parseNormalizedWorkflowBody`, a body such as:
@@ -348,8 +346,10 @@ const d = new globalThis.Date();
 ```
 
 and prints `JSON.stringify(result.module, null, 2)`. Confirm: computed members
-appear as `property: { type: "Computed", expression: { type: "StringLiteral",
-value: "now" } }`; `globalThis.Date.now` nests `MemberExpression` objects with
+appear as
+`property: { type: "Computed", expression: { type: "StringLiteral",
+value: "now" } }`;
+`globalThis.Date.now` nests `MemberExpression` objects with
 `Identifier { value: "globalThis" }` at the root; `NewExpression.callee` is the
 `MemberExpression` for `new globalThis.Date()`. Record the observed shapes in
 `Surprises & Discoveries`, then **delete the scratch test** before committing.
@@ -386,15 +386,15 @@ escapes this module.
 
 Rewire `src/static-analysis/workflow-deterministic-time.ts`:
 
-- After `parseResult.ok`, compute `const bindings =
-  collectLexicalBindings(parseResult.module)` once and thread it (with the
-  module base) through `walkDeterministicTimeHazards` → `visitNode` →
-  `matchDeterministicTimeHazard`.
+- After `parseResult.ok`, compute
+  `const bindings = collectLexicalBindings(parseResult.module)` once and thread
+  it (with the module base) through `walkDeterministicTimeHazards` →
+  `visitNode` → `matchDeterministicTimeHazard`.
 - Replace `isNamedMemberCall`/`isDateNowCall`/`isMathRandomCall` with a matcher
   that, for a `CallExpression` whose callee is a `MemberExpression`, checks
   `resolveStaticMemberName(callee.property)` against `"now"`/`"random"` and
-  `resolveGlobalObjectIdentity(callee.object, bindings)` against
-  `"Date"`/`"Math"`.
+  `resolveGlobalObjectIdentity(callee.object, bindings)` against `"Date"`/
+  `"Math"`.
 - Replace `isArglessNewDate` with a check that the `NewExpression` has no
   arguments and `resolveGlobalObjectIdentity(callee, bindings) === "Date"`.
 - Spans are unchanged in principle: callee member span for calls, whole
@@ -410,22 +410,24 @@ Tests (Red first) — extend
 `tests/static-analysis/workflow-deterministic-time.test.ts`:
 
 - **Headline flip:** move `'const value = Date["now"]();'` out of
-  `NEGATIVE_BODIES` and into the positive matrix with `rule =
-  DATE_NOW_RULE`, `spanText = 'Date["now"]'`. Confirm the suite is Red (the old
-  scanner produces `[]`), then Green after the rewire.
+  `NEGATIVE_BODIES` and into the positive matrix with `rule = DATE_NOW_RULE`,
+  `spanText = 'Date["now"]'`. Confirm the suite is Red (the old scanner produces
+  `[]`), then Green after the rewire.
 - **New positive forms** (each asserted with the span oracle —
-  `decodeSpanText`/`expectSpanToMatchSource`/`sliceSourceSpan`): `Math["random"]()`
-  (`Math["random"]`), `globalThis.Date.now()` (`globalThis.Date.now`),
-  `globalThis.Math.random()` (`globalThis.Math.random`),
-  `globalThis["Date"]["now"]()` (`globalThis["Date"]["now"]`),
-  `new globalThis.Date()` (`new globalThis.Date()`).
+  `decodeSpanText`/`expectSpanToMatchSource`/`sliceSourceSpan`):
+  `Math["random"]()` (`Math["random"]`), `globalThis.Date.now()`
+  (`globalThis.Date.now`), `globalThis.Math.random()`
+  (`globalThis.Math.random`), `globalThis["Date"]["now"]()`
+  (`globalThis["Date"]["now"]`), `new globalThis.Date()`
+  (`new globalThis.Date()`).
 - **Shadow negatives** (table-driven over the binding forms 2.2.4 supports —
   `const`/`let`/`var`, function declaration, parameter, object-destructure,
   array-destructure, `catch`): each body binds `Date` (or `Math`) and then uses
   the bare form (`Date.now()`, `new Date()`, `Math.random()`); assert the
   scanner returns `[]`.
-- **globalThis shadow negative:** `const globalThis = fakeGlobal;\nconst t =
-  globalThis.Date.now();` returns `[]`.
+- **globalThis shadow negative:**
+  `const globalThis = fakeGlobal;\nconst t = globalThis.Date.now();` returns
+  `[]`.
 - **Cross-shadow positive:** `const Date = 1;\nconst t = globalThis.Date.now();`
   still returns exactly one `odw/no-date-now` (the chain bypasses the local
   `Date`).
@@ -443,11 +445,11 @@ Validation: `make all`.
 Read first: `docs/technical-design.md` §11.5; `AGENTS.md` Testing (span
 snapshots, `fast-check` for range/invariance behaviour, deterministic tests);
 `tests/static-analysis/deterministic-time-spans.test.ts` and
-`tests/static-analysis/workflow-lint.test.ts`.
-Skills: `leta`, `biomejs`, `en-gb-oxendict`. (No verification adversary skill is
-needed: the invariants here are exact-match spans and membership, best pinned by
-`fast-check` invariance rather than CrossHair/mutmut. Record that choice in the
-Decision Log.)
+`tests/static-analysis/workflow-lint.test.ts`. Skills: `leta`, `biomejs`,
+`en-gb-oxendict`. (No verification adversary skill is needed: the invariants
+here are exact-match spans and membership, best pinned by `fast-check`
+invariance rather than CrossHair/mutmut. Record that choice in the Decision
+Log.)
 
 - Extend `deterministic-time-spans.test.ts` `RULE_SPAN_CASES` with the new
   forms — `Date["now"]` → `Date["now"]`, `globalThis.Date.now()` →
@@ -466,8 +468,8 @@ Decision Log.)
   general invariant — for any body that binds `Date`, a bare `Date.now()`
   produces no diagnostic while `globalThis.Date.now()` in the same body always
   produces exactly one. Use a bounded generator constrained to valid identifier
-  characters (avoid the `fast-check` filtering trap per `AGENTS.md` and
-  2.2.4's recorded whitespace counter-example).
+  characters (avoid the `fast-check` filtering trap per `AGENTS.md` and 2.2.4's
+  recorded whitespace counter-example).
 
 Validation: `make all`.
 
@@ -475,8 +477,7 @@ Validation: `make all`.
 
 Read first: `docs/documentation-style-guide.md`; `AGENTS.md` Markdown Guidance
 (80-column prose, 120-column code, en-GB); `docs/developers-guide.md` "Workflow
-AST facts"; the three rule docs.
-Skills: `en-gb-oxendict`, `execplans`.
+AST facts"; the three rule docs. Skills: `en-gb-oxendict`, `execplans`.
 
 - Rewrite the "## Limitations" section of `docs/rules/no-date-now.md`,
   `docs/rules/no-math-random.md`, and `docs/rules/no-argless-new-date.md`:
@@ -548,8 +549,8 @@ Run everything from the worktree root
 3. WI3: edit the five Markdown files, format them, then run the Markdown gates
    and `make all`.
 
-Commit after each work item with an imperative, en-GB, ≤50-character subject and
-a wrapped body explaining what and why (`AGENTS.md` Committing). Gate every
+Commit after each work item with an imperative, en-GB, ≤50-character subject
+and a wrapped body explaining what and why (`AGENTS.md` Committing). Gate every
 commit with `make all` (plus `make markdownlint` and `make nixie` for WI3).
 
 ## Validation and acceptance
@@ -636,8 +637,8 @@ unchanged.
 Pinned `@swc/core@1.15.43` AST shapes (verified against
 `node_modules/@swc/types/index.d.ts`):
 
-- `MemberExpression { object: Expression; property: Identifier | PrivateName |
-  ComputedPropName }` (line 1349-1353).
+- `MemberExpression { object: Expression; property: Identifier | PrivateName |`
+  `ComputedPropName }` (line 1349-1353).
 - `ComputedPropName { type: "Computed"; expression: Expression }` (line
   1723-1726).
 - `StringLiteral { type: "StringLiteral"; value: string }` (line 1516-1519).
@@ -661,10 +662,10 @@ present. No ODW runtime or static-helper symbol may appear in any new file.
 
 ## Surprises & discoveries
 
-- Observation: the existing scanner already lists `const value =
-  Date["now"]();` as a *negative* case and the three rule docs record the
-  syntactic limitation, so 3.1.4 is a deliberate behaviour flip, not an
-  additive-only change. Evidence:
+- Observation: the existing scanner already lists
+  `const value = Date["now"]();` as a *negative* case and the three rule docs
+  record the syntactic limitation, so 3.1.4 is a deliberate behaviour flip, not
+  an additive-only change. Evidence:
   `tests/static-analysis/workflow-deterministic-time.test.ts` line 72;
   `docs/rules/no-date-now.md` lines 51-55. Impact: WI1 must move that case and
   WI3 must rewrite the docs.
@@ -692,11 +693,10 @@ present. No ODW runtime or static-helper symbol may appear in any new file.
   parenthesized/TypeScript wrapper expressions are unwrapped. Optional chaining
   remains intentionally out of scope per the detection contract.
 - Observation: WI2 added 26 deterministic-time span snapshots: four
-  surrounding-source variants each for `Date["now"]`,
-  `globalThis.Date.now`, and `new globalThis.Date()`, while leaving the
-  intra-expression ordering snapshots and trusted ODW fixture assertion
-  unchanged. Impact: new supported forms now have reviewer-visible
-  original-source span evidence.
+  surrounding-source variants each for `Date["now"]`, `globalThis.Date.now`, and
+  `new globalThis.Date()`, while leaving the intra-expression ordering
+  snapshots and trusted ODW fixture assertion unchanged. Impact: new supported
+  forms now have reviewer-visible original-source span evidence.
 - Observation: the pipeline test now proves a workflow-local `Date` binding
   suppresses `Date.now()` in `lintWorkflowSource`, while
   `globalThis.Date.now()` still reports one Claude compatibility warning.
@@ -711,49 +711,44 @@ present. No ODW runtime or static-helper symbol may appear in any new file.
 
 - Decision: consume `collectLexicalBindings(parseResult.module)` directly as the
   shadow oracle rather than `collectWorkflowAstFactsFromParseResult`.
-  Rationale: the scanner needs only the binding names; the facts aggregator also
-  builds suppression masks the scanner does not use, and reusing the leaner
-  producer keeps one parse and no unused work (`AGENTS.md` DRY / abstraction
-  policy).
-  Date/Author: 2026-07-03, planning agent.
+  Rationale: the scanner needs only the binding names; the facts aggregator
+  also builds suppression masks the scanner does not use, and reusing the
+  leaner producer keeps one parse and no unused work (`AGENTS.md` DRY /
+  abstraction policy). Date/Author: 2026-07-03, planning agent.
 - Decision: recognize `Date`, `Math`, and `globalThis` as the only global
   roots; treat `window`/`self`/`global`, optional chaining, aliasing, and
-  dynamic computed keys as documented conservative limits.
-  Rationale: the success line names exactly `Date`, `Math`, and
-  `globalThis.Date.now()`; §9.2's philosophy is "warn and explain", preferring
-  a false negative to a false positive, and a static tool cannot follow aliases
-  or dynamic keys without evaluating source (`docs/adr/0001`; §12.1).
-  Date/Author: 2026-07-03, planning agent.
+  dynamic computed keys as documented conservative limits. Rationale: the
+  success line names exactly `Date`, `Math`, and `globalThis.Date.now()`;
+  §9.2's philosophy is "warn and explain", preferring a false negative to a
+  false positive, and a static tool cannot follow aliases or dynamic keys
+  without evaluating source (`docs/adr/0001`; §12.1). Date/Author: 2026-07-03,
+  planning agent.
 - Decision: shadow suppression is conservative name-set membership, mirroring
-  2.2.4's name-based model, not scope-precise analysis.
-  Rationale: any same-named binding suppresses the bare-global form, which is
-  safe (prefers a missed warning to a false positive on legitimate local code);
-  scope precision is a deferred refinement (`docs/execplans/roadmap-2-2-4.md`
-  Decision Log).
+  2.2.4's name-based model, not scope-precise analysis. Rationale: any
+  same-named binding suppresses the bare-global form, which is safe (prefers a
+  missed warning to a false positive on legitimate local code); scope precision
+  is a deferred refinement (`docs/execplans/roadmap-2-2-4.md` Decision Log).
   Date/Author: 2026-07-03, planning agent.
 - Decision: extract the resolver into `workflow-global-object-reference.ts`
-  rather than growing the scanner.
-  Rationale: keeps each file single-responsibility and under the 400-line limit
+  rather than growing the scanner. Rationale: keeps each file
+  single-responsibility and under the 400-line limit
   (`docs/complexity-antipatterns-and-refactoring-strategies.md`; `AGENTS.md`).
   Date/Author: 2026-07-03, planning agent.
 - Decision: return the internal `GlobalObjectIdentity` union from the resolver
-  instead of a broad `string`.
-  Rationale: the scanner only supports `Date`, `Math`, and `globalThis`; making
-  that vocabulary explicit keeps future consumers and comparisons type-safe
-  without changing the package public surface.
-  Date/Author: 2026-07-03, implementing agent.
+  instead of a broad `string`. Rationale: the scanner only supports `Date`,
+  `Math`, and `globalThis`; making that vocabulary explicit keeps future
+  consumers and comparisons type-safe without changing the package public
+  surface. Date/Author: 2026-07-03, implementing agent.
 - Decision: unwrap parenthesized and TypeScript-only transparent expression
-  wrappers, but keep optional chaining undetected.
-  Rationale: parentheses and non-null/type wrappers do not change the referenced
-  global identity, while optional chaining is a documented conservative limit in
-  this task and remains covered as a negative case.
-  Date/Author: 2026-07-03, implementing agent.
+  wrappers, but keep optional chaining undetected. Rationale: parentheses and
+  non-null/type wrappers do not change the referenced global identity, while
+  optional chaining is a documented conservative limit in this task and remains
+  covered as a negative case. Date/Author: 2026-07-03, implementing agent.
 - Decision: use `fast-check` for the WI2 generated binding invariant rather
-  than a heavier verification adversary.
-  Rationale: the invariant is a small exact-membership property over generated
-  valid identifier text and a fixed `Date` binding; table-driven examples plus
-  bounded property generation give direct regression coverage without adding a
-  second analysis tool.
+  than a heavier verification adversary. Rationale: the invariant is a small
+  exact-membership property over generated valid identifier text and a fixed
+  `Date` binding; table-driven examples plus bounded property generation give
+  direct regression coverage without adding a second analysis tool.
   Date/Author: 2026-07-03, implementing agent.
 
 ## Outcomes & retrospective

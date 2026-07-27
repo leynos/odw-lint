@@ -1,9 +1,8 @@
 # Introduce a static workflow lint entry point (`lintWorkflowSource`)
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -12,19 +11,19 @@ Status: COMPLETE
 Today, every caller that wants a workflow file's complete static diagnostics
 must hand-assemble them. The parity suite at
 `tests/static-analysis/invalid-workflow-metadata-parity.test.ts` (lines 63-67)
-writes `[...envelope.diagnostics, ...classifyWorkflowMetadata(envelope).diagnostics]`
+writes
+`[...envelope.diagnostics, ...classifyWorkflowMetadata(envelope).diagnostics]`
 by hand. Any future `check` command would have to reimplement that same merge
 and, critically, the same *merge order*. Two independent transcriptions of the
 merge is exactly the "parallel sources of truth" hazard that roadmap step 2.1
 exists to remove.
 
-Roadmap task 2.1.12 introduces one production function,
-`lintWorkflowSource`, that owns the pipeline: build the original source file,
-scan the envelope, classify the metadata, and merge the two diagnostic streams
-in a single canonical order. After this change a novice can call one function
-and observe the full envelope-plus-metadata diagnostic set for a workflow
-source string, and the parity suite consumes that same call rather than a
-hand-written merge.
+Roadmap task 2.1.12 introduces one production function, `lintWorkflowSource`,
+that owns the pipeline: build the original source file, scan the envelope,
+classify the metadata, and merge the two diagnostic streams in a single
+canonical order. After this change a novice can call one function and observe
+the full envelope-plus-metadata diagnostic set for a workflow source string,
+and the parity suite consumes that same call rather than a hand-written merge.
 
 You can see it working by running the new focused unit and property tests, and
 by observing that the refactored parity suite still produces byte-identical
@@ -44,7 +43,8 @@ escalation, not a workaround.
   or any ODW loader, primitive, launcher, worker, runtime, scheduler,
   metadata-evaluating, or agent-dispatch path. Enforced by the existing
   forbidden-import architecture test (task 2.1.4) and
-  `docs/technical-design.md` §5, §6.4, §12.1; `docs/adr/0001-static-analysis-boundary.md`.
+  `docs/technical-design.md` §5, §6.4, §12.1;
+  `docs/adr/0001-static-analysis-boundary.md`.
 - **Reuse the existing pipeline.** The new entry point must delegate to the
   existing `createOriginalSourceFile` (`src/static-analysis/source-file.ts`),
   `scanWorkflowEnvelope` (`src/static-analysis/workflow-envelope.ts`), and
@@ -55,10 +55,9 @@ escalation, not a workaround.
   every currently-asserted diagnostic (rule, severity, message, span, and
   `spanText`) byte-identical. This is a behaviour-preserving refactor.
 - **Public API additions are guarded.** Any symbol re-exported from
-  `src/index.ts` must be added to
-  `tests/diagnostics/public-api-fixtures.ts` in the same commit, or
-  `tests/diagnostics/public-api-surface.test.ts` fails. Do not weaken that
-  guard.
+  `src/index.ts` must be added to `tests/diagnostics/public-api-fixtures.ts` in
+  the same commit, or `tests/diagnostics/public-api-surface.test.ts` fails. Do
+  not weaken that guard.
 - **Do not modify** `src/diagnostics/**` (the diagnostic contract is owned by
   earlier tasks), the ODW runtime, or any executable ODW path. Do not touch
   task 3.1.1's `odw/claude-pure-meta` emission.
@@ -88,34 +87,31 @@ escalation, not a workaround.
 ## Risks
 
 - Risk: The de-facto merge order (`envelope` diagnostics first, then metadata)
-  is only *implied* by current call sites, not documented.
-  Severity: medium. Likelihood: low.
-  Mitigation: Pin the order explicitly with a property test (WI1) that asserts
-  `lintWorkflowSource(source).diagnostics` deep-equals
+  is only *implied* by current call sites, not documented. Severity: medium.
+  Likelihood: low. Mitigation: Pin the order explicitly with a property test
+  (WI1) that asserts `lintWorkflowSource(source).diagnostics` deep-equals
   `[...scan.diagnostics, ...classification.diagnostics]` for arbitrary
   generated sources, and document the order in the developers' guide (WI2).
   Evidence for current order: `invalid-workflow-metadata-parity.test.ts:64-66`
   and `hostile-metadata-security.test.ts` both spread envelope before metadata.
 - Risk: Adding a public export perturbs the sorted export fixture and the
-  package-entry module-specifier guard.
-  Severity: low. Likelihood: medium.
-  Mitigation: Re-export from the existing `./static-analysis` specifier (already
-  present in `EXPECTED_PACKAGE_ENTRY_MODULE_SPECIFIERS`), so only the
-  export-name fixture in `public-api-fixtures.ts` changes; run
-  `make test` to have the guard print the exact expected list.
+  package-entry module-specifier guard. Severity: low. Likelihood: medium.
+  Mitigation: Re-export from the existing `./static-analysis` specifier
+  (already present in `EXPECTED_PACKAGE_ENTRY_MODULE_SPECIFIERS`), so only the
+  export-name fixture in `public-api-fixtures.ts` changes; run `make test` to
+  have the guard print the exact expected list.
 - Risk: A red test that references a not-yet-existing export makes `tsc`
   (`make typecheck`) fail for the whole suite, so the *commit* cannot be green
-  mid-work-item.
-  Severity: low. Likelihood: high (by design of TDD here).
-  Mitigation: Red and Green happen within one work item; only the final,
-  green state is committed. Observe the red failure locally, implement, then
-  gate and commit once. See "Concrete steps".
+  mid-work-item. Severity: low. Likelihood: high (by design of TDD here).
+  Mitigation: Red and Green happen within one work item; only the final, green
+  state is committed. Observe the red failure locally, implement, then gate and
+  commit once. See "Concrete steps".
 
 ## Progress
 
 - [x] (2026-07-02T11:26Z) WI1: Add `lintWorkflowSource` +
-  `WorkflowLintResult` with focused unit and
-  property tests (internal export only).
+  `WorkflowLintResult` with focused unit and property tests (internal export
+  only).
 - [x] (2026-07-02T11:34Z) WI2: Promote
   `lintWorkflowSource`/`WorkflowLintResult` to the public package entry, update
   the reviewed surface guard and the developers' guide.
@@ -126,71 +122,66 @@ escalation, not a workaround.
 
 - Observation: There is no exhaustive module-inventory guard over
   `src/static-analysis/`; only `src/diagnostics/` is inventoried
-  (`tests/diagnostics/architecture-fixtures.ts` `EXPECTED_DIAGNOSTIC_MODULE_FILES`
-  and `architecture.test.ts:31-37`).
+  (`tests/diagnostics/architecture-fixtures.ts`
+  `EXPECTED_DIAGNOSTIC_MODULE_FILES` and `architecture.test.ts:31-37`).
   Evidence: `grep` for readdir-based inventory found only the diagnostics
   inventory and the fixture-metadata-refresh manifest lists (test fixtures, not
-  production modules).
-  Impact: Adding `src/static-analysis/workflow-lint.ts` needs no
-  static-analysis inventory fixture update. Adding it to the *representative*
-  `EXPECTED_PARSEABLE_SOURCE_FILES` list is optional and is left out to avoid an
-  unnecessary fixture edit.
+  production modules). Impact: Adding `src/static-analysis/workflow-lint.ts`
+  needs no static-analysis inventory fixture update. Adding it to the
+  *representative* `EXPECTED_PARSEABLE_SOURCE_FILES` list is optional and is
+  left out to avoid an unnecessary fixture edit.
 - Observation: The required `scrutineer` sub-agent could not run WI1 gates
-  because its fixed `gpt-5.3-codex-spark` quota was exhausted.
-  Evidence: the sub-agent returned "You've hit your usage limit for
-  GPT-5.3-Codex-Spark" before executing `make all`.
-  Impact: WI1 used the repository's documented fallback pattern: the
-  implementation agent ran the same deterministic gate locally, then invoked
-  `coderabbit review --agent` directly after the gate was green.
+  because its fixed `gpt-5.3-codex-spark` quota was exhausted. Evidence: the
+  sub-agent returned "You've hit your usage limit for GPT-5.3-Codex-Spark"
+  before executing `make all`. Impact: WI1 used the repository's documented
+  fallback pattern: the implementation agent ran the same deterministic gate
+  locally, then invoked `coderabbit review --agent` directly after the gate was
+  green.
 
 ## Decision log
 
 - Decision: `lintWorkflowSource` accepts a `WorkflowSource`
   (`{ filePath, sourceText }`) and returns a `WorkflowLintResult` that exposes
   the built `sourceFile`, the `scan` result, the `classification`, and the
-  merged `diagnostics`.
-  Rationale: The CLI-facing input is raw file text, and
+  merged `diagnostics`. Rationale: The CLI-facing input is raw file text, and
   `createOriginalSourceFile` already takes exactly `WorkflowSource`
   (`src/static-analysis/source-file.ts:22`). Returning `sourceFile` lets
   consumers such as the parity suite slice spans (`sliceSourceSpan`) and derive
   status without rebuilding the file, so the one call is sufficient for "tests
-  and future CLI work" (roadmap success line).
-  Date/Author: 2026-07-02, planning agent.
+  and future CLI work" (roadmap success line). Date/Author: 2026-07-02,
+  planning agent.
 - Decision: Split delivery into an internal-first work item (WI1) then a public
-  promotion (WI2).
-  Rationale: `src/index.ts` re-exports a hand-listed set from `./static-analysis`
-  (not `export *`), so adding to `src/static-analysis/index.ts` does not touch
-  the guarded public surface. WI1 can therefore land fully green without
-  touching `public-api-fixtures.ts`, keeping each commit's blast radius small.
-  Date/Author: 2026-07-02, planning agent.
+  promotion (WI2). Rationale: `src/index.ts` re-exports a hand-listed set from
+  `./static-analysis` (not `export *`), so adding to
+  `src/static-analysis/index.ts` does not touch the guarded public surface. WI1
+  can therefore land fully green without touching `public-api-fixtures.ts`,
+  keeping each commit's blast radius small. Date/Author: 2026-07-02, planning
+  agent.
 - Decision: Canonical merge order is envelope diagnostics first, then metadata
-  diagnostics.
-  Rationale: Matches both current call sites; keeps the refactor in WI3
-  behaviour-preserving. Pinned by property test in WI1.
-  Date/Author: 2026-07-02, planning agent.
+  diagnostics. Rationale: Matches both current call sites; keeps the refactor
+  in WI3 behaviour-preserving. Pinned by property test in WI1. Date/Author:
+  2026-07-02, planning agent.
 - Decision: Continue WI1 validation with local `make all` and local
-  `coderabbit review --agent` after `scrutineer` quota exhaustion.
-  Rationale: The repository already models local self-run evidence as degraded
-  but usable when independent reviewers are unavailable, and the task should not
-  be marked blocked solely because the fixed scrutineer model quota is
-  exhausted. The exact deterministic commands remained unchanged.
-  Date/Author: 2026-07-02T11:26Z, implementation agent.
+  `coderabbit review --agent` after `scrutineer` quota exhaustion. Rationale:
+  The repository already models local self-run evidence as degraded but usable
+  when independent reviewers are unavailable, and the task should not be marked
+  blocked solely because the fixed scrutineer model quota is exhausted. The
+  exact deterministic commands remained unchanged. Date/Author:
+  2026-07-02T11:26Z, implementation agent.
 - Decision: Use the public-boundary test as the WI2 Red assertion before
-  updating the root export and reviewed fixture.
-  Rationale: The new consumer assertion failed with the precise missing package
-  export (`Export named 'lintWorkflowSource' not found`) before public wiring
-  existed. This proved the caller-visible gap directly; after adding the
-  re-export and fixture names, the existing public API surface guard passed
-  under `make all`.
+  updating the root export and reviewed fixture. Rationale: The new consumer
+  assertion failed with the precise missing package export
+  (`Export named 'lintWorkflowSource' not found`) before public wiring existed.
+  This proved the caller-visible gap directly; after adding the re-export and
+  fixture names, the existing public API surface guard passed under `make all`.
   Date/Author: 2026-07-02T11:34Z, implementation agent.
 - Decision: Leave `tests/static-analysis/hostile-metadata-security.test.ts`
-  on its existing focused classifier path.
-  Rationale: That suite proves hostile metadata is not evaluated and verifies
-  cold public imports; it does not own the envelope-plus-metadata merge. WI3 is
-  scoped to the parity helper that had manually transcribed the merge order, so
-  changing the hostile suite would broaden the refactor without improving the
-  task-owned invariant.
-  Date/Author: 2026-07-02T12:41Z, implementation agent.
+  on its existing focused classifier path. Rationale: That suite proves hostile
+  metadata is not evaluated and verifies cold public imports; it does not own
+  the envelope-plus-metadata merge. WI3 is scoped to the parity helper that had
+  manually transcribed the merge order, so changing the hostile suite would
+  broaden the refactor without improving the task-owned invariant. Date/Author:
+  2026-07-02T12:41Z, implementation agent.
 
 ## Outcomes & retrospective
 
@@ -243,8 +234,8 @@ where required.
 
 `odw-lint` is a static linter for Open Dynamic Workflows (ODW) source files. It
 must never execute workflow source; it reads the text and reasons about it. The
-package is private and exposes a single consumer surface, `src/index.ts`, pinned
-by `package.json` (`main`, `types`, and the `.` export all point at
+package is private and exposes a single consumer surface, `src/index.ts`,
+pinned by `package.json` (`main`, `types`, and the `.` export all point at
 `./src/index.ts`).
 
 The two functions this task unifies:
@@ -255,17 +246,17 @@ The two functions this task unifies:
   span, and returns `.diagnostics` (envelope-owned) plus an `.envelope` or a
   `missing-meta` status.
 - `classifyWorkflowMetadata(scanResult: WorkflowEnvelopeScanResult): WorkflowMetadataClassification`
-  in `src/static-analysis/workflow-metadata.ts`. It consumes the scan result and
-  returns `.diagnostics` (metadata-owned) plus a `status` of `not-applicable`,
-  `valid`, `runtime-invalid`, or `statically-unprovable`.
+  in `src/static-analysis/workflow-metadata.ts`. It consumes the scan result
+  and returns `.diagnostics` (metadata-owned) plus a `status` of
+  `not-applicable`, `valid`, `runtime-invalid`, or `statically-unprovable`.
 
 The source-file factory:
 
 - `createOriginalSourceFile(source: WorkflowSource): OriginalSourceFile` in
   `src/static-analysis/source-file.ts`. `WorkflowSource` is
-  `{ filePath: string; sourceText: string }` (`src/static-analysis/types.ts:15-25`).
-  `OriginalSourceFile` is nominally branded (`ORIGINAL_SOURCE_FILE_BRAND`); only
-  the factory can build one.
+  `{ filePath: string; sourceText: string }`
+  (`src/static-analysis/types.ts:15-25`). `OriginalSourceFile` is nominally
+  branded (`ORIGINAL_SOURCE_FILE_BRAND`); only the factory can build one.
 
 Re-export layering (important, because it decides which guards fire):
 
@@ -318,15 +309,15 @@ Implements: `docs/technical-design.md` §5, §6.1, §6.3, §6.4; `docs/adr/0001`
 
 Read first: `docs/technical-design.md` §§5, 6.1, 6.3, 6.4;
 `docs/adr/0001-static-analysis-boundary.md`; `docs/developers-guide.md`
-static-analysis section; the three collaborator modules named in
-"Context and orientation".
+static-analysis section; the three collaborator modules named in "Context and
+orientation".
 
 Skills to load: `leta` (symbol navigation/verification), `grepai` (intent
 search against `main`), the language router for TypeScript work
-(`odw-authoring` is ODW-authoring-specific and not needed; use `leta` +
-project standards), and `hypothesis`-equivalent thinking via `fast-check` for
-the property test (no Python skill applies; follow the repo's existing
-fast-check idiom).
+(`odw-authoring` is ODW-authoring-specific and not needed; use `leta` + project
+standards), and `hypothesis`-equivalent thinking via `fast-check` for the
+property test (no Python skill applies; follow the repo's existing fast-check
+idiom).
 
 Files:
 
@@ -379,8 +370,9 @@ independent of the public surface):
   `result.diagnostics` deep-equals
   `[...result.scan.diagnostics, ...result.classification.diagnostics]`.
 - Unit — missing-meta path: a source with no `export const meta` yields the
-  single `odw/meta-required` diagnostic and `classification.status ===
-  "not-applicable"`, so `result.diagnostics.length === 1`.
+  single `odw/meta-required` diagnostic and
+  `classification.status === "not-applicable"`, so
+  `result.diagnostics.length === 1`.
 - Unit — runtime-invalid path: a source with `export const meta = { name: "" }`
   yields the metadata `odw/meta-name` diagnostic *after* any envelope
   diagnostics.
@@ -404,8 +396,8 @@ independent of the public surface):
   observable and a diagnostic is produced. Keep this lightweight; the
   release-blocking hostile suite remains owned by task 2.1.5.
 
-Red-Green-Refactor: write the test file first and run it (Red — fails to
-resolve `lintWorkflowSource`). Add the module and export (Green). Refactor
+Red-Green-Refactor: write the test file first and run it (Red — fails to resolve
+`lintWorkflowSource`). Add the module and export (Green). Refactor
 JSDoc/formatting and re-run.
 
 Validation: `make all`.
@@ -418,8 +410,9 @@ public-API-surface section; `AGENTS.md` public-API-change rule. Roadmap 2.1.12
 
 Read first: `src/index.ts`; `tests/diagnostics/public-api-fixtures.ts`;
 `tests/diagnostics/public-api-surface.test.ts`;
-`tests/diagnostics/package-entry.test.ts`; `tests/static-analysis/boundary.test.ts`;
-`docs/developers-guide.md` public-API-surface section.
+`tests/diagnostics/package-entry.test.ts`;
+`tests/static-analysis/boundary.test.ts`; `docs/developers-guide.md`
+public-API-surface section.
 
 Skills to load: `leta` (verify the export list wiring), the TypeScript workflow
 per project standards.
@@ -444,8 +437,8 @@ Tests:
 
 - Extend `tests/static-analysis/boundary.test.ts` (or add a focused
   `public-consumer`-style case) with a test that imports `lintWorkflowSource`
-  and `WorkflowLintResult` from `"odw-lint"` and asserts the merged result for a
-  small valid source — proving the public consumer path works end to end.
+  and `WorkflowLintResult` from `"odw-lint"` and asserts the merged result for
+  a small valid source — proving the public consumer path works end to end.
 - The existing `public-api-surface.test.ts` guard now green with the updated
   fixture (Red before the fixture edit, Green after).
 
@@ -482,8 +475,9 @@ Files:
    `result.sourceFile` for `sliceSourceSpan` and `result.diagnostics` for the
    filtered comparison. Keep the `TASK_2_1_3_RULES` filter and the comparison
    shape exactly as they are, so the asserted diagnostics stay byte-identical.
-   Remove now-unused imports (`scanWorkflowEnvelope`, `classifyWorkflowMetadata`,
-   `createOriginalSourceFile`) only if they become unused.
+   Remove now-unused imports (`scanWorkflowEnvelope`,
+   `classifyWorkflowMetadata`, `createOriginalSourceFile`) only if they become
+   unused.
 2. `docs/developers-guide.md`: update the parity-test reference to say the
    parity suite consumes `lintWorkflowSource` rather than assembling the merge
    itself.
@@ -502,8 +496,8 @@ Tests:
 
 Red-Green-Refactor substitute: this is a pure refactor of test-support code.
 Run the parity suite before the edit (Green baseline), refactor, run again
-(still Green, identical output). Capture both transcripts in
-"Artefacts and notes".
+(still Green, identical output). Capture both transcripts in "Artefacts and
+notes".
 
 Validation: `make all`; `make markdownlint`; `make nixie`. Format the touched
 Markdown first with `mdtablefix docs/developers-guide.md` then
@@ -542,7 +536,8 @@ WI1:
 
 WI2:
 
-1. Add the public-consumer assertion to `tests/static-analysis/boundary.test.ts`.
+1. Add the public-consumer assertion to
+   `tests/static-analysis/boundary.test.ts`.
 2. Run `make test` to observe the surface guard fail and print the expected
    export list (Red).
 3. Add the two names to `tests/diagnostics/public-api-fixtures.ts` and the
@@ -617,8 +612,8 @@ involved.
 - WI1 Gate: `make all` passed locally after fixing import order, private-helper
   JSDoc, and an explicit undefined-diagnostic invariant in the new test.
 - WI1 Review: the initial `coderabbit review --agent` returned a recoverable
-  rate limit. After `vsleep 79m`, the retry completed with
-  `review_completed` and `findings: 0`.
+  rate limit. After `vsleep 79m`, the retry completed with `review_completed`
+  and `findings: 0`.
 - WI2 Red: `bun test tests/static-analysis/boundary.test.ts` failed with
   `Export named 'lintWorkflowSource' not found in module .../src/index.ts`.
 - WI2 Green: the same focused boundary suite passed with `7 pass, 0 fail` after
@@ -686,10 +681,10 @@ the same deterministic gate and CodeRabbit fallback locally; `make all` passed
 and CodeRabbit returned zero findings after the mandated rate-limit backoff.
 WI2 and WI3 remain unchanged.
 
-WI2 implementation update (2026-07-02T11:34Z). Promoted
-`lintWorkflowSource` and `WorkflowLintResult` through the package entry, updated
-the reviewed public API fixture, added a public-boundary consumer assertion, and
-documented `lintWorkflowSource` in the developers' guide as the single
+WI2 implementation update (2026-07-02T11:34Z). Promoted `lintWorkflowSource` and
+`WorkflowLintResult` through the package entry, updated the reviewed public
+API fixture, added a public-boundary consumer assertion, and documented
+`lintWorkflowSource` in the developers' guide as the single
 envelope-then-metadata diagnostic entry point. The scrutineer role remained
 quota-blocked, so deterministic gates and CodeRabbit were run locally as
 recorded above. WI3 remains unchanged.

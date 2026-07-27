@@ -1,9 +1,8 @@
 # Add Ruff-compatible invocation semantics to the check command (roadmap 2.4.4)
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -44,8 +43,8 @@ bun run src/cli/main.ts check --output-format json missing.js
 ```
 
 This is the fourth task of roadmap step 2.4 ("Ship the minimal `check`
-command"). It requires roadmap 2.4.1 (the explicit-path `check` command),
-2.4.2 (text output), and 2.4.3 (JSON output and the JSON contract fixture), all
+command"). It requires roadmap 2.4.1 (the explicit-path `check` command), 2.4.2
+(text output), and 2.4.3 (JSON output and the JSON contract fixture), all
 complete on `main`. It deliberately implements only the invocation semantics
 named in the roadmap 2.4.4 success criteria plus the machine-readable
 unreadable-input requirement. Fix-mode flags (`--fix`, `--unsafe-fixes`,
@@ -67,18 +66,18 @@ Hard invariants that must hold throughout implementation.
 - Production code must not execute workflow source, evaluate metadata, import
   ODW runtime helpers, or start runs. Every new flag re-shapes the already-inert
   `DiagnosticReport` produced by the vetted `lintWorkflowSource` pipeline or
-  gates file selection and process wiring around it
-  (`docs/technical-design.md` §§5, 6.4; `docs/developers-guide.md`
-  §"Static-Analysis Boundary"; `docs/adr/0001-static-analysis-boundary.md`).
+  gates file selection and process wiring around it (`docs/technical-design.md`
+  §§5, 6.4; `docs/developers-guide.md` §"Static-Analysis Boundary";
+  `docs/adr/0001-static-analysis-boundary.md`).
 - Exit-code policy stays faithful to `docs/technical-design.md` §7.4: `0` for a
-  clean run, `1` for remaining diagnostics or unreadable input files (when other
-  work can proceed), `2` for invalid configuration, invalid CLI usage, or
+  clean run, `1` for remaining diagnostics or unreadable input files (when
+  other work can proceed), `2` for invalid configuration, invalid CLI usage, or
   internal analyser failure. `--exit-zero` downgrades only the diagnostics/
   read-failure `1` to `0`; it never masks a `2`.
 - Filesystem, standard-input, and clock/randomness access go through injected
   seams on `CheckCliIo`, defaulting to the real Node/Bun APIs, so every test is
-  deterministic without mutating process-wide state (`AGENTS.md`
-  §"Runtime Validation & Types" — "Time & randomness"; §"Testing" —
+  deterministic without mutating process-wide state (`AGENTS.md` §"Runtime
+  Validation & Types" — "Time & randomness"; §"Testing" —
   "Environment-dependent tests").
 - No new runtime or dev dependency. Glob matching for `--force-exclude` uses the
   built-in `Bun.Glob`; stdin reading uses `node:fs` `readFileSync(0, "utf8")`;
@@ -87,8 +86,8 @@ Hard invariants that must hold throughout implementation.
   §"Code Style and Structure"). The `check` argument parser is extracted to its
   own module before the flag surface grows (WI-1).
 - The reviewed fixture corpus is single-sourced (roadmap 2.3.5). Corpus-driven
-  tests consume the owner modules under `tests/static-analysis/fixtures/`; never
-  inline corpus-location literals.
+  tests consume the owner modules under `tests/static-analysis/fixtures/`;
+  never inline corpus-location literals.
 - The JSON envelope remains schema-valid against
   `src/diagnostics/schema.ts` (`DIAGNOSTIC_REPORT_SCHEMA`). Any envelope-shape
   change (WI-2) updates the schema literal, the golden JSON contract fixture,
@@ -102,10 +101,11 @@ Hard invariants that must hold throughout implementation.
 
 - Scope: if any single work item requires touching more than ~14 files or adding
   more than ~400 net lines of production code, stop and escalate.
-- Interface: if the unreadable-input requirement appears to need a `schemaVersion`
-  bump, a new catalogued rule ID, or a diagnostic-object shape change (rather
-  than the additive top-level `ioErrors`/`summary.filesSkipped` fields decided
-  below), stop and escalate — those trigger the §8 schema-version review path.
+- Interface: if the unreadable-input requirement appears to need a
+  `schemaVersion` bump, a new catalogued rule ID, or a diagnostic-object shape
+  change (rather than the additive top-level `ioErrors`/`summary.filesSkipped`
+  fields decided below), stop and escalate — those trigger the §8
+  schema-version review path.
 - Dependencies: if a work item seems to need a new runtime or dev dependency
   (an argument parser such as commander/yargs, a glob library such as
   minimatch/fast-glob, or a gitignore parser), stop and escalate.
@@ -124,47 +124,43 @@ Hard invariants that must hold throughout implementation.
 
 - Risk: adding `ioErrors` and `summary.filesSkipped` to the JSON envelope
   ripples through every report snapshot, the golden JSON contract fixture, the
-  schema literal, and the public-API surface.
-  Severity: medium. Likelihood: high.
-  Mitigation: WI-2 enumerates every affected artefact
+  schema literal, and the public-API surface. Severity: medium. Likelihood:
+  high. Mitigation: WI-2 enumerates every affected artefact
   (`src/diagnostics/{types,report,report-json,schema,text}.ts`,
   `src/cli/run-check.ts`, `src/index.ts`, the diagnostics snapshots,
   `tests/diagnostics/json-contract.fixture.json`, the public-API fixtures) and
   updates them in one commit; a schema-conformance test proves the emitted
   envelope still validates.
 - Risk: `--respect-gitignore`/`--no-respect-gitignore` read as inert on
-  explicit paths and could be judged a §7.0 "near-miss".
-  Severity: medium. Likelihood: medium.
-  Mitigation: this is design-mandated behaviour, not a near-miss —
-  `docs/technical-design.md` §7.2 states standard ignore files apply during
-  *discovery* and §7.2 also says explicit paths are "used as provided". Ruff
-  likewise never gitignore-filters explicitly passed files. The flags record a
-  discovery posture with correct, documented v1 semantics and are pinned by a
-  test asserting acceptance and non-interference (see the Decision Log ruling).
+  explicit paths and could be judged a §7.0 "near-miss". Severity: medium.
+  Likelihood: medium. Mitigation: this is design-mandated behaviour, not a
+  near-miss — `docs/technical-design.md` §7.2 states standard ignore files
+  apply during *discovery* and §7.2 also says explicit paths are "used as
+  provided". Ruff likewise never gitignore-filters explicitly passed files. The
+  flags record a discovery posture with correct, documented v1 semantics and
+  are pinned by a test asserting acceptance and non-interference (see the
+  Decision Log ruling).
 - Risk: `--exit-non-zero-on-fix` has no fixes to react to in v1, so it looks
-  like dead code.
-  Severity: low. Likelihood: medium.
-  Mitigation: the flag is recognized with correct semantics; because no rule has
-  fix support yet, no fixes are ever applied, so it correctly never changes the
-  exit code. It is pinned by an acceptance test and documented as activating
-  with the first safe fix (roadmap 3.3.8). Recorded in the Decision Log.
+  like dead code. Severity: low. Likelihood: medium. Mitigation: the flag is
+  recognized with correct semantics; because no rule has fix support yet, no
+  fixes are ever applied, so it correctly never changes the exit code. It is
+  pinned by an acceptance test and documented as activating with the first safe
+  fix (roadmap 3.3.8). Recorded in the Decision Log.
 - Risk: standard-input reading breaks the synchronous `runCheckCli` contract.
-  Severity: medium. Likelihood: low.
-  Mitigation: the default stdin seam is the synchronous
-  `readFileSync(0, "utf8")`, keeping `runCheckCli` synchronous; tests inject a
-  `readStdin` seam and the e2e test pipes stdin through `Bun.spawnSync`.
+  Severity: medium. Likelihood: low. Mitigation: the default stdin seam is the
+  synchronous `readFileSync(0, "utf8")`, keeping `runCheckCli` synchronous;
+  tests inject a `readStdin` seam and the e2e test pipes stdin through
+  `Bun.spawnSync`.
 - Risk: `Bun.Glob` matching semantics for `--force-exclude` differ from the
-  configured `exclude` patterns' intent.
-  Severity: low. Likelihood: medium.
+  configured `exclude` patterns' intent. Severity: low. Likelihood: medium.
   Mitigation: exclusion matching is a small pure helper pinned by table tests
-  and a `fast-check` property test over generated path/pattern pairs; the helper
-  is the single call site so behaviour cannot drift.
+  and a `fast-check` property test over generated path/pattern pairs; the
+  helper is the single call site so behaviour cannot drift.
 - Risk: `check-cli.ts` (already 379 lines) exceeds the 400-line ceiling as flags
-  are added.
-  Severity: medium. Likelihood: high.
-  Mitigation: WI-1 extracts the parser to `src/cli/check-args.ts` first;
-  rendering and file-selection helpers move to small sibling modules as needed;
-  each work item re-checks the file-size gate.
+  are added. Severity: medium. Likelihood: high. Mitigation: WI-1 extracts the
+  parser to `src/cli/check-args.ts` first; rendering and file-selection helpers
+  move to small sibling modules as needed; each work item re-checks the
+  file-size gate.
 
 ## Progress
 
@@ -182,293 +178,276 @@ Hard invariants that must hold throughout implementation.
 ## Surprises & discoveries
 
 - Observation: `--output-file=` and `--stdin-filename=` still bypassed the
-  WI-8 missing-value audit after the original implementation.
-  Evidence: after adding focused tests, `bun test tests/cli/check-args.test.ts`
-  failed because `--output-file=` returned the generic usage error and
-  `--stdin-filename=` parsed as `stdinFilename: ""`; `bun test
-  tests/cli/check-cli.test.ts` then showed the same user-facing failure at the
-  CLI boundary.
-  Impact: fix round 1 wired `EQUALS_STRING_VALUE_OPTIONS` through each
-  option's existing `missingValueError` and added parser plus CLI regression
-  coverage for the equals form.
+  WI-8 missing-value audit after the original implementation. Evidence: after
+  adding focused tests, `bun test tests/cli/check-args.test.ts` failed because
+  `--output-file=` returned the generic usage error and `--stdin-filename=`
+  parsed as `stdinFilename: ""`; `bun test tests/cli/check-cli.test.ts` then
+  showed the same user-facing failure at the CLI boundary. Impact: fix round 1
+  wired `EQUALS_STRING_VALUE_OPTIONS` through each option's existing
+  `missingValueError` and added parser plus CLI regression coverage for the
+  equals form.
 - Observation: roadmap 2.4.3 explicitly deferred the machine-readable IO-error
-  representation to this task.
-  Evidence: `docs/execplans/roadmap-2-4-3.md` Decision Log — "read failures stay
-  stderr-only CLI lines in JSON mode ... there is no catalogued IO-error rule
-  yet, and inventing one is out of scope (roadmap 2.4.4)".
-  Impact: WI-2 owns the machine-readable channel; the plan chooses an additive
-  envelope field over a catalogued IO rule (see Decision Log).
+  representation to this task. Evidence: `docs/execplans/roadmap-2-4-3.md`
+  Decision Log — "read failures stay stderr-only CLI lines in JSON mode … there
+  is no catalogued IO-error rule yet, and inventing one is out of scope
+  (roadmap 2.4.4)". Impact: WI-2 owns the machine-readable channel; the plan
+  chooses an additive envelope field over a catalogued IO rule (see Decision
+  Log).
 - Observation: `docs/contents.md` indexes every top-level ExecPlan and issue
-  file, enforced by a build gate.
-  Evidence: `tests/build-gate/documentation-contents.test.ts` compares
-  `docs/contents.md` links against `docs/execplans/*.md` and `docs/issues/*.md`.
-  Impact: the first commit that adds this ExecPlan must also link it from
-  `docs/contents.md`, or `make all` fails.
+  file, enforced by a build gate. Evidence:
+  `tests/build-gate/documentation-contents.test.ts` compares `docs/contents.md`
+  links against `docs/execplans/*.md` and `docs/issues/*.md`. Impact: the first
+  commit that adds this ExecPlan must also link it from `docs/contents.md`, or
+  `make all` fails.
 - Observation: adding a diagnostics module or a public export requires updating
   the architecture fixtures and the public-API/public-consumer snapshots in the
-  same commit.
-  Evidence: `docs/execplans/roadmap-2-4-3.md` Surprises — the report-json module
-  and export failed `tests/diagnostics/architecture.test.ts`,
-  `package-entry.test.ts`, and `public-consumer.test.ts` until the fixtures were
-  updated.
-  Impact: WI-2 keeps `tests/diagnostics/architecture-fixtures.ts` and the
-  public-API fixtures synchronized when it adds the IO-error type and exports.
+  same commit. Evidence: `docs/execplans/roadmap-2-4-3.md` Surprises — the
+  report-json module and export failed `tests/diagnostics/architecture.test.ts`,
+  `package-entry.test.ts`, and `public-consumer.test.ts` until the fixtures
+  were updated. Impact: WI-2 keeps `tests/diagnostics/architecture-fixtures.ts`
+  and the public-API fixtures synchronized when it adds the IO-error type and
+  exports.
 - Observation: exporting `parseCheckArgs` from the new parser module made its
-  JSDoc subject to the repository's public-symbol lint rule.
-  Evidence: the first scrutineer gate run failed `make all`/`make lint` with
+  JSDoc subject to the repository's public-symbol lint rule. Evidence: the
+  first scrutineer gate run failed `make all`/`make lint` with
   `df12(require-public-jsdoc)` at `src/cli/check-args.ts:55:1`, requiring
-  parameter and return documentation.
-  Impact: WI-1 added public JSDoc for `parseCheckArgs`; the rerun passed
-  `make all`, `make check-fmt`, `make typecheck`, `make lint`, `make test`,
-  `make markdownlint`, and `make nixie`.
+  parameter and return documentation. Impact: WI-1 added public JSDoc for
+  `parseCheckArgs`; the rerun passed `make all`, `make check-fmt`,
+  `make typecheck`, `make lint`, `make test`, `make markdownlint`, and
+  `make nixie`.
 - Observation: adding `filesSkipped` and `ioErrors` to the diagnostic envelope
   exposed two older whole-report shape assertions outside the WI-2 focused
-  diagnostics suites.
-  Evidence: the first scrutineer run after implementation failed
-  `make typecheck` at `tests/diagnostics/types.test.ts:122` and `make test` at
-  `tests/static-analysis/source-diagnostic.test.ts`, both because their
-  expected diagnostic report shapes still omitted the additive fields.
-  Impact: WI-2 updated those existing contract assertions alongside the focused
-  report, JSON, schema, text, CLI and public-consumer tests so the repository
-  agrees on the new envelope.
+  diagnostics suites. Evidence: the first scrutineer run after implementation
+  failed `make typecheck` at `tests/diagnostics/types.test.ts:122` and
+  `make test` at `tests/static-analysis/source-diagnostic.test.ts`, both
+  because their expected diagnostic report shapes still omitted the additive
+  fields. Impact: WI-2 updated those existing contract assertions alongside the
+  focused report, JSON, schema, text, CLI and public-consumer tests so the
+  repository agrees on the new envelope.
 - Observation: exported test helpers are covered by the same public JSDoc lint
-  rule as production helpers.
-  Evidence: the second scrutineer run failed `make all`/`make lint` with
-  `df12(require-public-jsdoc)` for the new `ioErrorFor` fixture helper in
-  `tests/diagnostics/fixtures.ts`.
-  Impact: WI-2 documented the helper parameters and return value, then the
-  final scrutineer run passed `make all`, `make check-fmt`, `make typecheck`,
-  `make lint`, `make test`, `make markdownlint`, and `make nixie`.
+  rule as production helpers. Evidence: the second scrutineer run failed
+  `make all`/`make lint` with `df12(require-public-jsdoc)` for the new
+  `ioErrorFor` fixture helper in `tests/diagnostics/fixtures.ts`. Impact: WI-2
+  documented the helper parameters and return value, then the final scrutineer
+  run passed `make all`, `make check-fmt`, `make typecheck`, `make lint`,
+  `make test`, `make markdownlint`, and `make nixie`.
 - Observation: adding `--strict-claude` directly to `parseCheckOption` pushed
-  that parser helper over the Oxlint complexity threshold.
-  Evidence: the first WI-3 scrutineer run failed `make all` and `make lint` at
-  `src/cli/check-args.ts:130:26` with `eslint(complexity): function has a
-  complexity of 9. Maximum allowed is 8.`
+  that parser helper over the Oxlint complexity threshold. Evidence: the first
+  WI-3 scrutineer run failed `make all` and `make lint` at
+  `src/cli/check-args.ts:130:26` with
+  `eslint(complexity): function has a complexity of 9. Maximum allowed is 8.`
   Impact: WI-3 extracted value-less option parsing into
   `parseValueLessCheckOption`, keeping the parser readable and under the
   project threshold. The rerun passed `make all`, `make check-fmt`,
   `make typecheck`, `make lint`, `make test`, `make markdownlint`, and
   `make nixie`.
 - Observation: adding the second value-taking output option pushed the parser
-  helper back over the Oxlint complexity threshold.
-  Evidence: the local WI-4 lint pass failed `make lint` with
-  `eslint(complexity)` for `src/cli/check-args.ts`, first at
-  `parseCheckOption` and then at `parseValueCheckOption`.
-  Impact: WI-4 split value-taking parsing into separate two-token and
-  `--option=value` helpers. The final delegated scrutineer run passed
-  `make all`, `make check-fmt`, `make typecheck`, `make lint`, and `make test`.
+  helper back over the Oxlint complexity threshold. Evidence: the local WI-4
+  lint pass failed `make lint` with `eslint(complexity)` for
+  `src/cli/check-args.ts`, first at `parseCheckOption` and then at
+  `parseValueCheckOption`. Impact: WI-4 split value-taking parsing into
+  separate two-token and `--option=value` helpers. The final delegated
+  scrutineer run passed `make all`, `make check-fmt`, `make typecheck`,
+  `make lint`, and `make test`.
 - Observation: adding `--stdin-filename` made the parser's accumulated state
   validation and value-option parsing exceed the local complexity gates again.
   Evidence: the first WI-5 delegated scrutineer run passed `make check-fmt`,
   `make typecheck`, and `make test`, but failed `make all`/`make lint` with
   `eslint(complexity)` at `src/cli/check-args.ts`; after that fix, a focused
   local `make lint` reported `df12(complex-conditional)` for the final-state
-  usage check.
-  Impact: WI-5 split command-tail parsing, final-state validation, shared
-  string-value option parsing, and final-state predicates into named helpers.
-  The rerun passed `make all`, `make check-fmt`, `make typecheck`, `make lint`,
-  and `make test`.
+  usage check. Impact: WI-5 split command-tail parsing, final-state validation,
+  shared string-value option parsing, and final-state predicates into named
+  helpers. The rerun passed `make all`, `make check-fmt`, `make typecheck`,
+  `make lint`, and `make test`.
 - Observation: `tests/cli/check-cli.test.ts` was already close to the
-  repository's 400-line code-file ceiling before WI-6.
-  Evidence: local `wc -l` reported 375 lines for `tests/cli/check-cli.test.ts`
-  before adding the exit-policy tests.
-  Impact: WI-6 placed the new CLI policy coverage in
+  repository's 400-line code-file ceiling before WI-6. Evidence: local `wc -l`
+  reported 375 lines for `tests/cli/check-cli.test.ts` before adding the
+  exit-policy tests. Impact: WI-6 placed the new CLI policy coverage in
   `tests/cli/check-cli-exit-policy.test.ts` instead of expanding
   `check-cli.test.ts`. This keeps the test suite focused while preserving the
   file-size invariant.
 - Observation: adding `--exit-zero` and `--exit-non-zero-on-fix` exposed two
-  lint constraints in the first delegated gate run.
-  Evidence: the first WI-6 scrutineer run failed `make all`/`make lint` with
+  lint constraints in the first delegated gate run. Evidence: the first WI-6
+  scrutineer run failed `make all`/`make lint` with
   `df12(require-private-jsdoc)` in `src/cli/check-args.ts` after local comment
   trimming, and `df12(complex-conditional)` in `src/cli/check-cli.ts` for the
-  new exit-policy expressions.
-  Impact: WI-6 restored the required private JSDoc, kept
-  `src/cli/check-args.ts` at 399 lines, and split the exit-policy logic into
-  guard clauses. The delegated rerun passed `make all`, `make check-fmt`,
-  `make typecheck`, `make lint`, and `make test`.
+  new exit-policy expressions. Impact: WI-6 restored the required private
+  JSDoc, kept `src/cli/check-args.ts` at 399 lines, and split the exit-policy
+  logic into guard clauses. The delegated rerun passed `make all`,
+  `make check-fmt`, `make typecheck`, `make lint`, and `make test`.
 - Observation: `Bun.Glob` matches `**/generated/**` against both root and nested
-  generated paths, and `*.js` does not cross directory separators.
-  Evidence: a scratch Bun check in the task worktree printed `true` for
-  `**/generated/** generated/workflow.js`, `**/generated/**
-  src/generated/workflow.js`, and `generated/** generated/workflow.js`, but
-  `false` for `*.js nested/workflow.js`.
-  Impact: WI-7 can use `new Bun.Glob(pattern).match(path)` directly for the
-  configured `exclude` patterns used by `--force-exclude`; focused table and
-  `fast-check` property tests pin the generated-path behaviour.
+  generated paths, and `*.js` does not cross directory separators. Evidence: a
+  scratch Bun check in the task worktree printed `true` for
+  `**/generated/** generated/workflow.js`,
+  `**/generated/** src/generated/workflow.js`, and
+  `generated/** generated/workflow.js`, but `false` for
+  `*.js nested/workflow.js`. Impact: WI-7 can use
+  `new Bun.Glob(pattern).match(path)` directly for the configured `exclude`
+  patterns used by `--force-exclude`; focused table and `fast-check` property
+  tests pin the generated-path behaviour.
 - Observation: adding the WI-7 parser fields pushed `src/cli/check-args.ts`
-  beyond the 400-line code-file ceiling.
-  Evidence: local `wc -l` reported 424 lines after the first parser pass. After
-  extracting output-format parsing to `src/cli/check-output-format.ts`, local
-  `wc -l` reported 393 lines for `src/cli/check-args.ts`.
-  Impact: WI-7 kept the parser under the project file-size gate while leaving
-  the change local to check-argument parsing. A local lint pass required public
-  JSDoc for the new exported `parseOutputFormatValue` helper before the final
-  scrutineer run passed.
+  beyond the 400-line code-file ceiling. Evidence: local `wc -l` reported 424
+  lines after the first parser pass. After extracting output-format parsing to
+  `src/cli/check-output-format.ts`, local `wc -l` reported 393 lines for
+  `src/cli/check-args.ts`. Impact: WI-7 kept the parser under the project
+  file-size gate while leaving the change local to check-argument parsing. A
+  local lint pass required public JSDoc for the new exported
+  `parseOutputFormatValue` helper before the final scrutineer run passed.
 - Observation: adding help/version outcomes to the parser pushed
-  `src/cli/check-args.ts` over the 400-line code-file ceiling again.
-  Evidence: local `wc -l` reported 428 lines after the first WI-8 parser pass,
-  and 409 lines after moving help/version recognition into a sibling module.
-  After extracting static option tables to `src/cli/check-option-tables.ts`,
-  local `wc -l` reported 384 lines for `src/cli/check-args.ts`.
-  Impact: WI-8 keeps parsing under the file-size invariant with two small
-  colocated helper modules: `src/cli/check-informational-action.ts` for
-  `--help`/`--version` token recognition and `src/cli/check-option-tables.ts`
-  for static option metadata.
+  `src/cli/check-args.ts` over the 400-line code-file ceiling again. Evidence:
+  local `wc -l` reported 428 lines after the first WI-8 parser pass, and 409
+  lines after moving help/version recognition into a sibling module. After
+  extracting static option tables to `src/cli/check-option-tables.ts`, local
+  `wc -l` reported 384 lines for `src/cli/check-args.ts`. Impact: WI-8 keeps
+  parsing under the file-size invariant with two small colocated helper modules:
+  `src/cli/check-informational-action.ts` for `--help`/`--version` token
+  recognition and `src/cli/check-option-tables.ts` for static option metadata.
 - Observation: `--output-format` previously used the unsupported-format path
-  for a missing separate value.
-  Evidence: the existing parser test expected `unsupported output format:` for
-  `["check", "--output-format"]`.
-  Impact: WI-8 changed the missing separate value and empty equals value to the
-  common `missing value for --output-format` usage error required by this work
-  item, while preserving unsupported-value diagnostics such as
+  for a missing separate value. Evidence: the existing parser test expected
+  `unsupported output format:` for `["check", "--output-format"]`. Impact: WI-8
+  changed the missing separate value and empty equals value to the common
+  `missing value for --output-format` usage error required by this work item,
+  while preserving unsupported-value diagnostics such as
   `unsupported output format: json-lines`.
 - Observation: process-level stdin coverage needs Bun's typed `stdin` option to
-  receive a `Blob`, not a raw string.
-  Evidence: a scratch `Bun.spawnSync` check rejected `stdin: "abc"` with
-  `ERR_INVALID_ARG_TYPE`, and the first delegated WI-9 scrutineer run caught a
-  TypeScript overload mismatch when the test built a conditional `stdio` tuple.
-  Impact: WI-9 feeds stdin through `stdin: new Blob([sourceText])`, which
-  matches Bun's runtime and type definitions while preserving a real child
-  process contract test.
+  receive a `Blob`, not a raw string. Evidence: a scratch `Bun.spawnSync` check
+  rejected `stdin: "abc"` with `ERR_INVALID_ARG_TYPE`, and the first delegated
+  WI-9 scrutineer run caught a TypeScript overload mismatch when the test built
+  a conditional `stdio` tuple. Impact: WI-9 feeds stdin through
+  `stdin: new Blob([sourceText])`, which matches Bun's runtime and type
+  definitions while preserving a real child process contract test.
 
 ## Decision log
 
 - Decision: represent unreadable inputs with an additive machine-readable error
   channel in the existing envelope — a top-level `ioErrors` array (always
   emitted, empty on clean runs) plus a `summary.filesSkipped` count — while
-  keeping `schemaVersion` at `1`.
-  Rationale: the roadmap 2.4.4 text offers two options ("catalogued IO
-  diagnostics or an explicit machine-readable error channel"). A catalogued rule
-  is semantically wrong (an IO failure is not a workflow-content violation) and
-  would expand `RULE_IDS`, the schema enum, rule docs, and parity tests
-  (`docs/technical-design.md` §8, §9). An additive top-level field is the
-  minimal honest change. `schemaVersion` stays `1` because the envelope is
-  pre-release (package version `0.0.0`, private, no external consumers needing
-  compatibility logic), which is exactly the condition §8 gives for not bumping
-  ("schemaVersion changes only when JSON consumers need compatibility logic").
-  Existing consumers reading known fields remain compatible. Because this
-  changes public JSON behaviour, it is recorded in a new ADR
-  (`docs/adr/0004-machine-readable-io-error-channel.md`) and in
+  keeping `schemaVersion` at `1`. Rationale: the roadmap 2.4.4 text offers two
+  options ("catalogued IO diagnostics or an explicit machine-readable error
+  channel"). A catalogued rule is semantically wrong (an IO failure is not a
+  workflow-content violation) and would expand `RULE_IDS`, the schema enum,
+  rule docs, and parity tests (`docs/technical-design.md` §8, §9). An additive
+  top-level field is the minimal honest change. `schemaVersion` stays `1`
+  because the envelope is pre-release (package version `0.0.0`, private, no
+  external consumers needing compatibility logic), which is exactly the
+  condition §8 gives for not bumping ("schemaVersion changes only when JSON
+  consumers need compatibility logic"). Existing consumers reading known fields
+  remain compatible. Because this changes public JSON behaviour, it is recorded
+  in a new ADR (`docs/adr/0004-machine-readable-io-error-channel.md`) and in
   `docs/technical-design.md` §8, per `AGENTS.md` §"Documentation Maintenance".
   Date/Author: 2026-07-06, planning agent.
 - Decision: `summary.files` continues to count only readable (checked) files;
   `summary.filesSkipped` counts unreadable input files. The human text report
-  gains a skipped-file note in its footer so text and JSON agree.
-  Rationale: satisfies "JSON consumers and summaries can distinguish skipped
-  files from clean runs" for both output modes without redefining the existing
-  `files` count.
-  Date/Author: 2026-07-06, planning agent.
+  gains a skipped-file note in its footer so text and JSON agree. Rationale:
+  satisfies "JSON consumers and summaries can distinguish skipped files from
+  clean runs" for both output modes without redefining the existing `files`
+  count. Date/Author: 2026-07-06, planning agent.
 - Decision: keep the per-file `error: cannot read <path>: <message>` lines on
-  stderr in addition to the new machine-readable channel.
-  Rationale: preserves the roadmap 2.4.1/2.4.3 human contract and CI logs while
-  adding the machine channel; the two are complementary, not a replacement.
-  Date/Author: 2026-07-06, planning agent.
+  stderr in addition to the new machine-readable channel. Rationale: preserves
+  the roadmap 2.4.1/2.4.3 human contract and CI logs while adding the machine
+  channel; the two are complementary, not a replacement. Date/Author:
+  2026-07-06, planning agent.
 - Decision: `--strict-claude` on the command line overrides configuration by
-  forcing `strictClaude` true for the invocation.
-  Rationale: `docs/technical-design.md` §10 — "CLI flags override
-  configuration"; §7.3 lists `--strict-claude`; §9.2 defines the promotion.
-  There is no `--no-strict-claude` in the 2.4.4 success list, so only the
-  promote direction is added.
-  Date/Author: 2026-07-06, planning agent.
+  forcing `strictClaude` true for the invocation. Rationale:
+  `docs/technical-design.md` §10 — "CLI flags override configuration"; §7.3
+  lists `--strict-claude`; §9.2 defines the promotion. There is no
+  `--no-strict-claude` in the 2.4.4 success list, so only the promote direction
+  is added. Date/Author: 2026-07-06, planning agent.
 - Decision: `--respect-gitignore`/`--no-respect-gitignore` are recognized
-  value-less flags that record a discovery posture with no path-filtering effect
-  on explicit paths in v1.
-  Rationale: `docs/technical-design.md` §7.2 scopes ignore-file handling to
-  discovery/traversal, which is deferred; explicit paths are "used as provided".
-  This matches Ruff (gitignore never filters explicitly passed files) and is
-  design-mandated (§7.0 lists the flag), so it is not a §7.0 near-miss. Pinned
-  by an acceptance/non-interference test.
-  Date/Author: 2026-07-06, planning agent.
+  value-less flags that record a discovery posture with no path-filtering
+  effect on explicit paths in v1. Rationale: `docs/technical-design.md` §7.2
+  scopes ignore-file handling to discovery/traversal, which is deferred;
+  explicit paths are "used as provided". This matches Ruff (gitignore never
+  filters explicitly passed files) and is design-mandated (§7.0 lists the
+  flag), so it is not a §7.0 near-miss. Pinned by an
+  acceptance/non-interference test. Date/Author: 2026-07-06, planning agent.
 - Decision: `--force-exclude` filters *explicit* paths against the configured
   `exclude` globs (via `Bun.Glob`); without it, explicit paths are always
-  checked.
-  Rationale: `docs/technical-design.md` §7.2 — "`--force-exclude` applies
-  exclusions even to paths passed explicitly on the command line". This is the
-  one exclusion behaviour with observable v1 meaning on explicit paths;
-  `--exclude`/`--extend-exclude` (which *define* the pattern set) are deferred to
-  a discovery task and are out of scope here. Excluded paths are skipped
+  checked. Rationale: `docs/technical-design.md` §7.2 — "`--force-exclude`
+  applies exclusions even to paths passed explicitly on the command line". This
+  is the one exclusion behaviour with observable v1 meaning on explicit paths;
+  `--exclude`/`--extend-exclude` (which *define* the pattern set) are deferred
+  to a discovery task and are out of scope here. Excluded paths are skipped
   silently — neither read, counted in `files`, nor reported as `ioErrors`.
   Date/Author: 2026-07-06, planning agent.
 - Decision: `--exit-non-zero-on-fix` is recognized with correct semantics but
-  never changes the exit code in v1 because no rule has fix support.
-  Rationale: `docs/technical-design.md` §7.3/§7.4 define it relative to applied
-  fixes; fix support is roadmap 3.3.8. Recognizing it now with an acceptance
-  test is forward-compatible and honest (it activates automatically when fixes
-  exist), and avoids a later parser breaking change.
-  Date/Author: 2026-07-06, planning agent.
+  never changes the exit code in v1 because no rule has fix support. Rationale:
+  `docs/technical-design.md` §7.3/§7.4 define it relative to applied fixes; fix
+  support is roadmap 3.3.8. Recognizing it now with an acceptance test is
+  forward-compatible and honest (it activates automatically when fixes exist),
+  and avoids a later parser breaking change. Date/Author: 2026-07-06, planning
+  agent.
 - Decision: `--help`/`-h` and `--version`/`-V` are informational parser outcomes
   that bypass configuration loading, file reads, diagnostics, and the no-paths
-  usage error.
-  Rationale: help and version are command-discovery actions, not check runs.
-  Returning them as a distinct successful parser outcome lets `runCheckCli`
-  print stable stdout-only text and exit `0` without invoking any analysis or
-  filesystem seams.
-  Date/Author: 2026-07-06, build agent for WI-8.
+  usage error. Rationale: help and version are command-discovery actions, not
+  check runs. Returning them as a distinct successful parser outcome lets
+  `runCheckCli` print stable stdout-only text and exit `0` without invoking any
+  analysis or filesystem seams. Date/Author: 2026-07-06, build agent for WI-8.
 - Decision: missing values for implemented value-taking options use
-  `missing value for <flag>`, including `--output-format`.
-  Rationale: WI-8 explicitly requires consistent missing-option-value
-  diagnostics for implemented flags. Unsupported values still use the
-  output-format validator's existing `unsupported output format: <value>`
-  diagnostic, so users can distinguish omission from a recognized-but-invalid
-  value.
-  Date/Author: 2026-07-06, build agent for WI-8.
+  `missing value for <flag>`, including `--output-format`. Rationale: WI-8
+  explicitly requires consistent missing-option-value diagnostics for
+  implemented flags. Unsupported values still use the output-format validator's
+  existing `unsupported output format: <value>` diagnostic, so users can
+  distinguish omission from a recognized-but-invalid value. Date/Author:
+  2026-07-06, build agent for WI-8.
 - Decision: the equals-form string-value parser treats an empty suffix as a
-  missing value for each implemented string flag.
-  Rationale: shell expansion such as `--stdin-filename=$VAR` can produce
-  `--stdin-filename=`. Treating that as a present empty value causes stdin mode
-  to run under an empty logical path, and treating `--output-file=` as a present
-  empty value defers the error to file writing. The option table already carried
-  per-flag `missingValueError` strings, so the parser now rejects empty
-  equals-form values at the CLI usage boundary with exit `2`.
-  Date/Author: 2026-07-06, fix-round agent.
+  missing value for each implemented string flag. Rationale: shell expansion
+  such as `--stdin-filename=$VAR` can produce `--stdin-filename=`. Treating
+  that as a present empty value causes stdin mode to run under an empty logical
+  path, and treating `--output-file=` as a present empty value defers the error
+  to file writing. The option table already carried per-flag
+  `missingValueError` strings, so the parser now rejects empty equals-form
+  values at the CLI usage boundary with exit `2`. Date/Author: 2026-07-06,
+  fix-round agent.
 - Decision: `--stdin-filename <path>` switches the command to standard-input
-  mode; supplying positional path operands alongside it is a usage error
-  (exit 2).
-  Rationale: `docs/technical-design.md` §7.2 — "`--stdin-filename` is required
-  when reading stdin so diagnostics have a stable path". Making the flag the
-  explicit stdin trigger avoids inventing a `-` operand convention that the
-  design does not specify, and keeps operand handling unambiguous.
+  mode; supplying positional path operands alongside it is a usage error (exit
+  2). Rationale: `docs/technical-design.md` §7.2 — "`--stdin-filename` is
+  required when reading stdin so diagnostics have a stable path". Making the
+  flag the explicit stdin trigger avoids inventing a `-` operand convention
+  that the design does not specify, and keeps operand handling unambiguous.
   Date/Author: 2026-07-06, planning agent.
 - Decision: WI-9 process-level coverage lives in a new focused e2e test file
-  rather than extending `tests/cli/check-cli-corpus.e2e.test.ts`.
-  Rationale: the existing corpus process suite already owns explicit-path
-  corpus sampling. A focused `tests/cli/check-cli-flags.e2e.test.ts` keeps the
-  new flag assertions readable, under the 400-line code-file ceiling, and
-  scoped to invocation semantics rather than corpus representativeness.
-  Date/Author: 2026-07-06, build agent for WI-9.
+  rather than extending `tests/cli/check-cli-corpus.e2e.test.ts`. Rationale:
+  the existing corpus process suite already owns explicit-path corpus sampling.
+  A focused `tests/cli/check-cli-flags.e2e.test.ts` keeps the new flag
+  assertions readable, under the 400-line code-file ceiling, and scoped to
+  invocation semantics rather than corpus representativeness. Date/Author:
+  2026-07-06, build agent for WI-9.
 - Decision: Ruff-parity behavioural claims derive from
   `docs/technical-design.md` §§7.0–7.4 and §8 (the repository source of truth)
-  and are pinned by tests, rather than from live Ruff documentation.
-  Rationale: the standing rules make `docs/` the source of truth, and the design
-  already specifies each flag's meaning. A live Ruff-docs fetch via `firecrawl`
-  was attempted during planning but the `firecrawl_scrape` tool required an
+  and are pinned by tests, rather than from live Ruff documentation. Rationale:
+  the standing rules make `docs/` the source of truth, and the design already
+  specifies each flag's meaning. A live Ruff-docs fetch via `firecrawl` was
+  attempted during planning but the `firecrawl_scrape` tool required an
   ungranted permission; the design doc plus test pins satisfy the
-  "verified-and-cited or pinned by a test" bar without it.
-  Date/Author: 2026-07-06, planning agent.
+  "verified-and-cited or pinned by a test" bar without it. Date/Author:
+  2026-07-06, planning agent.
 
 ## Outcomes & retrospective
 
-WI-1 delivered the behaviour-preserving parser extraction. `src/cli/check-cli.ts`
-now keeps runner, configuration, rendering and IO orchestration concerns, while
-`src/cli/check-args.ts` owns the current `check` argument grammar and exported
-parser contract. The focused parser tests in `tests/cli/check-args.test.ts`
-cover the existing command, output-format, configuration, isolated-mode and
-usage-error semantics before later Ruff-compatible flags are added.
+WI-1 delivered the behaviour-preserving parser extraction.
+`src/cli/check-cli.ts` now keeps runner, configuration, rendering and IO
+orchestration concerns, while `src/cli/check-args.ts` owns the current `check`
+argument grammar and exported parser contract. The focused parser tests in
+`tests/cli/check-args.test.ts` cover the existing command, output-format,
+configuration, isolated-mode and usage-error semantics before later
+Ruff-compatible flags are added.
 
 The WI-1 file-size budget remains within tolerance: `src/cli/check-cli.ts` is
 180 lines, `src/cli/check-args.ts` is 202 lines, and
-`tests/cli/check-args.test.ts` is 83 lines. No invocation behaviour changed; the
-existing CLI and configuration-aware suites stayed green.
+`tests/cli/check-args.test.ts` is 83 lines. No invocation behaviour changed;
+the existing CLI and configuration-aware suites stayed green.
 
 WI-2 added the machine-readable IO-error channel selected in the Decision Log.
 `DiagnosticReport` now always carries `ioErrors`; `DiagnosticSummary` now
 contains `filesSkipped`; JSON output emits both additive fields with
 `schemaVersion` still at `1`; and text output prints skipped-file footers for
 skip-only and mixed diagnostic/read-failure runs. `runCheck` maps
-`WorkflowSourceReadFailure` values into the report while preserving the existing
-CLI stderr lines and exit-code policy. The public package entry exports the new
-`IoError` type, and the schema literal, golden JSON contract fixture, snapshots,
-public API fixtures and source-span report-shape tests now pin the new envelope.
+`WorkflowSourceReadFailure` values into the report while preserving the
+existing CLI stderr lines and exit-code policy. The public package entry
+exports the new `IoError` type, and the schema literal, golden JSON contract
+fixture, snapshots, public API fixtures and source-span report-shape tests now
+pin the new envelope.
 
 WI-2 also recorded the design in
 `docs/adr/0004-machine-readable-io-error-channel.md`, updated
@@ -488,12 +467,12 @@ bytes that would have gone to stdout, including the trailing newline for
 non-empty reports, to the selected file. Stderr read-failure and configuration
 warning output remains unchanged.
 
-Focused tests cover parser acceptance, missing-value rejection, JSON report file
-redirection, and full text report file redirection. The implementation kept the
-parser under the complexity gate by splitting recognized value-taking options
-into two-token and equals-form helpers. The delegated scrutineer gate run passed
-`make all`, `make check-fmt`, `make typecheck`, `make lint`, and `make test`
-before this progress update was recorded.
+Focused tests cover parser acceptance, missing-value rejection, JSON report
+file redirection, and full text report file redirection. The implementation
+kept the parser under the complexity gate by splitting recognized value-taking
+options into two-token and equals-form helpers. The delegated scrutineer gate
+run passed `make all`, `make check-fmt`, `make typecheck`, `make lint`, and
+`make test` before this progress update was recorded.
 
 WI-5 added `--stdin-filename <path>` and `--stdin-filename=<path>` to the check
 argument parser. When the flag is present, zero positional operands is now a
@@ -521,13 +500,14 @@ rendering reports and read-failure stderr: `--exit-zero` downgrades the normal
 diagnostics/read-failure exit code `1` to `0`, while usage, configuration, and
 internal failures still return `2`.
 
-`--exit-non-zero-on-fix` is accepted and wired into the policy step, but remains
-inert in v1 because no rules apply fixes yet. Focused parser tests pin both new
-flags, and `tests/cli/check-cli-exit-policy.test.ts` covers diagnostic,
-unreadable-input, usage-error, clean, and invalid-workflow cases. The tests live
-in a new focused file rather than `tests/cli/check-cli.test.ts` to preserve the
-400-line code-file invariant. The final delegated scrutineer run passed
-`make all`, `make check-fmt`, `make typecheck`, `make lint`, and `make test`.
+`--exit-non-zero-on-fix` is accepted and wired into the policy step, but
+remains inert in v1 because no rules apply fixes yet. Focused parser tests pin
+both new flags, and `tests/cli/check-cli-exit-policy.test.ts` covers
+diagnostic, unreadable-input, usage-error, clean, and invalid-workflow cases.
+The tests live in a new focused file rather than `tests/cli/check-cli.test.ts`
+to preserve the 400-line code-file invariant. The final delegated scrutineer
+run passed `make all`, `make check-fmt`, `make typecheck`, `make lint`, and
+`make test`.
 
 WI-7 added value-less `--force-exclude`, `--respect-gitignore`, and
 `--no-respect-gitignore` parsing. `--respect-gitignore` defaults to `true`, and
@@ -536,11 +516,11 @@ recorded discovery posture with no explicit-path filtering in v1.
 
 `src/cli/path-exclusion.ts` now owns the pure `Bun.Glob` exclusion helper, and
 `runCheckCli` filters explicit and stdin-logical paths through configured
-`exclude` globs only when `--force-exclude` is set. Excluded paths are not read,
-not counted in `summary.files`, and not represented as `ioErrors`, matching the
-Decision Log ruling. Focused parser tests, table/property helper tests, and
-configuration-aware CLI tests cover forced exclusion and gitignore posture
-non-interference. The final delegated scrutineer run passed `make all`,
+`exclude` globs only when `--force-exclude` is set. Excluded paths are not
+read, not counted in `summary.files`, and not represented as `ioErrors`,
+matching the Decision Log ruling. Focused parser tests, table/property helper
+tests, and configuration-aware CLI tests cover forced exclusion and gitignore
+posture non-interference. The final delegated scrutineer run passed `make all`,
 `make check-fmt`, `make typecheck`, `make lint`, and `make test`; after this
 ExecPlan update, local `make markdownlint` and `make nixie` also passed.
 
@@ -574,9 +554,9 @@ snapshotting absolute paths.
 separates the remaining planned flags, documents `summary.filesSkipped` and
 `ioErrors`, and removes the stale "configuration is planned" note. The
 developer guide now names the parser/helper modules, the `writeFileText` and
-`readStdin` seams, the `path-exclusion` helper, the machine-readable IO channel,
-and the flags still deferred to discovery, fixing, colour, log-level, and extra
-output-format work.
+`readStdin` seams, the `path-exclusion` helper, the machine-readable IO
+channel, and the flags still deferred to discovery, fixing, colour, log-level,
+and extra output-format work.
 
 The first WI-9 delegated scrutineer run caught a stale local stdin test shape
 that failed `make all` type checking. After switching the process test to
@@ -588,12 +568,11 @@ that failed `make all` type checking. After switching the process test to
 Fix round 1 resolved the blocking review finding for the WI-8 missing-value
 audit. `parseEqualsStringValueOption` now rejects empty equals-form values
 using the `missingValueError` already defined in
-`src/cli/check-option-tables.ts`, so `--output-file=` and
-`--stdin-filename=` both fail before runtime IO or stdin analysis begins.
-`tests/cli/check-args.test.ts` covers parser-level `missing value for
-<flag>` results for separate and equals forms, and
-`tests/cli/check-cli.test.ts` covers the user-facing exit `2` behaviour for
-`--output-file=` and `--stdin-filename=`.
+`src/cli/check-option-tables.ts`, so `--output-file=` and `--stdin-filename=`
+both fail before runtime IO or stdin analysis begins.
+`tests/cli/check-args.test.ts` covers parser-level `missing value for <flag>`
+results for separate and equals forms, and `tests/cli/check-cli.test.ts` covers
+the user-facing exit `2` behaviour for `--output-file=` and `--stdin-filename=`.
 
 Focused Red-Green-Refactor evidence: the new parser tests first failed because
 `--output-file=` returned the generic usage string and `--stdin-filename=`
@@ -628,8 +607,9 @@ Relevant source modules (full repository-relative paths):
 - `src/diagnostics/types.ts` — `Diagnostic`, `DiagnosticReport`,
   `DiagnosticSummary`, `SourceSpan`, `SourcePosition`, and the constants
   `DIAGNOSTIC_SCHEMA_VERSION` (`1`) and `TOOL_NAME` (`"odw-lint"`).
-- `src/diagnostics/report.ts` — `createDiagnosticReport({ version, files,
-  diagnostics })` and `countDiagnostics`.
+- `src/diagnostics/report.ts` —
+  `createDiagnosticReport({ version, files, diagnostics })` and
+  `countDiagnostics`.
 - `src/diagnostics/report-json.ts` — `formatJsonReport(report)`, the canonical
   §8 JSON projection.
 - `src/diagnostics/text.ts` — `formatTextReport(report)` and
@@ -663,17 +643,17 @@ Design sources of truth: `docs/technical-design.md` §§7.0 (UX precedent), 7.1
 contract), 10 (configuration); `docs/developers-guide.md` §"CLI";
 `docs/users-guide.md` §§"Command shape", "Exit codes", "Diagnostic reports";
 `docs/repository-layout.md` §"Source boundaries";
-`docs/adr/0001-static-analysis-boundary.md`; `docs/documentation-style-guide.md`;
-`AGENTS.md` §§"TypeScript Guidance", "Testing", "Error Handling",
-"Documentation Maintenance".
+`docs/adr/0001-static-analysis-boundary.md`;
+`docs/documentation-style-guide.md`; `AGENTS.md` §§"TypeScript Guidance",
+"Testing", "Error Handling", "Documentation Maintenance".
 
 Skills to load for every work item: `execplans` (this plan) and
 `en-gb-oxendict` (spelling). This repository has no TypeScript router skill;
 follow `AGENTS.md` §"TypeScript Guidance" instead. Python verification skills
-(`hypothesis`, `crosshair`, `mutmut`) do not apply to TypeScript; use `fast-check`
-property tests, Bun snapshot tests, and table-driven tests per `AGENTS.md`
-§"Testing". Use `leta` for symbol navigation and reference checks before
-changing any signature, and `grepai` for intent searches against `main`.
+(`hypothesis`, `crosshair`, `mutmut`) do not apply to TypeScript; use
+`fast-check` property tests, Bun snapshot tests, and table-driven tests per
+`AGENTS.md` §"Testing". Use `leta` for symbol navigation and reference checks
+before changing any signature, and `grepai` for intent searches against `main`.
 
 ## Plan of work
 
@@ -689,8 +669,8 @@ exists. WI-9 adds process-level coverage and finalizes the guides.
 ### WI-1: Extract the check argument parser into a dedicated module
 
 Implements the `AGENTS.md` §"Code Style and Structure" 400-line ceiling and the
-§"TypeScript Guidance" small-module guidance ahead of the flag surface. Behaviour
-preserving.
+§"TypeScript Guidance" small-module guidance ahead of the flag surface.
+Behaviour preserving.
 
 Read first: `src/cli/check-cli.ts`; `tests/cli/check-cli.test.ts`,
 `tests/cli/check-cli-config.test.ts`; `AGENTS.md` §§"Code Style and Structure",
@@ -717,15 +697,16 @@ command, `--output-format`/`--output-format=` (valid and unsupported values),
 usage errors. The existing `tests/cli/check-cli*.test.ts` suites are the
 behavioural guard and must stay green unchanged.
 
-Red evidence: the new `check-args.test.ts` fails to import
-`parseCheckArgs`/`ParsedCheckArgs` from `./check-args` (module missing). Green:
-create the module and re-point imports. Refactor: none beyond the extraction.
-Validation: `make all`.
+Red evidence: the new `check-args.test.ts` fails to import `parseCheckArgs`/
+`ParsedCheckArgs` from `./check-args` (module missing). Green: create the
+module and re-point imports. Refactor: none beyond the extraction. Validation:
+`make all`.
 
 Note: the first commit on this work item also adds the ExecPlan link to
-`docs/contents.md` (required by `tests/build-gate/documentation-contents.test.ts`
-now that `docs/execplans/roadmap-2-4-4.md` exists). Format only the touched
-markdown: `bunx mdtablefix --in-place docs/contents.md` then
+`docs/contents.md` (required by
+`tests/build-gate/documentation-contents.test.ts` now that
+`docs/execplans/roadmap-2-4-4.md` exists). Format only the touched markdown:
+`bunx mdtablefix --in-place docs/contents.md` then
 `bunx markdownlint-cli2 --fix docs/contents.md`, then run the markdown gates.
 
 ### WI-2: Add a machine-readable IO-error channel and skipped-file summary
@@ -748,9 +729,9 @@ Work:
 
 1. In `src/diagnostics/types.ts`, add an `IoError` type
    (`{ file: string; reason: "not-found" | "not-a-file" | "unreadable";
-   message: string }`), add `readonly ioErrors: readonly IoError[]` to
-   `DiagnosticReport`, and add `readonly filesSkipped: number` to
-   `DiagnosticSummary`.
+   message: string }`),
+   add `readonly ioErrors: readonly IoError[]` to `DiagnosticReport`, and add
+   `readonly filesSkipped: number` to `DiagnosticSummary`.
 2. In `src/diagnostics/report.ts`, extend `createDiagnosticReport` to accept
    `ioErrors` and thread `filesSkipped = ioErrors.length` into the summary;
    `countDiagnostics` gains the `filesSkipped` field. Freeze the new arrays.
@@ -786,26 +767,25 @@ Work:
 Tests (Red first):
 
 - Unit (`tests/diagnostics/report.test.ts`,
-  `tests/diagnostics/report-json.test.ts`,
-  `tests/diagnostics/schema.test.ts`): a report built with two read failures has
-  `summary.filesSkipped === 2` and two `ioErrors`; the JSON projection emits
-  `ioErrors` (with the right `reason`) and `summary.filesSkipped`, validates
-  against `DIAGNOSTIC_REPORT_SCHEMA`, and a clean report emits `ioErrors: []`
-  and `filesSkipped: 0`.
+  `tests/diagnostics/report-json.test.ts`, `tests/diagnostics/schema.test.ts`):
+  a report built with two read failures has `summary.filesSkipped === 2` and two
+  `ioErrors`; the JSON projection emits `ioErrors` (with the right `reason`)
+  and `summary.filesSkipped`, validates against `DIAGNOSTIC_REPORT_SCHEMA`, and
+  a clean report emits `ioErrors: []` and `filesSkipped: 0`.
 - Unit (`tests/diagnostics/text.test.ts`): footer wording for
   diagnostics-only, skip-only, and mixed reports (snapshot plus semantic
   assertions).
 - CLI (`tests/cli/check-cli.test.ts`): a JSON run over a missing path now emits
-  `ioErrors[0].file` / `.reason` and `summary.filesSkipped >= 1` on stdout while
-  the stderr `error: cannot read ...` line and exit `1` are unchanged; a text
-  run over a skip-only invocation prints the skipped-file footer on stdout.
+  `ioErrors[0].file` / `.reason` and `summary.filesSkipped >= 1` on stdout
+  while the stderr `error: cannot read ...` line and exit `1` are unchanged; a
+  text run over a skip-only invocation prints the skipped-file footer on stdout.
 
 Red evidence: report/report-json/schema tests fail on the missing fields; the
-json-contract parity test fails until the golden gains `ioErrors`/`filesSkipped`.
-Green: add the fields, projection, schema, and text footer; update the golden and
-snapshots. Refactor: extract an `ioErrorFromReadFailure` helper if `run-check.ts`
-grows. Validation: `make all`, then `make markdownlint` and `make nixie` for the
-§8 and ADR markdown.
+json-contract parity test fails until the golden gains `ioErrors`/
+`filesSkipped`. Green: add the fields, projection, schema, and text footer;
+update the golden and snapshots. Refactor: extract an `ioErrorFromReadFailure`
+helper if `run-check.ts` grows. Validation: `make all`, then
+`make markdownlint` and `make nixie` for the §8 and ADR markdown.
 
 ### WI-3: Add the `--strict-claude` CLI flag overriding configuration
 
@@ -859,8 +839,8 @@ Work:
    `node:fs`.
 3. When `--output-file` is set, write the rendered report (the exact bytes that
    would go to stdout, including the trailing newline) to the file instead of
-   stdout. Read-failure stderr lines and config warnings still go to stderr; the
-   exit code is unchanged.
+   stdout. Read-failure stderr lines and config warnings still go to stderr;
+   the exit code is unchanged.
 
 Tests (Red first): in `tests/cli/check-cli.test.ts`, with an injected
 `writeFileText` capturing calls:
@@ -871,8 +851,8 @@ Tests (Red first): in `tests/cli/check-cli.test.ts`, with an injected
 - `--output-file` with no value returns `2` with the stable usage error and
   empty stdout.
 
-Red evidence: the flag is rejected as unknown. Green: parse, add the seam, route
-output. Validation: `make all`.
+Red evidence: the flag is rejected as unknown. Green: parse, add the seam,
+route output. Validation: `make all`.
 
 ### WI-5: Add `--stdin-filename` standard-input analysis
 
@@ -880,8 +860,9 @@ Implements `docs/technical-design.md` §7.2 (stdin requires `--stdin-filename`)
 and the Decision Log stdin-trigger ruling.
 
 Read first: `docs/technical-design.md` §7.2; `src/cli/check-cli.ts`,
-`src/cli/check-args.ts`, `src/cli/run-check.ts`, `src/cli/read-workflow-source.ts`;
-`tests/cli/check-cli.test.ts`. Skills: `execplans`, `en-gb-oxendict`.
+`src/cli/check-args.ts`, `src/cli/run-check.ts`,
+`src/cli/read-workflow-source.ts`; `tests/cli/check-cli.test.ts`. Skills:
+`execplans`, `en-gb-oxendict`.
 
 Work:
 
@@ -896,8 +877,8 @@ Work:
 3. In stdin mode, lint the stdin text as a single `WorkflowSource` whose
    `filePath` is the `--stdin-filename` value, reusing `lintWorkflowSource` and
    the existing report path. Configured include/exclude and `--force-exclude`
-   apply to the logical stdin path exactly as the design intends (WI-7 wires the
-   exclusion check; here the stdin path is simply the logical file).
+   apply to the logical stdin path exactly as the design intends (WI-7 wires
+   the exclusion check; here the stdin path is simply the logical file).
 
 Tests (Red first): in `tests/cli/check-cli.test.ts`, with an injected
 `readStdin`:
@@ -909,8 +890,8 @@ Tests (Red first): in `tests/cli/check-cli.test.ts`, with an injected
 - `--stdin-filename workflows/x.js extra.js` (operand present) returns `2` with
   the combination usage error.
 
-Red evidence: the flag is rejected as unknown / stdin is never read. Green: parse
-and wire the stdin seam. Validation: `make all`.
+Red evidence: the flag is rejected as unknown / stdin is never read. Green:
+parse and wire the stdin seam. Validation: `make all`.
 
 ### WI-6: Add `--exit-zero` and `--exit-non-zero-on-fix` exit-code policy
 
@@ -926,10 +907,10 @@ Work:
 1. Parse the value-less `--exit-zero` and `--exit-non-zero-on-fix` flags in
    `src/cli/check-args.ts`.
 2. In `src/cli/check-cli.ts`, apply `--exit-zero` as the last step before
-   returning: if the computed exit code is `1`, return `0`; leave `2` untouched.
-   Wire `--exit-non-zero-on-fix` through to the exit-code computation; since no
-   fixes are applied in v1 (no fix-capable rule), it never raises the code —
-   pin that it is accepted and inert.
+   returning: if the computed exit code is `1`, return `0`; leave `2`
+   untouched. Wire `--exit-non-zero-on-fix` through to the exit-code
+   computation; since no fixes are applied in v1 (no fix-capable rule), it
+   never raises the code — pin that it is accepted and inert.
 
 Tests (Red first): in `tests/cli/check-cli.test.ts`:
 
@@ -951,8 +932,8 @@ Read first: `docs/technical-design.md` §§7.0, 7.2; `src/cli/check-cli.ts`,
 `src/cli/check-args.ts`, `src/cli/run-check.ts`, `src/config/linter-config.ts`;
 `tests/cli/check-cli-config.test.ts`; `AGENTS.md` §"Testing" (property tests).
 Skills: `execplans`, `en-gb-oxendict`. Verify `Bun.Glob` matching with a small
-scratch check before relying on it, and cite the observed behaviour in Surprises
-& Discoveries.
+scratch check before relying on it, and cite the observed behaviour in
+Surprises & Discoveries.
 
 Work:
 
@@ -965,8 +946,8 @@ Work:
    any glob via `new Bun.Glob(pattern).match(path)`.
 3. In the check flow, when `--force-exclude` is set and the loaded config has
    `exclude` patterns, skip explicit (and stdin-logical) paths that match:
-   excluded paths are not read, not counted in `summary.files`, and not recorded
-   as `ioErrors`.
+   excluded paths are not read, not counted in `summary.files`, and not
+   recorded as `ioErrors`.
 4. Thread `respectGitignore` as a recorded discovery posture with no
    path-filtering effect on explicit paths in v1 (documented, per the Decision
    Log). It exists to keep the invocation contract Ruff-compatible and to seed
@@ -978,8 +959,8 @@ Tests (Red first):
   test that a path matching a pattern is excluded and a non-matching path is
   not, over generated segments.
 - `tests/cli/check-cli-config.test.ts`: with a config `exclude` of
-  `**/generated/**`, an explicit path `generated/workflow.js` (mapped to invalid
-  source via the injected reader) is checked and fails `1` *without*
+  `**/generated/**`, an explicit path `generated/workflow.js` (mapped to
+  invalid source via the injected reader) is checked and fails `1` *without*
   `--force-exclude`, and is skipped (clean, exit `0`) *with* `--force-exclude`;
   `--respect-gitignore` and `--no-respect-gitignore` are accepted and do not
   change explicit-path results.
@@ -1002,9 +983,9 @@ Work:
 
 1. Recognize `--help`/`-h` and `--version`/`-V` early in parsing (before the
    "no paths" usage error), returning a distinct parsed outcome.
-2. In `src/cli/check-cli.ts`, on `--version` write the package version and return
-   `0`; on `--help` write a usage block listing the flags implemented by this
-   task (`--output-format`, `--output-file`, `--strict-claude`, `--config`,
+2. In `src/cli/check-cli.ts`, on `--version` write the package version and
+   return `0`; on `--help` write a usage block listing the flags implemented by
+   this task (`--output-format`, `--output-file`, `--strict-claude`, `--config`,
    `--isolated`, `--force-exclude`, `--respect-gitignore`/
    `--no-respect-gitignore`, `--stdin-filename`, `--exit-zero`,
    `--exit-non-zero-on-fix`, `--help`, `--version`) and return `0`.
@@ -1025,13 +1006,13 @@ output. Validation: `make all`.
 
 ### WI-9: Add process-level flag coverage and finalize the guides
 
-Implements the roadmap 2.4.4 success criterion (fixtures cover the flag surface)
-end-to-end and `AGENTS.md` §"Documentation Maintenance".
+Implements the roadmap 2.4.4 success criterion (fixtures cover the flag
+surface) end-to-end and `AGENTS.md` §"Documentation Maintenance".
 
 Read first: `tests/cli/check-cli-corpus.e2e.test.ts`; `docs/users-guide.md`
-§§"Command shape", "Exit codes", "Diagnostic reports"; `docs/developers-guide.md`
-§"CLI"; `docs/documentation-style-guide.md`. Skills: `execplans`,
-`en-gb-oxendict`.
+§§"Command shape", "Exit codes", "Diagnostic reports";
+`docs/developers-guide.md` §"CLI"; `docs/documentation-style-guide.md`. Skills:
+`execplans`, `en-gb-oxendict`.
 
 Work:
 
@@ -1040,16 +1021,16 @@ Work:
    `--help`, `--output-file` writing to a temporary path, `--stdin-filename`
    with stdin piped through `Bun.spawnSync`'s `stdin` option, `--strict-claude`
    promotion, `--exit-zero`, and a JSON run asserting `ioErrors`/
-   `summary.filesSkipped` over a missing path. Assert structural fields and exit
-   codes only (absolute `file` paths are not snapshotted).
+   `summary.filesSkipped` over a missing path. Assert structural fields and
+   exit codes only (absolute `file` paths are not snapshotted).
 2. Update `docs/users-guide.md`: move the now-implemented flags out of the
    "planned" lists into "available now" (`--output-file`, `--strict-claude`,
    `--stdin-filename`, `--force-exclude`, `--respect-gitignore`/
    `--no-respect-gitignore`, `--exit-zero`, `--exit-non-zero-on-fix`,
    `--config`, `--isolated`, `--help`, `--version`); refresh the "Exit codes"
    table if wording changed; document `ioErrors`/`summary.filesSkipped` in
-   "Diagnostic reports"; and correct the stale "Configuration is planned but not
-   implemented yet" note now that configuration is available.
+   "Diagnostic reports"; and correct the stale "Configuration is planned but
+   not implemented yet" note now that configuration is available.
 3. Update `docs/developers-guide.md` §"CLI": remove `--exit-zero` and
    `--strict-claude` from the deferred list, describe the implemented flag
    surface, the new seams (`writeFileText`, `readStdin`), the
@@ -1069,8 +1050,8 @@ written after WI-3..WI-8 so they pass on green). Validation: `make all`, then
 ## Concrete steps
 
 Run everything from the worktree root
-`/data/leynos/Projects/odw-lint.worktrees/roadmap-2-4-4`. Commit after each work
-item once its gate is green.
+`/data/leynos/Projects/odw-lint.worktrees/roadmap-2-4-4`. Commit after each
+work item once its gate is green.
 
 1. WI-1: create `src/cli/check-args.ts`, re-point `src/cli/check-cli.ts`, add
    `tests/cli/check-args.test.ts`, and add the ExecPlan link to
@@ -1142,21 +1123,21 @@ item once its gate is green.
 Deterministic commit gate for every work item: `make all` (build, `check-fmt`,
 `whitespace-hygiene`, `lint`, `typecheck`, `test`). For any work item that
 changes Markdown (WI-1, WI-2, WI-9) additionally run `make markdownlint` and
-`make nixie`. AGENTS.md is authoritative for the gate set; `make all` aggregates
-build, formatting, whitespace hygiene, lint, type checking, and tests, and the
-sequential targets `make check-fmt`, `make lint`, `make typecheck`, and
-`make test` remain available for isolation. The workflow host re-runs the
-configured gates against committed HEAD; do not report gates green unless every
-gate passed at HEAD.
+`make nixie`. AGENTS.md is authoritative for the gate set; `make all`
+aggregates build, formatting, whitespace hygiene, lint, type checking, and
+tests, and the sequential targets `make check-fmt`, `make lint`,
+`make typecheck`, and `make test` remain available for isolation. The workflow
+host re-runs the configured gates against committed HEAD; do not report gates
+green unless every gate passed at HEAD.
 
-Behavioural acceptance (each pinned by the work item's tests, failing before and
-passing after):
+Behavioural acceptance (each pinned by the work item's tests, failing before
+and passing after):
 
 - `bun run src/cli/main.ts check --version` prints the version and exits `0`;
   `--help` prints usage listing the implemented flags and exits `0` (WI-8).
 - A JSON run over a missing path emits `ioErrors` and `summary.filesSkipped` on
-  stdout, keeps the `error: cannot read ...` stderr line, and exits `1`; a
-  text run notes the skipped file in its footer (WI-2).
+  stdout, keeps the `error: cannot read ...` stderr line, and exits `1`; a text
+  run notes the skipped file in its footer (WI-2).
 - `--strict-claude` promotes Claude-compatibility warnings to errors and
   overrides `strictClaude: false` in configuration (WI-3).
 - `--output-file <path>` writes the report to the file and leaves stdout empty
@@ -1174,8 +1155,8 @@ passing after):
 Quality criteria ("done"):
 
 - Tests: new `check-args`, `path-exclusion`, IO-channel, and per-flag suites
-  pass; existing CLI, config, report, schema, json-contract, and e2e suites stay
-  green.
+  pass; existing CLI, config, report, schema, json-contract, and e2e suites
+  stay green.
 - Lint/typecheck: `make lint` and `make typecheck` clean; no new suppressions.
 - Format: `make check-fmt` clean, including the updated `.json` golden fixture.
 - Schema: emitted JSON conforms to the updated `DIAGNOSTIC_REPORT_SCHEMA`
@@ -1185,10 +1166,10 @@ Quality criteria ("done"):
 
 ## Idempotence and recovery
 
-Every work item is additive and re-runnable: creating modules, seams, tests, and
-the ADR is safe to repeat, and `make all` is idempotent. If a snapshot fails,
-inspect the diff, confirm it is the intended change (a new flag's output or the
-`ioErrors`/`filesSkipped` fields), then update it deliberately; never
+Every work item is additive and re-runnable: creating modules, seams, tests,
+and the ADR is safe to repeat, and `make all` is idempotent. If a snapshot
+fails, inspect the diff, confirm it is the intended change (a new flag's output
+or the `ioErrors`/`filesSkipped` fields), then update it deliberately; never
 blind-update. If `make check-fmt` reformats the golden `.json`, re-commit the
 formatted file — the structural parity assertion is unaffected. If a work item
 exceeds a tolerance, stop and record the situation in the Decision Log before
@@ -1262,40 +1243,42 @@ No new runtime or dev dependencies. Reuse `JSON.stringify`, the existing
 - 2026-07-06: Initial DRAFT. Decomposed roadmap 2.4.4 into nine atomic work
   items: parser extraction; the machine-readable IO-error channel (with ADR
   0004 and a §8 update); and one work item each for `--strict-claude`,
-  `--output-file`, `--stdin-filename`, the `--exit-zero`/`--exit-non-zero-on-fix`
-  pair, the `--force-exclude`/`--respect-gitignore` group, `--help`/`--version`
-  plus usage text, and end-to-end coverage with guide updates. Pinned the
-  additive-envelope (schemaVersion 1) decision, the explicit-path v1 semantics
-  for the ignore/fix flags, and the stdin-trigger rule in the Decision Log. All
-  validation runs through `make all` (plus `make markdownlint`/`make nixie` for
-  Markdown); formatter commands name only files each work item edits. No prior
-  design-review points to address (round 1).
-- 2026-07-06 (round 2): Resolved the sole design-review blocking point — ExecPlan
-  durability. Round 1 left `docs/contents.md` modified but uncommitted alongside
-  the untracked plan file, so the host declined to salvage-commit the plan
-  ("worktree holds 1 uncommitted path beyond the plan file"). This revision
-  reverts that stray `docs/contents.md` edit so the worktree holds only the
-  untracked plan file, letting the durable ExecPlan be committed cleanly; adding
-  the `docs/contents.md` ExecPlan link is restored to WI-1 during build (as in
-  the original decomposition), which the documentation-contents build gate then
-  enforces. `git add`/`git commit` are gated behind an ungranted approval in this
-  planning-agent session (`git add docs/execplans/roadmap-2-4-4.md
-  docs/contents.md` returned "This command requires approval"), so the plan is
-  committed via the host salvage path rather than an agent commit. Work-item
-  decomposition, decisions, and scope are otherwise unchanged.
+  `--output-file`, `--stdin-filename`, the `--exit-zero`/
+  `--exit-non-zero-on-fix` pair, the `--force-exclude`/`--respect-gitignore`
+  group, `--help`/`--version` plus usage text, and end-to-end coverage with
+  guide updates. Pinned the additive-envelope (schemaVersion 1) decision, the
+  explicit-path v1 semantics for the ignore/fix flags, and the stdin-trigger
+  rule in the Decision Log. All validation runs through `make all` (plus
+  `make markdownlint`/`make nixie` for Markdown); formatter commands name only
+  files each work item edits. No prior design-review points to address (round
+  1).
+- 2026-07-06 (round 2): Resolved the sole design-review blocking point —
+  ExecPlan durability. Round 1 left `docs/contents.md` modified but uncommitted
+  alongside the untracked plan file, so the host declined to salvage-commit the
+  plan ("worktree holds 1 uncommitted path beyond the plan file"). This
+  revision reverts that stray `docs/contents.md` edit so the worktree holds
+  only the untracked plan file, letting the durable ExecPlan be committed
+  cleanly; adding the `docs/contents.md` ExecPlan link is restored to WI-1
+  during build (as in the original decomposition), which the
+  documentation-contents build gate then enforces. `git add`/`git commit` are
+  gated behind an ungranted approval in this planning-agent session
+  (`git add docs/execplans/roadmap-2-4-4.md docs/contents.md` returned "This
+  command requires approval"), so the plan is committed via the host salvage
+  path rather than an agent commit. Work-item decomposition, decisions, and
+  scope are otherwise unchanged.
 - 2026-07-06 (WI-8): Implemented help, version, and comprehensive usage text.
   The parser now returns distinct informational outcomes for `--help`/`-h` and
   `--version`/`-V`, the CLI prints usage or the package version to stdout and
   exits `0`, and missing values for implemented value-taking flags now use the
-  common `missing value for <flag>` diagnostic. Added focused help/version tests
-  and recorded the parser file-size split into `src/cli/check-informational-action.ts`
-  and `src/cli/check-option-tables.ts`. WI-9 remains as the only unticked work
-  item.
+  common `missing value for <flag>` diagnostic. Added focused help/version
+  tests and recorded the parser file-size split into
+  `src/cli/check-informational-action.ts` and `src/cli/check-option-tables.ts`.
+  WI-9 remains as the only unticked work item.
 - 2026-07-06 (WI-9): Added process-level flag coverage for the implemented
   roadmap 2.4.4 invocation surface and finalized the user and developer guides.
   The plan is now complete: all nine work items are ticked, guide text matches
-  the available flags and remaining deferred work, and the final gate set passed
-  locally and through delegated scrutineer validation.
+  the available flags and remaining deferred work, and the final gate set
+  passed locally and through delegated scrutineer validation.
 - 2026-07-06 (fix round 1): Resolved the blocking missing-value audit gap for
   equals-form string flags. `--output-file=` and `--stdin-filename=` now reject
   empty values with `missing value for <flag>` at the parser boundary, and

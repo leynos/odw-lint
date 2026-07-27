@@ -1,21 +1,20 @@
 # Add a minimal loader-parity harness against trusted ODW example snapshots and known invalid fixtures
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
 ## Purpose / big picture
 
-Roadmap task 2.3.1 (`docs/roadmap.md`, step 2.3 "Prove ODW loader parity
-before shipping dialect checks") asks for a *minimal loader-parity harness*.
-Loader parity means: does `odw-lint` accept and reject the same workflow
-classes that the real Open Dynamic Workflows (ODW) loader would accept and
-reject *before it executes any workflow body*? The technical design
-(`docs/technical-design.md` §11.2) makes this release-blocking for the first
-dialect slice, not a later hardening task.
+Roadmap task 2.3.1 (`docs/roadmap.md`, step 2.3 "Prove ODW loader parity before
+shipping dialect checks") asks for a *minimal loader-parity harness*. Loader
+parity means: does `odw-lint` accept and reject the same workflow classes that
+the real Open Dynamic Workflows (ODW) loader would accept and reject *before it
+executes any workflow body*? The technical design (`docs/technical-design.md`
+§11.2) makes this release-blocking for the first dialect slice, not a later
+hardening task.
 
 After this change a maintainer can run `make test` and see a single reusable
 harness that:
@@ -62,8 +61,8 @@ escalation, not a workaround.
   Extensions `.ts/.mts/.cts/.js` are stripped before matching. Crucially, the
   bare-shortcut lookalikes `odw/index`, `odw/loader`, `odw/primitives`, and
   `odw/runtime` (without the `src/`/`dist/` segment) are classified **not**
-  forbidden by the real code — only the `src/`/`dist/`-qualified forms are.
-  Any forbidden-edge demonstration must therefore use a genuinely forbidden
+  forbidden by the real code — only the `src/`/`dist/`-qualified forms are. Any
+  forbidden-edge demonstration must therefore use a genuinely forbidden
   specifier such as `odw/src/loader`, `odw/src/runtime/worker`, or bare `odw`.
   The harness imports only from the `odw-lint` package entry (`src/index.ts`)
   and existing test fixture support.
@@ -113,32 +112,30 @@ escalation, not a workaround.
 ## Risks
 
 - Risk: a trusted example emits a live diagnostic the empty manifest does not
-  record (for example a deterministic-time compat warning).
-  Severity: medium; Likelihood: low.
-  Mitigation: verified by inspection that no example fixture contains
-  `Date.now`, `Math.random`, `new Date`, or `performance.now`; every example's
-  only export is the sanctioned `export const meta` envelope. The example
-  assertion therefore expects zero dialect errors and matches the recorded
-  `no-error` status. If a live diagnostic still appears, the Tolerance above
-  fires (escalate).
+  record (for example a deterministic-time compat warning). Severity: medium;
+  Likelihood: low. Mitigation: verified by inspection that no example fixture
+  contains `Date.now`, `Math.random`, `new Date`, or `performance.now`; every
+  example's only export is the sanctioned `export const meta` envelope. The
+  example assertion therefore expects zero dialect errors and matches the
+  recorded `no-error` status. If a live diagnostic still appears, the Tolerance
+  above fires (escalate).
 - Risk: the harness accidentally overlaps the existing task-owned parity suite
   `tests/static-analysis/invalid-workflow-metadata-parity.test.ts`, creating
-  duplicate/competing expectations.
-  Severity: low; Likelihood: medium.
+  duplicate/competing expectations. Severity: low; Likelihood: medium.
   Mitigation: that suite deliberately filters to the *task 2.1.3* rule subset
   plus body-syntax; the new harness asserts live status and the manifest rule
   classes that must be present in the whole pipeline. The Decision Log records
   the boundary so reviewers see they are complementary, not redundant.
 - Risk: the harness is perceived as re-implementing 2.3.2/2.3.3/2.3.4.
-  Severity: low; Likelihood: medium.
-  Mitigation: scope the harness to status + rule-class-set parity only; do not
-  import `checkMeta`/`scanDualCompat`, do not restructure dialect tests, do not
-  probe TypeScript-only bodies. Document the deferral explicitly.
+  Severity: low; Likelihood: medium. Mitigation: scope the harness to status +
+  rule-class-set parity only; do not import `checkMeta`/`scanDualCompat`, do
+  not restructure dialect tests, do not probe TypeScript-only bodies. Document
+  the deferral explicitly.
 - Risk: `tests/build-gate/documentation-contents.test.ts` pins developers-guide
-  content and fails when the loader-parity paragraph changes.
-  Severity: low; Likelihood: medium.
-  Mitigation: read that test before editing docs and keep any pinned phrases
-  intact or update the test in the same commit (see Concrete steps).
+  content and fails when the loader-parity paragraph changes. Severity: low;
+  Likelihood: medium. Mitigation: read that test before editing docs and keep
+  any pinned phrases intact or update the test in the same commit (see Concrete
+  steps).
 
 ## Progress
 
@@ -156,106 +153,99 @@ escalation, not a workaround.
 - Observation: `tests/static-analysis/odw-example-fixtures.test.ts` validates
   the example *manifest* (paths, hashes, `expectedStatus: "no-error"`) but
   never runs `lintWorkflowSource` over the example bytes, so nothing today
-  proves the live pipeline is clean on trusted source.
-  Evidence: that file's assertions read `fixture.expectedStatus` /
-  `fixture.expectedDiagnostics` only; there is no `lintWorkflowSource` call.
-  Impact: this is precisely the gap WI-1 closes; it is why 2.3.1 is a distinct
-  task rather than already-covered by the corpus tests.
+  proves the live pipeline is clean on trusted source. Evidence: that file's
+  assertions read `fixture.expectedStatus` / `fixture.expectedDiagnostics`
+  only; there is no `lintWorkflowSource` call. Impact: this is precisely the
+  gap WI-1 closes; it is why 2.3.1 is a distinct task rather than
+  already-covered by the corpus tests.
 - Observation: GrepAI was available for main-branch intent search, and branch
-  facts were verified directly inside the assigned worktree.
-  Evidence: `grepai search --workspace 'Projects' --project 'odw-lint'
+  facts were verified directly inside the assigned worktree. Evidence:
+  `grepai search --workspace 'Projects' --project 'odw-lint'
   "minimal loader parity harness trusted ODW example roadmap 2.3.1" --toon
-  --compact` returned relevant canonical-main context; branch-local code and
-  fixtures were then inspected with `leta` and direct file reads.
-  Impact: the required main-branch intent pass succeeded, while the harness
-  remains grounded in current worktree files and never imports live ODW runtime
-  code.
+  --compact`
+  returned relevant canonical-main context; branch-local code and fixtures
+  were then inspected with `leta` and direct file reads. Impact: the required
+  main-branch intent pass succeeded, while the harness remains grounded in
+  current worktree files and never imports live ODW runtime code.
 - Observation: WI-1 Red/Green behaved as planned. With
   `tests/static-analysis/loader-parity.test.ts` importing the not-yet-created
   helper, `bun test tests/static-analysis/loader-parity.test.ts` failed with
   `Cannot find module './fixtures/loader-parity'`; after adding
   `tests/static-analysis/fixtures/loader-parity.ts`, the focused suite passed
-  with 11 tests and later 13 tests after review hardening.
-  Impact: the harness has an observable failing stage and now pins non-empty
-  trusted-example coverage plus reducer rule-class de-duplication.
+  with 11 tests and later 13 tests after review hardening. Impact: the harness
+  has an observable failing stage and now pins non-empty trusted-example
+  coverage plus reducer rule-class de-duplication.
 - Observation: adding the new ExecPlan file required indexing it from
   `docs/contents.md` before `make all` could pass, because
   `tests/build-gate/documentation-contents.test.ts` checks every top-level
-  ExecPlan link.
-  Impact: `docs/contents.md` is intentionally included in WI-1 even though the
-  plan originally expected most documentation reconciliation in WI-4.
+  ExecPlan link. Impact: `docs/contents.md` is intentionally included in WI-1
+  even though the plan originally expected most documentation reconciliation in
+  WI-4.
 - Observation: WI-2 exposed a deliberate manifest/live-pipeline distinction for
   `unsupported-import-export/extra-export-const.js`: the live pipeline reports
   both `odw/no-import-export` and parser fallout via `odw/body-syntax`, while
   the generated invalid manifest remains unchanged and records only the
-  rejection class owned by that fixture family.
-  Evidence: the first focused WI-2 run failed exact equality on the extra
-  `odw/body-syntax` rule; `bun tests/static-analysis/fixtures/refresh-metadata.ts
-  --dry-run` reported no would-write paths and 16 invalid diagnostics.
-  Impact: the harness now requires live status to equal the manifest status and
-  requires all manifest rule classes to be present. This preserves the
-  manifest as the ODW rejection contract without making 2.3.1 own collateral
-  diagnostics that 2.3.3 will consolidate.
+  rejection class owned by that fixture family. Evidence: the first focused
+  WI-2 run failed exact equality on the extra `odw/body-syntax` rule;
+  `bun tests/static-analysis/fixtures/refresh-metadata.ts --dry-run` reported
+  no would-write paths and 16 invalid diagnostics. Impact: the harness now
+  requires live status to equal the manifest status and requires all manifest
+  rule classes to be present. This preserves the manifest as the ODW rejection
+  contract without making 2.3.1 own collateral diagnostics that 2.3.3 will
+  consolidate.
 - Observation: WI-3 proved the import-policy detector itself with
   `isForbiddenOdwImport("odw/src/loader") === true` and the documented
   bare-shortcut lookalike with `isForbiddenOdwImport("odw/loader") === false`
-  before applying the detector to real harness import edges.
-  Impact: the inertness test guards against accidental executable ODW imports
-  while preserving the current string-policy contract.
+  before applying the detector to real harness import edges. Impact: the
+  inertness test guards against accidental executable ODW imports while
+  preserving the current string-policy contract.
 
 ## Decision Log
 
 - Decision: define "expected rule classes" as the sorted, de-duplicated set of
-  rule ids the fixture manifest declares (`InvalidWorkflowFixtureDiagnostic.rule`
-  for invalid fixtures; empty for `no-error` examples), paired with the
-  manifest `expectedStatus`.
-  Rationale: matches the manifest contract in
+  rule ids the fixture manifest declares
+  (`InvalidWorkflowFixtureDiagnostic.rule` for invalid fixtures; empty for
+  `no-error` examples), paired with the manifest `expectedStatus`. Rationale:
+  matches the manifest contract in
   `tests/static-analysis/fixtures/invalid-workflows/manifest-types.ts`, keeps
   the minimal harness free of span/message coupling (that already lives in the
   fixture and metadata-parity suites), and gives a clean equality assertion.
   Date/Author: 2026-07-05, planning agent.
 - Decision: the example assertion checks for zero **dialect-error** diagnostics
   and equality to the recorded `no-error` status, not zero diagnostics of every
-  category.
-  Rationale: §11.2's fourth bullet is worded "must not report dialect errors";
-  scoping to dialect errors keeps compat-warning parity (§9.2) as 2.3.2's job
-  while still proving the examples are clean today (verified: no compat-warning
-  triggers present).
-  Date/Author: 2026-07-05, planning agent.
+  category. Rationale: §11.2's fourth bullet is worded "must not report dialect
+  errors"; scoping to dialect errors keeps compat-warning parity (§9.2) as
+  2.3.2's job while still proving the examples are clean today (verified: no
+  compat-warning triggers present). Date/Author: 2026-07-05, planning agent.
 - Decision: build one shared harness module consumed by example and invalid
-  assertions rather than two ad-hoc test bodies.
-  Rationale: the task literally asks for a "harness"; a single parity relation
-  is DRY and is the reuse surface 2.3.2–2.3.4 will extend.
-  Date/Author: 2026-07-05, planning agent.
+  assertions rather than two ad-hoc test bodies. Rationale: the task literally
+  asks for a "harness"; a single parity relation is DRY and is the reuse
+  surface 2.3.2–2.3.4 will extend. Date/Author: 2026-07-05, planning agent.
 - Decision: keep reducer assertions semantic and snapshot-backed only at the
-  compact outcome boundary.
-  Rationale: status, rule-class set, dialect-error set, and non-empty corpus
-  coverage remain the primary invariant. Inline snapshots on the tiny reducer
-  shape add drift visibility without coupling the fixture corpus to noisy
-  full-diagnostic output.
-  Date/Author: 2026-07-05, implementation agent.
+  compact outcome boundary. Rationale: status, rule-class set, dialect-error
+  set, and non-empty corpus coverage remain the primary invariant. Inline
+  snapshots on the tiny reducer shape add drift visibility without coupling the
+  fixture corpus to noisy full-diagnostic output. Date/Author: 2026-07-05,
+  implementation agent.
 - Decision: keep the assigned absolute worktree path in `Constraints`.
   Rationale: the automated roadmap workflow's standing instruction requires
   agents to work exclusively inside that exact git-donkey worktree. The
   ExecPlan remains portable for future humans through repository-relative file
   paths in implementation steps, but this run's safety boundary is deliberately
-  absolute.
-  Date/Author: 2026-07-05, implementation agent.
+  absolute. Date/Author: 2026-07-05, implementation agent.
 - Decision: invalid-fixture loader parity requires manifest rule classes to be
-  present, not exact equality with every live lint rule class.
-  Rationale: the invalid manifests are generated, stable fixture-family
-  contracts; the live pipeline may legitimately add collateral parser
-  diagnostics while still rejecting for the manifest class. Exact rule-set
-  equality would make roadmap 2.3.1 own later manifest-driven diagnostic
-  consolidation that is explicitly deferred to 2.3.3.
-  Date/Author: 2026-07-05, implementation agent.
+  present, not exact equality with every live lint rule class. Rationale: the
+  invalid manifests are generated, stable fixture-family contracts; the live
+  pipeline may legitimately add collateral parser diagnostics while still
+  rejecting for the manifest class. Exact rule-set equality would make roadmap
+  2.3.1 own later manifest-driven diagnostic consolidation that is explicitly
+  deferred to 2.3.3. Date/Author: 2026-07-05, implementation agent.
 
 - Decision: `ruleClasses` records only warning- and error-severity parity
-  diagnostics.
-  Rationale: the loader-parity reducer exists to compare diagnostics that can
-  change the compact loader outcome or feed later parity tasks. Info and hint
-  diagnostics remain outside the current outcome contract until a future task
-  explicitly gives them loader-parity semantics.
+  diagnostics. Rationale: the loader-parity reducer exists to compare
+  diagnostics that can change the compact loader outcome or feed later parity
+  tasks. Info and hint diagnostics remain outside the current outcome contract
+  until a future task explicitly gives them loader-parity semantics.
   Date/Author: 2026-07-05, addendum agent.
 
 ## Outcomes & Retrospective
@@ -373,17 +363,18 @@ Docs to read first: `docs/technical-design.md` §§11.2, 5, 6.4; ADR 0001;
 lines ~155–195 and ~535–560. Skills to load: `execplans` (this file),
 `python-router` is **not** applicable; load the TypeScript-relevant guidance in
 `AGENTS.md` directly (no Rust/Python router applies), `leta` for symbol
-navigation, `hypothesis`/`crosshair`/`mutmut` are Python-only so they do **not**
-apply — for TypeScript invariant coverage use `fast-check` as `AGENTS.md`
-"Invariant testing" directs.
+navigation, `hypothesis`/`crosshair`/`mutmut` are Python-only so they do
+**not** apply — for TypeScript invariant coverage use `fast-check` as
+`AGENTS.md` "Invariant testing" directs.
 
 New file `tests/static-analysis/fixtures/loader-parity.ts` (harness helper,
 test-only, ≤ 400 lines, `/** @file … */` header):
 
 - Export a small pure reducer, for example
   `loaderParityOutcome(source: WorkflowSource): LoaderParityOutcome` where
-  `LoaderParityOutcome` is an interface with `readonly status: "no-error" |
-  "warning" | "error"`, `readonly ruleClasses: readonly string[]`, and
+  `LoaderParityOutcome` is an interface with
+  `readonly status: "no-error" | "warning" | "error"`,
+  `readonly ruleClasses: readonly string[]`, and
   `readonly dialectErrorRules: readonly string[]`. It calls
   `lintWorkflowSource(source)`, derives `status` from the highest severity
   present (`error` > `warning` > `no-error`), and derives `ruleClasses` as the
@@ -398,11 +389,11 @@ test-only, ≤ 400 lines, `/** @file … */` header):
 New file `tests/static-analysis/loader-parity.test.ts`:
 
 - A focused unit `describe` for the reducer itself, driving it with inline
-  passive source strings (a valid `export const meta = { name: "x",
-  description: "y" };\nreturn agent("ok");\n` → `no-error`; a
-  `export const meta = {};\n` style invalid source → `error` with the expected
-  metadata rule id) so the reducer's status/rule-class derivation is proven in
-  isolation, not only through fixtures.
+  passive source strings (a valid
+  `export const meta = { name: "x", description: "y" };\nreturn agent("ok");\n`
+  → `no-error`; a `export const meta = {};\n` style invalid source → `error`
+  with the expected metadata rule id) so the reducer's status/rule-class
+  derivation is proven in isolation, not only through fixtures.
 - A `describe("trusted ODW example loader parity")` that iterates
   `ODW_EXAMPLE_FIXTURE_SNAPSHOTS`, reads each via `readFixtureSource`, runs
   `loaderParityOutcome`, and asserts `dialectErrorRules` is empty and `status`
@@ -435,10 +426,10 @@ In `tests/static-analysis/loader-parity.test.ts` add
 outcome from the manifest (sorted unique set of `String(d.rule)` over
 `expectedDiagnostics`, plus `expectedStatus`), run `loaderParityOutcome` on the
 fixture source, and assert live `status` equals `expectedStatus` and live
-`ruleClasses` contains the manifest rule-class set. Add one assertion that every
-error-status fixture yields a non-empty `dialectErrorRules` (the §11.2 first
-bullet: ODW-rejected → `odw-lint` error), and that warning-only fixtures (for
-example `hostile-metadata` → `odw/meta-statically-unprovable`) carry the
+`ruleClasses` contains the manifest rule-class set. Add one assertion that
+every error-status fixture yields a non-empty `dialectErrorRules` (the §11.2
+first bullet: ODW-rejected → `odw-lint` error), and that warning-only fixtures
+(for example `hostile-metadata` → `odw/meta-statically-unprovable`) carry the
 warning class without a dialect error.
 
 Red/Green/Refactor: Red — first wire the assertion against a deliberately wrong
@@ -484,15 +475,15 @@ temporary throwaway string list containing a genuinely forbidden specifier such
 as `"odw/src/loader"` (verified `isForbiddenOdwImport` returns `true` for it;
 the bare-shortcut `"odw/loader"` returns `false` and would NOT trip the
 assertion — see Constraints) to confirm the assertion detects a forbidden edge
-(observe failure), then point it at the real extracted edges. Green — real edges
-are clean, assertion passes. Refactor — tidy helper names, rerun focused file and
-`make test`.
+(observe failure), then point it at the real extracted edges. Green — real
+edges are clean, assertion passes. Refactor — tidy helper names, rerun focused
+file and `make test`.
 
 ### WI-4: Documentation and roadmap reconciliation
 
-Implements `AGENTS.md` "Documentation Maintenance" and `docs/technical-design.md`
-§11.2 (record where the release-blocking parity check now lives). No code
-behaviour change.
+Implements `AGENTS.md` "Documentation Maintenance" and
+`docs/technical-design.md` §11.2 (record where the release-blocking parity
+check now lives). No code behaviour change.
 
 Docs to read first: `docs/developers-guide.md` lines ~535–560 (the
 loader-parity paragraph) and ~155–195; `docs/documentation-style-guide.md`;
@@ -612,8 +603,9 @@ Acceptance (behaviour a human can verify):
   status equality and manifest rule-class presence; and an inertness block
   asserting no hostile marker is set and no forbidden ODW import edge exists.
 - Corrupting a trusted example fixture byte (locally, then reverted) makes the
-  SHA pin in the existing corpus test fail and, if bytes change the diagnostics,
-  makes the harness example block fail — proving the harness has teeth.
+  SHA pin in the existing corpus test fail and, if bytes change the
+  diagnostics, makes the harness example block fail — proving the harness has
+  teeth.
 - No production file under `src/` changed; `git diff --stat` shows only test
   and docs files.
 
@@ -629,15 +621,16 @@ Quality criteria for "done":
 ## Idempotence and recovery
 
 Each work item is a separate commit and re-runnable. `make all` is idempotent.
-If a focused test is left red, re-run `bun test
-tests/static-analysis/loader-parity.test.ts` after fixing; nothing here mutates
-tracked fixtures or global state (the inertness block clears and re-checks the
-hostile marker). To abandon uncommitted implementation files, remove the
-specific untracked files named in `git status --short` (for example with
+If a focused test is left red, re-run
+`bun test tests/static-analysis/loader-parity.test.ts` after fixing; nothing
+here mutates tracked fixtures or global state (the inertness block clears and
+re-checks the hostile marker). To abandon uncommitted implementation files,
+remove the specific untracked files named in `git status --short` (for example
+with
 `git clean -fd -- tests/static-analysis/loader-parity.test.ts
-tests/static-analysis/fixtures/loader-parity.ts` after verifying the path list)
-and use `git restore -- <tracked-paths>` only for tracked files; no external
-state is touched.
+tests/static-analysis/fixtures/loader-parity.ts`
+after verifying the path list) and use `git restore -- <tracked-paths>` only
+for tracked files; no external state is touched.
 
 ## Artefacts and notes
 

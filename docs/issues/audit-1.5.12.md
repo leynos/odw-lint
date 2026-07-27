@@ -1,10 +1,10 @@
 # Audit after roadmap task 1.5.12
 
-This post-step audit was run after roadmap task 1.5.12 (`Bind recorded review
-evidence to tree state`) merged into `origin/main` at commit `5c8ccd5`. The
-audit used `grepai` against the canonical `main` index for intent search, then
-verified every branch-local fact in a fresh worktree off `origin/main` with
-`leta`, targeted file inspection, and exact text search.
+This post-step audit was run after roadmap task 1.5.12
+(`Bind recorded review evidence to tree state`) merged into `origin/main` at
+commit `5c8ccd5`. The audit used `grepai` against the canonical `main` index
+for intent search, then verified every branch-local fact in a fresh worktree off
+`origin/main` with `leta`, targeted file inspection, and exact text search.
 
 Task 1.5.12 recorded reviewed commit and tree provenance in review-evidence
 artefacts (`tests/build-gate/review-evidence-provenance.ts`), taught the
@@ -63,8 +63,8 @@ Description:
 
 Both parser-backed collectors define byte-equivalent private node type-guards.
 `isIdentifier` narrows on `type === "Identifier"`, `isMemberExpression` narrows
-on `type === "MemberExpression"`, and `isExpression` is a verbatim alias for the
-shared `isAstNode`:
+on `type === "MemberExpression"`, and `isExpression` is a verbatim alias for
+the shared `isAstNode`:
 
 ```ts
 const isExpression = (value: unknown): value is Expression => {
@@ -73,12 +73,12 @@ const isExpression = (value: unknown): value is Expression => {
 ```
 
 The 3.2.6 traversal-adoption change routed both modules through the shared
-`swc-ast.ts` driver, which already owns `isAstNode`, so the type-guard vocabulary
-now has a natural home — yet each collector still carries its own copies. The
-`aliases` module also locally re-implements `isCallExpression` (line 204) and
-`isVariableDeclarator` (line 209) that other collectors express inline as
-`node.type === "..."` checks, so the same narrowing intent is spelled several
-ways across siblings.
+`swc-ast.ts` driver, which already owns `isAstNode`, so the type-guard
+vocabulary now has a natural home — yet each collector still carries its own
+copies. The `aliases` module also locally re-implements `isCallExpression`
+(line 204) and `isVariableDeclarator` (line 209) that other collectors express
+inline as `node.type === "..."` checks, so the same narrowing intent is spelled
+several ways across siblings.
 
 Proposed fix:
 
@@ -86,8 +86,8 @@ Promote the shared SWC node type-guards (`isIdentifier`, `isMemberExpression`,
 `isCallExpression`, `isVariableDeclarator`, and the `isExpression`/`isAstNode`
 alias) into `src/static-analysis/swc-ast.ts` next to `traverseAstSubtree`, then
 import them from both collectors and delete the private copies. This gives the
-traversal seam one narrowing vocabulary and removes the duplicated `isExpression`
-alias entirely.
+traversal seam one narrowing vocabulary and removes the duplicated
+`isExpression` alias entirely.
 
 ## Finding 2: Git-command failure formatting is duplicated and forks between throw and result styles
 
@@ -106,8 +106,8 @@ Location:
 Description:
 
 Task 1.5.12 added `review-evidence-provenance.ts`, which reads `HEAD` and
-`HEAD^{tree}` through the shared `GitRunner`. To report failures it re-implements
-`renderGitCommand` (identical to the `git-support.ts` copy) and a
+`HEAD^{tree}` through the shared `GitRunner`. To report failures it
+re-implements `renderGitCommand` (identical to the `git-support.ts` copy) and a
 `gitCommandFailureMessage` helper whose error / status / signal branches mirror
 `assertGitCommandSucceeded`. The two now disagree on shape and detail: the
 provenance copy returns a `string | undefined` result and wraps every field with
@@ -121,9 +121,9 @@ Proposed fix:
 Export `renderGitCommand` from `tests/build-gate/git-support.ts` and have
 `review-evidence-provenance.ts` import it. Factor the error / status / signal
 classification into one shared `gitCommandFailure(command, result)` helper that
-returns a normalized `string | undefined`; let `assertGitCommandSucceeded` throw
-on its non-`undefined` result and let the provenance reader return it. This
-collapses the two copies to one and gives both call sites the `singleLine`
+returns a normalized `string | undefined`; let `assertGitCommandSucceeded`
+throw on its non-`undefined` result and let the provenance reader return it.
+This collapses the two copies to one and gives both call sites the `singleLine`
 sanitization.
 
 ## Finding 3: `recordedReportContent` is a query that writes to stderr
@@ -148,21 +148,22 @@ return input.report;
 ```
 
 Emitting a diagnostic while computing a return value is a Command-Query
-Separation violation: a caller cannot ask "what content would we record?" without
-also provoking stderr output, and a unit test of the string-building logic must
-inject and assert on a writer it should not need. It also splits the recording
-path's user-facing messaging across two functions
-(`maybeRecordReviewEvidence` already owns the write-failure message on line 60),
-so provenance diagnostics live one layer deeper than the failure diagnostics
-they sit beside.
+Separation violation: a caller cannot ask "what content would we record?"
+without also provoking stderr output, and a unit test of the string-building
+logic must inject and assert on a writer it should not need. It also splits the
+recording path's user-facing messaging across two functions
+(`maybeRecordReviewEvidence` already owns the write-failure message on line
+60), so provenance diagnostics live one layer deeper than the failure
+diagnostics they sit beside.
 
 Proposed fix:
 
 Make `recordedReportContent` return a discriminated result, for example
-`{ content: string; provenanceError?: string }`, and move the `writeErr` call up
-into `maybeRecordReviewEvidence` alongside the existing write-failure diagnostic.
-The content builder then becomes a pure query that is trivially testable without
-a writer, and all recording-path diagnostics are emitted from one place.
+`{ content: string; provenanceError?: string }`, and move the `writeErr` call
+up into `maybeRecordReviewEvidence` alongside the existing write-failure
+diagnostic. The content builder then becomes a pure query that is trivially
+testable without a writer, and all recording-path diagnostics are emitted from
+one place.
 
 ## Finding 4: The metadata-value scanner re-implements the shared comment scanners
 
@@ -172,16 +173,20 @@ Severity: medium
 
 Location:
 
-- `src/static-analysis/workflow-envelope-meta-value.ts:122` (`scanLineCommentEnd`)
-- `src/static-analysis/workflow-envelope-meta-value.ts:133` (`scanBlockCommentEnd`)
-- `src/static-analysis/workflow-metadata-comment-scan.ts:49` (`scanLineCommentEnd`)
-- `src/static-analysis/workflow-metadata-comment-scan.ts:67` (`scanBlockCommentEnd`)
+- `src/static-analysis/workflow-envelope-meta-value.ts:122`
+  (`scanLineCommentEnd`)
+- `src/static-analysis/workflow-envelope-meta-value.ts:133`
+  (`scanBlockCommentEnd`)
+- `src/static-analysis/workflow-metadata-comment-scan.ts:49`
+  (`scanLineCommentEnd`)
+- `src/static-analysis/workflow-metadata-comment-scan.ts:67`
+  (`scanBlockCommentEnd`)
 
 Description:
 
-`workflow-metadata-comment-scan.ts` is the module whose file comment declares it
-holds the "shared delimiter and comment scanners for metadata parsing", and it
-exports `scanLineCommentEnd` and `scanBlockCommentEnd`. Yet
+`workflow-metadata-comment-scan.ts` is the module whose file comment declares
+it holds the "shared delimiter and comment scanners for metadata parsing", and
+it exports `scanLineCommentEnd` and `scanBlockCommentEnd`. Yet
 `workflow-envelope-meta-value.ts` defines its own private `scanLineCommentEnd`
 and `scanBlockCommentEnd` with the same behaviour, differing only in that the
 private pair hardcodes `text.length` as the scan bound instead of accepting an
@@ -253,11 +258,11 @@ Description:
 `audit-1.5.10.md` and `audit-1.5.11.md` both recorded that the unknown-to-text
 `errorMessage` helper is triplicated (and written in two syntactic forms — two
 `const` arrows and one hoisted `function`) and that the `--name=value`
-`parseFlagValue` reader is duplicated byte-for-byte across the two evidence CLIs.
-Task 1.5.12 edited `review-evidence-recording.ts` (adding provenance capture
-directly above the `errorMessage` copy at line 114) but did not lift either
-helper, so both duplications persist unchanged. Error-text policy and flag
-parsing for the gate family are still each defined in more than one place.
+`parseFlagValue` reader is duplicated byte-for-byte across the two evidence
+CLIs. Task 1.5.12 edited `review-evidence-recording.ts` (adding provenance
+capture directly above the `errorMessage` copy at line 114) but did not lift
+either helper, so both duplications persist unchanged. Error-text policy and
+flag parsing for the gate family are still each defined in more than one place.
 
 Proposed fix:
 
@@ -284,8 +289,8 @@ Location:
 Description:
 
 Three sibling scanners each fold one source character into a running delimiter
-depth, but they disagree on both shape and safety. `nextDepthState` tracks brace,
-bracket, and paren depth in a struct and clamps every decrement with
+depth, but they disagree on both shape and safety. `nextDepthState` tracks
+brace, bracket, and paren depth in a struct and clamps every decrement with
 `Math.max(0, …)`; `nextExpressionDepth` is a similar struct-based tracker; but
 `nextObjectDepth` tracks only brace depth as a bare number and decrements
 unconditionally:
@@ -304,8 +309,8 @@ increment/decrement intent.
 Proposed fix:
 
 At minimum, add the `Math.max(0, depth - 1)` clamp to `nextObjectDepth` so all
-three trackers share the same unbalanced-delimiter semantics. Better, express the
-brace-only tracker in terms of the shared `nextDepthState` (reading back
+three trackers share the same unbalanced-delimiter semantics. Better, express
+the brace-only tracker in terms of the shared `nextDepthState` (reading back
 `braceDepth`) or extract a single depth-folding primitive the three scanners
 consume, so the increment/decrement logic lives in one place.
 
@@ -333,10 +338,10 @@ what the three positional slots mean, nor which reviewer condition each
 
 Proposed fix:
 
-Add a JSDoc block above each type: for `GateCommand`, name the three tuple slots
-(gate id, human label, gate argv); for `ReviewEvidenceExitCode`, enumerate what
-`0`/`1`/`2`/`3` mean. This matches the documentation convention the surrounding
-review-evidence modules already follow.
+Add a JSDoc block above each type: for `GateCommand`, name the three tuple
+slots (gate id, human label, gate argv); for `ReviewEvidenceExitCode`,
+enumerate what `0`/`1`/`2`/`3` mean. This matches the documentation convention
+the surrounding review-evidence modules already follow.
 
 ## Proposed roadmap items
 
@@ -345,10 +350,10 @@ only.
 
 ### Centralize the SWC traversal narrowing vocabulary
 
-Rationale: the 3.2.6 traversal-adoption change routed the collectors through the
-shared `swc-ast.ts` driver but left each collector re-implementing its own node
-type-guards, including a verbatim `isExpression`/`isAstNode` alias (this audit,
-Finding 1). Promote the shared node type-guards into `swc-ast.ts` so the
+Rationale: the 3.2.6 traversal-adoption change routed the collectors through
+the shared `swc-ast.ts` driver but left each collector re-implementing its own
+node type-guards, including a verbatim `isExpression`/`isAstNode` alias (this
+audit, Finding 1). Promote the shared node type-guards into `swc-ast.ts` so the
 traversal seam has one narrowing vocabulary.
 
 Severity: medium
@@ -366,10 +371,10 @@ Severity: medium
 
 ### Restore Command-Query Separation in the review-evidence recording path
 
-Rationale: `recordedReportContent` emits a stderr diagnostic while returning the
-report content, so the content builder cannot be exercised without provoking I/O
-(this audit, Finding 3). Return a provenance-error discriminator and move the
-diagnostic up into `maybeRecordReviewEvidence` beside the existing
+Rationale: `recordedReportContent` emits a stderr diagnostic while returning
+the report content, so the content builder cannot be exercised without
+provoking I/O (this audit, Finding 3). Return a provenance-error discriminator
+and move the diagnostic up into `maybeRecordReviewEvidence` beside the existing
 write-failure message.
 
 Severity: medium
@@ -377,9 +382,9 @@ Severity: medium
 ### Consolidate the duplicated static-analysis scanners
 
 Rationale: `workflow-envelope-meta-value.ts` re-implements the shared comment
-scanners it could import, and the three delimiter-depth trackers diverge with one
-omitting the zero clamp (this audit, Findings 4 and 7). Import the shared comment
-scanners and unify the depth-folding primitive so unbalanced delimiters are
-handled identically.
+scanners it could import, and the three delimiter-depth trackers diverge with
+one omitting the zero clamp (this audit, Findings 4 and 7). Import the shared
+comment scanners and unify the depth-folding primitive so unbalanced delimiters
+are handled identically.
 
 Severity: low

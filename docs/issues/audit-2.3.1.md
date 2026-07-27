@@ -1,10 +1,10 @@
 # Audit after roadmap task 2.3.1
 
-This post-step audit was run after roadmap task 2.3.1 (`Add a minimal
-loader-parity harness against trusted ODW example workflows`) merged into
-`origin/main`. The 2.3.1 work landed as commit `413da83` (`Add loader-parity
-harness`); the audit worktree was created off `origin/main` at that commit,
-which is the current integration head.
+This post-step audit was run after roadmap task 2.3.1
+(`Add a minimal loader-parity harness against trusted ODW example workflows`)
+merged into `origin/main`. The 2.3.1 work landed as commit `413da83`
+(`Add loader-parity harness`); the audit worktree was created off `origin/main`
+at that commit, which is the current integration head.
 
 The audit used `grepai` against the canonical `main` index for intent search,
 then verified every branch-local fact in a fresh worktree off `origin/main`
@@ -92,11 +92,11 @@ Location:
   upstream-root string constants)
 
 Description: The invalid-workflow corpus has a dedicated owner module
-(`fixtures/invalid-workflows/corpus.ts`), but the trusted ODW-example corpus has
-none. Every consumer re-declares `new URL("./fixtures/odw-examples/",
-import.meta.url)` inline, and several also re-declare the
-`tests/static-analysis/fixtures/odw-examples` manifest root and the
-`open-dynamic-workflows/examples` upstream root as their own local constants
+(`fixtures/invalid-workflows/corpus.ts`), but the trusted ODW-example corpus
+has none. Every consumer re-declares
+`new URL("./fixtures/odw-examples/", import.meta.url)` inline, and several also
+re-declare the `tests/static-analysis/fixtures/odw-examples` manifest root and
+the `open-dynamic-workflows/examples` upstream root as their own local constants
 (`odw-example-fixtures.test.ts:17-18`, `odw-examples.ts:18-19`). Task 2.3.1's
 `loader-parity.test.ts` adds the newest copy. The asymmetry with the invalid
 corpus is itself an inconsistency, and the repeated literal is a maintenance
@@ -104,9 +104,9 @@ hazard.
 
 Proposed fix: add `tests/static-analysis/fixtures/odw-examples/corpus.ts` that
 exports an `ODW_EXAMPLE_FIXTURE_CORPUS` (`FixtureCorpusLocation`) plus the
-shared manifest-root and upstream-root constants, mirroring the invalid-workflow
-corpus owner. Point the loader-parity harness and the other consumers at that
-module so the directory and root strings are declared once.
+shared manifest-root and upstream-root constants, mirroring the
+invalid-workflow corpus owner. Point the loader-parity harness and the other
+consumers at that module so the directory and root strings are declared once.
 
 ## Finding 3: `expectedErrorOutcome` helper is exported but never used
 
@@ -128,8 +128,8 @@ carries its own throw contract, and invites readers to assume a caller exists.
 Proposed fix: either remove `expectedErrorOutcome` and its
 `uniqueSortedStrings` usage if it is genuinely unused, or wire it into the
 "error invalid fixtures" assertion block so the exported contract is exercised.
-Removal is preferred unless a near-term parity step (2.3.2–2.3.4) is expected to
-consume it.
+Removal is preferred unless a near-term parity step (2.3.2–2.3.4) is expected
+to consume it.
 
 ## Finding 4: Harness self-scan list is a hand-maintained file manifest
 
@@ -141,19 +141,19 @@ Location:
 
 - `tests/static-analysis/loader-parity.test.ts:28` (`HARNESS_SOURCE_FILES`)
 
-Description: The inertness test "keeps the harness free of executable ODW import
-edges" iterates a hardcoded six-entry `HARNESS_SOURCE_FILES` array, each entry
-pairing a repository-relative path with a matching `import.meta.url` URL. If a
-future harness helper module is added (or one is renamed), the guard will keep
-passing while silently not scanning the new file, so a forbidden dynamic ODW
-import could slip in unobserved. The paired path/URL entries are also redundant,
-inviting copy-paste divergence.
+Description: The inertness test "keeps the harness free of executable ODW
+import edges" iterates a hardcoded six-entry `HARNESS_SOURCE_FILES` array, each
+entry pairing a repository-relative path with a matching `import.meta.url` URL.
+If a future harness helper module is added (or one is renamed), the guard will
+keep passing while silently not scanning the new file, so a forbidden dynamic
+ODW import could slip in unobserved. The paired path/URL entries are also
+redundant, inviting copy-paste divergence.
 
 Proposed fix: derive the scanned set from the harness directory (for example,
 enumerate the `fixtures/loader-parity*.ts` and corpus helper modules via
-`readdirSync`), or add a companion assertion that `HARNESS_SOURCE_FILES` matches
-the actual set of harness helper modules on disk, so a new helper cannot escape
-the import-edge scan.
+`readdirSync`), or add a companion assertion that `HARNESS_SOURCE_FILES`
+matches the actual set of harness helper modules on disk, so a new helper
+cannot escape the import-edge scan.
 
 ## Finding 5: Parity diagnostic `rule` is typed `unknown` and stringly coerced
 
@@ -166,9 +166,10 @@ Location:
 - `tests/static-analysis/fixtures/loader-parity.ts:36`, `:169` (the
   `ParityDiagnostic.rule` type and its `String(diagnostic.rule)` reduction)
 
-Description: The reducer models each diagnostic as `{ severity; rule: unknown }`
-and derives rule classes with `String(diagnostic.rule)`. Both real inputs — the
-live `Diagnostic.rule` (`src/diagnostics/types.ts:56`) and the manifest
+Description: The reducer models each diagnostic as
+`{ severity; rule: unknown }` and derives rule classes with
+`String(diagnostic.rule)`. Both real inputs — the live `Diagnostic.rule`
+(`src/diagnostics/types.ts:56`) and the manifest
 `InvalidWorkflowFixtureDiagnostic.rule` (`manifest-types.ts:37`) — are already
 the branded `RuleId` string type, so the `unknown` widening discards available
 type safety. Worse, `String(...)` masks defects: a missing or malformed rule
@@ -198,7 +199,7 @@ only `warning` and `error` severities; no test feeds an `info`- or
 `hint`-severity diagnostic to prove it is filtered out. A regression that
 promoted `hint` into a parity-relevant status would pass the current suite.
 
-Proposed fix: add a reducer-level test that passes an `info`- or `hint`-severity
-diagnostic through `loaderParityOutcome` (via the inline `workflowSource`
-helper, or a direct reducer input) and asserts a `no-error` status with empty
-`ruleClasses` and `dialectErrorRules`.
+Proposed fix: add a reducer-level test that passes an `info`- or
+`hint`-severity diagnostic through `loaderParityOutcome` (via the inline
+`workflowSource` helper, or a direct reducer input) and asserts a `no-error`
+status with empty `ruleClasses` and `dialectErrorRules`.

@@ -1,9 +1,10 @@
 # Audit after roadmap task 2.2.7
 
-This post-step audit was run after roadmap task 2.2.7 (`Reconcile workflow-body
-parser dialect scope`) merged into `origin/main`. The 2.2.7 work landed as
-commit `cfb0666` (`Reconcile workflow body dialect scope`); the audit worktree
-was created off `origin/main` at commit `b09739f`, which contains that merge.
+This post-step audit was run after roadmap task 2.2.7
+(`Reconcile workflow-body parser dialect scope`) merged into `origin/main`. The
+2.2.7 work landed as commit `cfb0666`
+(`Reconcile workflow body dialect scope`); the audit worktree was created off
+`origin/main` at commit `b09739f`, which contains that merge.
 
 The audit used `grepai` against the canonical `main` index for intent search,
 then verified every branch-local fact in a fresh worktree off `origin/main`
@@ -81,15 +82,15 @@ export const isWhitespaceCharacter = (character: string): boolean => {
 ```
 
 Roadmap task 2.1.12.5 ("Extract shared low-level scanner character predicates",
-addendum from `audit:2.1.12`) is marked `[x]` and states its goal as: "Centralize
-the remaining string-delimiter and whitespace predicates used by the
-workflow-metadata and source-mask scanner families, then remove duplicated local
-helpers." In the audited tree only `workflow-metadata-parser-scan.ts` imports and
-uses `isWhitespaceCharacter`. Eleven other call sites across six modules still
-inline the equivalent `/\s/u.test(character)` idiom on a single character. For a
-single-character input `/\s/u.test(c)` and `/^\s$/u.test(c)` are equivalent, so
-these are true duplicates of the shared helper rather than intentionally
-different predicates.
+addendum from `audit:2.1.12`) is marked `[x]` and states its goal as:
+"Centralize the remaining string-delimiter and whitespace predicates used by
+the workflow-metadata and source-mask scanner families, then remove duplicated
+local helpers." In the audited tree only `workflow-metadata-parser-scan.ts`
+imports and uses `isWhitespaceCharacter`. Eleven other call sites across six
+modules still inline the equivalent `/\s/u.test(character)` idiom on a single
+character. For a single-character input `/\s/u.test(c)` and `/^\s$/u.test(c)`
+are equivalent, so these are true duplicates of the shared helper rather than
+intentionally different predicates.
 
 The gap between the roadmap item's stated completion ("remove duplicated local
 helpers") and the code is the reason this is ranked medium rather than low: the
@@ -122,8 +123,8 @@ Description:
 
 After the 2.1.9.1 / 2.1.12.5 consolidation, the underlying predicate logic is
 shared through `isStringLikeDelimiter`, but each of the three metadata-scanner
-modules keeps a verbatim local type-guard wrapper whose only job is to re-narrow
-the return type:
+modules keeps a verbatim local type-guard wrapper whose only job is to
+re-narrow the return type:
 
 ```ts
 const isStringDelimiter = (character: string): character is "'" | '"' | "`" => {
@@ -131,21 +132,27 @@ const isStringDelimiter = (character: string): character is "'" | '"' | "`" => {
 };
 ```
 
-The wrapper exists because callers (for example `scanDelimitedEnd`) benefit from
-the narrowed `"'" | '"' | "`"` type, which the shared `isStringLikeDelimiter`
-does not provide (it returns plain `boolean`). The result is a small but exact
-triplication that the earlier consolidation missed because it centralized only
-the non-narrowing predicate.
+The wrapper exists because callers (for example `scanDelimitedEnd`) benefit
+from the narrowed
+
+```text
+"'" | '"' | "`"
+```
+
+This type is not provided by the shared `isStringLikeDelimiter` (it returns
+plain `boolean`). The result is a small but exact triplication that the earlier
+consolidation missed because it centralized only the non-narrowing predicate.
 
 Proposed fix:
 
 Promote the narrowing to the shared helper: change `isStringLikeDelimiter` in
 `source-mask-delimiters.ts` to a type guard returning
 `character is "'" | '"' | "`"` (it already only returns true for those three
-characters), then delete the three local `isStringDelimiter` wrappers and call
-`isStringLikeDelimiter` directly. If a narrower name is preferred at call sites,
-export a single aliased type guard from `source-mask-delimiters.ts` instead of
-re-declaring it per module.
+characters), then delete the three local `
+isStringDelimiter ` wrappers and call `isStringLikeDelimiter
+` directly. If a narrower name is preferred at call sites,
+export a single aliased type guard from `source
+-mask-delimiters.ts` instead of re-declaring it per module.
 
 ## Finding 3: Inline ASCII identifier-character regex is duplicated across mask modules
 
@@ -168,11 +175,11 @@ identifier-character test, `/[A-Za-z0-9_$]/u.test(...)` (and a single-character
 anchored variant in `workflow-body-parser.ts`). These are deliberately
 ASCII-only fast paths for token-boundary heuristics — regex-versus-division,
 operator detection, and identifier-token scanning — and are distinct from the
-Unicode-aware `isIdentifierStartCharacter` / `isIdentifierPartCharacter` helpers
-in `javascript-identifiers.ts` (which task 2.1.12.4 made ZWNJ/ZWJ-aware). Because
-they are genuinely a different, narrower predicate, they should not fold into the
-Unicode helpers, but the raw pattern is copied five times with no shared name to
-document that the ASCII scope is intentional.
+Unicode-aware `isIdentifierStartCharacter` / `isIdentifierPartCharacter`
+helpers in `javascript-identifiers.ts` (which task 2.1.12.4 made
+ZWNJ/ZWJ-aware). Because they are genuinely a different, narrower predicate,
+they should not fold into the Unicode helpers, but the raw pattern is copied
+five times with no shared name to document that the ASCII scope is intentional.
 
 Proposed fix:
 
@@ -198,20 +205,22 @@ Location:
 
 Description:
 
-Three static-analysis modules each declare `const TEXT_ENCODER = new
-TextEncoder();` and then compute UTF-8 byte lengths of source slices with
-`TEXT_ENCODER.encode(...).byteLength`. `workflow-body-parser.ts` wraps this in a
-local `byteLength(text)` helper; the other two inline it. The encoder is
-stateless, so the duplication is harmless at runtime, but it spreads the same
-UTF-8-length concern across three files with no single home.
+Three static-analysis modules each declare
+`const TEXT_ENCODER = new TextEncoder();` and then compute UTF-8 byte lengths
+of source slices with `TEXT_ENCODER.encode(...).byteLength`.
+`workflow-body-parser.ts` wraps this in a local `byteLength(text)` helper; the
+other two inline it. The encoder is stateless, so the duplication is harmless
+at runtime, but it spreads the same UTF-8-length concern across three files
+with no single home.
 
 Proposed fix:
 
-Introduce one shared helper — for example `utf8ByteLength(text: string): number`
-in a small `source-bytes.ts` (or alongside `source-position.ts`) — that owns the
-module-level `TextEncoder`, and have the three modules import it instead of each
-holding their own encoder. This also gives the eventual byte/offset mapping code
-(Finding 5) a single byte-length primitive to build on.
+Introduce one shared helper — for example
+`utf8ByteLength(text: string): number` in a small `source-bytes.ts` (or
+alongside `source-position.ts`) — that owns the module-level `TextEncoder`, and
+have the three modules import it instead of each holding their own encoder.
+This also gives the eventual byte/offset mapping code (Finding 5) a single
+byte-length primitive to build on.
 
 ## Finding 5: Speculative offset-conversion machinery is co-located with production body parsing
 
@@ -226,15 +235,15 @@ Location:
 Description:
 
 `workflow-body-parser.ts` mixes two concerns in one 330-line module. The top of
-the file assembles production `odw/body-syntax` diagnostics (`parseWorkflowBody`,
-`bodySyntaxDiagnosticsForParse`, `bodySyntaxDiagnostic`). The lower ~170 lines
-implement the parser-error span-narrowing seam
+the file assembles production `odw/body-syntax` diagnostics
+(`parseWorkflowBody`, `bodySyntaxDiagnosticsForParse`, `bodySyntaxDiagnostic`).
+The lower ~170 lines implement the parser-error span-narrowing seam
 (`structuredNormalizedRangeFromParserError`, `narrowedSpanForParserError`, the
 coordinate-base resolver, and a bespoke UTF-8-byte ↔ UTF-16-index conversion:
 `normalizedTokenEndByte`, `textIndexAtByteOffset`, `identifierEndIndex`,
 `nextCharacterIndex`). The developers guide and ADR 0002 record that the pinned
-`@swc/core@1.15.43` never exposes structured error ranges, so this seam is inert
-in production and is exercised only by synthetic errors in
+`@swc/core@1.15.43` never exposes structured error ranges, so this seam is
+inert in production and is exercised only by synthetic errors in
 `tests/static-analysis/workflow-body-parser-ranges.test.ts`. The narrowing
 helpers are correctly kept out of the public `src/index.ts` surface, so this is
 not a public-API defect — only an internal-cohesion one: the speculative
@@ -245,9 +254,10 @@ Proposed fix:
 Extract the range-narrowing helpers into a dedicated internal module — for
 example `workflow-body-parser-ranges.ts`, mirroring the existing
 `workflow-body-parser-ranges.test.ts` name — leaving `workflow-body-parser.ts`
-focused on production diagnostic assembly. Fold the UTF-8/UTF-16 conversion onto
-the shared byte-length primitive proposed in Finding 4 where practical, and keep
-the inert-status note from the developers guide adjacent to the extracted module.
+focused on production diagnostic assembly. Fold the UTF-8/UTF-16 conversion
+onto the shared byte-length primitive proposed in Finding 4 where practical,
+and keep the inert-status note from the developers guide adjacent to the
+extracted module.
 
 ## Non-findings confirmed
 

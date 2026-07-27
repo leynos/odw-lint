@@ -1,9 +1,8 @@
 # Reconcile scope-owned facts with public binding facts
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -11,17 +10,16 @@ Status: COMPLETE
 
 `odw-lint` checks Open Dynamic Workflows (ODW) workflow source before any
 workflow runs. Several parser-backed rules walk the SWC (a Rust-based
-JavaScript/TypeScript compiler exposed through `@swc/core`) abstract syntax tree
-(AST) of a normalized workflow body. Roadmap task 3.2.7 reconciles two related
-but currently divergent views of the same lexical declarations.
+JavaScript/TypeScript compiler exposed through `@swc/core`) abstract syntax
+tree (AST) of a normalized workflow body. Roadmap task 3.2.7 reconciles two
+related but currently divergent views of the same lexical declarations.
 
 Two problems exist today.
 
 1. **Duplicated scope-owned-fact collection during the scanner walk.** The
    deterministic-time scanner walks the whole SWC subtree. At every node it
-   enters both a *binding* scope view and an *alias* scope view. The single seam
-   that does this,
-   `enterDeterministicTimeScope` in
+   enters both a *binding* scope view and an *alias* scope view. The single
+   seam that does this, `enterDeterministicTimeScope` in
    `src/static-analysis/workflow-deterministic-time.ts`, calls
    `enterScope(context.bindings, node)` and then
    `enterAliasScope(context.aliases, bindings, node, ALIAS_RULES)`. Each of
@@ -57,10 +55,10 @@ Two problems exist today.
      `tests/static-analysis/workflow-ast-scopes.test.ts` pins this behaviour.
 
    The consequence is an accessor-handling contract mismatch: given
-   `const o = { set x(p) {}, m(q) {} };`, the internal scope model records
-   `p` and `q` as declared names, but the public flat facts do not. Class
-   methods already agree between the two models; only object-literal accessors
-   and methods diverge.
+   `const o = { set x(p) {}, m(q) {} };`, the internal scope model records `p`
+   and `q` as declared names, but the public flat facts do not. Class methods
+   already agree between the two models; only object-literal accessors and
+   methods diverge.
 
 After this change a reader can observe:
 
@@ -89,17 +87,17 @@ Hard invariants that must hold throughout implementation.
 - The public package surface must not change shape. `collectLexicalBindings`,
   `isIdentifierBound`, `LexicalBindingFacts`, `collectWorkflowAstFacts`, and
   `WorkflowAstFacts` keep their existing signatures and export names. The
-  exported-symbol inventory pinned in `tests/diagnostics/public-api-fixtures.ts`
-  must remain satisfied. The internal helpers `scopeOwnFacts`, `enterScope`,
-  `enterAliasScope`, `rootScopeView`, and `rootAliasView` are **not** public
-  exports (confirmed absent from `src/index.ts` and
-  `src/static-analysis/index.ts`), so their signatures may be extended
-  additively.
+  exported-symbol inventory pinned in
+  `tests/diagnostics/public-api-fixtures.ts` must remain satisfied. The
+  internal helpers `scopeOwnFacts`, `enterScope`, `enterAliasScope`,
+  `rootScopeView`, and `rootAliasView` are **not** public exports (confirmed
+  absent from `src/index.ts` and `src/static-analysis/index.ts`), so their
+  signatures may be extended additively.
 - `LexicalBindingFacts` stays a **whole-body, name-based** model, not a
   scope-span model. The developer guide states this explicitly
-  (`docs/developers-guide.md`, "Workflow AST facts"). Alignment means adding the
-  dropped accessor/method **parameter** names to the whole-body set, not making
-  the flat collector scope-aware.
+  (`docs/developers-guide.md`, "Workflow AST facts"). Alignment means adding
+  the dropped accessor/method **parameter** names to the whole-body set, not
+  making the flat collector scope-aware.
 - Existing deterministic-time diagnostics and their spans must remain
   unchanged. The comprehensive suites
   `tests/static-analysis/workflow-deterministic-time.test.ts`,
@@ -153,8 +151,8 @@ Hard invariants that must hold throughout implementation.
   escalate.
 - Behaviour: if aligning the accessor handling changes **any**
   deterministic-time diagnostic output, stop and escalate — that would mean the
-  scanner consumes the public flat facts somewhere unexpected, contradicting the
-  research in this plan.
+  scanner consumes the public flat facts somewhere unexpected, contradicting
+  the research in this plan.
 - Iterations: if a milestone's tests still fail after 3 focused attempts, stop
   and escalate.
 - Ambiguity: if the object-literal accessor alignment appears to require
@@ -164,32 +162,28 @@ Hard invariants that must hold throughout implementation.
 ## Risks
 
 - Risk: the "computed once" property is a structural/performance property that
-  ordinary behavioural tests cannot observe directly.
-  Severity: medium. Likelihood: medium.
-  Mitigation: add a source-inspecting guard test (Work Item 2) in the style of
-  the existing `tests/diagnostics/architecture.test.ts`
-  `genericSwcTraversalDeclarations` check, asserting `enterDeterministicTimeScope`
-  makes exactly one direct `scopeOwnFacts` call and no longer calls the
-  node-taking `enterScope`/`enterAliasScope` forms. This gives a genuine
-  red-before/green-after guard for a refactor.
+  ordinary behavioural tests cannot observe directly. Severity: medium.
+  Likelihood: medium. Mitigation: add a source-inspecting guard test (Work Item
+  2) in the style of the existing `tests/diagnostics/architecture.test.ts`
+  `genericSwcTraversalDeclarations` check, asserting
+  `enterDeterministicTimeScope` makes exactly one direct `scopeOwnFacts` call
+  and no longer calls the node-taking `enterScope`/`enterAliasScope` forms.
+  This gives a genuine red-before/green-after guard for a refactor.
 - Risk: some consumer relies on the public flat facts *omitting* accessor
-  parameters.
-  Severity: low. Likelihood: low.
-  Mitigation: research confirms `collectLexicalBindings` output flows only into
+  parameters. Severity: low. Likelihood: low. Mitigation: research confirms
+  `collectLexicalBindings` output flows only into
   `WorkflowAstFacts.lexicalBindings` (produced by
   `src/static-analysis/workflow-ast-facts.ts`) and into its own tests; the
   deterministic-time scanner uses the *scope* model, not the flat collector. No
   rule branches on accessor-parameter presence today. Verified by grep over
   `src` and `tests`.
 - Risk: `MethodProperty` and `SetterProperty` SWC node shapes are assumed
-  wrongly.
-  Severity: low. Likelihood: low.
-  Mitigation: shapes verified against the dependency versions pinned in
-  `bun.lock`: `@swc/core@1.15.43` depends on `@swc/types@0.1.27`.
-  `SetterProperty` has a single `param: Pattern` and `body?: BlockStatement`;
-  `MethodProperty extends … Fn`, so it carries `params`/`body` directly;
-  `GetterProperty` has `body?: BlockStatement` and no parameters. See
-  "Interfaces and dependencies" for the full signatures.
+  wrongly. Severity: low. Likelihood: low. Mitigation: shapes verified against
+  the dependency versions pinned in `bun.lock`: `@swc/core@1.15.43` depends on
+  `@swc/types@0.1.27`. `SetterProperty` has a single `param: Pattern` and
+  `body?: BlockStatement`; `MethodProperty extends … Fn`, so it carries
+  `params` /`body` directly; `GetterProperty` has `body?: BlockStatement` and
+  no parameters. See "Interfaces and dependencies" for the full signatures.
 
 ## Progress
 
@@ -203,63 +197,56 @@ Hard invariants that must hold throughout implementation.
 
 - Observation: GitHub-indexed `grepai` and `bun test` probes were unavailable in
   the planning session (`bun test` needed interactive approval that a planning
-  agent cannot grant; `grepai` needed shell approval).
-  Evidence: repeated "command requires approval" responses.
-  Impact: all branch-local facts in this plan were verified by direct file
-  inspection and by the existing pinned tests
+  agent cannot grant; `grepai` needed shell approval). Evidence: repeated
+  "command requires approval" responses. Impact: all branch-local facts in this
+  plan were verified by direct file inspection and by the existing pinned tests
   (`tests/static-analysis/workflow-ast-scopes.test.ts` line ~164 pins that the
   scope model collects setter parameters; `workflow-ast-bindings.ts` has no
-  `SetterProperty`/`MethodProperty` collector). The implementer will confirm the
-  divergence empirically via the Red test in Work Item 1.
+  `SetterProperty`/`MethodProperty` collector). The implementer will confirm
+  the divergence empirically via the Red test in Work Item 1.
 - Observation: During implementation, GrepAI was available and returned
-  canonical main-branch evidence for `workflow-ast-scope-own-facts.ts`; Leta was
-  available for branch-local symbol checks.
-  Evidence: `grepai version 0.35.0`, `grepai workspace status Projects`, and
+  canonical main-branch evidence for `workflow-ast-scope-own-facts.ts`; Leta
+  was available for branch-local symbol checks. Evidence:
+  `grepai version 0.35.0`, `grepai workspace status Projects`, and
   `leta show collectLexicalBindings`/`leta show enterDeterministicTimeScope`
-  succeeded from the assigned worktree.
-  Impact: no fallback tooling exception is needed for this implementation pass.
+  succeeded from the assigned worktree. Impact: no fallback tooling exception
+  is needed for this implementation pass.
 - Observation: Work Item 1 Red/Green behaved as expected after dependencies
-  were installed with `make build`.
-  Evidence: `bun test tests/static-analysis/workflow-ast-bindings.test.ts`
-  first failed because `setterParam` was absent from `boundNames`; after adding
-  the object-literal member collectors, the binding and AST-facts focused suites
-  passed.
-  Impact: the public flat binding facts now match the internal scope model for
-  object-literal setter and method parameters.
+  were installed with `make build`. Evidence:
+  `bun test tests/static-analysis/workflow-ast-bindings.test.ts` first failed
+  because `setterParam` was absent from `boundNames`; after adding the
+  object-literal member collectors, the binding and AST-facts focused suites
+  passed. Impact: the public flat binding facts now match the internal scope
+  model for object-literal setter and method parameters.
 - Observation: Work Item 2 Red/Green behaved as expected.
   Evidence: `bun test tests/diagnostics/architecture.test.ts` first failed
   because `enterDeterministicTimeScope` made zero direct `scopeOwnFacts` calls
   and still called the node-taking scope-entry helpers. After adding the
   `*WithOwnFacts` variants and threading one `ScopeOwnFacts` value through the
   deterministic-time scanner, the architecture, scope-view, and alias-scope
-  focused suites passed.
-  Impact: the scanner now computes scope-owned facts once per visited node while
-  preserving the node-taking helpers and identity fast paths for tests and other
-  internal callers.
+  focused suites passed. Impact: the scanner now computes scope-owned facts
+  once per visited node while preserving the node-taking helpers and identity
+  fast paths for tests and other internal callers.
 - Observation: Work Item 2 review and gates completed cleanly after formatting
-  the alias-scope test imports.
-  Evidence: scrutineer reported `make all`, `make markdownlint`, and
-  `make nixie` green, then `coderabbit review --agent` completed with
-  `findings=0`.
-  Impact: no Work Item 2 open review issue remains.
+  the alias-scope test imports. Evidence: scrutineer reported `make all`,
+  `make markdownlint`, and `make nixie` green, then `coderabbit review --agent`
+  completed with `findings=0`. Impact: no Work Item 2 open review issue remains.
 - Observation: No changelog file exists for this surface.
   Evidence: `find . -maxdepth 2 -iname '*changelog*' -o -name 'CHANGELOG.md'`
-  returned no paths from the assigned worktree.
-  Impact: Work Item 3 did not add or update a changelog.
+  returned no paths from the assigned worktree. Impact: Work Item 3 did not add
+  or update a changelog.
 - Observation: Work Item 3 updated both planned documentation files.
   Evidence: `docs/developers-guide.md` now states that whole-body lexical
   binding facts include object-literal setter and object-method parameters and
   that the deterministic-time scanner shares one computed scope-owned fact set
   between binding and alias scope entry. `docs/technical-design.md` records the
   same single-computation seam while preserving the distinct recursion-policy
-  contract.
-  Impact: developer-facing and design documentation now match the delivered
-  behaviour.
+  contract. Impact: developer-facing and design documentation now match the
+  delivered behaviour.
 - Observation: The roadmap completion checkbox also needed updating.
   Evidence: `docs/roadmap.md` still listed task 3.2.7 as incomplete after the
-  ExecPlan work items were delivered.
-  Impact: Work Item 3 includes the narrow roadmap status update so the living
-  roadmap matches the implementation state.
+  ExecPlan work items were delivered. Impact: Work Item 3 includes the narrow
+  roadmap status update so the living roadmap matches the implementation state.
 
 ## Decision log
 
@@ -267,44 +254,40 @@ Hard invariants that must hold throughout implementation.
   parameters rather than re-basing the flat collector on the scope model.
   Rationale: `docs/developers-guide.md` states the public model is deliberately
   whole-body and name-based; re-basing it on per-scope facts would be a larger,
-  contract-breaking change outside this task's scope.
-  Date/Author: 2026-07-05, planning agent.
+  contract-breaking change outside this task's scope. Date/Author: 2026-07-05,
+  planning agent.
 - Decision: dedupe the scope-own-fact computation by adding additive
   `*WithOwnFacts` variants and calling `scopeOwnFacts(node)` once in
   `enterDeterministicTimeScope`, keeping the node-taking `enterScope`/
-  `enterAliasScope` as thin delegators for existing unit tests.
-  Rationale: preserves the identity fast-path behaviour that
+  `enterAliasScope` as thin delegators for existing unit tests. Rationale:
+  preserves the identity fast-path behaviour that
   `tests/static-analysis/workflow-ast-scopes.test.ts` depends on
   (`expect(expressionView).toBe(rootView)`), keeps unit-test entry points, and
-  keeps the change additive.
-  Date/Author: 2026-07-05, planning agent.
+  keeps the change additive. Date/Author: 2026-07-05, planning agent.
 - Decision: order Work Item 1 (functional change) before Work Item 2 (refactor),
   per the `AGENTS.md` heuristic that refactors follow functional changes.
   Date/Author: 2026-07-05, planning agent.
 - Decision: keep the ExecPlan portable by referring to the assigned git
-  worktree root instead of hard-coding the machine-specific absolute path inside
-  the plan body.
-  Rationale: CodeRabbit flagged the literal path as making the plan less
-  portable; the workflow prompt remains the authoritative source for the
-  concrete path, and the plan still forbids edits to the root/control worktree.
-  Date/Author: 2026-07-05, implementation agent.
+  worktree root instead of hard-coding the machine-specific absolute path
+  inside the plan body. Rationale: CodeRabbit flagged the literal path as
+  making the plan less portable; the workflow prompt remains the authoritative
+  source for the concrete path, and the plan still forbids edits to the
+  root/control worktree. Date/Author: 2026-07-05, implementation agent.
 - Decision: make the Work Item 3 `docs/technical-design.md` edit mandatory.
   Rationale: CodeRabbit flagged the optional wording as leaving the design
   reconciliation ambiguous. The technical design is the source of truth for the
   parser-backed collector seam and should record the final reconciliation.
   Date/Author: 2026-07-05, implementation agent.
 - Decision: keep the documentation update to `docs/developers-guide.md` and
-  `docs/technical-design.md`.
-  Rationale: those files are the documented source of truth for workflow AST
-  facts and parser-backed collector architecture, and no changelog exists for
-  this internal reconciliation.
-  Date/Author: 2026-07-05, implementation agent.
+  `docs/technical-design.md`. Rationale: those files are the documented source
+  of truth for workflow AST facts and parser-backed collector architecture, and
+  no changelog exists for this internal reconciliation. Date/Author:
+  2026-07-05, implementation agent.
 - Decision: include the `docs/roadmap.md` completion checkbox in the Work Item 3
-  commit.
-  Rationale: repository guidance says the roadmap should be updated when a
-  planned task is completed, and this is a status-only documentation change
-  required to keep the source-of-truth roadmap current.
-  Date/Author: 2026-07-05, implementation agent.
+  commit. Rationale: repository guidance says the roadmap should be updated
+  when a planned task is completed, and this is a status-only documentation
+  change required to keep the source-of-truth roadmap current. Date/Author:
+  2026-07-05, implementation agent.
 
 ## Outcomes & retrospective
 
@@ -349,9 +332,9 @@ The reader needs no prior plans. The relevant files, all under the worktree
 root, are:
 
 - `src/static-analysis/workflow-ast-bindings.ts` — the public whole-body flat
-  binding collector `collectLexicalBindings`, its `STATEMENT_BINDING_COLLECTORS`
-  dispatch table, and `isIdentifierBound`. This is the "public flat
-  lexical-binding facts" of the task.
+  binding collector `collectLexicalBindings`, its
+  `STATEMENT_BINDING_COLLECTORS` dispatch table, and `isIdentifierBound`. This
+  is the "public flat lexical-binding facts" of the task.
 - `src/static-analysis/workflow-ast-binding-patterns.ts` — shared, reusable
   binding-pattern collectors (`collectPatternBindings`,
   `collectFunctionParamBindings`, `addIdentifierBinding`, `arrayValue`,
@@ -376,8 +359,8 @@ Terms:
 
 - **Scope-opening node**: a SWC node that introduces its own lexical scope
   (functions, arrow functions, class methods/accessors, class expressions,
-  blocks, `for`/`for-in`/`for-of`, `catch`). Enumerated in
-  `isScopeOpeningNode` in `workflow-ast-scope-own-facts.ts`.
+  blocks, `for`/`for-in`/`for-of`, `catch`). Enumerated in `isScopeOpeningNode`
+  in `workflow-ast-scope-own-facts.ts`.
 - **Scope-owned facts** (`ScopeOwnFacts`): the names a single scope declares
   directly (`ownNames`) plus its simple `name = <expression>` initializers
   (`ownInitializers`), not counting names owned by nested scopes.
@@ -386,8 +369,9 @@ Terms:
 - **Object-literal accessor/method**: `get x() {}`, `set x(p) {}`, and shorthand
   method `m(q) {}` written inside an object literal — SWC node types
   `GetterProperty`, `SetterProperty`, `MethodProperty`. Distinct from class
-  members (`GetterProperty` etc. also appear on classes, but the divergence this
-  task fixes is specifically the object-literal path in the flat collector).
+  members (`GetterProperty` etc. also appear on classes, but the divergence
+  this task fixes is specifically the object-literal path in the flat
+  collector).
 
 ## Plan of work
 
@@ -396,8 +380,8 @@ commit gate (`make all`), and Work Item 3 additionally runs the Markdown gates.
 
 ### Work Item 1 — Align object-literal accessor handling in the public flat binding facts
 
-Design docs to read first: `docs/developers-guide.md` "Workflow AST facts"
-(the whole-body, name-based contract); `docs/technical-design.md` §6.1
+Design docs to read first: `docs/developers-guide.md` "Workflow AST facts" (the
+whole-body, name-based contract); `docs/technical-design.md` §6.1
 (parser-backed collectors and their distinct recursion policies) and §6.2 (the
 `WorkflowAstFacts` layer). This is TypeScript, so the Python router skills do
 not apply. Load `leta` for symbol navigation and follow the `AGENTS.md`
@@ -466,9 +450,9 @@ parameters in flat binding facts".
 
 Design docs to read first: `docs/technical-design.md` §6.1 (the seam and the
 "scope views, alias declaration views, and the lexical-binding collector … keep
-their distinct scope-bounded and type-dispatched recursion policies"
-statement); `docs/developers-guide.md` "Workflow AST facts" (the scanner "layers
-an internal function-scope view over the whole-body model"). Skills: `leta` for
+their distinct scope-bounded and type-dispatched recursion policies" statement);
+`docs/developers-guide.md` "Workflow AST facts" (the scanner "layers an
+internal function-scope view over the whole-body model"). Skills: `leta` for
 navigation; follow `AGENTS.md` "Refactoring Heuristics & Workflow" (refactor as
 a separate atomic commit) and "TypeScript Guidance".
 
@@ -480,8 +464,8 @@ already imports `typescript` and `parseSource`) with a focused `it(...)` that:
 - parses `src/static-analysis/workflow-deterministic-time.ts`,
 - locates the `enterDeterministicTimeScope` declaration, and
 - asserts its body makes exactly **one** direct call to `scopeOwnFacts` and
-  **zero** calls to the node-taking `enterScope` / `enterAliasScope`
-  (it must use the new `*WithOwnFacts` variants instead).
+  **zero** calls to the node-taking `enterScope` / `enterAliasScope` (it must
+  use the new `*WithOwnFacts` variants instead).
 
 This assertion is red on the current code (zero direct `scopeOwnFacts` calls;
 two node-taking-entry calls) and green after Stage C. Additionally add unit
@@ -496,7 +480,8 @@ Stage C (Green).
 
 - In `src/static-analysis/workflow-ast-scopes.ts`, add
   `enterScopeWithOwnFacts(view: LexicalBindingFacts, facts: ScopeOwnFacts):
-  LexicalBindingFacts` containing the current `enterScope` body (from
+  LexicalBindingFacts`
+  containing the current `enterScope` body (from
   `if (facts.ownNames.length === 0) return view;` onward). Re-implement
   `enterScope(view, node)` as
   `enterScopeWithOwnFacts(view, scopeOwnFacts(node))`. Export the new variant
@@ -527,8 +512,8 @@ Stage C (Green).
 
   Update the imports: bring `scopeOwnFacts` and `enterScopeWithOwnFacts` from
   `./workflow-ast-scopes`, and `enterAliasScopeWithOwnFacts` from
-  `./workflow-deterministic-time-aliases`. `ScopeOwnFacts` is already re-exported
-  from `workflow-ast-scopes.ts`.
+  `./workflow-deterministic-time-aliases`. `ScopeOwnFacts` is already
+  re-exported from `workflow-ast-scopes.ts`.
 
 Stage D (Refactor/cleanup). Confirm no now-dead imports remain and that the
 node-taking `enterScope`/`enterAliasScope` are still referenced by their unit
@@ -573,7 +558,8 @@ formatter; format only the files touched.
 
 Validation: `make markdownlint` and `make nixie` pass; `make all` still passes.
 
-Commit (docs): "Document accessor-parameter and single scope-fact reconciliation".
+Commit (docs): "Document accessor-parameter and single scope-fact
+reconciliation".
 
 ## Concrete steps
 
@@ -586,8 +572,8 @@ bun test tests/static-analysis/workflow-ast-bindings.test.ts
 ```
 
 Expect the new `setterParam` and `methodParam` assertions to fail (name absent
-from `boundNames`) and every other assertion to pass. Then implement Stage C and
-re-run; expect all pass.
+from `boundNames`) and every other assertion to pass. Then implement Stage C
+and re-run; expect all pass.
 
 Work Item 2 — Red (focused):
 
@@ -680,12 +666,12 @@ substitution in the Decision Log.
 Locked library facts, anchored to checked-in `bun.lock`, which pins
 `@swc/core@1.15.43` and its `@swc/types@0.1.27` dependency:
 
-- `SetterProperty extends PropBase, HasSpan { type: "SetterProperty"; param:
-  Pattern; body?: BlockStatement }` — a single `param` pattern.
+- `SetterProperty extends PropBase, HasSpan { type: "SetterProperty"; param:`
+  `Pattern; body?: BlockStatement }` — a single `param` pattern.
 - `MethodProperty extends PropBase, Fn { type: "MethodProperty" }` — inherits
   `params` and `body` from `Fn`, so it is collected like a function expression.
-- `GetterProperty extends PropBase, HasSpan { type: "GetterProperty"; body?:
-  BlockStatement }` — no parameters.
+- `GetterProperty extends PropBase, HasSpan { type: "GetterProperty";`
+  `body?: BlockStatement }` — no parameters.
 - `Param { type: "Parameter"; pat: Pattern }` — `collectFunctionParamBindings`
   already unwraps `Parameter` to its `pat`.
 
@@ -713,8 +699,8 @@ New/changed internal signatures at milestone end:
 
 - In `src/static-analysis/workflow-ast-bindings.ts`,
   `STATEMENT_BINDING_COLLECTORS` gains `SetterProperty` and `MethodProperty`
-  entries of type `BindingCollector = (node: AstNode, boundNames: Set<string>)
-  => void`.
+  entries of type
+  `BindingCollector = (node: AstNode, boundNames: Set<string>) => void`.
 
 No public package exports change. No new dependencies.
 
@@ -725,21 +711,21 @@ binding facts to collect object-literal setter/method parameters; (2) compute
 scope-owned facts once per scope-opening node via additive `*WithOwnFacts`
 variants; (3) documentation. All branch-local facts verified by direct file
 inspection because `bun test` and `grepai`/`leta` probes required interactive
-approval unavailable to the planning agent; the divergence is nonetheless pinned
-by the existing scope test and the absence of `SetterProperty`/`MethodProperty`
-collectors in `workflow-ast-bindings.ts`, and will be confirmed by the Work
-Item 1 Red test during implementation.
+approval unavailable to the planning agent; the divergence is nonetheless
+pinned by the existing scope test and the absence of `SetterProperty`/
+`MethodProperty` collectors in `workflow-ast-bindings.ts`, and will be
+confirmed by the Work Item 1 Red test during implementation.
 
 Revision 2 (2026-07-05). Resolved the sole design-review blocking point: the
-`Tolerances` "Scope" trigger (`more than 6 source/test files … stop and
-escalate`) contradicted the plan's own work list, which mandates nine
-source/test edits (three in Work Item 1, six in Work Item 2). Under a
-whole-plan reading, an implementer honouring the binding tolerance would have
-had to stop-and-escalate before finishing the planned work, making the plan
-non-executable. The `Scope` tolerance is now split into (a) the sanctioned
-per-work-item and whole-plan footprint (three + six = nine source/test files,
-plus up to two docs files) and (b) an escalation trigger stated as a
-**per-code-work-item** 6-file bound and a whole-plan bound of >9 source/test
-files, explicitly noting the planned footprint sits inside every bound so no
-premature stop is forced. No work items, mechanisms, or verified library facts
-changed.
+`Tolerances` "Scope" trigger
+(`more than 6 source/test files … stop and escalate`) contradicted the plan's
+own work list, which mandates nine source/test edits (three in Work Item 1, six
+in Work Item 2). Under a whole-plan reading, an implementer honouring the
+binding tolerance would have had to stop-and-escalate before finishing the
+planned work, making the plan non-executable. The `Scope` tolerance is now
+split into (a) the sanctioned per-work-item and whole-plan footprint (three +
+six = nine source/test files, plus up to two docs files) and (b) an escalation
+trigger stated as a **per-code-work-item** 6-file bound and a whole-plan bound
+of >9 source/test files, explicitly noting the planned footprint sits inside
+every bound so no premature stop is forced. No work items, mechanisms, or
+verified library facts changed.

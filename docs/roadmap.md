@@ -1550,10 +1550,10 @@ work by keeping shared helpers documented, tested, and owned once.
 
 ### 5.5. Reconcile dormant body-syntax span narrowing
 
-This step answers whether the inactive body-syntax span-narrowing surface should
-graduate into a real structured-offset path or remain quarantined as an internal
-fallback. It informs future parser upgrades without reopening the phase-2
-dialect decision.
+This step answers whether the inactive body-syntax span-narrowing surface
+should graduate into a real structured-offset path or remain quarantined as an
+internal fallback. It informs future parser upgrades without reopening the
+phase-2 dialect decision.
 
 - [x] 5.5.1. Resolve the body-syntax span-narrowing surface.
   - Requires 2.2.6 and 2.3.4.

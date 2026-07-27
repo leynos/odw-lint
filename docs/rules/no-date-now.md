@@ -12,8 +12,7 @@ This rule reports direct calls to `Date.now()`. It does not report a bare
 `Date.now` reference that is not called. Time-dependent workflows are harder to
 replay, test, and compare across ODW and Claude Code environments.
 
-It is a warning by default and is promoted to an error under
-`--strict-claude`.
+It is a warning by default and is promoted to an error under `--strict-claude`.
 
 Inject the current time through workflow arguments or an explicit host adapter
 so tests and supervised runs can control it.

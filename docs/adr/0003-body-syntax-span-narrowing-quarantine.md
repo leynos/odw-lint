@@ -1,18 +1,17 @@
 # 0003. Body-syntax span-narrowing quarantine
 
-Status: Accepted
-Date: 2026-07-05
+Status: Accepted Date: 2026-07-05
 
 ## Context
 
 `odw-lint` reports malformed workflow bodies with the `odw/body-syntax`
 diagnostic. Roadmap task 2.2.6 added an internal span-mapping seam in
 `src/static-analysis/workflow-body-parser-spans.ts` so a parser error carrying
-a structured, machine-readable byte range could narrow that diagnostic from
-the whole workflow body to the offending token.
+a structured, machine-readable byte range could narrow that diagnostic from the
+whole workflow body to the offending token.
 
-The shipped parser path uses `@swc/core@^1.15.43` with
-`syntax: "ecmascript"` and `jsx: false`. The characterization test
+The shipped parser path uses `@swc/core@^1.15.43` with `syntax: "ecmascript"`
+and `jsx: false`. The characterization test
 `tests/static-analysis/swc-parse-error-surface.test.ts` pins that SWC throws an
 `Error` whose useful location data is rendered prose in `message`; it does not
 expose an allow-listed structured numeric offset or range that `odw-lint` can
@@ -37,8 +36,8 @@ it owns the fallback path and the coordinate-base guards a future structured
 channel needs. The seam remains internal and must not be exported from the
 public package entry points.
 
-Re-activating token-level narrowing is a future design decision. It is gated
-on a parser surface that exposes stable, base-resolvable structured offsets or
+Re-activating token-level narrowing is a future design decision. It is gated on
+a parser surface that exposes stable, base-resolvable structured offsets or
 ranges without parsing rendered diagnostic prose.
 
 ## Consequences

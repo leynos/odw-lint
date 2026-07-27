@@ -44,10 +44,10 @@ Location:
 Three modules independently walk a run of identifier characters using the same
 `/[A-Za-z0-9_$]/u` character class. `significantTokenEndingAt` and
 `previousSignificantTemplateToken` both scan backwards
-(`while (cursor >= 0 && /[A-Za-z0-9_$]/u.test(...)) cursor -= 1`) then slice the
-token, while `scanRegexFlagsEnd` scans the same class forwards. The three copies
-must stay in lockstep if the identifier alphabet ever changes (for example to
-admit Unicode identifier parts), but nothing enforces that today.
+(`while (cursor >= 0 && /[A-Za-z0-9_$]/u.test(...)) cursor -= 1`) then slice
+the token, while `scanRegexFlagsEnd` scans the same class forwards. The three
+copies must stay in lockstep if the identifier alphabet ever changes (for
+example to admit Unicode identifier parts), but nothing enforces that today.
 
 Proposed fix:
 
@@ -69,12 +69,13 @@ Location:
 - `src/static-analysis/source-mask-strings.ts:47`
 
 `scanEscapedDelimitedEnd` and `scanQuotedStringEnd` share the same skeleton:
-walk from `startIndex + 1`, treat `\\` as an escape that advances past the
-next character, return `index + 1` on the closing delimiter, and fall back to
-`sourceText.length` when unterminated. `scanQuotedStringEnd` adds two behaviours
-the shared helper lacks: it terminates at an unescaped line terminator and it
-treats `\` followed by CRLF as a three-character line continuation. The escape
-walk is therefore reimplemented rather than parameterized.
+walk from `startIndex + 1`, treat `\\` as an escape that advances past the next
+character, return `index + 1` on the closing delimiter, and fall back to
+`sourceText.length` when unterminated. `scanQuotedStringEnd` adds two
+behaviours the shared helper lacks: it terminates at an unescaped line
+terminator and it treats `\` followed by CRLF as a three-character line
+continuation. The escape walk is therefore reimplemented rather than
+parameterized.
 
 Proposed fix:
 
@@ -110,8 +111,8 @@ also awkward enough to require a double guard in the property test
 
 Proposed fix:
 
-Standardize the review-evidence feature on the tagged `{ ok }` result shape
-(or a shared `Parsed<T>` helper type), so failure discrimination is explicit and
+Standardize the review-evidence feature on the tagged `{ ok }` result shape (or
+a shared `Parsed<T>` helper type), so failure discrimination is explicit and
 cannot be confused with a legitimately string-typed success value.
 
 ## Finding 4: `deriveHarnessPathAvailability` unit coverage is thin
@@ -128,8 +129,8 @@ The only module-level test for `deriveHarnessPathAvailability` is a property
 test that generates exclusively valid availability values and asserts a single
 invariant: that a non-`available` scrutineer environment never yields a
 scrutineer primary. It never asserts the positive mapping (for example that
-`ODW_LINT_REVIEW_CODERABBIT=available` derives `coderabbit: "available"`), never
-exercises the `local-self-run` environment override, and never drives the
+`ODW_LINT_REVIEW_CODERABBIT=available` derives `coderabbit: "available"`),
+never exercises the `local-self-run` environment override, and never drives the
 invalid-value branch that returns a usage-error string (that branch is covered
 only indirectly through one CLI test).
 
@@ -152,15 +153,15 @@ Location:
 
 The `setPathAvailability` test confirms that the returned facts update only the
 targeted path and leave sibling paths unchanged, but it never asserts that the
-input facts object is left unmutated. `setPathAvailability` is written to return
-a fresh object via spread, yet nothing in the suite would catch a regression to
-in-place mutation of the caller's facts.
+input facts object is left unmutated. `setPathAvailability` is written to
+return a fresh object via spread, yet nothing in the suite would catch a
+regression to in-place mutation of the caller's facts.
 
 Proposed fix:
 
 Extend the test to snapshot the input object before the call and assert it is
-unchanged afterwards (and, ideally, that the result is a distinct reference), so
-the copy-on-write contract is protected.
+unchanged afterwards (and, ideally, that the result is a distinct reference),
+so the copy-on-write contract is protected.
 
 ## Finding 6: `repository-layout.md` omits the review-evidence module cluster
 
@@ -175,17 +176,17 @@ Location:
 The `tests/build-gate/` section documents the shared command-runner seam
 (`git-support.ts`) and the CLI writer seam (`cli-support.ts`) but never names
 the review-evidence module cluster that now implements the reviewer-run audit
-gate: `review-evidence.ts` (pure classification), `review-evidence-availability`
-(harness derivation), `review-evidence-cli.ts` (execution and flag parsing), and
-`review-evidence-report.ts` (report formatting). A reader mapping the gate to
-its files has no pointer.
+gate: `review-evidence.ts` (pure classification),
+`review-evidence-availability` (harness derivation), `review-evidence-cli.ts`
+(execution and flag parsing), and `review-evidence-report.ts` (report
+formatting). A reader mapping the gate to its files has no pointer.
 
 Proposed fix:
 
 Add a short paragraph after the existing build-gate seam description naming the
-four review-evidence modules and their respective roles, mirroring the
-"keep feature-specific policy in the corresponding gate module" guidance already
-in the developers' guide.
+four review-evidence modules and their respective roles, mirroring the "keep
+feature-specific policy in the corresponding gate module" guidance already in
+the developers' guide.
 
 ## Finding 7: `textIndexAtByteOffset` recomputes the next index each iteration
 
@@ -197,8 +198,8 @@ Location:
 
 - `src/static-analysis/workflow-body-parser.ts:313`
 
-Inside the scan loop, `nextCharacterIndex(sourceText, index)` is evaluated twice
-per character — once as the `for` step expression and again inside the
+Inside the scan loop, `nextCharacterIndex(sourceText, index)` is evaluated
+twice per character — once as the `for` step expression and again inside the
 `byteLength(sourceText.slice(index, nextCharacterIndex(...)))` call — and each
 character's byte length is measured by allocating a one-character slice and
 encoding it. The lookup is linear per call (not quadratic), but the duplicated

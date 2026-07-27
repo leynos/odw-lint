@@ -1,9 +1,8 @@
 # Add tracked-file whitespace hygiene to the commit gate
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -131,8 +130,8 @@ conflict in `Decision Log`, and escalate.
   high. Likelihood: low. Mitigation: the guard must be report-only, and tests
   must assert it never mutates fixture content.
 - Risk: a repository path with unusual characters is parsed incorrectly.
-  Severity: medium. Likelihood: low. Mitigation: use `git ls-files -z
-  --full-name` and the existing NUL-separated parsing pattern.
+  Severity: medium. Likelihood: low. Mitigation: use
+  `git ls-files -z --full-name` and the existing NUL-separated parsing pattern.
 - Risk: a deleted tracked file causes an opaque stack trace. Severity: medium.
   Likelihood: medium. Mitigation: convert missing or unreadable file failures
   into project-owned errors with a stable message.
@@ -179,9 +178,9 @@ conflict in `Decision Log`, and escalate.
   tracked trailing whitespace, untracked dirty files, NUL-containing binary
   files, missing tracked paths, and report-only fixture handling.
 - [x] (2026-06-30T16:45Z) Completed work item 3: wired
-  `make whitespace-hygiene` into `make all`, updated Makefile dry-run tests
-  and maintainer documentation, and removed existing tracked snapshot
-  whitespace so the new gate passes at repository head.
+  `make whitespace-hygiene` into `make all`, updated Makefile dry-run tests and
+  maintainer documentation, and removed existing tracked snapshot whitespace so
+  the new gate passes at repository head.
 - [x] (2026-06-30T16:49Z) Completed work item 4: marked roadmap task 1.5.4
   complete, finalized this ExecPlan, and prepared the final gate evidence for
   the completed branch state.
@@ -193,102 +192,92 @@ conflict in `Decision Log`, and escalate.
   `leta workspace add .` then exposed the TypeScript and Markdown surfaces.
   Impact: future implementers can use `leta` directly in this worktree.
 - Observation: `git diff --check HEAD --` does not catch existing tracked
-  trailing whitespace when there is no diff.
-  Evidence: a temporary repository with committed `dirty.txt` containing
-  `bad \n` returned status 0 for `git diff --check HEAD --`.
-  Impact: the implementation must scan tracked file contents, not diffs.
+  trailing whitespace when there is no diff. Evidence: a temporary repository
+  with committed `dirty.txt` containing `bad \n` returned status 0 for
+  `git diff --check HEAD --`. Impact: the implementation must scan tracked file
+  contents, not diffs.
 - Observation: the repository already has a local tracked-file enumeration
-  pattern in `tests/build-gate/file-size-support.ts`.
-  Evidence: `trackedSourceAndTestTypeScriptFiles` uses `git ls-files -z -- src
-  tests` and `parseNulSeparatedPaths`.
-  Impact: the whitespace guard should reuse the NUL parsing idea, but should
-  keep a local all-tracked enumeration until reuse is justified.
+  pattern in `tests/build-gate/file-size-support.ts`. Evidence:
+  `trackedSourceAndTestTypeScriptFiles` uses `git ls-files -z -- src tests` and
+  `parseNulSeparatedPaths`. Impact: the whitespace guard should reuse the NUL
+  parsing idea, but should keep a local all-tracked enumeration until reuse is
+  justified.
 - Observation: Oxlint's df12 rules require JSDoc on private helper functions
-  and keep cyclomatic complexity below eight for the scanner.
-  Evidence: the first `make all` run failed on missing private JSDoc,
-  `findPathViolations` complexity 10, and a complex conditional in
-  `tests/build-gate/whitespace-hygiene-support.ts`.
-  Impact: the byte scanner is split into named line-boundary predicates and
-  every private helper now has concise JSDoc.
-- Observation: the first live run of `bun run
-  tests/build-gate/whitespace-hygiene.ts` found existing trailing spaces in one
-  tracked snapshot file.
-  Evidence: the command reported
+  and keep cyclomatic complexity below eight for the scanner. Evidence: the
+  first `make all` run failed on missing private JSDoc, `findPathViolations`
+  complexity 10, and a complex conditional in
+  `tests/build-gate/whitespace-hygiene-support.ts`. Impact: the byte scanner is
+  split into named line-boundary predicates and every private helper now has
+  concise JSDoc.
+- Observation: the first live run of
+  `bun run tests/build-gate/whitespace-hygiene.ts` found existing trailing
+  spaces in one tracked snapshot file. Evidence: the command reported
   `tests/static-analysis/__snapshots__/fixture-metadata-refresh-manifest-source.test.ts.snap`
-  at lines 5, 77, and 169.
-  Impact: work item 3 must clean that existing snapshot whitespace before
-  wiring the guard into `make all`; otherwise the new mandatory target would
-  fail immediately.
+  at lines 5, 77, and 169. Impact: work item 3 must clean that existing
+  snapshot whitespace before wiring the guard into `make all`; otherwise the
+  new mandatory target would fail immediately.
 - Observation: Bun's object snapshot serializer preserved trailing whitespace
-  after object keys when snapshotting the manifest-source map.
-  Evidence: after removing the three reported trailing spaces, `make all`
-  failed in `fixture metadata refresh manifest source > generates stable
-  TypeScript manifest modules` because the test regenerated those lines.
-  Impact: the test now snapshots a deterministic path-heading text block
-  instead of an object map, preserving review coverage without committing
-  trailing whitespace.
+  after object keys when snapshotting the manifest-source map. Evidence: after
+  removing the three reported trailing spaces, `make all` failed in
+  `fixture metadata refresh manifest source > generates stable
+  TypeScript manifest modules`
+  because the test regenerated those lines. Impact: the test now snapshots a
+  deterministic path-heading text block instead of an object map, preserving
+  review coverage without committing trailing whitespace.
 
 ## Decision log
 
 - Decision: implement a repository-wide tracked-file byte scanner instead of
-  `git diff --check`.
-  Rationale: official Git docs state `git diff --check` warns when changes
-  introduce whitespace errors, and the local probe proves it misses already
-  committed trailing whitespace with no diff. Roadmap task 1.5.4 asks for
-  tracked-file hygiene, not only changed-line hygiene.
-  Date/Author: 2026-06-30T15:37Z / Codex.
+  `git diff --check`. Rationale: official Git docs state `git diff --check`
+  warns when changes introduce whitespace errors, and the local probe proves it
+  misses already committed trailing whitespace with no diff. Roadmap task 1.5.4
+  asks for tracked-file hygiene, not only changed-line hygiene. Date/Author:
+  2026-06-30T15:37Z / Codex.
 - Decision: enumerate candidates with `git ls-files -z --full-name`.
   Rationale: official Git docs state `git ls-files` defaults to cached tracked
-  files, `--full-name` emits repository-root-relative paths from subdirectories,
-  and `-z` emits verbatim NUL-terminated filenames. That is the safest
-  machine-readable contract for repository-relative paths.
-  Date/Author: 2026-06-30T15:37Z / Codex.
+  files, `--full-name` emits repository-root-relative paths from
+  subdirectories, and `-z` emits verbatim NUL-terminated filenames. That is the
+  safest machine-readable contract for repository-relative paths. Date/Author:
+  2026-06-30T15:37Z / Codex.
 - Decision: scan bytes for trailing `0x20` or `0x09` before LF, CRLF, CR, or
-  end-of-file, and skip buffers containing `0x00`.
-  Rationale: trailing whitespace policy only needs spaces and tabs at text
-  line ends. Byte scanning avoids encoding surprises, preserves raw fixture
-  bytes, and lets binary files stay out of scope without adding dependencies.
-  Date/Author: 2026-06-30T15:37Z / Codex.
+  end-of-file, and skip buffers containing `0x00`. Rationale: trailing
+  whitespace policy only needs spaces and tabs at text line ends. Byte scanning
+  avoids encoding surprises, preserves raw fixture bytes, and lets binary files
+  stay out of scope without adding dependencies. Date/Author: 2026-06-30T15:37Z
+  / Codex.
 - Decision: keep the new guard under `tests/build-gate/` and wire it into
-  `make all`.
-  Rationale: existing roadmap hardening tasks place repository guards in
-  `tests/build-gate/`, and `AGENTS.md` identifies `make all` as the default
-  full repository gate.
-  Date/Author: 2026-06-30T15:37Z / Codex.
+  `make all`. Rationale: existing roadmap hardening tasks place repository
+  guards in `tests/build-gate/`, and `AGENTS.md` identifies `make all` as the
+  default full repository gate. Date/Author: 2026-06-30T15:37Z / Codex.
 - Decision: keep `parseNulSeparatedPaths` local to the whitespace support
-  module for work item 1.
-  Rationale: the ExecPlan explicitly defers shared tracked-file helper
-  extraction until a second write-side hygiene check proves the shape.
-  Date/Author: 2026-06-30T15:59Z / Codex.
+  module for work item 1. Rationale: the ExecPlan explicitly defers shared
+  tracked-file helper extraction until a second write-side hygiene check proves
+  the shape. Date/Author: 2026-06-30T15:59Z / Codex.
 - Decision: use an inline snapshot for the formatter output regression test.
   Rationale: CodeRabbit correctly noted that the full rendered diagnostic is a
   compact output contract; matching the existing build-gate snapshot style
   makes punctuation, separator, and ordering drift visible in review.
   Date/Author: 2026-06-30T15:59Z / Codex.
 - Decision: make missing tracked-file diagnostics stable by omitting the
-  absolute working-tree path from CLI output.
-  Rationale: the guard's users need the repository-relative tracked path, and
-  tests should not snapshot temporary directory names that vary between runs.
-  Date/Author: 2026-06-30T16:39Z / Codex.
+  absolute working-tree path from CLI output. Rationale: the guard's users need
+  the repository-relative tracked path, and tests should not snapshot temporary
+  directory names that vary between runs. Date/Author: 2026-06-30T16:39Z /
+  Codex.
 - Decision: derive the human-readable Git command string from the same
-  argument list passed to `spawnSync`.
-  Rationale: CodeRabbit correctly identified drift risk between diagnostics and
-  the actual command; a shared `gitFileListingArgs` constant removes that
-  duplication.
-  Date/Author: 2026-06-30T16:39Z / Codex.
+  argument list passed to `spawnSync`. Rationale: CodeRabbit correctly
+  identified drift risk between diagnostics and the actual command; a shared
+  `gitFileListingArgs` constant removes that duplication. Date/Author:
+  2026-06-30T16:39Z / Codex.
 - Decision: add `whitespace-hygiene` to `make all` after `check-fmt` and before
-  `lint`.
-  Rationale: the guard should fail before slower lint, type-checking, and test
-  execution while still running after dependency installation and format
-  verification.
-  Date/Author: 2026-06-30T16:45Z / Codex.
+  `lint`. Rationale: the guard should fail before slower lint, type-checking,
+  and test execution while still running after dependency installation and
+  format verification. Date/Author: 2026-06-30T16:45Z / Codex.
 - Decision: convert the manifest-source snapshot test from object snapshotting
-  to path-heading text snapshotting.
-  Rationale: the object snapshot format itself introduced trailing whitespace
-  in the committed snapshot; text snapshotting keeps the same representative
-  generated-source coverage while allowing the new hygiene gate to enforce the
-  repository policy.
-  Date/Author: 2026-06-30T16:45Z / Codex.
+  to path-heading text snapshotting. Rationale: the object snapshot format
+  itself introduced trailing whitespace in the committed snapshot; text
+  snapshotting keeps the same representative generated-source coverage while
+  allowing the new hygiene gate to enforce the repository policy. Date/Author:
+  2026-06-30T16:45Z / Codex.
 
 ## Context and orientation
 
@@ -324,8 +313,7 @@ unchanged.
   snapshots and invalid fixtures must not be formatted or executed.
 - `docs/repository-layout.md` "Tooling boundaries" says `Makefile` is the
   maintainer validation entry point, and `tests/static-analysis/fixtures/` has
-  byte-preservation constraints for copied ODW examples and raw invalid
-  inputs.
+  byte-preservation constraints for copied ODW examples and raw invalid inputs.
 - Official Git documentation for `git ls-files` says `--cached` shows tracked
   files and is the default, `-z` emits verbatim NUL-terminated filenames, and
   `--full-name` emits paths relative to the project top.
@@ -364,8 +352,8 @@ testable types and functions:
   returns a `Buffer` for a repository-relative path.
 - `formatWhitespaceViolations(violations)` for deterministic gate output.
 
-The scanner must inspect bytes, skip any buffer containing `0x00`, and report
-a violation when a line ends with ASCII space or tab before LF, CRLF, CR, or
+The scanner must inspect bytes, skip any buffer containing `0x00`, and report a
+violation when a line ends with ASCII space or tab before LF, CRLF, CR, or
 end-of-file. It must report whitespace-only lines as violations. It must not
 modify any file.
 
@@ -430,8 +418,8 @@ make all
 Add the Git-backed guard entry point in
 `tests/build-gate/whitespace-hygiene.ts`. The module should:
 
-- create a Git runner using `spawnSync("git", ["ls-files", "-z",
-  "--full-name"], ...)`;
+- create a Git runner using
+  `spawnSync("git", ["ls-files", "-z", "--full-name"], ...)`;
 - convert Git failures into project-owned `Error` messages;
 - read each tracked path from the current working tree as a `Buffer`;
 - report missing or unreadable tracked files as usage failures with stable
@@ -628,8 +616,7 @@ make nixie
 
 ## Concrete steps
 
-Run all commands from
-`/data/leynos/Projects/odw-lint.worktrees/roadmap-1-5-4`.
+Run all commands from `/data/leynos/Projects/odw-lint.worktrees/roadmap-1-5-4`.
 
 1. Confirm the worktree and branch:
 
@@ -671,8 +658,8 @@ Run all commands from
 Acceptance requires all of the following observable behaviours:
 
 - `bun test ./tests/build-gate/whitespace-hygiene-support.test.ts` passes and
-  proves the byte scanner catches trailing spaces and tabs at LF, CRLF, CR,
-  and end-of-file boundaries.
+  proves the byte scanner catches trailing spaces and tabs at LF, CRLF, CR, and
+  end-of-file boundaries.
 - `bun test ./tests/build-gate/whitespace-hygiene.test.ts` passes and proves a
   tracked file with trailing whitespace fails while untracked files and binary
   NUL-containing files do not.
@@ -758,8 +745,8 @@ git ls-files -z --full-name
 
 This is pinned to official Git documentation for `git-ls-files`: no explicit
 selection flag defaults to cached tracked files, `-z` emits verbatim
-NUL-terminated filenames, and `--full-name` emits paths relative to the
-project root.
+NUL-terminated filenames, and `--full-name` emits paths relative to the project
+root.
 
 Do not rely on `git diff --check` for this task. Official Git documentation
 states that it warns when changes introduce whitespace errors, and the local
@@ -784,11 +771,11 @@ compiler options.
 Work item 1 is complete. The repository now has a pure byte scanner in
 `tests/build-gate/whitespace-hygiene-support.ts` and focused tests in
 `tests/build-gate/whitespace-hygiene-support.test.ts`. Red evidence was
-`bun test ./tests/build-gate/whitespace-hygiene-support.test.ts` failing
-because `./whitespace-hygiene-support` did not exist. Green evidence was the
-same focused command passing with nine tests and one inline snapshot.
-Deterministic gate evidence was `make all` passing after lint refactoring and
-again after CodeRabbit's inline snapshot feedback was applied.
+`bun test ./tests/build-gate/whitespace-hygiene-support.test.ts` failing because
+`./whitespace-hygiene-support` did not exist. Green evidence was the same
+focused command passing with nine tests and one inline snapshot. Deterministic
+gate evidence was `make all` passing after lint refactoring and again after
+CodeRabbit's inline snapshot feedback was applied.
 
 Work item 2 is complete. The repository now has a Git-backed CLI in
 `tests/build-gate/whitespace-hygiene.ts` and live temporary-repository tests in
@@ -820,8 +807,8 @@ the snapshot-renderer fix.
 Work item 4 is complete. `docs/roadmap.md` now marks task 1.5.4 complete, and
 this ExecPlan is marked `COMPLETE`. Deterministic close-out evidence was
 `make all`, `make markdownlint`, and `make nixie` passing before commit.
-CodeRabbit was rate-limited once with `"waitTime":"5 minutes"` during
-close-out review; the retry passed with zero findings.
+CodeRabbit was rate-limited once with `"waitTime":"5 minutes"` during close-out
+review; the retry passed with zero findings.
 
 ## Revision note
 

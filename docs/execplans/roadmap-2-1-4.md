@@ -1,9 +1,8 @@
 # Add forbidden ODW import architecture test
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -19,19 +18,19 @@ metadata, compile workflow bodies, start runs, spawn workers, or dispatch
 agents.
 
 After this plan is implemented, maintainers can run the normal repository gate
-and see a failing test if any file under `src/**/*.ts` imports bare `odw`,
-ODW package-entry bypasses such as `odw/src/index` or `odw/dist/index`, ODW
-loader paths, ODW primitive paths, ODW runtime launcher paths, ODW worker
-paths, or sibling checkout path-style equivalents ending in those same
-segments, whether the edge is expressed through ES module syntax, dynamic
-`import(...)`, import-equals `require(...)`, ordinary CommonJS `require(...)`,
-type-only import/export declarations, or TypeScript import-type syntax such as
+and see a failing test if any file under `src/**/*.ts` imports bare `odw`, ODW
+package-entry bypasses such as `odw/src/index` or `odw/dist/index`, ODW loader
+paths, ODW primitive paths, ODW runtime launcher paths, ODW worker paths, or
+sibling checkout path-style equivalents ending in those same segments, whether
+the edge is expressed through ES module syntax, dynamic `import(...)`,
+import-equals `require(...)`, ordinary CommonJS `require(...)`, type-only
+import/export declarations, or TypeScript import-type syntax such as
 `type T = import("odw/src/loader").WorkflowMeta`. The same guard must also fail
 production code on every computed dynamic import or computed CommonJS require,
-such as `const specifier = "odw/src/runtime/worker"; await import(specifier)`
-or `require(specifier)`, because task 2.1.4 does not execute or resolve
-runtime specifier values. The task does not implement the ODW envelope scanner,
-source masker, loader parity tests, hostile metadata fixture, rule engine,
+such as `const specifier = "odw/src/runtime/worker"; await import(specifier)` or
+`require(specifier)`, because task 2.1.4 does not execute or resolve runtime
+specifier values. The task does not implement the ODW envelope scanner, source
+masker, loader parity tests, hostile metadata fixture, rule engine,
 command-line interface, or production lint behaviour. It only adds the
 architectural regression test that keeps future implementation work inside the
 documented static-analysis boundary.
@@ -161,26 +160,25 @@ conflict in `Decision Log`, and escalate.
   `type T = import("odw/src/loader").WorkflowMeta`, or computed
   `require(specifier)` forms and gives a false sense of coverage. Severity:
   high. Likelihood: medium. Mitigation: work item 2 extracts import-like edges
-  using TypeScript AST node guards for `ImportDeclaration`,
-  `ExportDeclaration`, `ImportEqualsDeclaration` with
-  `ExternalModuleReference`, `ImportTypeNode` with a `LiteralTypeNode`
-  argument whose literal is a `StringLiteral`, dynamic `ImportKeyword` call
-  expressions, and ordinary `CallExpression` nodes whose expression is the
-  identifier `require`. String-literal dynamic imports, string-literal
-  import-type queries, and string-literal CommonJS requires are classified by
-  specifier, while every computed dynamic import and computed CommonJS require
-  is reported as a production-source failure.
+  using TypeScript AST node guards for `ImportDeclaration`, `ExportDeclaration`,
+  `ImportEqualsDeclaration` with `ExternalModuleReference`, `ImportTypeNode`
+  with a `LiteralTypeNode` argument whose literal is a `StringLiteral`, dynamic
+  `ImportKeyword` call expressions, and ordinary `CallExpression` nodes whose
+  expression is the identifier `require`. String-literal dynamic imports,
+  string-literal import-type queries, and string-literal CommonJS requires are
+  classified by specifier, while every computed dynamic import and computed
+  CommonJS require is reported as a production-source failure.
 
 - Risk: the forbidden predicate is either too narrow to catch package-entry
   bypasses or too broad and catches unrelated lookalike packages. Severity:
   high. Likelihood: medium. Mitigation: work item 3 adds table-driven tests for
-  every roadmap-required ODW path family and negative cases such as
-  `odw-lint`, `@scope/odw-tools`, and strings that merely contain `odw` as a
-  path segment outside the sibling checkout pattern.
+  every roadmap-required ODW path family and negative cases such as `odw-lint`,
+  `@scope/odw-tools`, and strings that merely contain `odw` as a path segment
+  outside the sibling checkout pattern.
 
 - Risk: a real production offender exists on this branch. Severity: high.
-  Likelihood: low. Mitigation: current exact text search found no ODW imports
-  in `src/**`. Work item 4 must still run the real scanner. If it finds an
+  Likelihood: low. Mitigation: current exact text search found no ODW imports in
+  `src/**`. Work item 4 must still run the real scanner. If it finds an
   offender, computed dynamic import, or computed CommonJS require, stop and
   surface the file, line, and import fact instead of editing production code.
 
@@ -204,12 +202,10 @@ conflict in `Decision Log`, and escalate.
 ## Progress
 
 - [x] (2026-06-28T23:23Z) Confirmed this work is in branch
-  `roadmap-2-1-4` at
-  `/data/leynos/Projects/odw-lint.worktrees/roadmap-2-1-4`.
+  `roadmap-2-1-4` at `/data/leynos/Projects/odw-lint.worktrees/roadmap-2-1-4`.
 - [x] (2026-06-28T23:23Z) Read `AGENTS.md`, the ExecPlan skill, the Leta
-  skill, the GrepAI skill, the Firecrawl skill, the Biome TypeScript skill,
-  the en-GB Oxford spelling skill, the Sem skill, and the commit-message
-  skill.
+  skill, the GrepAI skill, the Firecrawl skill, the Biome TypeScript skill, the
+  en-GB Oxford spelling skill, the Sem skill, and the commit-message skill.
 - [x] (2026-06-28T23:23Z) Used GrepAI intent search against the canonical
   `odw-lint` main-branch index for architecture tests and forbidden imports.
   Branch-local facts were then verified directly in this worktree.
@@ -234,8 +230,8 @@ conflict in `Decision Log`, and escalate.
   production failures, launcher/worker classifier coverage concrete, and
   formatter commands path-safe.
 - [x] (2026-06-29T00:55Z) Revised this ExecPlan for planning round 3 after
-  design review, adding ordinary CommonJS `require("...")` extraction,
-  computed `require(...)` production failures, and explicit per-item line-count
+  design review, adding ordinary CommonJS `require("...")` extraction, computed
+  `require(...)` production failures, and explicit per-item line-count
   validation for the architecture test files.
 - [x] (2026-06-29T01:33Z) Revised this ExecPlan for planning round 4 after
   design review, adding TypeScript `ImportTypeNode` extraction, classifier
@@ -255,25 +251,24 @@ conflict in `Decision Log`, and escalate.
 ## Surprises & discoveries
 
 - Observation: the worktree initially had no `node_modules`, so locked library
-  source had to be installed through `make build` before TypeScript declarations
-  could be inspected.
-  Evidence: `make build` installed `typescript@5.9.3` from `bun.lock`.
-  Impact: implementation should not rely on globally installed TypeScript.
+  source had to be installed through `make build` before TypeScript
+  declarations could be inspected. Evidence: `make build` installed
+  `typescript@5.9.3` from `bun.lock`. Impact: implementation should not rely on
+  globally installed TypeScript.
 
 - Observation: existing architecture tests already use the TypeScript compiler
-  API to parse project source and inspect module specifiers.
-  Evidence: `tests/diagnostics/architecture.test.ts` defines `parseSource`,
-  `moduleSpecifierText`, and `exportDeclarationFacts`.
-  Impact: the new guard should extend this local idiom instead of introducing a
-  new import graph tool.
+  API to parse project source and inspect module specifiers. Evidence:
+  `tests/diagnostics/architecture.test.ts` defines `parseSource`,
+  `moduleSpecifierText`, and `exportDeclarationFacts`. Impact: the new guard
+  should extend this local idiom instead of introducing a new import graph tool.
 
 - Observation: the sibling ODW package name is `odw`, and its package entry
-  exports runtime start/wait/execute functions through `src/index.ts`.
-  Evidence: `/data/leynos/Projects/open-dynamic-workflows/package.json` names
-  the package `odw`, and `src/index.ts` exports `RunStore`, `startRun`,
-  `waitFor`, and `executeRun`.
-  Impact: value imports from bare `odw` or its `src/index` and `dist/index`
-  bypasses are executable-boundary imports, not safe static helper imports.
+  exports runtime start/wait/execute functions through `src/index.ts`. Evidence:
+  `/data/leynos/Projects/open-dynamic-workflows/package.json` names the package
+  `odw`, and `src/index.ts` exports `RunStore`, `startRun`, `waitFor`, and
+  `executeRun`. Impact: value imports from bare `odw` or its `src/index` and
+  `dist/index` bypasses are executable-boundary imports, not safe static helper
+  imports.
 
 - Observation: `tests/diagnostics/architecture.test.ts` is already 364 lines.
   Evidence: `leta files tests/diagnostics` reported the file at 364 lines.
@@ -283,109 +278,98 @@ conflict in `Decision Log`, and escalate.
   work item 1.
 
 - Observation: ordinary CommonJS `require(...)` is reachable in production
-  TypeScript today.
-  Evidence: `node_modules/bun-types/globals.d.ts` declares a global
-  `require: NodeJS.Require`; the official Bun module-resolution docs state
-  `require()` can be used in ES modules and TypeScript files; exact config
-  inspection found no Biome, Oxlint, or TypeScript setting that rejects
-  `require` in `src/**`.
-  Impact: the architecture guard must extract ordinary string-literal
-  `require("...")` calls and treat computed `require(...)` calls in production
-  as violations rather than relying on another gate.
+  TypeScript today. Evidence: `node_modules/bun-types/globals.d.ts` declares a
+  global `require: NodeJS.Require`; the official Bun module-resolution docs
+  state `require()` can be used in ES modules and TypeScript files; exact
+  config inspection found no Biome, Oxlint, or TypeScript setting that rejects
+  `require` in `src/**`. Impact: the architecture guard must extract ordinary
+  string-literal `require("...")` calls and treat computed `require(...)` calls
+  in production as violations rather than relying on another gate.
 
 - Observation: TypeScript import-type queries are a separate AST shape from
-  import declarations and dynamic import calls.
-  Evidence: locked `typescript@5.9.3` declarations in
+  import declarations and dynamic import calls. Evidence: locked
+  `typescript@5.9.3` declarations in
   `node_modules/typescript/lib/typescript.d.ts` expose `ts.isImportTypeNode`,
   `ImportTypeNode.argument: TypeNode`, `ts.isLiteralTypeNode`, and
   `LiteralTypeNode.literal`, which can be narrowed to `ts.isStringLiteral` for
-  `type T = import("odw/src/loader").WorkflowMeta`.
-  Impact: work item 2 must extract import-type string specifiers explicitly;
-  relying on `ImportDeclaration`, `ExportDeclaration`, dynamic `import(...)`,
-  or `require(...)` extraction would leave a type-only ODW dependency bypass.
+  `type T = import("odw/src/loader").WorkflowMeta`. Impact: work item 2 must
+  extract import-type string specifiers explicitly; relying on
+  `ImportDeclaration`, `ExportDeclaration`, dynamic `import(...)`, or
+  `require(...)` extraction would leave a type-only ODW dependency bypass.
 
 - Observation: CodeRabbit could not complete for work items 1 through 5
   because the CLI entered browser-authentication flow in the scrutineer runs.
   Evidence: `coderabbit review --agent` emitted
-  `{"phase":"auth","status":"awaiting_browser_auth"}` for each attempt. It
-  did not report a rate limit or review findings.
-  Impact: deterministic gates remain the evidence for those work items. A later
-  authenticated run should complete CodeRabbit review before final integration.
+  `{"phase":"auth","status":"awaiting_browser_auth"}` for each attempt. It did
+  not report a rate limit or review findings. Impact: deterministic gates
+  remain the evidence for those work items. A later authenticated run should
+  complete CodeRabbit review before final integration.
 
 - Observation: the workspace-scoped GrepAI registry was unavailable before work
-  item 2 exploration.
-  Evidence: `grepai workspace status Projects` reported "No workspaces
-  configured" from this shell, so the required
-  `grepai search --workspace 'Projects' --project 'odw-lint' ...` command
-  could not run.
-  Impact: work item 2 fell back to branch-local Leta symbol inspection and
-  file inspection for the helper implementation.
+  item 2 exploration. Evidence: `grepai workspace status Projects` reported "No
+  workspaces configured" from this shell, so the required
+  `grepai search --workspace 'Projects' --project 'odw-lint' ...` command could
+  not run. Impact: work item 2 fell back to branch-local Leta symbol inspection
+  and file inspection for the helper implementation.
 
 ## Decision Log
 
 - Decision: use the locked TypeScript compiler API, not a new dependency, for
-  the forbidden-import architecture test.
-  Rationale: `typescript@5.9.3` is already locked in `bun.lock`, existing tests
-  use it for source architecture checks, and the official TypeScript compiler
-  API documentation demonstrates AST-only linting with `createSourceFile` and
-  recursive `forEachChild`.
+  the forbidden-import architecture test. Rationale: `typescript@5.9.3` is
+  already locked in `bun.lock`, existing tests use it for source architecture
+  checks, and the official TypeScript compiler API documentation demonstrates
+  AST-only linting with `createSourceFile` and recursive `forEachChild`.
   Date/Author: 2026-06-28T23:23Z / Codex.
 
 - Decision: treat task 2.1.4 as a strict no-ODW-import production guard for
-  the forbidden specifier families, including type-only syntax.
-  Rationale: current production code has no ODW imports. The technical design
-  and ADR require `odw-lint` to own its static-analysis implementation and not
-  depend on ODW executable or package-entry surfaces. If a future static-only
-  ODW type dependency is needed, that is a boundary decision requiring
-  escalation rather than a local predicate exception.
-  Date/Author: 2026-06-28T23:23Z / Codex.
+  the forbidden specifier families, including type-only syntax. Rationale:
+  current production code has no ODW imports. The technical design and ADR
+  require `odw-lint` to own its static-analysis implementation and not depend
+  on ODW executable or package-entry surfaces. If a future static-only ODW type
+  dependency is needed, that is a boundary decision requiring escalation rather
+  than a local predicate exception. Date/Author: 2026-06-28T23:23Z / Codex.
 
 - Decision: make the guard report sorted facts rather than snapshots.
   Rationale: sorted arrays of `{ filePath, moduleSpecifier }` are stable,
   reviewer-useful, and resistant to unrelated line-order churn. Full snapshots
-  would add review noise without improving behavioural coverage.
-  Date/Author: 2026-06-28T23:23Z / Codex.
+  would add review noise without improving behavioural coverage. Date/Author:
+  2026-06-28T23:23Z / Codex.
 
 - Decision: fail production code on all computed dynamic imports instead of
   attempting static constant resolution in task 2.1.4. Apply the same policy to
-  ordinary computed CommonJS requires.
-  Rationale: TypeScript 5.9.3 exposes dynamic import calls structurally through
-  `CallExpression`, `ImportKeyword`, and `arguments`, but reliable constant
-  resolution would require a broader data-flow rule. TypeScript 5.9.3 and
-  `bun-types@1.3.14` also expose ordinary `require(...)` calls as parseable
-  `CallExpression` nodes, and Bun supports `require()` in TypeScript and ES
-  module files. Conservative rejection closes the reviewed false negative where
+  ordinary computed CommonJS requires. Rationale: TypeScript 5.9.3 exposes
+  dynamic import calls structurally through `CallExpression`, `ImportKeyword`,
+  and `arguments`, but reliable constant resolution would require a broader
+  data-flow rule. TypeScript 5.9.3 and `bun-types@1.3.14` also expose ordinary
+  `require(...)` calls as parseable `CallExpression` nodes, and Bun supports
+  `require()` in TypeScript and ES module files. Conservative rejection closes
+  the reviewed false negative where
   `const specifier = "odw/src/runtime/worker"; await import(specifier)` would
   otherwise pass the guard, and it closes the parallel `require(specifier)`
-  bypass.
-  Date/Author: 2026-06-28T23:38Z / Codex.
+  bypass. Date/Author: 2026-06-28T23:38Z / Codex.
 
 - Decision: fail the work item validation if either architecture test file
-  exceeds 400 lines.
-  Rationale: `tests/diagnostics/architecture.test.ts` is already 364 lines, and
-  the repository's automated file-size guard is still a future roadmap task
-  under 1.5.1. The plan therefore makes the current project convention
-  executable with `wc -l` plus `test ... -le 400` in every TypeScript work
-  item for this task.
-  Date/Author: 2026-06-29T00:55Z / Codex.
+  exceeds 400 lines. Rationale: `tests/diagnostics/architecture.test.ts` is
+  already 364 lines, and the repository's automated file-size guard is still a
+  future roadmap task under 1.5.1. The plan therefore makes the current project
+  convention executable with `wc -l` plus `test ... -le 400` in every
+  TypeScript work item for this task. Date/Author: 2026-06-29T00:55Z / Codex.
 
 - Decision: extract `tests/diagnostics/import-architecture.ts` before adding
-  the import guard.
-  Rationale: the existing architecture test is already close to the project
-  file-size limit, and making the helper path unconditional keeps the
-  formatter commands path-safe for every subsequent TypeScript work item.
-  Date/Author: 2026-06-28T23:38Z / Codex.
+  the import guard. Rationale: the existing architecture test is already close
+  to the project file-size limit, and making the helper path unconditional
+  keeps the formatter commands path-safe for every subsequent TypeScript work
+  item. Date/Author: 2026-06-28T23:38Z / Codex.
 
 - Decision: treat `ImportTypeNode` string-literal arguments as import-like
-  edges and route them through the same forbidden ODW classifier.
-  Rationale: TypeScript import-type queries are type-only and erased at
-  runtime, but the static-analysis boundary forbids production dependencies on
-  ODW executable and package-entry surfaces even when the syntax is type-only.
-  The locked TypeScript 5.9.3 API exposes this form structurally through
+  edges and route them through the same forbidden ODW classifier. Rationale:
+  TypeScript import-type queries are type-only and erased at runtime, but the
+  static-analysis boundary forbids production dependencies on ODW executable
+  and package-entry surfaces even when the syntax is type-only. The locked
+  TypeScript 5.9.3 API exposes this form structurally through
   `ts.isImportTypeNode`, `ImportTypeNode.argument`, `ts.isLiteralTypeNode`, and
   `ts.isStringLiteral`, so the guard can implement the strict contract without
-  source-text parsing or a type checker.
-  Date/Author: 2026-06-29T01:33Z / Codex.
+  source-text parsing or a type checker. Date/Author: 2026-06-29T01:33Z / Codex.
 
 ## Outcomes & Retrospective
 
@@ -393,9 +377,9 @@ conflict in `Decision Log`, and escalate.
   `tests/diagnostics/architecture.test.ts` into
   `tests/diagnostics/import-architecture.ts` without adding new guard
   behaviour. This keeps the existing architecture assertions intact while
-  making room for the forbidden-import scanner. Scrutineer-run
-  `make all`, `make markdownlint`, and `make nixie` all passed after the
-  extraction and public-JSDoc/type-import fixes.
+  making room for the forbidden-import scanner. Scrutineer-run `make all`,
+  `make markdownlint`, and `make nixie` all passed after the extraction and
+  public-JSDoc/type-import fixes.
 
 - Work item 2 added AST-only extraction for static imports, re-exports,
   type-only import/export declarations, import-equals external references,
@@ -410,17 +394,17 @@ conflict in `Decision Log`, and escalate.
   for bare `odw`, private package paths, runtime subpaths, explicit `.ts` and
   `.js` forms, and sibling checkout paths. Table-driven tests cover forbidden
   ODW package and sibling specifiers plus lookalike imports that must remain
-  allowed. Scrutineer-run `make all`, `make markdownlint`, and `make nixie`
-  all passed.
+  allowed. Scrutineer-run `make all`, `make markdownlint`, and `make nixie` all
+  passed.
 
 - Work item 4 added the production architecture test that scans every sorted
   `src/**/*.ts` file, filters import-like edges through `isForbiddenOdwImport`,
   and reports computed dynamic imports and computed CommonJS requires as
   violations. The in-memory violation test proves forbidden string imports,
   import-type queries, computed dynamic imports, and computed CommonJS requires
-  all produce reviewer-readable violation facts. Scrutineer-run
-  `make all`, `make markdownlint`, and `make nixie` all passed after the
-  Oxlint conditional fix.
+  all produce reviewer-readable violation facts. Scrutineer-run `make all`,
+  `make markdownlint`, and `make nixie` all passed after the Oxlint conditional
+  fix.
 
 - Work item 5 marked roadmap task 2.1.4 complete in `docs/roadmap.md` after
   the forbidden-import architecture guard was implemented and gated.
@@ -430,8 +414,8 @@ conflict in `Decision Log`, and escalate.
 ## Context and orientation
 
 The repository is a TypeScript and Bun project. Production code lives under
-`src/`, tests under `tests/`, and the full commit gate is `make all`.
-Markdown changes also require `make markdownlint` and `make nixie`.
+`src/`, tests under `tests/`, and the full commit gate is `make all`. Markdown
+changes also require `make markdownlint` and `make nixie`.
 
 The current source tree contains these production TypeScript files:
 
@@ -452,14 +436,13 @@ src/static-analysis/source-snippet.ts
 src/static-analysis/types.ts
 ```
 
-Current exact text searches found no import-like edges from `src/**` to `odw`
-or `open-dynamic-workflows`, and no ordinary `require(` calls in `src/**`. The
+Current exact text searches found no import-like edges from `src/**` to `odw` or
+`open-dynamic-workflows`, and no ordinary `require(` calls in `src/**`. The
 implementation must still verify that with the new AST-based guard and stop if
 the guard finds a real offender.
 
-The current implementation surface is
-`tests/diagnostics/architecture.test.ts`, which already contains local helpers
-that parse TypeScript source with:
+The current implementation surface is `tests/diagnostics/architecture.test.ts`,
+which already contains local helpers that parse TypeScript source with:
 
 ```typescript
 ts.createSourceFile(relativePath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
@@ -482,11 +465,10 @@ Local locked dependency evidence:
 - `node_modules/typescript/lib/typescript.d.ts` declares
   `ImportDeclaration`, `ExportDeclaration`, `ImportEqualsDeclaration`,
   `ExternalModuleReference`, `ImportTypeNode`, `LiteralTypeNode`,
-  `CallExpression`, `Identifier`, `isImportDeclaration`,
-  `isExportDeclaration`, `isImportEqualsDeclaration`,
-  `isExternalModuleReference`, `isImportTypeNode`, `isLiteralTypeNode`,
-  `isCallExpression`, `isIdentifier`, `isStringLiteral`, `forEachChild`, and
-  `createSourceFile`.
+  `CallExpression`, `Identifier`, `isImportDeclaration`, `isExportDeclaration`,
+  `isImportEqualsDeclaration`, `isExternalModuleReference`, `isImportTypeNode`,
+  `isLiteralTypeNode`, `isCallExpression`, `isIdentifier`, `isStringLiteral`,
+  `forEachChild`, and `createSourceFile`.
 - The same locked declaration file shows `ImportTypeNode.argument` is a
   `TypeNode`, `LiteralTypeNode.literal` can hold a `StringLiteral`, and
   `ts.isImportTypeNode`, `ts.isLiteralTypeNode`, and `ts.isStringLiteral` are
@@ -495,8 +477,8 @@ Local locked dependency evidence:
   without source-text parsing or a type checker.
 - The same locked declaration file shows `CallExpression` has an `expression`
   and `arguments`, and `MetaProperty.keywordToken` can be
-  `SyntaxKind.ImportKeyword`. That is enough to detect both
-  `import("literal")` and `import(computed)` without executing code.
+  `SyntaxKind.ImportKeyword`. That is enough to detect both `import("literal")`
+  and `import(computed)` without executing code.
 - The same locked declaration file shows `Identifier` has `text`, and
   `ts.isIdentifier` narrows nodes to identifiers. That is enough to detect
   ordinary `require(...)` calls as `CallExpression` nodes whose expression is
@@ -513,11 +495,10 @@ Local locked dependency evidence:
 Official documentation evidence:
 
 - Firecrawl scraped the official TypeScript wiki page
-  <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API>.
-  The "Traversing the AST with a little linter" section demonstrates parsing a
-  file with `ts.createSourceFile`, recursively walking nodes with
-  `ts.forEachChild`, and not creating a type checker when a structural AST walk
-  is enough.
+  <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API>. The
+  "Traversing the AST with a little linter" section demonstrates parsing a file
+  with `ts.createSourceFile`, recursively walking nodes with `ts.forEachChild`,
+  and not creating a type checker when a structural AST walk is enough.
 - Firecrawl scraped the official TypeScript 3.8 release notes at
   <https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html>.
   The "Type-Only Imports and Export" section states that type-only imports are
@@ -693,9 +674,8 @@ The `test ... -le 400` commands are hard failure criteria. If either file has
 
 Extend `tests/diagnostics/import-architecture.ts` with AST-only extraction for
 import-like edges, computed dynamic imports, and computed CommonJS requires.
-Parse source text with
-`ts.createSourceFile` and recursively walk nodes with `ts.forEachChild`, using
-the locked TypeScript 5.9.3 node guards verified in
+Parse source text with `ts.createSourceFile` and recursively walk nodes with
+`ts.forEachChild`, using the locked TypeScript 5.9.3 node guards verified in
 `node_modules/typescript/lib/typescript.d.ts`.
 
 The extractor must collect string specifier edges from:
@@ -715,8 +695,8 @@ The extractor must collect string specifier edges from:
 The extractor must also collect a separate computed dynamic import fact for
 every `CallExpression` whose expression is `SyntaxKind.ImportKeyword` and whose
 first argument is absent or not a string literal. It must not ignore
-`await import(specifier)` and must not attempt constant resolution in this
-work item.
+`await import(specifier)` and must not attempt constant resolution in this work
+item.
 
 The extractor must also collect a separate computed CommonJS require fact for
 every ordinary `CallExpression` whose expression is the identifier `require`
@@ -753,10 +733,10 @@ Skills to load:
 Tests to add or update:
 
 - Add table-driven Bun tests in `tests/diagnostics/architecture.test.ts`
-  proving string edge extraction for static imports, re-exports,
-  type-only import/export declarations, import-equals `require(...)`,
-  `ImportTypeNode` queries, string-literal dynamic imports, and ordinary
-  string-literal CommonJS requires.
+  proving string edge extraction for static imports, re-exports, type-only
+  import/export declarations, import-equals `require(...)`, `ImportTypeNode`
+  queries, string-literal dynamic imports, and ordinary string-literal CommonJS
+  requires.
 - Include positive `ImportTypeNode` cases such as
   `type T = import("odw/src/loader").WorkflowMeta` and
   `type T = typeof import("odw/src/index")`, and negative cases proving
@@ -955,8 +935,8 @@ After the test-only implementation is committed and gated, update
 `docs/roadmap.md` to mark roadmap task 2.1.4 complete. Update this ExecPlan's
 `Progress`, `Decision Log`, and `Outcomes & Retrospective` with the final
 validation evidence. Do not update ADR 0001 or the technical design unless the
-implemented boundary differs from the currently documented boundary; if it
-does differ, stop and escalate before changing the boundary documents.
+implemented boundary differs from the currently documented boundary; if it does
+differ, stop and escalate before changing the boundary documents.
 
 Documentation implemented:
 
@@ -996,9 +976,8 @@ Commit this item after the gates pass.
 
 ## Concrete steps
 
-Run all commands from
-`/data/leynos/Projects/odw-lint.worktrees/roadmap-2-1-4`. Do not run tests,
-format checks, lint checks, or type checks in parallel.
+Run all commands from `/data/leynos/Projects/odw-lint.worktrees/roadmap-2-1-4`.
+Do not run tests, format checks, lint checks, or type checks in parallel.
 
 Before any implementation work item:
 

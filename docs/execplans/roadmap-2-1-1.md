@@ -1,28 +1,27 @@
 # Implement source masking for inert workflow syntax
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
 ## Purpose / big picture
 
 Roadmap task 2.1.1 adds the source masker that future ODW (Open Dynamic
-Workflows) envelope scanning will use before looking for workflow syntax such
-as `export const meta =`, extra `export`, extra `import`, and metadata braces.
+Workflows) envelope scanning will use before looking for workflow syntax such as
+`export const meta =`, extra `export`, extra `import`, and metadata braces.
 The masker must replace inert source regions with spaces while leaving real
 code and source positions aligned. Inert source regions are comments, quoted
 strings, whole template literals, and regex literals.
 
-After this plan is implemented, maintainers can run the default repository
-gate and see that masking fixtures containing decoy workflow syntax produce no
-test envelope diagnostics. Each fixture's manifest `metaName` will match the
-real metadata declaration extracted from the original source, not from a
-rewritten or evaluated copy. The change does not add the full metadata parser,
-the full envelope scanner, the SWC parser adapter, the command-line interface,
-or loader-parity execution.
+After this plan is implemented, maintainers can run the default repository gate
+and see that masking fixtures containing decoy workflow syntax produce no test
+envelope diagnostics. Each fixture's manifest `metaName` will match the real
+metadata declaration extracted from the original source, not from a rewritten
+or evaluated copy. The change does not add the full metadata parser, the full
+envelope scanner, the SWC parser adapter, the command-line interface, or
+loader-parity execution.
 
 ## Constraints
 
@@ -100,8 +99,8 @@ or loader-parity execution.
   mutating formatters such as `make fmt`, `bun fmt`, or `mdformat-all`.
 - Every work item updates this ExecPlan before its commit. At minimum, update
   `Progress`. Also update `Surprises & Discoveries`, `Decision Log`, `Risks`,
-  `Outcomes & Retrospective`, and the revision note when assumptions,
-  evidence, or scope change.
+  `Outcomes & Retrospective`, and the revision note when assumptions, evidence,
+  or scope change.
 - Because every work item updates this ExecPlan, every work item includes a
   Markdown change and must run file-scoped Markdown formatting for
   `docs/execplans/roadmap-2-1-1.md`.
@@ -149,43 +148,33 @@ conflict in `Decision Log`, and escalate.
 ## Risks
 
 - Risk: ODW's private loader helper is hand-written and not exported, so exact
-  parity can drift.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: pin this implementation to the sibling checkout evidence at
+  parity can drift. Severity: medium. Likelihood: medium. Mitigation: pin this
+  implementation to the sibling checkout evidence at
   `/data/leynos/Projects/open-dynamic-workflows` commit `ecc4867`, cite the
   current source lines, and add fixture tests that describe the intended
   observable contract rather than importing ODW private helpers.
 
 - Risk: Regex literal detection is context-sensitive and a standalone scanner
-  cannot prove every JavaScript grammar case.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: use the same preceding-significant-character heuristic as ODW's
-  loader for this envelope-masking slice, test the committed regex fixtures,
-  and leave grammar-level body validation to later parser tasks.
+  cannot prove every JavaScript grammar case. Severity: medium. Likelihood:
+  medium. Mitigation: use the same preceding-significant-character heuristic as
+  ODW's loader for this envelope-masking slice, test the committed regex
+  fixtures, and leave grammar-level body validation to later parser tasks.
 
 - Risk: Template interpolation could be mistaken for executable code that
-  should remain visible.
-  Severity: medium.
-  Likelihood: low.
-  Mitigation: document that this task implements envelope masking, where whole
-  template literals are inert. ODW's `maskForDualScan` leaves interpolation
-  code visible for compatibility warnings, but that is not this task.
+  should remain visible. Severity: medium. Likelihood: low. Mitigation:
+  document that this task implements envelope masking, where whole template
+  literals are inert. ODW's `maskForDualScan` leaves interpolation code visible
+  for compatibility warnings, but that is not this task.
 
 - Risk: Source-span alignment breaks for CRLF or Unicode line terminators.
-  Severity: high.
-  Likelihood: low.
-  Mitigation: preserve all JavaScript line terminator characters in the masked
-  text and add property tests that compare original and masked line terminator
-  positions.
+  Severity: high. Likelihood: low. Mitigation: preserve all JavaScript line
+  terminator characters in the masked text and add property tests that compare
+  original and masked line terminator positions.
 
 - Risk: A public export update accidentally widens or breaks the package
-  surface.
-  Severity: medium.
-  Likelihood: low.
-  Mitigation: update `tests/diagnostics/public-api-fixtures.ts` deliberately
-  and run the public API surface test plus `make all`.
+  surface. Severity: medium. Likelihood: low. Mitigation: update
+  `tests/diagnostics/public-api-fixtures.ts` deliberately and run the public
+  API surface test plus `make all`.
 
 ## Progress
 
@@ -196,8 +185,7 @@ conflict in `Decision Log`, and escalate.
   formatter commands, documentation formatting for conditional Markdown edits,
   runtime immutability tests, and regex line-terminator handling.
 - [x] (2026-06-30T11:56:30Z) Revised planning round 3 to align file-count
-  tolerance with the required test files and pin the regex property-test
-  oracle.
+  tolerance with the required test files and pin the regex property-test oracle.
 - [x] (2026-06-30T12:21:09Z) Work item 1: Added the production
   source-mask module, public exports, contract tests, architecture coverage,
   and developer-guide ownership note.
@@ -212,154 +200,139 @@ conflict in `Decision Log`, and escalate.
 - Observation: The GrepAI main-branch index already finds
   `tests/static-analysis/masking-fixtures.test.ts` and the masking fixture
   family, but branch-local source inspection confirms there is still no
-  production source masker.
-  Evidence: a GrepAI search for static-analysis masking false positives
-  returned masking fixture tests and source scan helpers. `leta files` in this
-  worktree listed `src/static-analysis/source-file.ts`,
-  `source-indexes.ts`, `source-position.ts`, `source-scan.ts`,
-  `source-snippet.ts`, and `types.ts`, but no `source-mask.ts`.
-  Impact: this task should add one focused production masking module and update
-  the source-helper architecture test.
+  production source masker. Evidence: a GrepAI search for static-analysis
+  masking false positives returned masking fixture tests and source scan
+  helpers. `leta files` in this worktree listed
+  `src/static-analysis/source-file.ts`, `source-indexes.ts`,
+  `source-position.ts`, `source-scan.ts`, `source-snippet.ts`, and `types.ts`,
+  but no `source-mask.ts`. Impact: this task should add one focused production
+  masking module and update the source-helper architecture test.
 
 - Observation: ODW's loader uses two different masks.
-  Evidence:
-  `/data/leynos/Projects/open-dynamic-workflows/src/loader.ts` lines 302-323
-  use `maskNonCode` for metadata extraction and then slice the metadata
-  literal from original source. Lines 120-149 describe `maskForDualScan`,
-  which keeps template interpolation code visible for compatibility warnings.
-  Impact: this task implements the metadata/envelope mask, not the
-  dual-compat mask.
+  Evidence: `/data/leynos/Projects/open-dynamic-workflows/src/loader.ts` lines
+  302-323 use `maskNonCode` for metadata extraction and then slice the metadata
+  literal from original source. Lines 120-149 describe `maskForDualScan`, which
+  keeps template interpolation code visible for compatibility warnings. Impact:
+  this task implements the metadata/envelope mask, not the dual-compat mask.
 
 - Observation: The TypeScript compiler scanner is useful evidence but is not a
-  complete production mechanism for this task.
-  Evidence:
+  complete production mechanism for this task. Evidence:
   `node_modules/typescript/lib/typescript.d.ts` lines 8511-8555 expose
   `createScanner`, token positions, `scan`, and `reScanSlashToken`.
   `node_modules/typescript/lib/typescript.js` lines 12948-12990 scan comments,
   lines 12409-12490 scan strings and template tokens, and lines 13319-13420
   rescan slash tokens into regex literals only after caller context says a
-  slash token may be regex.
-  Impact: tests may use TypeScript for static parsing, but production masking
-  should use an owned ODW-style lexical pass so regex handling is explicit.
+  slash token may be regex. Impact: tests may use TypeScript for static
+  parsing, but production masking should use an owned ODW-style lexical pass so
+  regex handling is explicit.
 
 - Observation: ODW and TypeScript differ on regex line-terminator handling in
-  the exact code paths reviewed for this plan.
-  Evidence:
+  the exact code paths reviewed for this plan. Evidence:
   `/data/leynos/Projects/open-dynamic-workflows/src/loader.ts` at commit
-  `ecc4867` lines 282-298 and 417-443 stop regex scanning on LF only.
-  Locked TypeScript `5.9.3` defines `isLineBreak` as LF, CR, U+2028, and
-  U+2029 at `node_modules/typescript/lib/typescript.js` lines 11740-11742, and
+  `ecc4867` lines 282-298 and 417-443 stop regex scanning on LF only. Locked
+  TypeScript `5.9.3` defines `isLineBreak` as LF, CR, U+2028, and U+2029 at
+  `node_modules/typescript/lib/typescript.js` lines 11740-11742, and
   `reScanSlashToken` stops regex rescans on `isLineBreak` at lines 13326-13331.
   Impact: `odw-lint` must choose and test its own span-safe contract here. This
   plan chooses all JavaScript line terminators so malformed regex text cannot
   hide later source.
 
 - Observation: `make build` installed locked dependencies without changing the
-  worktree.
-  Evidence: `bun install` reported TypeScript `5.9.3`, Fast-check `4.8.0`,
-  Biome `2.5.1`, and Oxlint `1.71.0`; `git status --short` remained clean.
-  Impact: implementers can inspect `node_modules` source after `make build`
-  without committing dependency churn.
+  worktree. Evidence: `bun install` reported TypeScript `5.9.3`, Fast-check
+  `4.8.0`, Biome `2.5.1`, and Oxlint `1.71.0`; `git status --short` remained
+  clean. Impact: implementers can inspect `node_modules` source after
+  `make build` without committing dependency churn.
 
 - Observation: CodeRabbit found that preserving the previous significant
   character across every masked range was too broad for expression-like inert
-  ranges.
-  Evidence: the first `coderabbit review --agent` pass for work item 1 reported
-  that a slash after a masked string, template, or regex could inherit an
-  earlier ODW-allowed character such as `=` and be misclassified as a regex.
+  ranges. Evidence: the first `coderabbit review --agent` pass for work item 1
+  reported that a slash after a masked string, template, or regex could inherit
+  an earlier ODW-allowed character such as `=` and be misclassified as a regex.
   Impact: `maskNonCodeSource` now keeps comment ranges inert but updates the
   previous significant character from string, template, and regex ranges; the
   unit suite pins division after each of those expression forms.
 
 - Observation: The masking fixtures contain a nested template literal inside
-  an outer template interpolation.
-  Evidence: `source-mask-fixtures.test.ts` initially reported
-  `odw/no-import-export` for
+  an outer template interpolation. Evidence: `source-mask-fixtures.test.ts`
+  initially reported `odw/no-import-export` for
   `template-interpolation-boundary-decoy.js`; the visible token came from
-  `${`import "fake-${nestedName}";`}` inside the outer template.
-  Impact: `scanTemplateRange` now keeps the whole outer template inert while
-  skipping nested string-like delimiters inside interpolation expressions.
+  `${`import "fake-${nestedName}";`}` inside the outer template. Impact:
+  `scanTemplateRange` now keeps the whole outer template inert while skipping
+  nested string-like delimiters inside interpolation expressions.
 
 - Observation: The property generator can accidentally create real syntax at
   segment boundaries if generated slash segments are adjacent to comments or
-  identifiers.
-  Evidence: Fast-check shrank failures to malformed regex text followed by a
-  line comment and valid regex text followed immediately by identifier code.
-  Impact: generated regex literals now receive a semicolon separator, and
-  disallowed regex-labelled segments use a value-like prefix so the oracle
-  proves visible slash handling without synthesizing a different token.
+  identifiers. Evidence: Fast-check shrank failures to malformed regex text
+  followed by a line comment and valid regex text followed immediately by
+  identifier code. Impact: generated regex literals now receive a semicolon
+  separator, and disallowed regex-labelled segments use a value-like prefix so
+  the oracle proves visible slash handling without synthesizing a different
+  token.
 
 ## Decision log
 
 - Decision: Add `src/static-analysis/source-mask.ts` with
-  `maskNonCodeSource(sourceFile: OriginalSourceFile): MaskedSource`.
-  Rationale: The masker belongs to the existing static-analysis source-helper
-  area and should consume factory-created original source files so future span
-  mapping remains tied to the original source model.
-  Date/Author: 2026-06-30T11:28:32Z / Codex.
+  `maskNonCodeSource(sourceFile: OriginalSourceFile): MaskedSource`. Rationale:
+  The masker belongs to the existing static-analysis source-helper area and
+  should consume factory-created original source files so future span mapping
+  remains tied to the original source model. Date/Author: 2026-06-30T11:28:32Z
+  / Codex.
 
 - Decision: Export the source-mask contract through `src/static-analysis` and
-  the private root package entry.
-  Rationale: The existing package entry already exposes static-analysis source
-  helpers for downstream parser, mapper, and reporter code. A deliberate export
-  update keeps the public API surface test authoritative rather than relying on
-  deep imports.
-  Date/Author: 2026-06-30T11:28:32Z / Codex.
+  the private root package entry. Rationale: The existing package entry already
+  exposes static-analysis source helpers for downstream parser, mapper, and
+  reporter code. A deliberate export update keeps the public API surface test
+  authoritative rather than relying on deep imports. Date/Author:
+  2026-06-30T11:28:32Z / Codex.
 
 - Decision: Preserve all JavaScript line terminator characters, not only LF,
-  while masking non-code characters to spaces.
-  Rationale: ODW's current private helper preserves LF in the replacement loop,
-  but `odw-lint` source-span helpers explicitly recognize LF, CR, CRLF,
-  U+2028, and U+2029. Preserving all line terminators strengthens span safety
-  without changing the envelope search result for valid fixtures.
-  Date/Author: 2026-06-30T11:28:32Z / Codex.
+  while masking non-code characters to spaces. Rationale: ODW's current private
+  helper preserves LF in the replacement loop, but `odw-lint` source-span
+  helpers explicitly recognize LF, CR, CRLF, U+2028, and U+2029. Preserving all
+  line terminators strengthens span safety without changing the envelope search
+  result for valid fixtures. Date/Author: 2026-06-30T11:28:32Z / Codex.
 
 - Decision: Treat LF, CR, U+2028, and U+2029 as regex-candidate terminators.
   Rationale: The sibling ODW helper currently stops regex scanning on LF only,
-  but `odw-lint` source-span helpers and the locked TypeScript scanner recognize
-  the full JavaScript line-terminator set. Stopping on all four terminators is
-  the conservative lint contract: an unterminated regex-like slash must not mask
-  later code after CR, Unicode line separator, or Unicode paragraph separator.
-  Date/Author: 2026-06-30T11:42:50Z / Codex.
+  but `odw-lint` source-span helpers and the locked TypeScript scanner
+  recognize the full JavaScript line-terminator set. Stopping on all four
+  terminators is the conservative lint contract: an unterminated regex-like
+  slash must not mask later code after CR, Unicode line separator, or Unicode
+  paragraph separator. Date/Author: 2026-06-30T11:42:50Z / Codex.
 
 - Decision: Do not use TypeScript's standalone scanner as the production
-  masker.
-  Rationale: Official TypeScript compiler API docs recommend `createSourceFile`
-  and `forEachChild` for AST traversal, and the scanner docs describe
-  `createScanner` and trivia access. The locked 5.9.3 scanner still needs
-  caller context to turn `/` into `RegularExpressionLiteral` via
+  masker. Rationale: Official TypeScript compiler API docs recommend
+  `createSourceFile` and `forEachChild` for AST traversal, and the scanner docs
+  describe `createScanner` and trivia access. The locked 5.9.3 scanner still
+  needs caller context to turn `/` into `RegularExpressionLiteral` via
   `reScanSlashToken`; implementing that context would be a parser workaround.
   The ODW loader reference already uses a small context heuristic suitable for
-  this envelope-masking slice.
-  Date/Author: 2026-06-30T11:28:32Z / Codex.
+  this envelope-masking slice. Date/Author: 2026-06-30T11:28:32Z / Codex.
 
 - Decision: Property tests must classify regex-labelled segments with the
   previous-significant-character contract instead of treating labels as
-  unconditional truth.
-  Rationale: The source masker deliberately distinguishes regex literals from
-  division-like slashes by ODW's preceding-significant-character heuristic. A
-  property oracle that masks every generated regex label regardless of context
-  would produce false expectations for division contexts. The generator must
-  emit regex-labelled segments only after an allowed previous significant
-  character, and the independent oracle must still model that state so
-  division-labelled slashes remain visible.
+  unconditional truth. Rationale: The source masker deliberately distinguishes
+  regex literals from division-like slashes by ODW's
+  preceding-significant-character heuristic. A property oracle that masks every
+  generated regex label regardless of context would produce false expectations
+  for division contexts. The generator must emit regex-labelled segments only
+  after an allowed previous significant character, and the independent oracle
+  must still model that state so division-labelled slashes remain visible.
   Date/Author: 2026-06-30T11:56:30Z / Codex.
 
 - Decision: Treat comments as context-neutral but treat masked strings,
   templates, and regex literals as expression tokens for subsequent regex
-  classification.
-  Rationale: Comments do not affect JavaScript expression context, but strings,
-  templates, and regex literals do. Updating the previous significant character
-  after those masked ranges prevents a following division slash from inheriting
-  an earlier regex-allowed punctuation character.
+  classification. Rationale: Comments do not affect JavaScript expression
+  context, but strings, templates, and regex literals do. Updating the previous
+  significant character after those masked ranges prevents a following division
+  slash from inheriting an earlier regex-allowed punctuation character.
   Date/Author: 2026-06-30T12:21:09Z / Codex.
 
 - Decision: Keep the fixture probe test-only and deliberately narrow.
   Rationale: Work item 2 must prove the source masker against masking fixtures
   without adding the production envelope scanner. The probe therefore reports
   only `odw/meta-required`, `odw/meta-object`, and `odw/no-import-export`
-  inside the test file.
-  Date/Author: 2026-06-30T12:27:11Z / Codex.
+  inside the test file. Date/Author: 2026-06-30T12:27:11Z / Codex.
 
 ## Outcomes & retrospective
 
@@ -389,10 +362,9 @@ static-analysis source-helper modules live in `src/static-analysis/`:
   snippets.
 - `types.ts` owns the boundary labels and source data types.
 
-The architecture test
-`tests/static-analysis/source-file-architecture.test.ts` pins this module set.
-Any new source-helper module must update that test intentionally. The public
-package surface is pinned by
+The architecture test `tests/static-analysis/source-file-architecture.test.ts`
+pins this module set. Any new source-helper module must update that test
+intentionally. The public package surface is pinned by
 `tests/diagnostics/public-api-fixtures.ts` and
 `tests/diagnostics/public-api-surface.test.ts`.
 
@@ -408,17 +380,17 @@ running them through a test-only masked-envelope probe.
 
 A "source mask" in this plan means a string of the same UTF-16 length as the
 original source where real code characters remain unchanged and non-code
-characters are replaced by spaces. Line terminators remain unchanged. A
-"mask range" means a half-open UTF-16 text-index range `[startIndex, endIndex)`
+characters are replaced by spaces. Line terminators remain unchanged. A "mask
+range" means a half-open UTF-16 text-index range `[startIndex, endIndex)`
 within the original `sourceText`; these are not UTF-8 byte offsets and must be
 named as indexes, not offsets.
 
 ## Research evidence
 
 - `docs/roadmap.md` §2.1 task 2.1.1 requires a source masker for comments,
-  strings, template literals, and regex literals. Its success criteria are
-  zero envelope diagnostics for the masking fixtures and manifest `metaName`
-  values matching the real metadata declaration.
+  strings, template literals, and regex literals. Its success criteria are zero
+  envelope diagnostics for the masking fixtures and manifest `metaName` values
+  matching the real metadata declaration.
 - `docs/technical-design.md` §5 and
   `docs/adr/0001-static-analysis-boundary.md` require an owned static parser
   path and forbid production imports of executable ODW runtime helpers.
@@ -452,8 +424,8 @@ named as indexes, not offsets.
   "Formatting", and "Roadmap task writing guidelines" govern prose, wrapping,
   Markdown syntax, and roadmap completion updates.
 - `docs/scripting-standards.md` "Language and runtime", "Testing
-  expectations", and "Operational guidelines" were reviewed. This task does
-  not add scripts, so those sections impose no extra implementation files.
+  expectations", and "Operational guidelines" were reviewed. This task does not
+  add scripts, so those sections impose no extra implementation files.
 - `docs/complexity-antipatterns-and-refactoring-strategies.md` §§4.A, 4.B,
   and 5.C support small functions, guard clauses, extract-method refactoring,
   and declarative test tables for the lexical state machine.
@@ -464,35 +436,35 @@ named as indexes, not offsets.
   Lines 364-454 show `maskNonCode` replacing strings, template literals,
   comments, and regex literal bodies with spaces, plus the
   `regexAllowed(prevSig)` heuristic. Lines 120-149 explain that
-  `maskForDualScan` deliberately differs by keeping template interpolation
-  code visible.
+  `maskForDualScan` deliberately differs by keeping template interpolation code
+  visible.
 - The official TypeScript compiler API wiki at
   <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API>
   documents `createSourceFile` and recursive `forEachChild` traversal for
   AST-based test parsing.
 - The official TypeScript scanner wiki at
   <https://github.com/microsoft/TypeScript/wiki/Codebase-Compiler-Scanner>
-  documents `createScanner`, trivia, `setText`, `scan`, token positions, and
-  the `skipTrivia` flag.
+  documents `createScanner`, trivia, `setText`, `scan`, token positions, and the
+  `skipTrivia` flag.
 - The locked TypeScript package is `typescript@5.9.3` in `bun.lock`.
   `node_modules/typescript/lib/typescript.d.ts` lines 8511-8555 expose the
   scanner API. `node_modules/typescript/lib/typescript.js` lines 11740-11742
   define the JavaScript line-break set as LF, CR, U+2028, and U+2029. Lines
   12409-12490 scan strings and template tokens, lines 12948-12990 scan
   comments, and lines 13319-13420 rescan slash tokens as regex literals only
-  when caller context requests it. The regex rescan stops on `isLineBreak`,
-  so the locked scanner does not allow regex bodies to cross any JavaScript
-  line terminator.
+  when caller context requests it. The regex rescan stops on `isLineBreak`, so
+  the locked scanner does not allow regex bodies to cross any JavaScript line
+  terminator.
 - The official Fast-check properties documentation at
-  <https://fast-check.dev/docs/core-blocks/properties/> documents
-  `fc.property` and `fc.assert` for synchronous properties. The string
-  arbitrary documentation at
+  <https://fast-check.dev/docs/core-blocks/properties/> documents `fc.property`
+  and `fc.assert` for synchronous properties. The string arbitrary
+  documentation at
   <https://fast-check.dev/docs/core-blocks/arbitraries/primitives/string/>
   documents `fc.string` options. The locked package is `fast-check@4.8.0`;
   `node_modules/fast-check/lib/fast-check.d.ts` exposes `property`, `assert`,
   `string`, `constantFrom`, and `array`, and the existing
-  `tests/static-analysis/source-file.property.test.ts` already uses
-  `fc.assert` with deterministic runner options.
+  `tests/static-analysis/source-file.property.test.ts` already uses `fc.assert`
+  with deterministic runner options.
 
 ## Interfaces and dependencies
 
@@ -521,8 +493,8 @@ export const maskNonCodeSource = (sourceFile: OriginalSourceFile): MaskedSource 
 ```
 
 The returned `MaskedSource` must be frozen deeply enough that callers cannot
-mutate the result object, the `ranges` array, or any range entry. Implement this
-by freezing each `SourceMaskRange`, freezing the final `ranges` array, and
+mutate the result object, the `ranges` array, or any range entry. Implement
+this by freezing each `SourceMaskRange`, freezing the final `ranges` array, and
 freezing the returned `MaskedSource` object. Each `SourceMaskRange` must satisfy
 `0 <= startIndex <= endIndex <= sourceFile.sourceText.length`. Ranges must be
 sorted, non-overlapping, and expressed in UTF-16 text indexes because they
@@ -544,9 +516,9 @@ Docs to read before starting: `docs/roadmap.md` §2.1 task 2.1.1,
 `docs/complexity-antipatterns-and-refactoring-strategies.md` §§4.A, 4.B, and
 5.C, and `AGENTS.md` TypeScript Guidance.
 
-Skills to load: `execplans`, `grepai`, `leta`, `sem`,
-`en-gb-oxendict-style`, and `biome-typescript`. Load a TypeScript router skill
-too if one is available in the implementing environment.
+Skills to load: `execplans`, `grepai`, `leta`, `sem`, `en-gb-oxendict-style`,
+and `biome-typescript`. Load a TypeScript router skill too if one is available
+in the implementing environment.
 
 Implement `src/static-analysis/source-mask.ts` with small named helpers:
 `maskNonCodeSource`, a line-terminator predicate, a range blanking helper, a
@@ -636,15 +608,14 @@ Commit message subject: `Add source masking contract`.
 ### Work item 2: Prove fixture and property behaviour for the source masker
 
 Docs to read before starting: `docs/developers-guide.md` "Workflow Fixture
-Corpus" and "Source-span helpers", `docs/technical-design.md` §§6.2, 9.1,
-11.1, 11.2, and 11.5, `docs/roadmap.md` §2.1 task 2.1.1,
+Corpus" and "Source-span helpers", `docs/technical-design.md` §§6.2, 9.1, 11.1,
+11.2, and 11.5, `docs/roadmap.md` §2.1 task 2.1.1,
 `docs/documentation-style-guide.md` "Markdown rules", and the Fast-check
 research evidence in this ExecPlan.
 
-Skills to load: `execplans`, `grepai`, `leta`, `sem`,
-`en-gb-oxendict-style`, `firecrawl-mcp`, and `biome-typescript`. Load a
-TypeScript router skill too if one is available in the implementing
-environment.
+Skills to load: `execplans`, `grepai`, `leta`, `sem`, `en-gb-oxendict-style`,
+`firecrawl-mcp`, and `biome-typescript`. Load a TypeScript router skill too if
+one is available in the implementing environment.
 
 Add `tests/static-analysis/source-mask.property.test.ts`. Use a deterministic
 runner modelled on `SOURCE_SPAN_PROPERTY_RUNNER`. Generate bounded source text
@@ -661,12 +632,12 @@ also be generated in disallowed contexts so the property proves they remain
 visible. The independent expected-mask oracle must model the same previous
 significant-character state and create expected regex mask ranges only for
 regex-labelled segments in allowed contexts. If a regex-labelled segment
-contains LF, CR, U+2028, or U+2029 before its closing delimiter, the oracle must
-leave that candidate visible because the production contract treats it as
+contains LF, CR, U+2028, or U+2029 before its closing delimiter, the oracle
+must leave that candidate visible because the production contract treats it as
 unterminated code, not as a mask range. Assert the same invariants from work
-item 1 over many orders and combinations: length preservation,
-line-terminator preservation, code preservation, masked-region spacing, and no
-overlapping ranges.
+item 1 over many orders and combinations: length preservation, line-terminator
+preservation, code preservation, masked-region spacing, and no overlapping
+ranges.
 
 Add `tests/static-analysis/source-mask-fixtures.test.ts`. This is a test-only
 probe, not the production envelope scanner. For each
@@ -736,8 +707,8 @@ make markdownlint
 make nixie
 ```
 
-The two `git diff --quiet` guarded formatter commands are intentional: they format
-`src/static-analysis/source-mask.ts` and
+The two `git diff --quiet` guarded formatter commands are intentional: they
+format `src/static-analysis/source-mask.ts` and
 `tests/static-analysis/masking-fixtures.test.ts` only when this work item has
 actually edited those files.
 
@@ -759,19 +730,19 @@ only if the roadmap needs to record a scoped behaviour that future tasks must
 know, such as whole-template masking for envelope scans or test-only envelope
 probe coverage. Keep the note short and aligned with the roadmap style guide.
 
-Update this ExecPlan to `Status: COMPLETE`, check off all progress entries
-with timestamps, record final validation evidence in `Artifacts and notes`,
-and write a final `Outcomes & Retrospective` entry. Do not start task 2.1.2.
+Update this ExecPlan to `Status: COMPLETE`, check off all progress entries with
+timestamps, record final validation evidence in `Artifacts and notes`, and
+write a final `Outcomes & Retrospective` entry. Do not start task 2.1.2.
 
 No production code changes should occur in this work item. If a final
 documentation update reveals that `docs/technical-design.md` or ADR 0001 is
-stale, update the relevant design document in this same item and explain why
-in `Decision Log`. When doing so, append every changed Markdown path to the
+stale, update the relevant design document in this same item and explain why in
+`Decision Log`. When doing so, append every changed Markdown path to the
 file-scoped Markdown formatter commands below before running them. For example,
-if `docs/technical-design.md` is edited, include
-`docs/technical-design.md`; if `docs/adr/0001-static-analysis-boundary.md` is
-edited, include that ADR path. Do not list an unchanged optional Markdown file
-in the file-scoped formatter commands.
+if `docs/technical-design.md` is edited, include `docs/technical-design.md`; if
+`docs/adr/0001-static-analysis-boundary.md` is edited, include that ADR path.
+Do not list an unchanged optional Markdown file in the file-scoped formatter
+commands.
 
 Path-safe formatting and gates for this work item:
 

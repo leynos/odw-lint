@@ -1,10 +1,10 @@
 # Audit after roadmap task 1.5.9
 
-This post-step audit was run after roadmap task 1.5.9 (`Consolidate build-gate
-command-line support`) merged into `origin/main` at commit `b09739f`. The audit
-used `grepai` against the canonical `main` index for intent search, then
-verified every branch-local fact in a fresh worktree off `origin/main` with
-`leta`, targeted file inspection, and `sem` entity history.
+This post-step audit was run after roadmap task 1.5.9
+(`Consolidate build-gate command-line support`) merged into `origin/main` at
+commit `b09739f`. The audit used `grepai` against the canonical `main` index
+for intent search, then verified every branch-local fact in a fresh worktree off
+`origin/main` with `leta`, targeted file inspection, and `sem` entity history.
 
 Normative references used:
 
@@ -58,10 +58,10 @@ still triplicated.
 Proposed fix:
 
 Change `isStringLikeDelimiter` in `source-mask-delimiters.ts:124` to be a type
-guard that narrows to the string-delimiter union (single quote, double quote, or
-backtick) rather than returning a plain `boolean`, then delete the three private
-`isStringDelimiter` wrappers and call `isStringLikeDelimiter` directly. The
-single narrowing helper serves both the source-mask and metadata scanner
+guard that narrows to the string-delimiter union (single quote, double quote,
+or backtick) rather than returning a plain `boolean`, then delete the three
+private `isStringDelimiter` wrappers and call `isStringLikeDelimiter` directly.
+The single narrowing helper serves both the source-mask and metadata scanner
 families, closing the residue left by `audit-2.1.12`.
 
 ## Finding 2: Two parallel low-level source scanners duplicate lexing rules
@@ -98,10 +98,10 @@ Proposed fix:
 Extract a single low-level lexing primitive layer (delimiter classification,
 escape consumption, template-expression nesting, comment boundaries) that both
 families consume. The mask family would keep its range-building policy and the
-metadata family its value-proving policy, but both would share one authoritative
-implementation of "where does this token end". Treat this as an incremental
-consolidation, not a rewrite, because the shared `source-mask-delimiters`
-predicates already show the pattern works.
+metadata family its value-proving policy, but both would share one
+authoritative implementation of "where does this token end". Treat this as an
+incremental consolidation, not a rewrite, because the shared
+`source-mask-delimiters` predicates already show the pattern works.
 
 ## Finding 3: Build-gate CLI entry points repeat the run-and-exit orchestration
 
@@ -118,20 +118,21 @@ Location:
 Description:
 
 Task 1.5.9 correctly consolidated writer resolution and single-report dispatch
-into `tests/build-gate/cli-support.ts`. The remaining orchestration around it is
-still copied across all three gate CLIs: each parses arguments, produces a
-result, formats it, calls `emitCliReport({ report, toErr, writers })`, returns a
-gate-specific exit code, and ends with the identical module-main guard
-`if (process.argv[1] === fileURLToPath(import.meta.url)) { ... }`. The exit-code
-mapping (`exitCodeForBranchFreshness`, `exitCodeFor`, and the whitespace inline
-codes) and the `toErr` derivation are each hand-written per module.
+into `tests/build-gate/cli-support.ts`. The remaining orchestration around it
+is still copied across all three gate CLIs: each parses arguments, produces a
+result, formats it, calls `emitCliReport({ report, toErr, writers })`, returns
+a gate-specific exit code, and ends with the identical module-main guard
+`if (process.argv[1] === fileURLToPath(import.meta.url)) { ... }`. The
+exit-code mapping (`exitCodeForBranchFreshness`, `exitCodeFor`, and the
+whitespace inline codes) and the `toErr` derivation are each hand-written per
+module.
 
 Proposed fix:
 
 Add a small `runBuildGateCli` (or `makeGateMain`) helper to `cli-support.ts`
 that accepts a formatted report, a `toErr` flag, an exit code, and the writers,
-so each gate reduces to "compute outcome, hand it to the helper". This keeps the
-per-gate policy (parsing, classification, exit-code semantics) local while
+so each gate reduces to "compute outcome, hand it to the helper". This keeps
+the per-gate policy (parsing, classification, exit-code semantics) local while
 removing the repeated dispatch-and-guard boilerplate. Lower priority than
 Findings 1 and 2 because the duplication is shallow and already partly reduced.
 

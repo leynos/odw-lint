@@ -327,8 +327,7 @@ only. At closure, `make all`, `make markdownlint`, and `make nixie` passed.
   splitting architecture-test export-declaration queries from assertions.
 - [x] (2026-06-28T17:20Z) Implemented addendum 1.2.3.2 by aligning the
   developer guide, package-entry file documentation, and architecture tests
-  around the current private package entry and exported static-analysis
-  surface.
+  around the current private package entry and exported static-analysis surface.
 
 ## Context and orientation
 

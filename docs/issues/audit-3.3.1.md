@@ -48,8 +48,7 @@ Tooling note: the `grepai` intent index reflects `main` only and was not used
 as evidence for the branch-local `src/config/` code; `git fetch` and manual
 `git worktree add` were auto-denied by the sandbox permission layer, so the
 inspection worktree was created with the harness `EnterWorktree` mechanism off
-`origin/main`. Every finding is grounded in direct branch-local file
-inspection.
+`origin/main`. Every finding is grounded in direct branch-local file inspection.
 
 ## Finding 1: the user guide still describes configuration as unimplemented
 
@@ -65,8 +64,8 @@ Location:
 Description:
 
 Task 3.3.1 shipped configuration loading, yet `docs/users-guide.md` still tells
-users the feature does not exist. The "Configuration placeholders" section opens
-with "Configuration is planned but not implemented yet"
+users the feature does not exist. The "Configuration placeholders" section
+opens with "Configuration is planned but not implemented yet"
 (`users-guide.md:144`) and closes by instructing readers to "treat this section
 as a contract placeholder rather than an available feature"
 (`users-guide.md:166`-`167`). The flag list higher up lists `--config` and
@@ -132,21 +131,22 @@ Location:
 
 Description:
 
-The `check` command's usage string is `usage: odw-lint check <workflow.js
-...>` (`check-cli.ts:65`). It is emitted for every usage error — no subcommand,
+The `check` command's usage string is `usage: odw-lint check <workflow.js ...>`
+(`check-cli.ts:65`). It is emitted for every usage error — no subcommand,
 missing paths, and (via `parseCheckArgs`) an empty operand list — yet it
 mentions none of the options the parser actually accepts: `--config <path>`,
-`--isolated`, and `--output-format full|json`. A user who mistypes an option and
-triggers the usage message is shown a synopsis that hides the options they were
-reaching for. This is a small ergonomics gap that widened with 3.3.1, which
-added two of the three flags the string omits.
+`--isolated`, and `--output-format full|json`. A user who mistypes an option
+and triggers the usage message is shown a synopsis that hides the options they
+were reaching for. This is a small ergonomics gap that widened with 3.3.1,
+which added two of the three flags the string omits.
 
 Proposed fix:
 
 Expand the usage string to reflect the implemented surface, for example
 `usage: odw-lint check [--config <path>] [--isolated] [--output-format
-full|json] <workflow.js ...>`. Keep it aligned with the user-guide flag list
-(Finding 1) so the two stay in step as further flags land.
+full|json] <workflow.js …>`.
+Keep it aligned with the user-guide flag list (Finding 1) so the two stay in
+step as further flags land.
 
 ## Finding 4: the two config loaders duplicate the parse-and-validate tail
 
@@ -173,10 +173,10 @@ return parsed.ok
   : { ok: false, error: parsed.error };
 ```
 
-This block appears at `load-config.ts:208`-`211` and again at `:224`-`:227`. The
-duplication is small but it is exactly the kind that drifts: a future change to
-how parse failures are reported (or an extra validation step) must be made in
-two places, and a change to only one would diverge silently.
+This block appears at `load-config.ts:208`-`211` and again at `:224`-`:227`.
+The duplication is small but it is exactly the kind that drifts: a future
+change to how parse failures are reported (or an extra validation step) must be
+made in two places, and a change to only one would diverge silently.
 
 Proposed fix:
 
@@ -198,16 +198,15 @@ Location:
 Description:
 
 `parseCheckOption` reads the token after `--config` as the configuration path
-without checking whether it looks like another option
-(`check-cli.ts:172`-`181`). Invoking `check --config --isolated workflow.js`
-therefore treats `--isolated` as a file path: the loader attempts to read a
-file literally named
-`--isolated`, fails, and reports `error: configuration: cannot read
---isolated: ...`. The user intended to enable isolated mode, so the diagnostic
-points at a phantom file rather than at the real mistake (a missing `--config`
-value). The sibling `--output-format` handler routes through
-`parseOutputFormatValue`, which at least rejects a missing value explicitly; the
-`--config` handler has no equivalent guard.
+without checking whether it looks like another option (`check-cli.ts:172`-
+`181`). Invoking `check --config --isolated workflow.js` therefore treats
+`--isolated` as a file path: the loader attempts to read a file literally named
+`--isolated`, fails, and reports
+`error: configuration: cannot read --isolated: ...`. The user intended to
+enable isolated mode, so the diagnostic points at a phantom file rather than at
+the real mistake (a missing `--config` value). The sibling `--output-format`
+handler routes through `parseOutputFormatValue`, which at least rejects a
+missing value explicitly; the `--config` handler has no equivalent guard.
 
 Proposed fix:
 
@@ -232,15 +231,15 @@ Description:
 `validateLinterConfig` fully validates `include` and `exclude` as arrays of
 non-empty strings and stores them on the returned `LinterConfig`
 (`linter-config.ts:200`-`214`), but nothing consumes them: configured discovery
-is deferred to a later roadmap task, and the explicit-path `check` command reads
-only the paths passed on the command line. The keys' own doc comments admit this
-("glob patterns to include during *future* configured discovery",
+is deferred to a later roadmap task, and the explicit-path `check` command
+reads only the paths passed on the command line. The keys' own doc comments
+admit this ("glob patterns to include during *future* configured discovery",
 `linter-config.ts:31`-`34`). The developer guide notes the deferral
 (`developers-guide.md:246`-`248`), but nothing user-facing warns that a
 carefully written `include`/`exclude` block in `odw-lint.json` is silently
-inert. Combined with Finding 1, a user could author the very placeholder example
-the user guide still prints (which leads with `include`/`exclude`) and observe
-no change in which files are checked.
+inert. Combined with Finding 1, a user could author the very placeholder
+example the user guide still prints (which leads with `include`/`exclude`) and
+observe no change in which files are checked.
 
 Proposed fix:
 
@@ -249,8 +248,8 @@ When documenting the shipped configuration (Finding 1), state explicitly that
 discovery, and that the command remains path-first until configured discovery
 lands. Optionally, emit a one-line configuration warning when `include` or
 `exclude` is present but discovery is not in use, reusing the existing
-`ConfigValidationWarning` channel so the inertness is visible at run time rather
-than only in prose.
+`ConfigValidationWarning` channel so the inertness is visible at run time
+rather than only in prose.
 
 ## Finding 7: whole-report policy is applied per file inside the read loop
 
@@ -267,11 +266,11 @@ Description:
 `runCheck` applies configured severities and strict-Claude promotion inside the
 per-file read loop: each file's diagnostics are passed through
 `applyCheckConfiguration` before being pushed onto the aggregate
-(`run-check.ts:68`-`70`). The transform is a whole-report severity policy, not a
-per-file concern — it re-freezes and re-`flatMap`s once per input file and
-interleaves a global policy step with per-file reading. The behaviour is correct
-because each diagnostic is transformed independently, but the structure obscures
-that severity policy is a single pass over the finished diagnostic set.
+(`run-check.ts:68`-`70`). The transform is a whole-report severity policy, not
+a per-file concern — it re-freezes and re-`flatMap`s once per input file and
+interleaves a global policy step with per-file reading. The behaviour is
+correct because each diagnostic is transformed independently, but the structure
+obscures that severity policy is a single pass over the finished diagnostic set.
 
 Proposed fix:
 
@@ -297,20 +296,19 @@ Description:
 `check-cli-config.test.ts` covers unknown-rule validation, `strictClaude`
 promotion, `off` suppression, `--isolated`, the `--config`/`--isolated`
 conflict, missing `--config` value, and malformed JSON, but it never exercises
-an explicit `--config` path that cannot be read. The `loadConfigFile` read-error
-branch (`load-config.ts:201`-`205`) and the `reasonForErrnoCode` mapping of
-`ENOENT` to `not-found` and `EISDIR` to `not-a-file`
+an explicit `--config` path that cannot be read. The `loadConfigFile`
+read-error branch (`load-config.ts:201`-`205`) and the `reasonForErrnoCode`
+mapping of `ENOENT` to `not-found` and `EISDIR` to `not-a-file`
 (`load-config.ts:125`-`134`) are therefore unverified at the CLI boundary: no
-test asserts that
-`--config missing.json` exits 2 with an `error: configuration: cannot read`
-message, and the `not-a-file` reason has no coverage at all. This is the one
-config load-error kind the CLI can reach that lacks an end-to-end regression
-pin.
+test asserts that `--config missing.json` exits 2 with an
+`error: configuration: cannot read` message, and the `not-a-file` reason has no
+coverage at all. This is the one config load-error kind the CLI can reach that
+lacks an end-to-end regression pin.
 
 Proposed fix:
 
 Add cases to `check-cli-config.test.ts` for an explicit `--config` path whose
 injected reader throws `ENOENT` (asserting exit 2 and the `cannot read`
-message) and, if practical, one that throws `EISDIR`, so the read-failure branch
-and its stable reason mapping are pinned alongside the parse and validation
-paths already covered.
+message) and, if practical, one that throws `EISDIR`, so the read-failure
+branch and its stable reason mapping are pinned alongside the parse and
+validation paths already covered.

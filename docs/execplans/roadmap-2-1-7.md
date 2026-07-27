@@ -1,9 +1,8 @@
 # Add rule-catalogue parity checks for fixture diagnostics
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -11,17 +10,17 @@ Implementation status: Complete.
 
 This is planning round 3. Do not begin implementation until the plan is
 approved by the roadmap workflow. This revision addresses the previous
-design-review blockers about the `messages` contract for released rules with
-no fixture diagnostics and the file-scoped formatter path for work item 2.
+design-review blockers about the `messages` contract for released rules with no
+fixture diagnostics and the file-scoped formatter path for work item 2.
 
 ## Purpose / big picture
 
 Roadmap task 2.1.7 makes deliberately invalid workflow fixture diagnostics
 depend on the typed rule catalogue introduced by roadmap task 2.1.6. After the
 task is implemented, invalid fixture manifests can no longer drift by carrying
-an uncatalogued rule, a stale default severity, a diagnostic message that is not
-part of the reviewed rule contract, or a rule whose documentation page cannot be
-derived from the catalogue.
+an uncatalogued rule, a stale default severity, a diagnostic message that is
+not part of the reviewed rule contract, or a rule whose documentation page
+cannot be derived from the catalogue.
 
 The observable result is a test failure, not a new lint rule. A maintainer who
 changes an invalid workflow fixture expectation must update the production rule
@@ -139,49 +138,37 @@ conflict in `Decision Log`, and escalate.
 ## Risks
 
 - Risk: rule messages become a second production catalogue hidden in invalid
-  fixture manifests.
-  Severity: high.
-  Likelihood: high.
-  Mitigation: work item 1 adds exact message contracts to
-  `RULE_CATALOGUE`; work item 2 fails fixtures whose message is absent from the
-  matching catalogue entry.
+  fixture manifests. Severity: high. Likelihood: high. Mitigation: work item 1
+  adds exact message contracts to `RULE_CATALOGUE`; work item 2 fails fixtures
+  whose message is absent from the matching catalogue entry.
 
 - Risk: allowing multiple messages per rule could weaken the test into a broad
-  allow-list.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: the initial message lists are copied exactly from current invalid
-  fixture manifests and reviewed in `tests/diagnostics/rule-catalogue.test.ts`.
-  Do not add speculative future messages.
+  allow-list. Severity: medium. Likelihood: medium. Mitigation: the initial
+  message lists are copied exactly from current invalid fixture manifests and
+  reviewed in `tests/diagnostics/rule-catalogue.test.ts`. Do not add
+  speculative future messages.
 
 - Risk: fixture parity accidentally treats configured severity overrides as
-  default severity.
-  Severity: medium.
-  Likelihood: low.
-  Mitigation: invalid fixture manifests have no configuration context. Their
-  `severity` must equal `RuleDefinition.defaultSeverity`; later configured
-  severity tests belong to the CLI/configuration tasks.
+  default severity. Severity: medium. Likelihood: low. Mitigation: invalid
+  fixture manifests have no configuration context. Their `severity` must equal
+  `RuleDefinition.defaultSeverity`; later configured severity tests belong to
+  the CLI/configuration tasks.
 
 - Risk: planned rules appear in fixture expectations before their rule-quality
-  gates are implemented.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: work item 2 asserts every invalid fixture diagnostic references a
-  `released` catalogue entry.
+  gates are implemented. Severity: medium. Likelihood: medium. Mitigation: work
+  item 2 asserts every invalid fixture diagnostic references a `released`
+  catalogue entry.
 
 - Risk: documentation drift remains possible if fixture parity checks only rule
-  strings and messages.
-  Severity: medium.
-  Likelihood: low.
-  Mitigation: work item 2 derives the documentation path with `ruleDocsPath`
-  and asserts that the path exists for every fixture diagnostic rule.
+  strings and messages. Severity: medium. Likelihood: low. Mitigation: work
+  item 2 derives the documentation path with `ruleDocsPath` and asserts that
+  the path exists for every fixture diagnostic rule.
 
 - Risk: the work drifts into regenerating fixture manifests.
-  Severity: low.
-  Likelihood: medium.
-  Mitigation: do not change raw fixture files or the refresh command unless a
-  parity test proves the refresh source emits stale catalogue fields. Existing
-  refresh source preserves `diagnostic.message` and recomputes spans only.
+  Severity: low. Likelihood: medium. Mitigation: do not change raw fixture
+  files or the refresh command unless a parity test proves the refresh source
+  emits stale catalogue fields. Existing refresh source preserves
+  `diagnostic.message` and recomputes spans only.
 
 ## Progress
 
@@ -192,8 +179,8 @@ conflict in `Decision Log`, and escalate.
   skills.
 - [x] (2026-07-01T11:47+01:00) Ran GrepAI intent search against the canonical
   main-branch index for "rule catalogue parity checks fixture diagnostics".
-  Relevant hits included `docs/roadmap.md`,
-  `docs/issues/audit-2.1.6.md`, ADR 0001, and `docs/rules/index.md`.
+  Relevant hits included `docs/roadmap.md`, `docs/issues/audit-2.1.6.md`, ADR
+  0001, and `docs/rules/index.md`.
 - [x] (2026-07-01T11:47+01:00) The round-1 draft recorded a transient
   branch-local Leta workspace failure.
 - [x] (2026-07-01T13:09+01:00) Reran branch-local Leta navigation with
@@ -264,8 +251,8 @@ conflict in `Decision Log`, and escalate.
   documentation closeout commit. The closeout `coderabbit review --agent` run
   completed with zero findings.
 - [x] (2026-07-01T12:42+01:00) Fix round 1: verified the blocking review
-  findings against current branch-local files, then aligned the remaining
-  public `odw/meta-required` examples in `docs/technical-design.md`,
+  findings against current branch-local files, then aligned the remaining public
+  `odw/meta-required` examples in `docs/technical-design.md`,
   `docs/users-guide.md`, `tests/diagnostics/public-consumer.test.ts`,
   `tests/diagnostics/types.test.ts`, and the public-consumer snapshot with the
   catalogue message `Workflow source must export literal metadata.`.
@@ -278,138 +265,126 @@ conflict in `Decision Log`, and escalate.
 
 - Observation: `src/diagnostics/rule-catalogue.ts` currently owns rule IDs,
   categories, default severities, config keys, docs slugs, and release status,
-  but not diagnostic messages.
-  Evidence: branch-local inspection of `RuleDefinition`.
-  Impact: message parity cannot be implemented without extending the catalogue;
-  a test-only message map would preserve the parallel source of truth this task
-  is meant to remove.
+  but not diagnostic messages. Evidence: branch-local inspection of
+  `RuleDefinition`. Impact: message parity cannot be implemented without
+  extending the catalogue; a test-only message map would preserve the parallel
+  source of truth this task is meant to remove.
 
 - Observation: invalid fixture manifests already include exact reviewer-facing
-  `message` strings on every expected diagnostic.
-  Evidence: branch-local inspection of
+  `message` strings on every expected diagnostic. Evidence: branch-local
+  inspection of
   `tests/static-analysis/fixtures/invalid-workflows/manifest-types.ts` and the
-  generated family manifests.
-  Impact: the first message contract can be exact and finite; no message
-  template mechanism is needed in this task.
+  generated family manifests. Impact: the first message contract can be exact
+  and finite; no message template mechanism is needed in this task.
 
 - Observation: `tests/static-analysis/invalid-workflow-fixtures.test.ts`
   contains a hard-coded `EXPECTED_RULES` list that duplicates catalogue rule
-  identifiers.
-  Evidence: branch-local inspection of the test.
-  Impact: work item 2 should remove this duplicate rule list and assert each
-  fixture diagnostic directly against `RULE_CATALOGUE`.
+  identifiers. Evidence: branch-local inspection of the test. Impact: work item
+  2 should remove this duplicate rule list and assert each fixture diagnostic
+  directly against `RULE_CATALOGUE`.
 
 - Observation: the round-1 plan named stale message strings for
-  `odw/no-import-export` and `odw/body-syntax`.
-  Evidence: branch-local exact text search found the fixture manifests use
+  `odw/no-import-export` and `odw/body-syntax`. Evidence: branch-local exact
+  text search found the fixture manifests use
   `Workflow body must not add top-level imports or exports.` and
   `Workflow body must be syntactically complete after ODW normalization.`
-  Impact: work item 1 now copies those exact strings into the catalogue
-  message contract.
+  Impact: work item 1 now copies those exact strings into the catalogue message
+  contract.
 
 - Observation: `docs/repository-layout.md` describes the rule catalogue fields
-  without diagnostic message contracts.
-  Evidence: branch-local inspection of the `Source boundaries` section.
-  Impact: work item 1 now updates `docs/repository-layout.md` and includes it
-  in the file-scoped Markdown formatter command.
+  without diagnostic message contracts. Evidence: branch-local inspection of the
+  `Source boundaries` section. Impact: work item 1 now updates
+  `docs/repository-layout.md` and includes it in the file-scoped Markdown
+  formatter command.
 
 - Observation: the fixture refresh source preserves `diagnostic.message` while
-  refreshing SHA-256 hashes and span fields.
-  Evidence: `tests/static-analysis/fixtures/refresh-manifest-source.ts`
-  generates `message: ${literal(diagnostic.message)}` and recomputes only span
-  data through `refreshedDiagnosticSpan`.
-  Impact: this task should not change the refresh writer unless implementation
-  discovers a stale generated-source snapshot after the catalogue field is
-  added.
+  refreshing SHA-256 hashes and span fields. Evidence:
+  `tests/static-analysis/fixtures/refresh-manifest-source.ts` generates
+  `message: ${literal(diagnostic.message)}` and recomputes only span data
+  through `refreshedDiagnosticSpan`. Impact: this task should not change the
+  refresh writer unless implementation discovers a stale generated-source
+  snapshot after the catalogue field is added.
 
 - Observation: ODW's runtime `loadWorkflowScript` compiles workflow bodies with
   `new AsyncFunction`, and `createPrimitives().validate(source)` calls the
-  loader path.
-  Evidence:
+  loader path. Evidence:
   `/data/leynos/Projects/open-dynamic-workflows/src/loader.ts` and
-  `/data/leynos/Projects/open-dynamic-workflows/src/primitives.ts`.
-  Impact: fixture-catalogue parity must stay static and must not use ODW
-  runtime helpers.
+  `/data/leynos/Projects/open-dynamic-workflows/src/primitives.ts`. Impact:
+  fixture-catalogue parity must stay static and must not use ODW runtime
+  helpers.
 
 - Observation: the new catalogue test needed mutable matcher shapes even
-  though the reviewed rows are readonly literal data.
-  Evidence: `tsc --noEmit` rejected direct `toEqual(EXPECTED_RULE_ROWS)` calls
-  and a readonly tuple passed to `toEqual`.
-  Impact: work item 1 keeps readonly reviewed data and converts it to mutable
-  matcher values in a test-local helper before comparison.
+  though the reviewed rows are readonly literal data. Evidence: `tsc --noEmit`
+  rejected direct `toEqual(EXPECTED_RULE_ROWS)` calls and a readonly tuple
+  passed to `toEqual`. Impact: work item 1 keeps readonly reviewed data and
+  converts it to mutable matcher values in a test-local helper before
+  comparison.
 
 - Observation: work item 2's red sabotage failed exactly at the new
-  catalogue-message assertion.
-  Evidence: after temporarily changing one fixture manifest message to
-  `stale fixture message`,
-  `bun test tests/static-analysis/invalid-workflow-fixtures.test.ts` failed
-  with `Expected to contain: "stale fixture message"` and showed the matching
-  catalogue message array.
-  Impact: the fixture parity test now proves message drift against the
-  production catalogue without executing raw fixture source.
+  catalogue-message assertion. Evidence: after temporarily changing one fixture
+  manifest message to `stale fixture message`,
+  `bun test tests/static-analysis/invalid-workflow-fixtures.test.ts` failed with
+  `Expected to contain: "stale fixture message"` and showed the matching
+  catalogue message array. Impact: the fixture parity test now proves message
+  drift against the production catalogue without executing raw fixture source.
 
 - Observation: fix-round review found stale `odw/meta-required` examples
-  outside the fixture parity surface.
-  Evidence: exact branch-local search found `workflow must export const meta`
-  in the technical design, users guide, public diagnostic consumer tests, and
-  public-consumer snapshot while `src/diagnostics/rule-catalogue.ts` records
-  `Workflow source must export literal metadata.`.
-  Impact: public examples now use the same message string as the catalogue
-  invariant in `docs/technical-design.md`.
+  outside the fixture parity surface. Evidence: exact branch-local search found
+  `workflow must export const meta` in the technical design, users guide,
+  public diagnostic consumer tests, and public-consumer snapshot while
+  `src/diagnostics/rule-catalogue.ts` records
+  `Workflow source must export literal metadata.`. Impact: public examples now
+  use the same message string as the catalogue invariant in
+  `docs/technical-design.md`.
 
 ## Decision log
 
 - Decision: add exact diagnostic message strings to `RuleDefinition` as a
-  readonly array field named `messages`.
-  Rationale: the roadmap asks for fixture expectations to be checked against
-  the typed rule catalogue for messages. Existing fixtures prove that one rule
-  can have multiple valid messages, and exact strings are sufficient for the
-  current fixture corpus. A test-only map or prose scraped from docs would keep
-  message contracts outside the production catalogue.
-  Date/Author: 2026-07-01, planning agent.
+  readonly array field named `messages`. Rationale: the roadmap asks for
+  fixture expectations to be checked against the typed rule catalogue for
+  messages. Existing fixtures prove that one rule can have multiple valid
+  messages, and exact strings are sufficient for the current fixture corpus. A
+  test-only map or prose scraped from docs would keep message contracts outside
+  the production catalogue. Date/Author: 2026-07-01, planning agent.
 
 - Decision: require invalid fixture diagnostics to reference only released
-  catalogue rules.
-  Rationale: fixture diagnostics describe expected emitted findings. Planned
-  orchestration-risk rules are reserved by design but not yet emitted.
-  Date/Author: 2026-07-01, planning agent.
+  catalogue rules. Rationale: fixture diagnostics describe expected emitted
+  findings. Planned orchestration-risk rules are reserved by design but not yet
+  emitted. Date/Author: 2026-07-01, planning agent.
 
 - Decision: validate fixture documentation parity by deriving
   `ruleDocsPath(rule)` and checking the page exists, not by adding docs paths
-  to every fixture manifest.
-  Rationale: the catalogue already owns docs slugs and rule-doc parity tests
-  already keep `docs/rules/` synchronized. Adding a `docs` field to fixture
-  manifests would create another source to refresh.
+  to every fixture manifest. Rationale: the catalogue already owns docs slugs
+  and rule-doc parity tests already keep `docs/rules/` synchronized. Adding a
+  `docs` field to fixture manifests would create another source to refresh.
   Date/Author: 2026-07-01, planning agent.
 
 - Decision: do not call ODW loader, `checkMeta`, `scanDualCompat`, or
-  `validate(source)` for this task.
-  Rationale: roadmap task 2.1.7 is static catalogue-to-fixture consistency.
-  ADR 0001 allows ODW executable runtime APIs only in narrowly scoped trusted
-  parity tests; this task can prove its contract with local catalogue and
-  manifest data.
-  Date/Author: 2026-07-01, planning agent.
+  `validate(source)` for this task. Rationale: roadmap task 2.1.7 is static
+  catalogue-to-fixture consistency. ADR 0001 allows ODW executable runtime APIs
+  only in narrowly scoped trusted parity tests; this task can prove its
+  contract with local catalogue and manifest data. Date/Author: 2026-07-01,
+  planning agent.
 
 - Decision: keep the first message-contract assertion inside
   `tests/diagnostics/rule-catalogue.test.ts` instead of reading invalid fixture
-  manifests from the diagnostic package test.
-  Rationale: work item 1 defines the reviewed catalogue rows. Fixture-manifest
-  traversal belongs to work item 2, where invalid fixture expectations are the
-  test subject.
-  Date/Author: 2026-07-01T12:23+01:00, implementation agent.
+  manifests from the diagnostic package test. Rationale: work item 1 defines
+  the reviewed catalogue rows. Fixture-manifest traversal belongs to work item
+  2, where invalid fixture expectations are the test subject. Date/Author:
+  2026-07-01T12:23+01:00, implementation agent.
 
 - Decision: keep fixture-catalogue lookup helpers local to
-  `tests/static-analysis/invalid-workflow-fixtures.test.ts`.
-  Rationale: work item 2 needs the lookup in one test file only, the file stays
-  below the 400-line TypeScript guard, and a cross-module helper would add
-  ownership policy without reuse.
-  Date/Author: 2026-07-01T12:29+01:00, implementation agent.
+  `tests/static-analysis/invalid-workflow-fixtures.test.ts`. Rationale: work
+  item 2 needs the lookup in one test file only, the file stays below the
+  400-line TypeScript guard, and a cross-module helper would add ownership
+  policy without reuse. Date/Author: 2026-07-01T12:29+01:00, implementation
+  agent.
 
 - Decision: update the public-consumer snapshot with the representative
-  `odw/meta-required` diagnostic message.
-  Rationale: changing the public-consumer test fixture without the snapshot
-  would leave the same stale public text preserved by snapshot review.
-  Date/Author: 2026-07-01T12:42+01:00, fix-round agent.
+  `odw/meta-required` diagnostic message. Rationale: changing the
+  public-consumer test fixture without the snapshot would leave the same stale
+  public text preserved by snapshot review. Date/Author:
+  2026-07-01T12:42+01:00, fix-round agent.
 
 ## Outcomes & retrospective
 
@@ -443,10 +418,9 @@ are branded in `src/diagnostics/rule-id.ts`, severities live in
 
 Roadmap task 2.1.6 added `src/diagnostics/rule-catalogue.ts`. The catalogue
 currently exports `RULE_CATALOGUE`, `RULE_IDS`, `RELEASED_RULE_IDS`,
-`PLANNED_RULE_IDS`, categories, release statuses, the exported
-`RuleDefinition` type, and `ruleDocsPath(rule)`. Each rule definition has
-`id`, `category`, `defaultSeverity`, `configKey`, `docsSlug`, and
-`releaseStatus`.
+`PLANNED_RULE_IDS`, categories, release statuses, the exported `RuleDefinition`
+type, and `ruleDocsPath(rule)`. Each rule definition has `id`, `category`,
+`defaultSeverity`, `configKey`, `docsSlug`, and `releaseStatus`.
 
 The rule documentation pages live under `docs/rules/`.
 `tests/diagnostics/rule-catalogue-docs.test.ts` already proves that catalogue
@@ -469,17 +443,16 @@ severity, message, source span, and `spanText` anchor. The aggregate manifest is
 
 `tests/static-analysis/invalid-workflow-fixtures.test.ts` currently checks
 family order, runtime freezing, hostile fixture import safety, source hashes,
-span positions, status coverage, a duplicated sorted `EXPECTED_RULES` list,
-and a compact manifest snapshot. The new parity assertions belong in this file
+span positions, status coverage, a duplicated sorted `EXPECTED_RULES` list, and
+a compact manifest snapshot. The new parity assertions belong in this file
 because they are about invalid fixture diagnostic expectations, not about the
 generic diagnostic package surface.
 
-The sibling ODW checkout at
-`/data/leynos/Projects/open-dynamic-workflows` is source-backed evidence for
-ODW runtime behaviour. Its loader extracts `export const meta`, evaluates
-metadata, and compiles the workflow body; its primitive `validate(source)` uses
-that loader. Those facts support the non-execution boundary but are not a
-mechanism for this task.
+The sibling ODW checkout at `/data/leynos/Projects/open-dynamic-workflows` is
+source-backed evidence for ODW runtime behaviour. Its loader extracts
+`export const meta`, evaluates metadata, and compiles the workflow body; its
+primitive `validate(source)` uses that loader. Those facts support the
+non-execution boundary but are not a mechanism for this task.
 
 ## Interfaces and dependencies
 
@@ -498,8 +471,7 @@ The official documentation verified with Firecrawl is:
 
 - Bun test runner documentation at <https://bun.sh/docs/cli/test>, which
   documents `bun test`, TypeScript test files, positional file filters,
-  non-zero exit on failed tests, and snapshot testing with
-  `toMatchSnapshot`.
+  non-zero exit on failed tests, and snapshot testing with `toMatchSnapshot`.
 - TypeScript 4.9 release notes at
   <https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html>,
   which document the `satisfies` operator preserving specific inferred types
@@ -543,7 +515,7 @@ This work item extends the production catalogue with reviewed exact diagnostic
 messages and updates the tests and documentation that define catalogue
 metadata. It implements:
 
-- `docs/roadmap.md` task 2.1.7, especially "messages ... do not become
+- `docs/roadmap.md` task 2.1.7, especially "messages … do not become
   parallel sources of truth";
 - `docs/technical-design.md` section 8, because messages are part of the
   diagnostic JSON contract;
@@ -574,8 +546,9 @@ current invalid manifests:
 - `odw/meta-statically-unprovable`: `Workflow metadata must remain statically
   provable without evaluation.`
 - `odw/meta-name`: `Workflow metadata must include a non-empty name string.`
-- `odw/meta-description`: `Workflow metadata must include a non-empty
-  description string.` and `Workflow metadata description must be a string.`
+- `odw/meta-description`:
+  `Workflow metadata must include a non-empty description string.` and
+  `Workflow metadata description must be a string.`
 - `odw/no-import-export`: `Workflow body must not add top-level imports or
   exports.`
 - `odw/body-syntax`: `Workflow body must be syntactically complete after ODW
@@ -598,9 +571,9 @@ bun test tests/diagnostics/rule-catalogue.test.ts
 Expect a TypeScript or assertion failure because `RuleDefinition.messages` does
 not exist yet or because the catalogue rows do not include message arrays.
 
-Green step: update `src/diagnostics/rule-catalogue.ts` so
-`RuleDefinition` includes `messages: readonly string[]`. Update
-`ruleDefinition` to accept an options object:
+Green step: update `src/diagnostics/rule-catalogue.ts` so `RuleDefinition`
+includes `messages: readonly string[]`. Update `ruleDefinition` to accept an
+options object:
 
 ```ts
 type RuleDefinitionInput = {
@@ -623,15 +596,15 @@ messages for its rule unless the rule implementation task explicitly extends
 the catalogue in the same change.
 
 Update `docs/developers-guide.md` in the rule catalogue and invalid workflow
-fixture corpus paragraphs so maintainers know to update catalogue messages
-when fixture `message` expectations change. Do not duplicate the entire message
-list in prose.
+fixture corpus paragraphs so maintainers know to update catalogue messages when
+fixture `message` expectations change. Do not duplicate the entire message list
+in prose.
 
 Update `docs/repository-layout.md` in `Source boundaries` so it lists
-diagnostic message contracts among the catalogue-owned fields. Update `Test and
-fixture boundaries` so it states that invalid fixture diagnostic expectations
-are checked against the catalogue for rule, default severity, message contract,
-and docs path parity.
+diagnostic message contracts among the catalogue-owned fields. Update
+`Test and fixture boundaries` so it states that invalid fixture diagnostic
+expectations are checked against the catalogue for rule, default severity,
+message contract, and docs path parity.
 
 Run:
 
@@ -698,8 +671,7 @@ first. Import `RULE_CATALOGUE`, `ruleDocsPath`, and `type RuleDefinition` from
 - `fixtureDiagnostics()` returns `{ fixture, diagnostic, rule }` triples for
   all invalid fixture diagnostics.
 
-Replace the hard-coded `EXPECTED_RULES` assertion with catalogue-derived
-checks:
+Replace the hard-coded `EXPECTED_RULES` assertion with catalogue-derived checks:
 
 - every fixture diagnostic rule exists in `RULE_CATALOGUE`;
 - every fixture diagnostic rule has `releaseStatus === "released"`;
@@ -711,8 +683,8 @@ checks:
 
 To prove the new test is real, temporarily change one fixture diagnostic
 message in a manifest to a stale string, run the focused test, and confirm it
-fails because the message is not in the catalogue. Restore the temporary
-change before continuing. The temporary sabotage must not be committed.
+fails because the message is not in the catalogue. Restore the temporary change
+before continuing. The temporary sabotage must not be committed.
 
 Focused red command:
 
@@ -730,9 +702,9 @@ Received: "stale fixture message"
 Green step: restore the temporary manifest edit. If work item 1 copied all
 current messages exactly, the focused test should pass without production code
 changes. If it does not, stop work item 2 and correct work item 1 before
-continuing. Work item 2 must not edit
-`src/diagnostics/rule-catalogue.ts`; the catalogue message contract belongs to
-the independently committable catalogue work item.
+continuing. Work item 2 must not edit `src/diagnostics/rule-catalogue.ts`; the
+catalogue message contract belongs to the independently committable catalogue
+work item.
 
 After restoring the temporary manifest edit, rerun:
 
@@ -756,8 +728,9 @@ Refactor step: keep helpers in
 `tests/static-analysis/invalid-workflow-fixtures.test.ts` unless the file would
 exceed the 400-line TypeScript file limit. If it would exceed the limit,
 extract only the new catalogue parity helpers to
-`tests/static-analysis/invalid-fixture-catalogue-parity.ts` with a `/** @file
-... */` header and focused JSDoc. Do not move unrelated existing span helpers.
+`tests/static-analysis/invalid-fixture-catalogue-parity.ts` with a
+`/** @file ... */` header and focused JSDoc. Do not move unrelated existing
+span helpers.
 
 Run file-scoped formatting for files changed in this work item. If no helper
 file was created, run:
@@ -804,8 +777,8 @@ Skills to load before editing: `execplans`, `changelog` only if the roadmap
 workflow asks for release-note style wording, and `commit-message` before the
 commit.
 
-Red step: there is no product red test for a status-only documentation closeout.
-Before editing, run:
+Red step: there is no product red test for a status-only documentation
+closeout. Before editing, run:
 
 ```sh
 make all
@@ -868,8 +841,8 @@ named in each work item. Do not mark the plan blocked solely because Leta is
 unavailable.
 
 Implement work items in order. Each work item has its own focused red command,
-focused green command, file-scoped formatter commands, and repository gates.
-Do not batch work items into one commit.
+focused green command, file-scoped formatter commands, and repository gates. Do
+not batch work items into one commit.
 
 ## Validation and acceptance
 
@@ -930,15 +903,15 @@ grepai search --workspace 'Projects' --project 'odw-lint' \
   "rule catalogue parity checks fixture diagnostics" --toon --compact --limit 8
 ```
 
-returned main-branch hits for `docs/issues/audit-2.1.6.md`,
-`docs/roadmap.md`, ADR 0001, and `docs/rules/index.md`.
+returned main-branch hits for `docs/issues/audit-2.1.6.md`, `docs/roadmap.md`,
+ADR 0001, and `docs/rules/index.md`.
 
 ```text
 leta files
 ```
 
-succeeded in planning round 2 and listed the branch-local source tree,
-including `src/diagnostics/rule-catalogue.ts`,
+succeeded in planning round 2 and listed the branch-local source tree, including
+`src/diagnostics/rule-catalogue.ts`,
 `tests/diagnostics/rule-catalogue.test.ts`,
 `tests/static-analysis/invalid-workflow-fixtures.test.ts`, invalid workflow
 fixture manifests, and `docs/repository-layout.md`.

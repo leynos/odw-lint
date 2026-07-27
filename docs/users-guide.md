@@ -23,8 +23,8 @@ The currently implemented entrypoint accepts explicit workflow file paths:
 bun run src/cli/main.ts check <workflow.js> [more-workflows.js ...]
 ```
 
-The default `full` output is one diagnostic per line. Use `--output-format json`
-to emit the versioned report envelope shown in
+The default `full` output is one diagnostic per line. Use
+`--output-format json` to emit the versioned report envelope shown in
 [Diagnostic reports](#diagnostic-reports):
 
 ```bash
@@ -33,8 +33,8 @@ bun run src/cli/main.ts check --output-format json workflows/example.js
 
 Shell-expanded globs, configured discovery, and the published `odw-lint` binary
 remain planned. When no files are passed, the planned v1 command checks
-configured include globs. If no configuration exists, it checks these roots when
-they are present:
+configured include globs. If no configuration exists, it checks these roots
+when they are present:
 
 - `.odw/workflows/**/*.js`
 - `.claude/workflows/**/*.js`
@@ -123,12 +123,12 @@ The JSON report is a versioned object:
 ```
 
 Report consumers should treat `schemaVersion`, `tool`, `summary`,
-`diagnostics`, and `ioErrors` as stable top-level fields. `summary.files` counts
-readable files that were checked, and `summary.filesSkipped` counts input files
-that could not be read. `ioErrors` is always present and carries
+`diagnostics`, and `ioErrors` as stable top-level fields. `summary.files`
+counts readable files that were checked, and `summary.filesSkipped` counts
+input files that could not be read. `ioErrors` is always present and carries
 machine-readable read failures with `file`, `reason`, and `message` fields.
-Diagnostic spans point to the original source file, not to any normalized parser
-input. Offsets are zero-based UTF-8 byte offsets; lines and columns are
+Diagnostic spans point to the original source file, not to any normalized
+parser input. Offsets are zero-based UTF-8 byte offsets; lines and columns are
 one-based display positions. `span.start` is inclusive and `span.end` is
 exclusive. Point diagnostics may use a zero-length span where `start` and `end`
 are identical.
@@ -144,9 +144,9 @@ field names.
 
 ## Rule reference
 
-Each diagnostic has a stable rule identifier such as `odw/meta-required`.
-Rules are documented from the [rule reference](rules/index.md), which links to
-one page per catalogue entry.
+Each diagnostic has a stable rule identifier such as `odw/meta-required`. Rules
+are documented from the [rule reference](rules/index.md), which links to one
+page per catalogue entry.
 
 Rule pages explain:
 

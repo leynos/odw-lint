@@ -4,10 +4,10 @@
 - Scope: `origin/main` inspected from the `df12-audit-1.3.3`
   git-donkey worktree
 
-This audit was run after the masking fixture corpus landed on `origin/main`.
-It used `grepai` for canonical main-branch intent search, `leta` for
-branch-local symbol, reference, and call-graph verification, and `sem` for
-entity-level diff and blame inspection.
+This audit was run after the masking fixture corpus landed on `origin/main`. It
+used `grepai` for canonical main-branch intent search, `leta` for branch-local
+symbol, reference, and call-graph verification, and `sem` for entity-level diff
+and blame inspection.
 
 ## Finding 1: The build target still ignores `bun.lock`
 
@@ -22,9 +22,9 @@ node_modules: package.json
 ```
 
 That leaves `make build`, `make lint`, `make typecheck`, `make test`, and
-`make all` vulnerable to stale installed dependencies when a change updates
-only `bun.lock`. The repository commits the lockfile deliberately, and roadmap
-task 1.4.1 already reserves this build-gate hardening.
+`make all` vulnerable to stale installed dependencies when a change updates only
+`bun.lock`. The repository commits the lockfile deliberately, and roadmap task
+1.4.1 already reserves this build-gate hardening.
 
 Proposed fix:
 
@@ -44,9 +44,9 @@ Proposed fix:
 
 The developer guide still says roadmap task 1.1.1 exposed the static-analysis
 boundary through `src/index.ts` but did not add package-level `exports`,
-`types`, `main`, or `bin` fields while the package remains private. The
-current package manifest does have `main`, `types`, and `exports`, and the
-architecture test now pins that package entry shape.
+`types`, `main`, or `bin` fields while the package remains private. The current
+package manifest does have `main`, `types`, and `exports`, and the architecture
+test now pins that package entry shape.
 
 The public entry file also still describes itself as the "Public diagnostic
 contract", even though it now exports diagnostics and static-analysis source

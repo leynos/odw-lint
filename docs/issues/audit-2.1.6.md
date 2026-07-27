@@ -56,9 +56,9 @@ Extract a test-only `tests/diagnostics/package-entry-support.ts` module that
 owns repository file reading, unknown manifest validation, root target
 normalization, package entry resolution, TypeScript source parsing, explicit
 named re-export extraction, and facade-shape rejection. Keep the existing test
-files as separate assertion surfaces: `public-api-surface.test.ts` should assert
-the reviewed public names, while `architecture.test.ts` should assert module
-boundary and package-entry module-specifier policy.
+files as separate assertion surfaces: `public-api-surface.test.ts` should
+assert the reviewed public names, while `architecture.test.ts` should assert
+module boundary and package-entry module-specifier policy.
 
 ## Finding 2: Import architecture support has reached the file-size ceiling
 
@@ -75,11 +75,12 @@ Location:
 
 Description:
 
-`tests/diagnostics/import-architecture.ts` is exactly 400 lines, which leaves no
-room for ordinary maintenance under the repository convention that code files
-stay manageable and do not exceed 400 lines. The helper currently combines four
-responsibilities: TypeScript source parsing, import-like edge extraction,
-forbidden ODW runtime import classification, and package facade export facts.
+`tests/diagnostics/import-architecture.ts` is exactly 400 lines, which leaves
+no room for ordinary maintenance under the repository convention that code
+files stay manageable and do not exceed 400 lines. The helper currently
+combines four responsibilities: TypeScript source parsing, import-like edge
+extraction, forbidden ODW runtime import classification, and package facade
+export facts.
 
 That concentration makes future architecture-test work awkward. Any additional
 case for roadmap 2.2 parser imports, package-entry policy, or ODW path
@@ -199,11 +200,12 @@ starts emitting these diagnostics.
 Proposed fix:
 
 Add `docs/rules/index.md` to the first top-level navigation surface created for
-the project. If `docs/contents.md` and `docs/users-guide.md` are still deferred,
-add an interim link from `docs/developers-guide.md` near the rule catalogue
-section and reference it from the future user guide when the CLI surface lands.
-Keep maintainer-only catalogue implementation details in the developer guide,
-but make the rule reference itself discoverable from user-facing documentation.
+the project. If `docs/contents.md` and `docs/users-guide.md` are still
+deferred, add an interim link from `docs/developers-guide.md` near the rule
+catalogue section and reference it from the future user guide when the CLI
+surface lands. Keep maintainer-only catalogue implementation details in the
+developer guide, but make the rule reference itself discoverable from
+user-facing documentation.
 
 ## Proposed roadmap items
 
@@ -213,9 +215,9 @@ workflow agent.
 ### Extract shared package-entry support
 
 Rationale: package manifest parsing and package facade export extraction still
-exist in parallel across the public API surface and architecture tests. A shared
-test-support module would remove divergent interpreters before more public
-exports or package conditions are added.
+exist in parallel across the public API surface and architecture tests. A
+shared test-support module would remove divergent interpreters before more
+public exports or package conditions are added.
 
 Severity: medium
 

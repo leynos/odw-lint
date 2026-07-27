@@ -4,9 +4,9 @@
 - Scope: `origin/main` inspected from the `audit-1.1.1` git-donkey worktree
 
 This audit was run after the owned static-analysis boundary had landed on
-`origin/main`. It used `grepai` for canonical main-branch intent search,
-`leta` for branch-local symbol, reference, and call-graph verification, and
-`sem` for entity-level history and blame.
+`origin/main`. It used `grepai` for canonical main-branch intent search, `leta`
+for branch-local symbol, reference, and call-graph verification, and `sem` for
+entity-level history and blame.
 
 ## Finding 1: Public diagnostic APIs are concentrated in the entry module
 
@@ -96,8 +96,8 @@ Proposed fix:
 - Location: `src/index.ts:330`
 
 `createDiagnosticReport` computes summary counts and then stores
-`input.diagnostics` directly on the returned report. The type marks the field
-as `readonly`, but a caller can pass a mutable array, receive a report with
+`input.diagnostics` directly on the returned report. The type marks the field as
+`readonly`, but a caller can pass a mutable array, receive a report with
 counts for the original contents, mutate the original array, and observe a
 report whose diagnostics no longer match its summary.
 

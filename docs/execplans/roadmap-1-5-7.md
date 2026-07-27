@@ -1,9 +1,8 @@
 # Adopt `make review-evidence` as a required roadmap review/audit step
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -12,9 +11,9 @@ Status: COMPLETE
 Roadmap task 1.5.6 gave the repository a reviewer-run audit gate,
 `make review-evidence`, backed by `tests/build-gate/review-evidence-cli.ts`. It
 re-runs `make all`, `make markdownlint`, and `make nixie` through the shared
-build-gate command runner and reports which dual-review path was selected. Today
-that gate is *optional*: the developers' guide only tells a reviewer to run it
-"when a roadmap review or audit needs independent evidence"
+build-gate command runner and reports which dual-review path was selected.
+Today that gate is *optional*: the developers' guide only tells a reviewer to
+run it "when a roadmap review or audit needs independent evidence"
 ([docs/developers-guide.md](../developers-guide.md) line 183). Nothing makes a
 normal review or audit run it; it depends on a reviewer remembering the target.
 
@@ -49,9 +48,9 @@ review or audit **records review-evidence output** — it does **not** require a
 contract requires the review/audit path to *run `make review-evidence` and
 record its report, whatever the classification* (`verified`, `failed`,
 `degraded`, or `usage-error`). The plan therefore makes no unproven claim that
-the gate returns a green `verified` on any particular machine; the reviewer acts
-on whatever the recorded report says (`failed`/`usage-error` block the review as
-a real problem). This is what removes reliance on reviewer memory.
+the gate returns a green `verified` on any particular machine; the reviewer
+acts on whatever the recorded report says (`failed`/`usage-error` block the
+review as a real problem). This is what removes reliance on reviewer memory.
 
 The roadmap review/audit path runs in the df12 toolchain environment, which
 provides `make nixie` — the exact recipe this plan's own validation exercises
@@ -90,10 +89,9 @@ escalation, not a workaround.
   re-runs `make all` and would recurse
   ([docs/execplans/roadmap-1-5-6.md](roadmap-1-5-6.md) lines 62-66;
   [docs/developers-guide.md](../developers-guide.md) lines 183-188). This task
-  makes the *review/audit path* run the existing target; it must not change
-  what `make all` schedules. The Makefile `all` target
-  ([Makefile](../../Makefile) line 5) stays
-  `build check-fmt whitespace-hygiene lint typecheck test`.
+  makes the *review/audit path* run the existing target; it must not change what
+  `make all` schedules. The Makefile `all` target ([Makefile](../../Makefile)
+  line 5) stays `build check-fmt whitespace-hygiene lint typecheck test`.
 - Do **not** change the review-evidence CLI contract from 1.5.6: its gate list
   (`make all`, `make markdownlint`, `make nixie`), its exit-code map (0
   verified, 1 failed, 2 usage-error, 3 degraded), its flags, or its report
@@ -164,10 +162,9 @@ Stop and escalate rather than improvise when any of these is reached:
   in `Interfaces and dependencies` (AGENTS.md, the new test, developers-guide,
   repository-layout, the roadmap tick, and this plan), stop and escalate.
 - Recursion: if any change would cause `make all` to schedule
-  `make review-evidence` (verified by
-  `tests/build-gate/makefile.test.ts` "keeps review evidence outside the full
-  gate", lines 173-184), stop and escalate. This plan does not touch the
-  Makefile, so this must never occur.
+  `make review-evidence` (verified by `tests/build-gate/makefile.test.ts`
+  "keeps review evidence outside the full gate", lines 173-184), stop and
+  escalate. This plan does not touch the Makefile, so this must never occur.
 - Iterations: if the new Bun test still fails after 3 focused attempts, stop and
   escalate.
 
@@ -175,51 +172,48 @@ Stop and escalate rather than improvise when any of these is reached:
 
 - Risk: a reviewer may judge that adopting the gate through the AGENTS.md
   quality-gate contract is "still documentation" and demand a machine-enforced
-  hosted-CI job.
-  Severity: medium. Likelihood: medium.
-  Mitigation: the roadmap offers exactly this option — "Adopt
-  `make review-evidence` in the roadmap review or audit workflow" — and 1.5.8
-  confirms the df12-build audit **is** that workflow. For an agent-driven audit
-  workflow, its instruction contract (AGENTS.md) is the adoption surface, and
-  the change here promotes the gate from optional to **required and recorded**,
-  pinned by a build-gate test so it cannot silently regress. An honest hosted-CI
-  execution is blocked by the unverifiable `nixie` install (next Risk), so it is
-  not a lower-risk alternative — it is a perpetually-red job. If escalation
-  nonetheless mandates hosted CI, that needs a verifiable `nixie` install path
-  and belongs to a separate, escalated decision (see the Mechanism-ambiguity
-  Tolerance).
+  hosted-CI job. Severity: medium. Likelihood: medium. Mitigation: the roadmap
+  offers exactly this option — "Adopt `make review-evidence` in the roadmap
+  review or audit workflow" — and 1.5.8 confirms the df12-build audit **is**
+  that workflow. For an agent-driven audit workflow, its instruction contract
+  (AGENTS.md) is the adoption surface, and the change here promotes the gate
+  from optional to **required and recorded**, pinned by a build-gate test so it
+  cannot silently regress. An honest hosted-CI execution is blocked by the
+  unverifiable `nixie` install (next Risk), so it is not a lower-risk
+  alternative — it is a perpetually-red job. If escalation nonetheless mandates
+  hosted CI, that needs a verifiable `nixie` install path and belongs to a
+  separate, escalated decision (see the Mechanism-ambiguity Tolerance).
 - Risk: `nixie` is a system-installed df12 binary, not an npm/Bun package (it
   is absent from `package.json`/`bun.lock` and appears only in historical
   execplan validation transcripts under `docs/execplans/`, e.g.
   `docs/execplans/roadmap-1-3-2.md` line 1196). A stock GitHub-hosted
-  `ubuntu-latest` runner will not have it.
-  Severity: high (for the rejected hosted-CI option). Likelihood: high.
-  Mitigation: do not place the automatic invocation on a stock hosted runner.
-  Run it where the toolchain is complete — the df12 review/audit environment —
-  which this plan's own `make nixie` validation confirms provides `nixie`. This
-  removes the missing-binary failure mode entirely; the recorded report is
-  `verified` (exit 0), not `failed` or `degraded`. The impossibility of an
-  honest hosted-runner run is documented in the Decision Log so 1.5.8 inherits
-  the finding.
+  `ubuntu-latest` runner will not have it. Severity: high (for the rejected
+  hosted-CI option). Likelihood: high. Mitigation: do not place the automatic
+  invocation on a stock hosted runner. Run it where the toolchain is complete —
+  the df12 review/audit environment — which this plan's own `make nixie`
+  validation confirms provides `nixie`. This removes the missing-binary failure
+  mode entirely; the recorded report is `verified` (exit 0), not `failed` or
+  `degraded`. The impossibility of an honest hosted-runner run is documented in
+  the Decision Log so 1.5.8 inherits the finding.
 - Risk: the pin test could become brittle if it over-asserts AGENTS.md prose
-  (for example, matching a whole sentence or exact wording).
-  Severity: low. Likelihood: medium.
-  Mitigation: anchor the test to one stable heading and assert only load-bearing
-  tokens inside that section — the literal target `make review-evidence` and a
-  normative keyword (that it is required and its output recorded) — not the full
-  wording, using a small table of substring checks rather than a snapshot.
+  (for example, matching a whole sentence or exact wording). Severity: low.
+  Likelihood: medium. Mitigation: anchor the test to one stable heading and
+  assert only load-bearing tokens inside that section — the literal target
+  `make review-evidence` and a normative keyword (that it is required and its
+  output recorded) — not the full wording, using a small table of substring
+  checks rather than a snapshot.
 
 ## Progress
 
 - [x] (2026-07-03 02:49Z) Work item 1: added the review/audit-evidence
   adoption to AGENTS.md and the build-gate pin test. Red evidence:
   `bun test tests/build-gate/review-evidence-audit.test.ts` failed because the
-  `## Roadmap Review & Audit Evidence` section was absent. Green evidence:
-  the focused test passed after adding the section. Scrutineer then ran
-  `make all`, `make markdownlint`, and `make nixie` successfully after the
-  final test and ExecPlan fixes. CodeRabbit ran once plus three follow-up
-  retries; live findings were fixed locally, and remaining workflow comments
-  target absent files.
+  `## Roadmap Review & Audit Evidence` section was absent. Green evidence: the
+  focused test passed after adding the section. Scrutineer then ran `make all`,
+  `make markdownlint`, and `make nixie` successfully after the final test and
+  ExecPlan fixes. CodeRabbit ran once plus three follow-up retries; live
+  findings were fixed locally, and remaining workflow comments target absent
+  files.
 - [x] (2026-07-03 04:00Z) Work item 2: documented the adoption in the
   developers' guide and repository layout. Scrutineer ran `make all`,
   `make markdownlint`, and `make nixie` successfully. The first CodeRabbit
@@ -244,160 +238,149 @@ Stop and escalate rather than improvise when any of these is reached:
 ## Surprises & discoveries
 
 - Observation: on a stock hosted runner, `make review-evidence` exits **1
-  (failed)**, not 3 (degraded), when `nixie` is missing — so a scheduled
-  GitHub Actions job invoking it would be perpetually red.
-  Evidence, traced through worktree source on this branch:
-  (a) the gate list invokes `make nixie` as command `make` with args
-  `["nixie"]` (`tests/build-gate/review-evidence-cli.ts` lines 50-54);
-  (b) `createCommandRunner` uses `spawnSync` and only sets `result.error` when
-  the spawned command itself fails to spawn (`tests/build-gate/git-support.ts`
+  (failed)**, not 3 (degraded), when `nixie` is missing — so a scheduled GitHub
+  Actions job invoking it would be perpetually red. Evidence, traced through
+  worktree source on this branch: (a) the gate list invokes `make nixie` as
+  command `make` with args `["nixie"]`
+  (`tests/build-gate/review-evidence-cli.ts` lines 50-54); (b)
+  `createCommandRunner` uses `spawnSync` and only sets `result.error` when the
+  spawned command itself fails to spawn (`tests/build-gate/git-support.ts`
   lines 67-90). `make` is present on `ubuntu-latest`, so the spawn succeeds and
   `make` runs the recipe `nixie --no-sandbox` ([Makefile](../../Makefile) line
   52), which fails because `nixie` is absent; `make` therefore exits non-zero
-  with `result.error === undefined`;
-  (c) `gateExecutionFromResult` (CLI lines 137-161) reaches the
-  `result.status !== 0` branch (not the `result.error !== undefined` degraded
-  branch), returning `status: "failed"`;
+  with `result.error === undefined`; (c) `gateExecutionFromResult` (CLI lines
+  137-161) reaches the `result.status !== 0` branch (not the
+  `result.error !== undefined` degraded branch), returning `status: "failed"`;
   (d) `classifyReviewEvidence` (`tests/build-gate/review-evidence.ts` lines
   108-147) maps any failed required gate to overall `failed`, and `exitCodeFor`
-  (CLI lines 326-340) returns 1.
-  The developers' guide states this exact rule: "Spawn-unavailable gates are
-  degraded because they did not run; timed-out or killed gates are failed
-  because they did run" ([docs/developers-guide.md](../developers-guide.md)
-  lines 200-201). A missing recipe binary makes the gate (`make`) *run* and
-  fail, so it is `failed`, not `unavailable`/degraded.
-  Impact: retired the previous round's scheduled-GitHub-Actions design and its
-  degraded-tolerant exit policy, which were built on the false exit-3 premise.
-  The automatic invocation now runs in the df12 environment where `nixie`
-  exists. See Decision Log.
+  (CLI lines 326-340) returns 1. The developers' guide states this exact rule:
+  "Spawn-unavailable gates are degraded because they did not run; timed-out or
+  killed gates are failed because they did run"
+  ([docs/developers-guide.md](../developers-guide.md) lines 200-201). A
+  missing recipe binary makes the gate (`make`) *run* and fail, so it is
+  `failed`, not `unavailable`/degraded. Impact: retired the previous round's
+  scheduled-GitHub-Actions design and its degraded-tolerant exit policy, which
+  were built on the false exit-3 premise. The automatic invocation now runs in
+  the df12 environment where `nixie` exists. See Decision Log.
 - Observation: AGENTS.md currently never mentions `make review-evidence` and has
   no dedicated review/audit-path section; the review/audit path inherits only
-  the developers' guide's optional "when ... needs" phrasing (line 183).
+  the developers' guide's optional "when … needs" phrasing (line 183).
   Evidence: full read of [AGENTS.md](../../AGENTS.md); the string
-  `review-evidence` does not appear.
-  Impact: the adoption is a genuine behaviour change (optional → required), not
-  a restatement, and there is a clean place to add the contract section.
+  `review-evidence` does not appear. Impact: the adoption is a genuine
+  behaviour change (optional → required), not a restatement, and there is a
+  clean place to add the contract section.
 - Observation: nothing in the repository selects a Mermaid renderer for
-  `nixie --no-sandbox`, so no plan may claim a specific renderer (merman/`mmdc`)
-  is used.
-  Evidence, verified on this branch: `git grep -i renderer` over the tree
-  (excluding `docs/execplans/` and `bun.lock`) returns no matches; there is no
-  `.nixie*` config file; and `package.json` has no
-  `nixie`/`merman`/`mmdc`/`mermaid`/`renderer` key. The recipe is the bare
+  `nixie --no-sandbox`, so no plan may claim a specific renderer (merman/
+  `mmdc`) is used. Evidence, verified on this branch: `git grep -i renderer`
+  over the tree (excluding `docs/execplans/` and `bun.lock`) returns no
+  matches; there is no `.nixie*` config file; and `package.json` has no `nixie`/
+  `merman`/`mmdc`/`mermaid`/`renderer` key. The recipe is the bare
   `nixie --no-sandbox` ([Makefile](../../Makefile) lines 51-52) with no
-  `--renderer` flag.
-  Impact: this plan provisions no renderer and asserts none. Its nixie behaviour
-  is defined solely by being the *same recipe* as the plan's own `make nixie`
-  validation gate, run in the same environment (see "Renderer and nixie
-  invocation"). The adoption's Success is decoupled from the `verified` verdict
-  (roadmap line 309 requires *recording* output, not a green result), so no
-  browser-runtime or renderer-selection claim is load-bearing anywhere.
+  `--renderer` flag. Impact: this plan provisions no renderer and asserts none.
+  Its nixie behaviour is defined solely by being the *same recipe* as the
+  plan's own `make nixie` validation gate, run in the same environment (see
+  "Renderer and nixie invocation"). The adoption's Success is decoupled from the
+  `verified` verdict (roadmap line 309 requires *recording* output, not a
+  green result), so no browser-runtime or renderer-selection claim is
+  load-bearing anywhere.
 - Observation: this session's package-registry and web tools were unavailable
   (network fetch and firecrawl calls could not run non-interactively), so live
   probes of an external `nixie` install path or renderer download could not be
   run. Read-only shell (`git grep`, `ls`, `grep`) and file inspection **were**
-  available and were used to verify the branch-local facts above.
-  Evidence: successful `git grep -i renderer`, `ls`, and `grep` over
-  `package.json` during this round; no interactive network approvals were
-  obtainable.
-  Impact: all branch-local facts here were verified by direct worktree file
-  inspection and read-only search (an acceptable fallback under the standing
-  rules). The plan deliberately does **not** depend on any unverified external
-  install path or renderer-download step; every load-bearing claim is either
-  verified against worktree source and cited, or pinned by the work-item-1 test.
+  available and were used to verify the branch-local facts above. Evidence:
+  successful `git grep -i renderer`, `ls`, and `grep` over `package.json`
+  during this round; no interactive network approvals were obtainable. Impact:
+  all branch-local facts here were verified by direct worktree file inspection
+  and read-only search (an acceptable fallback under the standing rules). The
+  plan deliberately does **not** depend on any unverified external install path
+  or renderer-download step; every load-bearing claim is either verified
+  against worktree source and cited, or pinned by the work-item-1 test.
 - Observation: CodeRabbit repeatedly reported hosted-workflow findings against
   `.github/workflows/review-evidence.yml` and
   `tests/build-gate/review-evidence-workflow.test.ts`, but neither file exists
-  in this worktree.
-  Evidence: `leta files .github` shows only `.github/dependabot.yml`; direct
-  file inspection for `.github/workflows/review-evidence.yml` failed with
-  "No such file or directory"; `git status --short` shows no workflow test file.
-  Impact: those review findings are stale and non-actionable for this scoped
-  implementation. Live CodeRabbit findings in
-  `tests/build-gate/review-evidence-audit.test.ts` and this ExecPlan were
-  fixed before the work item was committed.
+  in this worktree. Evidence: `leta files .github` shows only
+  `.github/dependabot.yml`; direct file inspection for
+  `.github/workflows/review-evidence.yml` failed with "No such file or
+  directory"; `git status --short` shows no workflow test file. Impact: those
+  review findings are stale and non-actionable for this scoped implementation.
+  Live CodeRabbit findings in `tests/build-gate/review-evidence-audit.test.ts`
+  and this ExecPlan were fixed before the work item was committed.
 - Observation: the untracked `docs/execplans/roadmap-1-5-7.review-r2.md`
   artefact described a retired scheduled-hosted-workflow design and continued
   to trigger review feedback even after the approved plan had moved to the
-  AGENTS.md contract surface.
-  Evidence: CodeRabbit's third follow-up pass reported the review artefact as
-  stale because it still described the hosted-runner/exit-3 assumption.
-  Impact: the stale artefact was removed from this worktree rather than
-  committed, so future review sees the approved ExecPlan as the single current
-  plan.
+  AGENTS.md contract surface. Evidence: CodeRabbit's third follow-up pass
+  reported the review artefact as stale because it still described the
+  hosted-runner/exit-3 assumption. Impact: the stale artefact was removed from
+  this worktree rather than committed, so future review sees the approved
+  ExecPlan as the single current plan.
 - Observation: CodeRabbit rate-limited the first work-item-2 review attempt but
-  completed after the required randomized backoff.
-  Evidence: scrutineer reported a recoverable `rate_limit` response with a
-  one-minute service wait hint; this implementation followed the workflow rule
-  by running `vsleep` for 53 minutes before retrying. The retry completed and
-  produced no live findings against files present in this worktree.
-  Impact: no documentation changes were needed after the retry. Remaining
-  CodeRabbit comments still target absent hosted-workflow files or the removed
-  round-2 review artefact.
+  completed after the required randomized backoff. Evidence: scrutineer
+  reported a recoverable `rate_limit` response with a one-minute service wait
+  hint; this implementation followed the workflow rule by running `vsleep` for
+  53 minutes before retrying. The retry completed and produced no live findings
+  against files present in this worktree. Impact: no documentation changes were
+  needed after the retry. Remaining CodeRabbit comments still target absent
+  hosted-workflow files or the removed round-2 review artefact.
 - Observation: the work-item-3 closeout CodeRabbit pass also reported only
-  absent-file hosted-workflow findings.
-  Evidence: scrutineer reported five CodeRabbit findings, all against
-  `.github/workflows/review-evidence.yml` or
+  absent-file hosted-workflow findings. Evidence: scrutineer reported five
+  CodeRabbit findings, all against `.github/workflows/review-evidence.yml` or
   `tests/build-gate/review-evidence-workflow.test.ts`; both files are absent in
-  this worktree.
-  Impact: no local closeout fixes were available or appropriate. The final
-  commit proceeds with deterministic gates green and stale review comments
-  recorded.
+  this worktree. Impact: no local closeout fixes were available or appropriate.
+  The final commit proceeds with deterministic gates green and stale review
+  comments recorded.
 
 ## Decision log
 
 - Decision: implement the task's first option — adopt `make review-evidence`
   into the roadmap review/audit workflow — rather than a scheduled hosted-CI
-  smoke path.
-  Rationale: the roadmap treats the df12-build audit as *the* review/audit
-  workflow (1.5.8 wires availability "from the roadmap or df12-build workflow's
-  observed reviewer state", `docs/roadmap.md` lines 311-319). That workflow
-  obeys the in-repository AGENTS.md quality-gate contract, so it *is* editable
-  from here. Promoting the gate from optional to required in that contract makes
-  a normal review/audit run it and record its output "without a manual reviewer
-  opting into the target".
-  Date/Author: 2026-07-03, planning agent (df12-build roadmap workflow).
+  smoke path. Rationale: the roadmap treats the df12-build audit as *the*
+  review/audit workflow (1.5.8 wires availability "from the roadmap or
+  df12-build workflow's observed reviewer state", `docs/roadmap.md` lines
+  311-319). That workflow obeys the in-repository AGENTS.md quality-gate
+  contract, so it *is* editable from here. Promoting the gate from optional to
+  required in that contract makes a normal review/audit run it and record its
+  output "without a manual reviewer opting into the target". Date/Author:
+  2026-07-03, planning agent (df12-build roadmap workflow).
 - Decision: reject the scheduled GitHub Actions design used in rounds 1-2.
   Rationale: it rested on the false premise that `make review-evidence` exits 3
-  (degraded) on a `nixie`-less hosted runner, so a `[ 0 ] || [ 3 ]` policy would
-  keep the job green. Worktree source proves it exits **1 (failed)** there (see
-  Surprises), so the job would be perpetually red — the exact failure the
-  degraded-tolerant policy existed to prevent. Accepting exit 1 would swallow
-  real gate failures; `--no-exec` exits 3 but re-runs nothing (failing the
-  Success criterion that gates were re-executed); classifying a missing recipe
-  binary as `unavailable`/degraded is a 1.5.6 CLI-contract change this plan's
-  Constraints forbid; and provisioning `nixie` needs a verifiable install path
-  that is absent (not in `package.json`/`bun.lock`, no repo-documented install)
-  and could not be verified in this session. A green scheduled hosted run that
-  still re-runs the real gates is therefore not achievable as scoped, so the
-  design is retired rather than patched.
+  (degraded) on a `nixie`-less hosted runner, so a `[ 0 ] || [ 3 ]` policy
+  would keep the job green. Worktree source proves it exits **1 (failed)**
+  there (see Surprises), so the job would be perpetually red — the exact
+  failure the degraded-tolerant policy existed to prevent. Accepting exit 1
+  would swallow real gate failures; `--no-exec` exits 3 but re-runs nothing
+  (failing the Success criterion that gates were re-executed); classifying a
+  missing recipe binary as `unavailable`/degraded is a 1.5.6 CLI-contract
+  change this plan's Constraints forbid; and provisioning `nixie` needs a
+  verifiable install path that is absent (not in `package.json`/`bun.lock`, no
+  repo-documented install) and could not be verified in this session. A green
+  scheduled hosted run that still re-runs the real gates is therefore not
+  achievable as scoped, so the design is retired rather than patched.
   Date/Author: 2026-07-03, planning agent (round 3 revision).
 - Decision: run the automatic invocation in the df12 review/audit environment,
-  not on a stock hosted runner.
-  Rationale: that environment provides the full toolchain, including `nixie`
-  (this plan's own `make nixie` validation depends on and confirms it), so
-  `make review-evidence` re-executes all three gates and, on a clean tree, is
-  expected to report `verified` (exit 0). This eliminates the missing-binary
-  failure mode with no CLI change and no exit-code tolerance logic; a real failed
-  gate (1) or usage error (2) still surfaces honestly to the reviewer.
-  Date/Author: 2026-07-03, planning agent (round 3 revision).
+  not on a stock hosted runner. Rationale: that environment provides the full
+  toolchain, including `nixie` (this plan's own `make nixie` validation depends
+  on and confirms it), so `make review-evidence` re-executes all three gates
+  and, on a clean tree, is expected to report `verified` (exit 0). This
+  eliminates the missing-binary failure mode with no CLI change and no
+  exit-code tolerance logic; a real failed gate (1) or usage error (2) still
+  surfaces honestly to the reviewer. Date/Author: 2026-07-03, planning agent
+  (round 3 revision).
 - Decision: make no renderer-selection claim and decouple the adoption's Success
-  from the `verified` verdict.
-  Rationale: the roadmap Success criterion (line 309) requires the review/audit
-  path to *record* review-evidence output, not to obtain a green `verified`. The
-  `make nixie` recipe is the bare `nixie --no-sandbox` with no `--renderer` flag
-  (Makefile 51-52), the Makefile and CLI are edit-forbidden, and nothing in the
-  repository selects a renderer (verified: empty `git grep -i renderer`, no
-  `.nixie*`, no `package.json` renderer key). The plan therefore neither
-  provisions merman/`mmdc` nor asserts that bare nixie picks any backend. The
-  nixie sub-gate under `make review-evidence` is the *same recipe* as the plan's
-  own `make nixie` gate, so its outcome in the df12 environment is whatever that
-  environment already produces for `make nixie`; the recorded report (verified,
-  failed, degraded, or usage-error) is the deliverable, and a non-verified report
+  from the `verified` verdict. Rationale: the roadmap Success criterion (line
+  309) requires the review/audit path to *record* review-evidence output, not
+  to obtain a green `verified`. The `make nixie` recipe is the bare
+  `nixie --no-sandbox` with no `--renderer` flag (Makefile 51-52), the Makefile
+  and CLI are edit-forbidden, and nothing in the repository selects a renderer
+  (verified: empty `git grep -i renderer`, no `.nixie*`, no `package.json`
+  renderer key). The plan therefore neither provisions merman/`mmdc` nor
+  asserts that bare nixie picks any backend. The nixie sub-gate under
+  `make review-evidence` is the *same recipe* as the plan's own `make nixie`
+  gate, so its outcome in the df12 environment is whatever that environment
+  already produces for `make nixie`; the recorded report (verified, failed,
+  degraded, or usage-error) is the deliverable, and a non-verified report
   blocks the review honestly. This closes the round-4 review point: the plan no
   longer relies on an unproven `verified` path for the command the workflow
-  actually runs.
-  Date/Author: 2026-07-03, planning agent (round 4 revision).
+  actually runs. Date/Author: 2026-07-03, planning agent (round 4 revision).
 - Decision: pin the adoption with a build-gate test that reads AGENTS.md.
   Rationale: mirrors the existing `tests/build-gate/makefile.test.ts` pattern,
   which reads the tracked Makefile and asserts targets stay wired. Reading the
@@ -406,16 +389,15 @@ Stop and escalate rather than improvise when any of these is reached:
   Date/Author: 2026-07-03, planning agent.
 - Decision: keep the adoption scoped to the internal review-evidence audit gate
   and leave user-facing CI (running `odw-lint check`, `pull_request` triggers)
-  to deferred task 4.2.2 (`docs/roadmap.md` lines 790-795).
-  Rationale: avoids pre-empting 4.2.2's design and keeps this change atomic and
-  reviewable.
+  to deferred task 4.2.2 (`docs/roadmap.md` lines 790-795). Rationale: avoids
+  pre-empting 4.2.2's design and keeps this change atomic and reviewable.
   Date/Author: 2026-07-03, planning agent.
 - Decision: treat CodeRabbit findings against absent hosted-workflow files as
   stale for work item 1 and continue with deterministic validation after fixing
-  live findings.
-  Rationale: this task does not ship a `.github/workflows/review-evidence.yml`
-  file or a `tests/build-gate/review-evidence-workflow.test.ts` test; editing
-  or inventing those files would violate this plan's scoped adoption through
+  live findings. Rationale: this task does not ship a
+  `.github/workflows/review-evidence.yml` file or a
+  `tests/build-gate/review-evidence-workflow.test.ts` test; editing or
+  inventing those files would violate this plan's scoped adoption through
   AGENTS.md. Live findings against the pin test and ExecPlan were fixed, while
   stale hosted-workflow comments were recorded as non-actionable evidence.
   Date/Author: 2026-07-03, implementation agent.
@@ -449,28 +431,29 @@ toolchain evidence from optimistic hosted-runner assumptions.
 This is a Bun + TypeScript repository. The relevant surfaces:
 
 - [AGENTS.md](../../AGENTS.md): the repository-local instruction and
-  quality-gate contract every agent obeys, including the df12-build review/audit
-  agents ([docs/repository-layout.md](../repository-layout.md) line 24). It has
-  "Change Quality & Committing" (lines 67-108) for commit gates but **no**
-  review/audit-path section and no mention of `make review-evidence`.
+  quality-gate contract every agent obeys, including the df12-build
+  review/audit agents ([docs/repository-layout.md](../repository-layout.md)
+  line 24). It has "Change Quality & Committing" (lines 67-108) for commit
+  gates but **no** review/audit-path section and no mention of
+  `make review-evidence`.
 - [Makefile](../../Makefile): canonical validation entry points.
   `all: build check-fmt whitespace-hygiene lint typecheck test` (line 5).
   `review-evidence` is a separate target (lines 45-46) that runs
   `bun run tests/build-gate/review-evidence-cli.ts`. `make all` does **not**
   schedule review-evidence. `nixie` (lines 51-52) runs `nixie --no-sandbox`.
 - `tests/build-gate/`: repository-maintenance gates. Shared subprocess
-  execution and CLI-output capture live in
-  `tests/build-gate/git-support.ts`; the review-evidence classifier, report, and
-  CLI are `tests/build-gate/review-evidence.ts`,
+  execution and CLI-output capture live in `tests/build-gate/git-support.ts`;
+  the review-evidence classifier, report, and CLI are
+  `tests/build-gate/review-evidence.ts`,
   `tests/build-gate/review-evidence-report.ts`, and
   `tests/build-gate/review-evidence-cli.ts`
   ([docs/repository-layout.md](../repository-layout.md) lines 129-134).
 - `tests/build-gate/makefile.test.ts`: reads the tracked Makefile and asserts
   targets stay wired (review-evidence through Bun, lines 145-157; outside
   `make all`, lines 173-184). It shows how a build-gate test locates the
-  repository root: `repositoryRoot = resolve(dirname(fileURLToPath(
-  import.meta.url)), "../..")` (line 37). The new pin test reuses this root
-  resolution to read AGENTS.md.
+  repository root:
+  `repositoryRoot = resolve(dirname(fileURLToPath( import.meta.url)), "../..")`
+  (line 37). The new pin test reuses this root resolution to read AGENTS.md.
 - `docs/developers-guide.md` lines 183-205: documents `make review-evidence` as
   a non-recursive reviewer-run gate kept outside `make all`, including the
   exit-code table (196-203) and the spawn-vs-run distinction (200-201) that
@@ -487,8 +470,8 @@ Terms used in this plan:
   phase, whose behaviour on this repository is governed by AGENTS.md and which
   runs in the df12 toolchain environment.
 - "Required, recorded step": a step the review/audit path must run as a matter
-  of course (not a reviewer's ad hoc choice) and whose output is captured as the
-  review evidence.
+  of course (not a reviewer's ad hoc choice) and whose output is captured as
+  the review evidence.
 
 ## Plan of work
 
@@ -578,9 +561,8 @@ Commit: a single commit containing the AGENTS.md section and its passing test.
 Documentation to read first: [docs/developers-guide.md](../developers-guide.md)
 lines 176-210 (the review-target paragraphs this extends);
 [docs/repository-layout.md](../repository-layout.md) lines 136-147 (tooling
-boundaries) and 20-38 (top-level table);
-[AGENTS.md](../../AGENTS.md) "Documentation Maintenance" (36-57) and "Markdown
-Guidance" (151-162);
+boundaries) and 20-38 (top-level table); [AGENTS.md](../../AGENTS.md)
+"Documentation Maintenance" (36-57) and "Markdown Guidance" (151-162);
 [docs/documentation-style-guide.md](../documentation-style-guide.md) for
 document-type and prose conventions. Skills to load: `execplans`,
 `en-gb-oxendict`, `commit-message`.
@@ -590,7 +572,7 @@ Edits:
 1. `docs/developers-guide.md`: revise the review-evidence paragraph (lines
    183-205) so it states the roadmap review/audit path **runs
    `make review-evidence` as a required step and records its report**, rather
-   than only "when ... needs independent evidence". Note that the review/audit
+   than only "when … needs independent evidence". Note that the review/audit
    environment provides the full toolchain (including `nixie`), so the gate
    reports `verified` on a clean tree, and cross-reference the new AGENTS.md
    "Roadmap Review & Audit Evidence" section. Keep the exit-code table
@@ -600,8 +582,8 @@ Edits:
    `make review-evidence` target as a required step and that it is not added to
    `make all`.
 
-Keep every Markdown paragraph wrapped at 80 columns (AGENTS.md line 157). Do not
-run a repository-global formatter; format only the files touched here.
+Keep every Markdown paragraph wrapped at 80 columns (AGENTS.md line 157). Do
+not run a repository-global formatter; format only the files touched here.
 
 Validation for this work item (path-safe repository gates only): `make all`,
 then `make markdownlint` and `make nixie` because Markdown changed.
@@ -688,30 +670,31 @@ Quality criteria ("done"):
 
 - Tests: `make test` (via `make all`) passes, including the new
   `tests/build-gate/review-evidence-audit.test.ts`. That test fails before the
-  AGENTS.md `## Roadmap Review & Audit Evidence` section exists and passes after
-  (Red-Green evidence recorded in `Progress`).
+  AGENTS.md `## Roadmap Review & Audit Evidence` section exists and passes
+  after (Red-Green evidence recorded in `Progress`).
 - Lint/typecheck/format: `make all` passes (`build`, `check-fmt`,
   `whitespace-hygiene`, `lint`, `typecheck`, `test`).
 - Markdown: `make markdownlint` and `make nixie` pass for the AGENTS.md and
   documentation commits. `make nixie` passing also demonstrates the
   implementation environment runs the `make nixie` recipe cleanly, which is the
   same recipe `make review-evidence` re-runs, so its nixie sub-gate is expected
-  to pass there too (happy-path `verified`); the plan asserts no renderer choice.
+  to pass there too (happy-path `verified`); the plan asserts no renderer
+  choice.
 - Non-recursion: `make all --dry-run` does not schedule
   `tests/build-gate/review-evidence-cli.ts`, as already guarded by
   `tests/build-gate/makefile.test.ts` lines 173-184.
 
 Acceptance as observable behaviour: after this change, AGENTS.md — the contract
-the df12-build review/audit agents obey — requires the roadmap review/audit path
-to run `make review-evidence` and record its report, so a normal review or audit
-records review-evidence output without a reviewer opting into the target
+the df12-build review/audit agents obey — requires the roadmap review/audit
+path to run `make review-evidence` and record its report, so a normal review or
+audit records review-evidence output without a reviewer opting into the target
 (`docs/roadmap.md` line 309). That recorded output — not any particular verdict
 — is the Success criterion. Because the path runs in the df12 toolchain
 environment (the same toolchain in which this plan's own `make nixie` gate
-passes), `make review-evidence` re-executes `make all`, `make markdownlint`, and
-the identical `make nixie` recipe, and on a clean tree is expected to report
-`verified` (exit 0); a real failed gate (1) or usage error (2) still blocks the
-review. The plan asserts no renderer selection: `make nixie` runs the bare
+passes), `make review-evidence` re-executes `make all`, `make markdownlint`,
+and the identical `make nixie` recipe, and on a clean tree is expected to report
+`verified` (exit 0); a real failed gate (1) or usage error (2) still blocks
+the review. The plan asserts no renderer selection: `make nixie` runs the bare
 `nixie --no-sandbox` (no `--renderer`) and nothing is provisioned. The
 build-gate pin test proves the required step stays wired in the contract,
 guarding against a silent regression back to an optional gate.
@@ -729,8 +712,8 @@ Quality method: run the repository gates listed above from the worktree; inspect
   `record` keyword) and adjust the AGENTS.md section text. Do not weaken the
   assertions to pass.
 - To back out, delete `tests/build-gate/review-evidence-audit.test.ts`, remove
-  the AGENTS.md section, revert the documentation edits and the roadmap tick; no
-  generated artefacts persist.
+  the AGENTS.md section, revert the documentation edits and the roadmap tick;
+  no generated artefacts persist.
 
 ## Artefacts and notes
 
@@ -748,13 +731,13 @@ Review evidence: verified
 ```
 
 Why a stock hosted GitHub runner is the wrong venue (retired design): there,
-`make nixie` runs the recipe `nixie --no-sandbox` with `nixie` absent, so `make`
-runs and exits non-zero while `result.error` is undefined; the CLI classifies
-that gate as `failed` (not `unavailable`), the overall result is `failed`, and
-`make review-evidence` exits **1**. A scheduled job invoking it would be
-perpetually red, and the exit code cannot distinguish a missing binary from a
-genuine gate failure without a forbidden CLI-contract change. See Surprises and
-the Decision Log.
+`make nixie` runs the recipe `nixie --no-sandbox` with `nixie` absent, so
+`make` runs and exits non-zero while `result.error` is undefined; the CLI
+classifies that gate as `failed` (not `unavailable`), the overall result is
+`failed`, and `make review-evidence` exits **1**. A scheduled job invoking it
+would be perpetually red, and the exit code cannot distinguish a missing binary
+from a genuine gate failure without a forbidden CLI-contract change. See
+Surprises and the Decision Log.
 
 ## Interfaces and dependencies
 
@@ -807,16 +790,17 @@ undefined, so the gate classifies as `failed` and the overall result is
 `docs/developers-guide.md` lines 200-201). A `[ 0 ] || [ 3 ]` policy would
 therefore leave the scheduled job perpetually red; accepting exit 1 swallows
 real failures, `--no-exec` re-runs nothing, reclassifying a missing binary as
-degraded is a forbidden 1.5.6 CLI change, and no verifiable `nixie` install path
-exists. The plan is redesigned to the task's first option: adopt
+degraded is a forbidden 1.5.6 CLI change, and no verifiable `nixie` install
+path exists. The plan is redesigned to the task's first option: adopt
 `make review-evidence` as a **required, recorded step** of the roadmap
-review/audit workflow via the in-repository AGENTS.md quality-gate contract that
-the df12-build audit obeys, run in the df12 toolchain environment where `nixie`
-is present (so the gate reports `verified`, exit 0), and pinned by a new
-build-gate test. The scheduled workflow, its wiring test, the degraded-tolerant
-exit policy, wiring-test invariant 6, and the `Bun.YAML.parse` dependency are
-removed; Constraints, Tolerances, Risks, Surprises, Decision Log, Acceptance,
-Artefacts, and the work items are re-derived to match this reality.
+review/audit workflow via the in-repository AGENTS.md quality-gate contract
+that the df12-build audit obeys, run in the df12 toolchain environment where
+`nixie` is present (so the gate reports `verified`, exit 0), and pinned by a
+new build-gate test. The scheduled workflow, its wiring test, the
+degraded-tolerant exit policy, wiring-test invariant 6, and the
+`Bun.YAML.parse` dependency are removed; Constraints, Tolerances, Risks,
+Surprises, Decision Log, Acceptance, Artefacts, and the work items are
+re-derived to match this reality.
 
 Round 4 revision (2026-07-03). Design review flagged that a plan variant which
 provisioned merman only (`cargo install merman-cli … --locked`) and asserted a

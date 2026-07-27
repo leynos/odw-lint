@@ -1,9 +1,8 @@
 # odw-lint terms of reference
 
-Status: Draft v0.1
-Audience: ODW maintainers, workflow authors, and implementation reviewers
-Companion documents: [technical design](technical-design.md) and
-[roadmap](roadmap.md)
+Status: Draft v0.1 Audience: ODW maintainers, workflow authors, and
+implementation reviewers Companion documents:
+[technical design](technical-design.md) and [roadmap](roadmap.md)
 
 ## 1. Purpose
 
@@ -16,11 +15,11 @@ top-level `await`, top-level `return`, and injected globals such as `agent`,
 The current default for a host-authored workflow is to run it. Generated
 workflows can call ODW's injected `validate(source)` primitive, but an author
 editing a file in a repository has no dedicated lint or validation command.
-That gap makes syntax, dialect, portability, and orchestration mistakes show
-up late, often after an agent run has started.
+That gap makes syntax, dialect, portability, and orchestration mistakes show up
+late, often after an agent run has started.
 
-The terms of reference define the problem space. The companion technical
-design chooses the implementation shape.
+The terms of reference define the problem space. The companion technical design
+chooses the implementation shape.
 
 ## 2. Domain
 
@@ -28,9 +27,9 @@ The domain is static analysis for dynamic agent-workflow scripts. It sits at
 the boundary between JavaScript tooling, ODW runtime semantics, Claude Code
 workflow compatibility, and CI quality gates.
 
-ODW workflows are not ordinary ECMAScript modules. The body must be parsed
-with awareness of the workflow dialect, injected names, and portability rules.
-A generic JavaScript linter can catch ordinary syntax and style issues, but it
+ODW workflows are not ordinary ECMAScript modules. The body must be parsed with
+awareness of the workflow dialect, injected names, and portability rules. A
+generic JavaScript linter can catch ordinary syntax and style issues, but it
 cannot know whether a workflow has exactly one supported `meta` export, whether
 its body imports primitives incorrectly, or whether its orchestration shape is
 risky for resumable agent execution.
@@ -39,13 +38,13 @@ risky for resumable agent execution.
 
 The neighbouring tool classes are:
 
-|Tool class|Current role|Gap for ODW|
-|---|---|---|
-|Generic JavaScript linters|Style, correctness, and common bug rules|They do not model ODW's workflow dialect or injected primitive contract.|
-|Parser libraries|Parse JavaScript and TypeScript source|They do not decide which dialect features are legal for ODW.|
-|ODW runtime validation|Compile-check generated workflow source from inside a workflow|It is not a host-side command for repository authors or CI.|
-|Claude Code workflow compatibility checks|Keep workflows portable to Claude Code's Workflow tool|They need to be surfaced before users run ODW.|
-|Agent supervision tools|Inspect runs after dispatch|They do not prevent avoidable dispatch-time failures.|
+| Tool class                                | Current role                                                   | Gap for ODW                                                              |
+| ----------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Generic JavaScript linters                | Style, correctness, and common bug rules                       | They do not model ODW's workflow dialect or injected primitive contract. |
+| Parser libraries                          | Parse JavaScript and TypeScript source                         | They do not decide which dialect features are legal for ODW.             |
+| ODW runtime validation                    | Compile-check generated workflow source from inside a workflow | It is not a host-side command for repository authors or CI.              |
+| Claude Code workflow compatibility checks | Keep workflows portable to Claude Code's Workflow tool         | They need to be surfaced before users run ODW.                           |
+| Agent supervision tools                   | Inspect runs after dispatch                                    | They do not prevent avoidable dispatch-time failures.                    |
 
 _Table 1: Tool-class comparison._
 
@@ -55,13 +54,13 @@ exit codes that CI can enforce.
 
 ## 4. Users and stakeholders
 
-|Actor|Role|Need|
-|---|---|---|
-|ODW workflow author|Writes and reviews workflow scripts|Catch dialect and portability problems before execution.|
-|ODW maintainer|Evolves the runtime and workflow examples|Keep static diagnostics aligned with runtime semantics.|
-|Agent operator|Runs workflows against paid or local coding agents|Avoid spending runs on workflows that could have failed statically.|
-|CI maintainer|Wires repository quality gates|Get deterministic text and JSON output with stable exit codes.|
-|Tooling contributor|Adds editor, formatter, or ecosystem integrations|Build on a documented diagnostic and rule model.|
+| Actor               | Role                                               | Need                                                                |
+| ------------------- | -------------------------------------------------- | ------------------------------------------------------------------- |
+| ODW workflow author | Writes and reviews workflow scripts                | Catch dialect and portability problems before execution.            |
+| ODW maintainer      | Evolves the runtime and workflow examples          | Keep static diagnostics aligned with runtime semantics.             |
+| Agent operator      | Runs workflows against paid or local coding agents | Avoid spending runs on workflows that could have failed statically. |
+| CI maintainer       | Wires repository quality gates                     | Get deterministic text and JSON output with stable exit codes.      |
+| Tooling contributor | Adds editor, formatter, or ecosystem integrations  | Build on a documented diagnostic and rule model.                    |
 
 _Table 2: Users and stakeholders._
 
@@ -71,10 +70,9 @@ application code.
 
 ## 5. Job to be done
 
-When an author is creating, reviewing, or generating an ODW workflow, they
-want to check the file without running agents, so they can fix workflow
-dialect, portability, and orchestration mistakes while the change is still
-cheap.
+When an author is creating, reviewing, or generating an ODW workflow, they want
+to check the file without running agents, so they can fix workflow dialect,
+portability, and orchestration mistakes while the change is still cheap.
 
 The job starts before `odw run`, before a pull request lands, and before a
 workflow is published as a reusable artefact. It ends when the author has a

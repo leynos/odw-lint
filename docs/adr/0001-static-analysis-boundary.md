@@ -1,16 +1,15 @@
 # 0001. Static-analysis boundary
 
-Status: Accepted
-Date: 2026-06-28
+Status: Accepted Date: 2026-06-28
 
 ## Context
 
 `odw-lint` checks workflow source before any workflow runs. That makes the
-static-analysis boundary a security boundary, not an implementation detail.
-The adjacent ODW runtime currently evaluates sliced metadata with
-`new Function` in its loader, and the injected `validate(source)` primitive
-calls that executable loader path. Those APIs are not safe for host-side lint
-of untrusted pull-request input.
+static-analysis boundary a security boundary, not an implementation detail. The
+adjacent ODW runtime currently evaluates sliced metadata with `new Function` in
+its loader, and the injected `validate(source)` primitive calls that executable
+loader path. Those APIs are not safe for host-side lint of untrusted
+pull-request input.
 
 ODW also does not currently export a safe static workflow-analysis API from its
 public package entry point. It exports workflow metadata types, but not
@@ -23,9 +22,9 @@ static envelope scanner.
 the standalone `odw-lint check` command. An ODW-integrated `odw check`
 subcommand is deferred and out of scope for v1. The first implementation will
 build an `odw-lint` parser around SWC, plus ODW-aware envelope scanning,
-metadata classification, dual-compat scanning, span mapping, and related
-static semantics. It will keep those semantics aligned with mandatory parity
-tests against trusted ODW fixtures.
+metadata classification, dual-compat scanning, span mapping, and related static
+semantics. It will keep those semantics aligned with mandatory parity tests
+against trusted ODW fixtures.
 
 This is an ownership decision. `odw-lint` does not depend on ODW maintainers
 publishing a safe static API, changing ODW's package exports, or accepting a
@@ -47,8 +46,8 @@ or hostile metadata fixtures.
 ## Consequences
 
 - The first dialect slice must include a regression test that proves
-  `odw-lint` does not import executable loader or primitive paths in
-  production code.
+  `odw-lint` does not import executable loader or primitive paths in production
+  code.
 - The first dialect slice must include a hostile metadata fixture whose source
   would execute if evaluated. The expected result is a diagnostic, with no side
   effect.
@@ -59,8 +58,8 @@ or hostile metadata fixtures.
 - Future ODW integration should consume `odw-lint`'s static API where possible,
   not require `odw-lint` to switch to ODW's private runtime helpers.
 - A future shared static package remains possible, but it must be extracted
-  from the proven `odw-lint` parser implementation or matched by contract tests.
-  It is not a v1 dependency.
+  from the proven `odw-lint` parser implementation or matched by contract
+  tests. It is not a v1 dependency.
 
 ## Rejected alternative
 

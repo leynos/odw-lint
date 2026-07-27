@@ -20,14 +20,14 @@ branch-local inspection because the 5.5.1 tree is the same commit the `main`
 index reflects.
 
 The 5.5.1 reconciliation is sound at its core: the quarantine decision is
-recorded in ADR 0003, and the rule doc (`docs/rules/body-syntax.md`),
-technical design (`docs/technical-design.md` §on the span mapper), and
-developers' guide all describe the shipped whole-body span and cite the ADR
-consistently. Code and documentation agree that span narrowing is inert and
-intentionally deferred. The findings below concentrate on the test surface the
-change grew: the parser-error tests now triplicate a real-SWC capture helper,
-the characterization guard keeps a private copy of the production allow-list it
-is meant to pin, one assertion is redundant across two suites, and the upgrade
+recorded in ADR 0003, and the rule doc (`docs/rules/body-syntax.md`), technical
+design (`docs/technical-design.md` §on the span mapper), and developers' guide
+all describe the shipped whole-body span and cite the ADR consistently. Code
+and documentation agree that span narrowing is inert and intentionally
+deferred. The findings below concentrate on the test surface the change grew:
+the parser-error tests now triplicate a real-SWC capture helper, the
+characterization guard keeps a private copy of the production allow-list it is
+meant to pin, one assertion is redundant across two suites, and the upgrade
 checklist does not name the mechanical guard that backs its manual
 re-observation step.
 
@@ -89,8 +89,9 @@ constant in the whole quarantine story — ADR 0003 pins the behaviour of exactl
 this `parseSync` configuration — yet the options string now lives in three
 places, so a future `@swc/core` upgrade that must flip `syntax` or `jsx` has to
 edit three copies to keep the characterization suites honest. The task already
-established `tests/static-analysis/normalized-byte-range-support.ts` as the home
-for shared parser-span test helpers, so the pattern for a shared owner exists.
+established `tests/static-analysis/normalized-byte-range-support.ts` as the
+home for shared parser-span test helpers, so the pattern for a shared owner
+exists.
 
 Proposed fix:
 
@@ -99,8 +100,8 @@ Extract a single `captureSwcParseError(normalizedText)` (and, if worthwhile, a
 `normalized-byte-range-support.ts` or a small sibling such as
 `swc-parser-error-support.ts` — and import it from all three suites. Keep each
 suite's assertion-specific message at the call site if the shared helper's
-generic "Expected SWC to reject ..." is not descriptive enough, but let the
-parse options and the capture scaffold live once so an upgrade touches a single
+generic "Expected SWC to reject …" is not descriptive enough, but let the parse
+options and the capture scaffold live once so an upgrade touches a single
 definition.
 
 ## Finding 2: the parser-surface guard keeps a private copy of the production allow-list
@@ -123,10 +124,11 @@ structured fields from a parser error:
 const STRUCTURED_RANGE_FIELDS = ["span", "byteOffset", "pos", "start", "offset"] as const;
 ```
 
-`swc-parse-error-surface.test.ts` is the characterization guard whose stated job
-(per its file docstring) is to pin the SWC parser-error surface "so dependency
-upgrades cannot silently change body-syntax span fallback behaviour". To do that
-it enumerates the same fields — but as an independent copy:
+`swc-parse-error-surface.test.ts` is the characterization guard whose stated
+job (per its file docstring) is to pin the SWC parser-error surface "so
+dependency upgrades cannot silently change body-syntax span fallback
+behaviour". To do that it enumerates the same fields — but as an independent
+copy:
 
 ```ts
 const STRUCTURED_OFFSET_FIELDS = ["span", "byteOffset", "pos", "start", "offset"] as const;
@@ -151,8 +153,8 @@ constant) from an internal module and import it into
 the exact fields production consults. The inline snapshot then automatically
 widens whenever the allow-list grows, keeping the "no structured offset"
 guarantee bound to the real extractor input. If exporting the constant from the
-production module is undesirable, relocate it to a shared internal
-allow-list module that both the extractor and the test import.
+production module is undesirable, relocate it to a shared internal allow-list
+module that both the extractor and the test import.
 
 ## Finding 3: the quarantine test repeats the real-SWC range assertion already pinned by the ranges suite
 
@@ -185,10 +187,10 @@ expect(structuredNormalizedRangeFromParserError(realError, normalized)).toBeUnde
 The quarantine suite's distinctive contribution is the end-to-end assertion
 (`diagnostic.span` equals the whole `envelope.bodySpan`) and the public-surface
 absence checks; the raw "real SWC error yields no structured range" fact is
-already owned by the ranges suite, which is the natural home for extractor-level
-behaviour. The duplicated line is not harmful, but it is redundant coverage of
-the same extractor contract across two files using the same fixture, and it
-blurs which suite owns that assertion.
+already owned by the ranges suite, which is the natural home for
+extractor-level behaviour. The duplicated line is not harmful, but it is
+redundant coverage of the same extractor contract across two files using the
+same fixture, and it blurs which suite owns that assertion.
 
 Proposed fix:
 
@@ -216,9 +218,9 @@ The developers' guide SWC upgrade checklist instructs the upgrader to
 time" and to revisit ADR 0003 before accepting an upgrade that could activate
 token-level narrowing. That re-observation is exactly what
 `tests/static-analysis/swc-parse-error-surface.test.ts` already performs
-mechanically through its inline snapshot of the structured-offset field surface,
-yet the checklist frames the step as a manual observation and names neither the
-characterization test nor the production allow-list
+mechanically through its inline snapshot of the structured-offset field
+surface, yet the checklist frames the step as a manual observation and names
+neither the characterization test nor the production allow-list
 (`STRUCTURED_RANGE_FIELDS`) the observation must cover. The adjacent checklist
 bullets are precise about which files and suites to re-run for the parser
 detail surface, so this bullet reads as looser guidance than its neighbours and
@@ -230,7 +232,7 @@ Proposed fix:
 Name the mechanical guard in the checklist: state that
 `tests/static-analysis/swc-parse-error-surface.test.ts` pins the structured
 parser-error field surface and must be re-run and re-snapshotted on an upgrade,
-and reference the production allow-list it tracks. Sequence this after Finding 2
-so the guide can describe a guard that genuinely consumes the production
-allow-list rather than a private copy, making the "re-observe" step reproducible
-instead of a matter of reviewer diligence.
+and reference the production allow-list it tracks. Sequence this after Finding
+2 so the guide can describe a guard that genuinely consumes the production
+allow-list rather than a private copy, making the "re-observe" step
+reproducible instead of a matter of reviewer diligence.

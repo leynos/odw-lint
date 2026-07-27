@@ -1,9 +1,8 @@
 # Consolidate SWC AST guard and traversal helpers
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -11,9 +10,9 @@ Status: COMPLETE
 
 `odw-lint` checks Open Dynamic Workflows (ODW) workflow source before any
 workflow runs. Several parser-backed rules walk the SWC (a Rust-based
-JavaScript/TypeScript compiler exposed through `@swc/core`) abstract syntax tree
-(AST) of a normalized workflow body. Today each of those rule modules privately
-re-implements the same three low-level shape helpers:
+JavaScript/TypeScript compiler exposed through `@swc/core`) abstract syntax
+tree (AST) of a normalized workflow body. Today each of those rule modules
+privately re-implements the same three low-level shape helpers:
 
 1. a guard that decides whether an unknown value is a parser node
    (`typeof value === "object" && value !== null && "type" in value`);
@@ -64,14 +63,14 @@ escalation, not a workaround.
   local static-analysis modules.
 - **ECMAScript dialect scope.** Per
   [docs/adr/0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md),
-  workflow bodies are parsed as ECMAScript (`syntax: "ecmascript"`, `jsx:
-  false`). Do not add TypeScript-only node handling (for example
+  workflow bodies are parsed as ECMAScript (`syntax: "ecmascript"`,
+  `jsx: false`). Do not add TypeScript-only node handling (for example
   `TsAsExpression`) to the seam; the existing resolver deliberately handles only
   `ParenthesisExpression` and `OptionalChainingExpression` wrappers.
 - **File-size and lint gates.** Every touched TypeScript file must stay ≤ 400
   physical lines (`tests/build-gate/file-size.test.ts`,
-  `SOURCE_AND_TEST_LINE_LIMIT = 400`). Oxlint enforces cyclomatic complexity
-  ≤ 8, `max-depth` ≤ 3, `df12/complex-conditional` (`maxLogicalOperators: 1`,
+  `SOURCE_AND_TEST_LINE_LIMIT = 400`). Oxlint enforces cyclomatic complexity ≤
+  8, `max-depth` ≤ 3, `df12/complex-conditional` (`maxLogicalOperators: 1`,
   `includeTernary: true`), and mandatory `@file`/public/private JSDoc
   (`.oxlintrc.json`). The extracted `isAstNode` reuses the identical boolean
   expression already accepted by these gates on `main`, so it must not add
@@ -81,8 +80,7 @@ escalation, not a workaround.
   helper, mirroring how `workflow-global-object-reference.ts` is internal.
 - **Architecture module registry must be kept exact.**
   `tests/diagnostics/architecture.test.ts` asserts the exact sorted file set of
-  `src/static-analysis/` against
-  `EXPECTED_STATIC_ANALYSIS_MODULE_FILES` in
+  `src/static-analysis/` against `EXPECTED_STATIC_ANALYSIS_MODULE_FILES` in
   `tests/diagnostics/architecture-fixtures.ts`. Adding `swc-ast.ts` requires
   adding it to that fixture list in the same commit.
 
@@ -109,46 +107,39 @@ escalation, not a workaround.
 - Risk: The object-record guard `isObjectRecord` in
   `workflow-deterministic-time.ts` returns `value is object` and accepts arrays
   (`typeof === "object" && !== null`), whereas the shared `isUnknownRecord`
-  excludes arrays. Swapping could change traversal.
-  Severity: medium
-  Likelihood: low
-  Mitigation: In `visitChildValue`, arrays are handled by an earlier
-  `Array.isArray(value)` branch, so `isObjectRecord` only ever receives
-  non-arrays; the two predicates are therefore equivalent at that call site. Pin
-  this with a focused regression test that nests a hazard inside a record
+  excludes arrays. Swapping could change traversal. Severity: medium
+  Likelihood: low Mitigation: In `visitChildValue`, arrays are handled by an
+  earlier `Array.isArray(value)` branch, so `isObjectRecord` only ever receives
+  non-arrays; the two predicates are therefore equivalent at that call site.
+  Pin this with a focused regression test that nests a hazard inside a record
   wrapper AND inside an array, proving both still resolve after the swap (see
   Work Item 3).
 - Risk: `workflow-ast-bindings.ts` uses a looser `asNode`
   (`typeof value !== "object"` rejects only primitives, so it accepts arrays)
   rather than the strict `isAstNode`. Forcing it onto `isAstNode` (which
   requires a `type` field) or onto `isUnknownRecord` (which rejects arrays)
-  could change binding collection.
-  Severity: medium
-  Likelihood: low
-  Mitigation: Migrate only the object-record aspect of `asNode` to reuse
-  `isUnknownRecord`, and verify by inspection plus test that `asNode` is never
-  called with an array (arrays reach the collector through `arrayValue`, and the
-  child recursion branches on `Array.isArray` first). Keep the
-  `Object.values`-based child recursion (`collectChildBindings`) as-is; it is a
-  deliberately broader traversal than the rule seam's `astChildValues` and must
-  not be folded in (avoid over-abstraction per the complexity guide). Pin with
+  could change binding collection. Severity: medium Likelihood: low Mitigation:
+  Migrate only the object-record aspect of `asNode` to reuse `isUnknownRecord`,
+  and verify by inspection plus test that `asNode` is never called with an
+  array (arrays reach the collector through `arrayValue`, and the child
+  recursion branches on `Array.isArray` first). Keep the `Object.values`-based
+  child recursion (`collectChildBindings`) as-is; it is a deliberately broader
+  traversal than the rule seam's `astChildValues` and must not be folded in
+  (avoid over-abstraction per the complexity guide). Pin with
   `workflow-ast-bindings.test.ts` and the `workflow-ast-facts` snapshot.
 - Risk: Replacing local `isExpression`/`isNode` guards that return
   `value is Expression` with a seam guard returning `value is Node` produces
   TypeScript assignability errors where a helper is declared to return
-  `Expression | undefined`.
-  Severity: low
-  Likelihood: medium
-  Mitigation: Keep a one-line local delegating predicate
+  `Expression | undefined`. Severity: low Likelihood: medium Mitigation: Keep a
+  one-line local delegating predicate
   (`const isExpression = (value: unknown): value is Expression =>
-  isAstNode(value);`). This matches the pattern already present in
+  isAstNode(value);`).
+  This matches the pattern already present in
   `workflow-deterministic-time-aliases.ts` (its `isExpression` delegates to its
   local `isNode`). Runtime logic then lives once in the seam; the wrapper only
   re-narrows the type for local ergonomics.
 - Risk: Adding `swc-ast.ts` without registering it breaks the architecture
-  module-set test.
-  Severity: low
-  Likelihood: medium (easy to forget)
+  module-set test. Severity: low Likelihood: medium (easy to forget)
   Mitigation: Update `EXPECTED_STATIC_ANALYSIS_MODULE_FILES` in the same commit
   as the file is created (Work Item 1).
 
@@ -169,16 +160,15 @@ escalation, not a workaround.
   `workflow-deterministic-time-aliases.ts` contain byte-for-byte identical
   child-traversal helpers (`childValues` filtering `span`/`type`/`ctxt`).
   Evidence: `src/static-analysis/workflow-deterministic-time.ts:147-156` and
-  `src/static-analysis/workflow-deterministic-time-aliases.ts:231-236`.
-  Impact: This pair is the clearest, lowest-risk consolidation target and is
-  migrated first (Work Items 2-3).
+  `src/static-analysis/workflow-deterministic-time-aliases.ts:231-236`. Impact:
+  This pair is the clearest, lowest-risk consolidation target and is migrated
+  first (Work Items 2-3).
 - Observation: Work Item 1's first red run failed before reaching the intended
   missing-module error because dependencies were not installed in the fresh
   worktree. Evidence: `bun test tests/static-analysis/swc-ast.test.ts` first
   reported `Cannot find package 'fast-check'`; after `make build`, the same
   command reported `Cannot find module '../../src/static-analysis/swc-ast'`.
-  Impact: The intended red evidence was preserved after dependency
-  installation.
+  Impact: The intended red evidence was preserved after dependency installation.
 - Observation: Adding this ExecPlan requires a matching `docs/contents.md`
   entry because `tests/build-gate/documentation-contents.test.ts` enforces
   top-level ExecPlan freshness. Evidence: scrutineer's Work Item 1 `make all`
@@ -187,15 +177,16 @@ escalation, not a workaround.
   Item 1 includes that index update so the repository documentation set remains
   complete.
 - Observation: Work Item 2's alias traversal migration did not change protected
-  snapshots. Evidence: after the migration, `git status --porcelain --
-  tests/static-analysis/__snapshots__` was empty, and scrutineer reported the
-  same after `make all`. Impact: the seam's `astChildValues` preserves the
-  alias collector's traversal contract for this work item.
+  snapshots. Evidence: after the migration,
+  `git status --porcelain -- tests/static-analysis/__snapshots__` was empty,
+  and scrutineer reported the same after `make all`. Impact: the seam's
+  `astChildValues` preserves the alias collector's traversal contract for this
+  work item.
 - Observation: Work Item 3 made `workflow-deterministic-time.ts`
   `isMemberExpression` dead code. Evidence: scoped Biome reported
-  `lint/correctness/noUnusedVariables` for that helper after the seam migration.
-  Impact: the helper was removed rather than kept as the original plan
-  expected, because keeping unused code would violate the quality gates.
+  `lint/correctness/noUnusedVariables` for that helper after the seam
+  migration. Impact: the helper was removed rather than kept as the original
+  plan expected, because keeping unused code would violate the quality gates.
 - Observation: Work Item 5's first CodeRabbit attempt was rate-limited.
   Evidence: scrutineer reported two setup attempts with recoverable
   `rate_limit` responses and no review findings. After a required 76-minute
@@ -212,28 +203,24 @@ escalation, not a workaround.
   gives the SWC helpers a single documented home. The seam re-exports
   `isUnknownRecord` from `value-guards.ts` so parser-backed rules import all
   three primitives from one surface without duplicating the record guard's
-  implementation.
-  Date/Author: 2026-07-04, planning agent.
+  implementation. Date/Author: 2026-07-04, planning agent.
 - Decision: Keep `workflow-ast-bindings.ts` `collectChildBindings`
   (`Object.values`, all fields) separate from the seam's `astChildValues`
-  (fields minus `span`/`type`/`ctxt`).
-  Rationale: The binding collector intentionally traverses every field; the rule
-  seam intentionally prunes bookkeeping fields. Folding one into the other would
-  either change behaviour or force a shared helper with a mode flag, an
-  over-abstraction the complexity guide warns against. Only the object-record
-  guard is shared.
-  Date/Author: 2026-07-04, planning agent.
+  (fields minus `span`/`type`/`ctxt`). Rationale: The binding collector
+  intentionally traverses every field; the rule seam intentionally prunes
+  bookkeeping fields. Folding one into the other would either change behaviour
+  or force a shared helper with a mode flag, an over-abstraction the complexity
+  guide warns against. Only the object-record guard is shared. Date/Author:
+  2026-07-04, planning agent.
 - Decision: Preserve local `value is Expression` / type-tag guards as one-line
-  delegating predicates over the seam's `isAstNode`.
-  Rationale: Eliminates duplicated runtime logic while keeping precise
-  call-site typing and matching the codebase's existing idiom.
-  Date/Author: 2026-07-04, planning agent.
+  delegating predicates over the seam's `isAstNode`. Rationale: Eliminates
+  duplicated runtime logic while keeping precise call-site typing and matching
+  the codebase's existing idiom. Date/Author: 2026-07-04, planning agent.
 - Decision: Keep `astChildValues(value)` typed as `object` rather than
-  `UnknownRecord`.
-  Rationale: CodeRabbit suggested narrowing the parameter, but the primary
-  callers pass SWC `Node` values whose upstream type does not carry a string
-  index signature. The `object` parameter keeps the helper cast-free for nodes
-  while tests document that only semantic fields are returned.
+  `UnknownRecord`. Rationale: CodeRabbit suggested narrowing the parameter, but
+  the primary callers pass SWC `Node` values whose upstream type does not carry
+  a string index signature. The `object` parameter keeps the helper cast-free
+  for nodes while tests document that only semantic fields are returned.
   Date/Author: 2026-07-04, implementation agent.
 
 ## Outcomes & retrospective
@@ -241,10 +228,10 @@ escalation, not a workaround.
 Work Item 1 created `src/static-analysis/swc-ast.ts`, registered it in the
 architecture fixture, added unit and property coverage in
 `tests/static-analysis/swc-ast.test.ts`, and listed this ExecPlan in
-`docs/contents.md`. The focused seam test passes. Scrutineer verified `make
-all`, `make markdownlint`, and `make nixie` after the Work Item 1 changes.
-CodeRabbit completed once with one low-severity type-contract suggestion, which
-was closed by the decision above without changing the code.
+`docs/contents.md`. The focused seam test passes. Scrutineer verified
+`make all`, `make markdownlint`, and `make nixie` after the Work Item 1
+changes. CodeRabbit completed once with one low-severity type-contract
+suggestion, which was closed by the decision above without changing the code.
 
 Work Item 2 migrated `workflow-deterministic-time-aliases.ts` to import
 `isAstNode` and `astChildValues` from `swc-ast.ts`, deleted its duplicated
@@ -255,11 +242,11 @@ and an empty protected-snapshot status. CodeRabbit completed once with no
 findings.
 
 Work Item 3 migrated `workflow-deterministic-time.ts` to import `isAstNode`,
-`astChildValues`, and `isUnknownRecord` from `swc-ast.ts`, deleted its duplicate
-child traversal and object-record guard helpers, and added an argument-wrapper
-regression that reaches a `Date.now()` hazard through both an array and a
-record wrapper. The stale `isMemberExpression` helper was removed when the
-migration left it unused. The focused deterministic-time tests pass.
+`astChildValues`, and `isUnknownRecord` from `swc-ast.ts`, deleted its
+duplicate child traversal and object-record guard helpers, and added an
+argument-wrapper regression that reaches a `Date.now()` hazard through both an
+array and a record wrapper. The stale `isMemberExpression` helper was removed
+when the migration left it unused. The focused deterministic-time tests pass.
 Scrutineer verified `make all` and an empty protected-snapshot status.
 CodeRabbit completed once with no findings.
 
@@ -343,11 +330,11 @@ and the public package entry points remained unchanged.
 ## Context and orientation
 
 `odw-lint` is a Bun + TypeScript project. Relevant commands come from the
-`Makefile`: `make all` runs `build check-fmt whitespace-hygiene lint typecheck
-test`; `make markdownlint` and `make nixie` validate Markdown and embedded
-Mermaid diagrams. Tests run under `bun test`. The 400-line file-size limit and
-JSDoc/complexity lint rules are enforced by the gates listed under
-`Constraints`.
+`Makefile`: `make all` runs
+`build check-fmt whitespace-hygiene lint typecheck test`; `make markdownlint`
+and `make nixie` validate Markdown and embedded Mermaid diagrams. Tests run
+under `bun test`. The 400-line file-size limit and JSDoc/complexity lint rules
+are enforced by the gates listed under `Constraints`.
 
 The parser-backed rule modules under `src/static-analysis/` are:
 
@@ -357,8 +344,8 @@ The parser-backed rule modules under `src/static-analysis/` are:
   `collectChildBindings`.
 - `workflow-ast-facts.ts` — public aggregator (`collectWorkflowAstFacts`) that
   delegates to `collectLexicalBindings` and the suppression-mask builder. It
-  imports no shape helpers directly but is the "AST-fact" traversal named in the
-  roadmap.
+  imports no shape helpers directly but is the "AST-fact" traversal named in
+  the roadmap.
 - `workflow-deterministic-time.ts` — walks the AST for `Date.now()`,
   `Math.random()`, and arg-less `new Date` hazards. Owns duplicate helpers
   `isNode` (strict node guard), `isObjectRecord`, `childValues`,
@@ -419,27 +406,28 @@ need an `Expression`-typed guard keep a one-line delegating predicate locally.
 ## Plan of work
 
 The work proceeds as one seam-introduction commit followed by four
-behaviour-preserving migrations (one file each) and a documentation commit. Each
-work item is independently committable and must leave `make all` green.
+behaviour-preserving migrations (one file each) and a documentation commit.
+Each work item is independently committable and must leave `make all` green.
 
 ### Work Item 1: Add the shared SWC-shape helper seam
 
 Docs to read first: [docs/technical-design.md](../technical-design.md) §3
-(components table: "SWC parser adapter", "WorkflowAstFacts" fact collectors) and
-§13 (owned SWC-based parser);
+(components table: "SWC parser adapter", "WorkflowAstFacts" fact collectors)
+and §13 (owned SWC-based parser);
 [docs/adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md);
+
 [docs/complexity-antipatterns-and-refactoring-strategies.md](../complexity-antipatterns-and-refactoring-strategies.md)
-§"Balance Abstraction Levels" and §"Iterative Refactoring and Review" (extract a
-shared abstraction when painful duplication emerges); AGENTS.md testing section.
-Skills to load: `leta` (symbol navigation and references), `biomejs`
+§"Balance Abstraction Levels" and §"Iterative Refactoring and Review" (extract
+a shared abstraction when painful duplication emerges); AGENTS.md testing
+section. Skills to load: `leta` (symbol navigation and references), `biomejs`
 (formatting/lint expectations), `en-gb-oxendict` (comment/prose spelling).
 
 Steps:
 
 1. Red: add `tests/static-analysis/swc-ast.test.ts` importing from
-   `../../src/static-analysis/swc-ast`. Run `bun test
-   tests/static-analysis/swc-ast.test.ts` and expect it to fail because the
-   module does not yet exist.
+   `../../src/static-analysis/swc-ast`. Run
+   `bun test tests/static-analysis/swc-ast.test.ts` and expect it to fail
+   because the module does not yet exist.
 2. Green: create `src/static-analysis/swc-ast.ts` per the interface above with
    `@file` and per-declaration JSDoc.
 3. Register the module: add `"swc-ast.ts"` to
@@ -491,9 +479,10 @@ Steps:
    `isMemberExpression`, and `isExpression` with `isAstNode`.
 3. Keep `isExpression` as a one-line delegating predicate
    (`const isExpression = (value: unknown): value is Expression =>
-   isAstNode(value);`) if its `Expression` return type is required by callers;
-   otherwise replace direct `isExpression` uses with `isAstNode`. Prefer the
-   minimal change that keeps `tsc --noEmit` green.
+   isAstNode(value);`)
+   if its `Expression` return type is required by callers; otherwise replace
+   direct `isExpression` uses with `isAstNode`. Prefer the minimal change that
+   keeps `tsc --noEmit` green.
 4. Delete the local `childValues` (lines ~231-236) and call `astChildValues`
    in `collectAliasesFromNode`.
 
@@ -536,8 +525,9 @@ Tests this work item adds/updates:
   `Date.now()` hazard nested inside a record wrapper (an AST field that is an
   object but not itself a node, reached via the `isUnknownRecord` branch) AND a
   hazard nested inside an array are both still reported. This locks the
-  array-first ordering that makes `isUnknownRecord` (array-excluding) equivalent
-  to the deleted `isObjectRecord` (array-including) at that call site.
+  array-first ordering that makes `isUnknownRecord` (array-excluding)
+  equivalent to the deleted `isObjectRecord` (array-including) at that call
+  site.
 - The `deterministic-time-spans` snapshot must pass unchanged.
 
 Validation: `make all`; `git status` must show no snapshot changes.
@@ -553,12 +543,14 @@ Steps:
 
 1. Import `isAstNode` from `./swc-ast`.
 2. Replace the local `isExpression` (lines ~140-142). Either keep a one-line
-   delegating predicate `const isExpression = (value: unknown): value is
-   Expression => isAstNode(value);` or, if cleaner for `tsc`, widen the two
-   private helpers `innerTransparentExpression` and
-   `innerOptionalBaseExpression` that consume it. Choose the option that keeps
-   `tsc --noEmit` green with the smallest diff; the delegating predicate is the
-   default because it is provably behaviour- and type-preserving.
+   delegating predicate
+   `const isExpression = (value: unknown): value is
+   Expression => isAstNode(value);`
+   or, if cleaner for `tsc`, widen the two private helpers
+   `innerTransparentExpression` and `innerOptionalBaseExpression` that consume
+   it. Choose the option that keeps `tsc --noEmit` green with the smallest
+   diff; the delegating predicate is the default because it is provably
+   behaviour- and type-preserving.
 3. Leave `isIdentifier` and `isMemberExpression` (they check `.type` on an
    `Expression | Node` parameter directly and do not use the node guard).
 
@@ -583,11 +575,11 @@ Steps:
    the seam for a single import surface).
 2. Reimplement `asNode` to reuse the record guard:
    `const asNode = (value: unknown): AstNode | undefined =>
-   isUnknownRecord(value) ? (value as AstNode) : undefined;`. This changes the
-   array case from "returns the array cast as `AstNode`" to "returns
-   `undefined`"; verify by inspection that `asNode` is never called with an
-   array (arrays are consumed by `arrayValue`, and `collectChildBindings`
-   branches on `Array.isArray` before calling `asNode`).
+   isUnknownRecord(value) ? (value as AstNode) : undefined;`.
+   This changes the array case from "returns the array cast as `AstNode`" to
+   "returns `undefined`"; verify by inspection that `asNode` is never called
+   with an array (arrays are consumed by `arrayValue`, and
+   `collectChildBindings` branches on `Array.isArray` before calling `asNode`).
 3. Do **not** change `collectChildBindings` (`Object.values`) or `arrayValue`.
    They are intentionally not part of the rule seam.
 
@@ -607,20 +599,20 @@ Validation: `make all`; `git status` must show no snapshot changes.
 ### Work Item 6: Document the seam and tick roadmap task 3.2.5
 
 Docs to read first:
-[docs/documentation-style-guide.md](../documentation-style-guide.md);
-[docs/technical-design.md](../technical-design.md) §3.
+[docs/documentation-style-guide.md](../documentation-style-guide.md); [docs/technical-design.md](../technical-design.md)
+§3.
 
 Steps:
 
 1. Add a short paragraph to [docs/technical-design.md](../technical-design.md)
    (near the components table / §3) documenting the single SWC-shape helper seam
-   `src/static-analysis/swc-ast.ts` and which modules consume it. Keep prose in
-   en-GB Oxford spelling.
+   `src/static-analysis/swc-ast.ts` and which modules consume it. Keep prose
+   in en-GB Oxford spelling.
 2. Flip the roadmap checkbox for 3.2.5 in [docs/roadmap.md](../roadmap.md) from
    `[ ]` to `[x]`.
 3. Format only the touched Markdown files: run `mdtablefix <files>` then
-   `markdownlint-cli2 --fix <files>` on the specific paths edited (this ExecPlan,
-   `docs/technical-design.md`, `docs/roadmap.md`).
+   `markdownlint-cli2 --fix <files>` on the specific paths edited (this
+   ExecPlan, `docs/technical-design.md`, `docs/roadmap.md`).
 
 Validation: `make all`, then `make markdownlint` and `make nixie` (Markdown
 changed).
@@ -659,20 +651,20 @@ Quality criteria (what "done" means):
   exists and passes after; the `deterministic-time-spans` and
   `workflow-ast-facts` snapshots pass **without** regeneration.
 - Lint/typecheck: `make lint` and `make typecheck` (via `make all`) pass; no new
-  Oxlint complexity, depth, `df12/complex-conditional`, or JSDoc violations; all
-  touched files ≤ 400 lines.
-- Architecture: `tests/diagnostics/architecture.test.ts` passes with `swc-ast.ts`
-  registered; `src/static-analysis/index.ts` and `src/index.ts` barrels
-  unchanged.
+  Oxlint complexity, depth, `df12/complex-conditional`, or JSDoc violations;
+  all touched files ≤ 400 lines.
+- Architecture: `tests/diagnostics/architecture.test.ts` passes with
+  `swc-ast.ts` registered; `src/static-analysis/index.ts` and `src/index.ts`
+  barrels unchanged.
 - Duplication removed: `workflow-deterministic-time.ts`,
   `workflow-deterministic-time-aliases.ts`, and
   `workflow-global-object-reference.ts` no longer define a local strict node
   guard or child-traversal helper; they import from `./swc-ast`.
 - Docs: `make markdownlint` and `make nixie` pass after Work Item 6.
 
-Quality method (how we check): `make all` for every code work item; `make
-markdownlint` and `make nixie` for the documentation work item; `git status` on
-the snapshot directory after each migration.
+Quality method (how we check): `make all` for every code work item;
+`make markdownlint` and `make nixie` for the documentation work item;
+`git status` on the snapshot directory after each migration.
 
 Red-Green-Refactor evidence to record during implementation:
 

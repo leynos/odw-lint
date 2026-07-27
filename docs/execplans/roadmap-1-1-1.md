@@ -1,9 +1,8 @@
 # Scaffold the owned static-analysis boundary
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -17,19 +16,18 @@ mapper, rule engine, and reporter without depending on Open Dynamic Workflows
 (ODW) runtime helpers.
 
 The observable result is deliberately small. After implementation, maintainers
-can import stable source-level static-analysis boundary constants and types
-from `src/index.ts`, inspect a passive module boundary that future source,
+can import stable source-level static-analysis boundary constants and types from
+`src/index.ts`, inspect a passive module boundary that future source,
 envelope, metadata, body, abstract syntax tree (AST), and diagnostic work can
-occupy, and run the repository gates plus explicit boundary checks. The
-runtime contract for this slice includes readonly label arrays for supported
-components and stages, with TypeScript unions derived from those arrays. The
-task does not add package-level `exports` or `types` fields while
-`package.json` remains private and has no package export surface. It also does
-not add `@swc/core`, does not implement `parseWithSwc`, does not parse
-workflow bodies, and does not add the forbidden-import architecture test. The
-parser adapter belongs to roadmap task 2.2.1, after static envelope extraction
-in task 2.1.2. The forbidden-import architecture test belongs to roadmap task
-2.1.4.
+occupy, and run the repository gates plus explicit boundary checks. The runtime
+contract for this slice includes readonly label arrays for supported components
+and stages, with TypeScript unions derived from those arrays. The task does not
+add package-level `exports` or `types` fields while `package.json` remains
+private and has no package export surface. It also does not add `@swc/core`,
+does not implement `parseWithSwc`, does not parse workflow bodies, and does not
+add the forbidden-import architecture test. The parser adapter belongs to
+roadmap task 2.2.1, after static envelope extraction in task 2.1.2. The
+forbidden-import architecture test belongs to roadmap task 2.1.4.
 
 ## Constraints
 
@@ -38,8 +36,8 @@ in task 2.1.2. The forbidden-import architecture test belongs to roadmap task
 - Do not start implementation until this plan is approved or the roadmap
   workflow explicitly schedules implementation.
 - Keep this task limited to `docs/roadmap.md` section 1.1, task 1.1.1:
-  scaffold a named owned boundary. Do not collapse roadmap task 2.1.4 or
-  2.2.1 into this task.
+  scaffold a named owned boundary. Do not collapse roadmap task 2.1.4 or 2.2.1
+  into this task.
 - Do not add `@swc/core`, `@swc/types`, a SWC parser adapter, `parseWithSwc`,
   SWC AST result types, or SWC parse failure types in task 1.1.1. If the
   boundary scaffold appears to require any of those, stop and update the
@@ -61,34 +59,33 @@ in task 2.1.2. The forbidden-import architecture test belongs to roadmap task
   the later envelope-parsing step. If implementation of 1.1.1 appears to need
   that test, stop and revise `docs/roadmap.md` before proceeding.
 - Task 1.1.1 must not add `@swc/core`, `@swc/types`, or
-  `open-dynamic-workflows` anywhere in `package.json` or `bun.lock`. Do not
-  add a production, development, peer, optional, or trusted dependency for this
+  `open-dynamic-workflows` anywhere in `package.json` or `bun.lock`. Do not add
+  a production, development, peer, optional, or trusted dependency for this
   slice. This is a task-1.1.1 boundary check, not a blanket ban on later
   trusted fixture-parity dependencies, because
-  `docs/adr/0001-static-analysis-boundary.md` and
-  `docs/technical-design.md` section 11.2 allow future narrowly scoped trusted
-  parity tests to import ODW helpers where those helpers are static and do not
-  evaluate source.
+  `docs/adr/0001-static-analysis-boundary.md` and `docs/technical-design.md`
+  section 11.2 allow future narrowly scoped trusted parity tests to import ODW
+  helpers where those helpers are static and do not evaluate source.
 - After every implementation work item, run branch-local exact checks inside
   this worktree to prove the slice did not add dependency entries, production
   ODW references, package-level export fields, parser-adapter symbols,
   diagnostic contracts, command contracts, or workflow resolver symbols. These
   checks are part of task 1.1.1 acceptance because the architecture test is
   deferred to roadmap task 2.1.4.
-- Use `grepai search --workspace Projects --project odw-lint "<English intent
-  query>" --toon --compact` first for intent-oriented code search against the
-  canonical main-branch index. Verify branch-local facts with `leta`, exact
-  text search, or direct file inspection inside this worktree.
+- Use
+  `grepai search --workspace Projects --project odw-lint`
+  `"<English intent query>" --toon --compact` first for intent-oriented code
+  search against the canonical main-branch index. Verify branch-local facts with
+  `leta`, exact text search, or direct file inspection inside this worktree.
 - Use `leta` for branch-local symbol navigation and references. Use `sem` for
   semantic diffs and history navigation instead of raw `git log` or blame.
 - Prefer Makefile targets for gates. Do not run format, lint, or test gates in
   parallel.
 - Format only changed files. For Markdown, run `mdtablefix <changed.md>` and
-  `bunx markdownlint-cli2 --fix <changed.md>`. For TypeScript, JSON, or
-  project configuration, run Biome on the specific changed paths.
+  `bunx markdownlint-cli2 --fix <changed.md>`. For TypeScript, JSON, or project
+  configuration, run Biome on the specific changed paths.
 - Use en-GB Oxford spelling in prose and comments, following
-  `docs/documentation-style-guide.md` sections "Spelling" and "Markdown
-  rules".
+  `docs/documentation-style-guide.md` sections "Spelling" and "Markdown rules".
 - Commit after each work item. Each commit must pass the relevant gate before
   it is committed, following `AGENTS.md` "Change Quality & Committing".
 
@@ -100,44 +97,40 @@ in task 2.1.2. The forbidden-import architecture test belongs to roadmap task
 - Dependency: stop immediately if implementation seems to require a new
   runtime dependency. Task 1.1.1 is dependency-free.
 - Boundary: stop immediately if production code appears to need
-  `loadWorkflowScript`, `createPrimitives`, ODW `validate(source)`, ODW
-  runtime launch or worker modules, or ODW workflow name resolution.
+  `loadWorkflowScript`, `createPrimitives`, ODW `validate(source)`, ODW runtime
+  launch or worker modules, or ODW workflow name resolution.
 - Interface: stop and revise this plan if a public analyser, parser adapter,
   parser failure type, diagnostic schema, CLI command, or ODW resolver contract
   must be introduced to complete the task.
 - Testing: stop and record the failure in `Decision Log` if a work item still
   fails after two focused fix attempts.
 - Documentation: stop if a change materially alters the ownership decision in
-  `docs/technical-design.md` section 5 or ADR 0001. That requires an
-  ADR/design update before code proceeds.
+  `docs/technical-design.md` section 5 or ADR 0001. That requires an ADR/design
+  update before code proceeds.
 
 ## Risks
 
 - Risk: The scaffold becomes a misleading no-op analyser.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: export boundary names and passive types only. Do not export an
-  `analyseWorkflow`, `parseWithSwc`, or `checkWorkflow` function in this task.
+  Severity: medium. Likelihood: medium. Mitigation: export boundary names and
+  passive types only. Do not export an `analyseWorkflow`, `parseWithSwc`, or
+  `checkWorkflow` function in this task.
 
 - Risk: The future architecture test drifts back into task 1.1.1.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: keep this ExecPlan limited to passive boundary exports and
-  documentation. Leave the forbidden-import architecture test for roadmap task
-  2.1.4 unless `docs/roadmap.md` is explicitly revised first.
+  Severity: medium. Likelihood: medium. Mitigation: keep this ExecPlan limited
+  to passive boundary exports and documentation. Leave the forbidden-import
+  architecture test for roadmap task 2.1.4 unless `docs/roadmap.md` is
+  explicitly revised first.
 
 - Risk: Future SWC parser work repeats the rejected filename contract.
-  Severity: high.
-  Likelihood: medium.
-  Mitigation: record the verified SWC 1.15.43 API constraint in this plan and
-  documentation: top-level `parseSync` does not accept `filename`; only
-  `Compiler.parseSync(src, options, filename)` does.
+  Severity: high. Likelihood: medium. Mitigation: record the verified SWC
+  1.15.43 API constraint in this plan and documentation: top-level `parseSync`
+  does not accept `filename`; only `Compiler.parseSync(src, options, filename)`
+  does.
 
 - Risk: The boundary names over-abstract before implementation exists.
-  Severity: low.
-  Likelihood: medium.
-  Mitigation: keep names aligned to `docs/technical-design.md` section 6.1
-  components and avoid extra helper classes or speculative adapters.
+  Severity: low. Likelihood: medium. Mitigation: keep names aligned to
+  `docs/technical-design.md` section 6.1 components and avoid extra helper
+  classes or speculative adapters.
 
 ## Progress
 
@@ -171,29 +164,25 @@ in task 2.1.2. The forbidden-import architecture test belongs to roadmap task
 ## Surprises & Discoveries
 
 - Observation: The existing plan on this branch added work items for
-  `@swc/core` and `parseWithSwc`, but `docs/roadmap.md` puts both in task
-  2.2.1 after task 2.1.2.
-  Evidence: `docs/roadmap.md` section 1.1 lists task 1.1.1 as the boundary
-  scaffold, while section 2.2 lists task 2.2.1 as "Add `@swc/core` and
-  implement the parser adapter".
-  Impact: This plan now treats dependency and parser-adapter work as explicit
-  non-goals for task 1.1.1.
+  `@swc/core` and `parseWithSwc`, but `docs/roadmap.md` puts both in task 2.2.1
+  after task 2.1.2. Evidence: `docs/roadmap.md` section 1.1 lists task 1.1.1 as
+  the boundary scaffold, while section 2.2 lists task 2.2.1 as "Add `@swc/core`
+  and implement the parser adapter". Impact: This plan now treats dependency
+  and parser-adapter work as explicit non-goals for task 1.1.1.
 
 - Observation: The branch-local package does not declare or install
-  `@swc/core`.
-  Evidence: `package.json` has only existing dev dependencies, and
-  `node_modules/@swc/core` is absent.
-  Impact: Task 1.1.1 can remain dependency-free.
+  `@swc/core`. Evidence: `package.json` has only existing dev dependencies, and
+  `node_modules/@swc/core` is absent. Impact: Task 1.1.1 can remain
+  dependency-free.
 
 - Observation: The current source is still the template `greet` export.
   Evidence: `leta show greet` shows `src/index.ts` exporting `greet`, and
-  `leta refs greet` shows only `tests/index.test.ts` using it.
-  Impact: Work item 1 can replace the template surface without preserving
-  existing analyser behaviour.
+  `leta refs greet` shows only `tests/index.test.ts` using it. Impact: Work
+  item 1 can replace the template surface without preserving existing analyser
+  behaviour.
 
 - Observation: `package.json` is private and has no package-level `exports`,
-  `types`, or `main` fields.
-  Evidence: branch-local package inspection reported
+  `types`, or `main` fields. Evidence: branch-local package inspection reported
   `{ "private": true, "hasExports": false, "hasTypes": false, "hasMain": false
   }`.
   Impact: Task 1.1.1 should create a source-level internal boundary through
@@ -201,123 +190,111 @@ in task 2.1.2. The forbidden-import architecture test belongs to roadmap task
   to a later packaging or release task.
 
 - Observation: ODW `loadWorkflowScript` and primitive validation are executable
-  boundaries, not safe static APIs.
-  Evidence: sibling ODW `src/loader.ts` lines 78-90 compile workflow bodies
-  with `AsyncFunction`; lines 321-330 evaluate metadata with `new Function`;
-  `src/primitives.ts` lines 232-240 implement `validate(source)` by calling
-  `loadWorkflowScript`.
-  Impact: Production `odw-lint` code must own a separate static-analysis
-  boundary and must not import those helper paths.
+  boundaries, not safe static APIs. Evidence: sibling ODW `src/loader.ts` lines
+  78-90 compile workflow bodies with `AsyncFunction`; lines 321-330 evaluate
+  metadata with `new Function`; `src/primitives.ts` lines 232-240 implement
+  `validate(source)` by calling `loadWorkflowScript`. Impact: Production
+  `odw-lint` code must own a separate static-analysis boundary and must not
+  import those helper paths.
 
 - Observation: The round-2 plan implemented the forbidden-import architecture
   test inside task 1.1.1 even though `docs/roadmap.md` assigns that exact
-  success criterion to task 2.1.4.
-  Evidence: `docs/roadmap.md` section 2.1 lists task 2.1.4, "Add a
-  forbidden-import architecture test for production code", with `Requires
-  1.1.1`.
-  Impact: This plan now removes that work item and leaves the architecture
-  test for 2.1.4 unless the roadmap is explicitly revised first.
+  success criterion to task 2.1.4. Evidence: `docs/roadmap.md` section 2.1
+  lists task 2.1.4, "Add a forbidden-import architecture test for production
+  code", with `Requires 1.1.1`. Impact: This plan now removes that work item
+  and leaves the architecture test for 2.1.4 unless the roadmap is explicitly
+  revised first.
 
 - Observation: ODW's `checkMeta` helper is a static source-backed helper, while
   the loader, primitive validation, runtime launcher, and worker paths evaluate
-  or compile source.
-  Evidence: sibling ODW `src/dual-compat.ts` lines 34-50 define `checkMeta`
-  with a local literal parser and no source execution; `src/loader.ts` lines
-  321-330 evaluate metadata with `new Function`; `src/primitives.ts` lines
-  232-240 calls `loadWorkflowScript`.
-  Impact: This plan bans task-1.1.1 production ODW imports and production or
-  runtime ODW dependencies, but it does not create a conflicting future ban on
-  trusted fixture-parity dev dependencies or static helper imports.
+  or compile source. Evidence: sibling ODW `src/dual-compat.ts` lines 34-50
+  define `checkMeta` with a local literal parser and no source execution;
+  `src/loader.ts` lines 321-330 evaluate metadata with `new Function`;
+  `src/primitives.ts` lines 232-240 calls `loadWorkflowScript`. Impact: This
+  plan bans task-1.1.1 production ODW imports and production or runtime ODW
+  dependencies, but it does not create a conflicting future ban on trusted
+  fixture-parity dev dependencies or static helper imports.
 
 - Observation: TypeScript type unions cannot be asserted at runtime because
-  they are erased.
-  Evidence: the intended labels were previously only
+  they are erased. Evidence: the intended labels were previously only
   `StaticAnalysisComponent` and `StaticAnalysisStage` union types, while tests
-  were required to assert exported labels.
-  Impact: Work item 1 now makes the runtime contract explicit by exporting
-  `STATIC_ANALYSIS_COMPONENTS` and `STATIC_ANALYSIS_STAGES` readonly arrays and
-  deriving the union types from those arrays.
+  were required to assert exported labels. Impact: Work item 1 now makes the
+  runtime contract explicit by exporting `STATIC_ANALYSIS_COMPONENTS` and
+  `STATIC_ANALYSIS_STAGES` readonly arrays and deriving the union types from
+  those arrays.
 
 - Observation: CodeRabbit reported that `src/static-analysis/index.ts` should
   re-export symbols from a `./boundary` module and expose a specifier
-  classifier.
-  Evidence: work item 1 created only the approved passive `./types` boundary;
-  the ExecPlan forbids parser, diagnostic, CLI, resolver, and adapter
-  contracts in task 1.1.1.
-  Impact: No code change was applied for that finding. The requested boundary
-  module and specifier classifier are outside the approved task 1.1.1 scope.
+  classifier. Evidence: work item 1 created only the approved passive `./types`
+  boundary; the ExecPlan forbids parser, diagnostic, CLI, resolver, and adapter
+  contracts in task 1.1.1. Impact: No code change was applied for that finding.
+  The requested boundary module and specifier classifier are outside the
+  approved task 1.1.1 scope.
 
 ## Decision Log
 
 - Decision: Reduce roadmap task 1.1.1 to a named boundary scaffold with no SWC
-  dependency or parser adapter.
-  Rationale: `docs/roadmap.md` sequences dependency and adapter implementation
-  in task 2.2.1 after static envelope extraction in task 2.1.2. Keeping 1.1.1
-  dependency-free preserves that order while still satisfying the boundary
-  success criterion.
-  Date/Author: 2026-06-28, planning agent.
+  dependency or parser adapter. Rationale: `docs/roadmap.md` sequences
+  dependency and adapter implementation in task 2.2.1 after static envelope
+  extraction in task 2.1.2. Keeping 1.1.1 dependency-free preserves that order
+  while still satisfying the boundary success criterion. Date/Author:
+  2026-06-28, planning agent.
 
 - Decision: Define passive boundary vocabulary, not active analyser behaviour.
-  Rationale: `docs/technical-design.md` section 6.1 names components, but
-  tasks 1.2, 2.1, and 2.2 provide the diagnostic, envelope, and parser
-  behaviours. A passive scaffold prevents a false public contract.
-  Date/Author: 2026-06-28, planning agent.
+  Rationale: `docs/technical-design.md` section 6.1 names components, but tasks
+  1.2, 2.1, and 2.2 provide the diagnostic, envelope, and parser behaviours. A
+  passive scaffold prevents a false public contract. Date/Author: 2026-06-28,
+  planning agent.
 
 - Decision: Export runtime readonly label arrays and derive TypeScript unions
-  from them.
-  Rationale: Tests can assert runtime exports only when the contract includes
-  runtime values. Defining `STATIC_ANALYSIS_COMPONENTS` and
+  from them. Rationale: Tests can assert runtime exports only when the contract
+  includes runtime values. Defining `STATIC_ANALYSIS_COMPONENTS` and
   `STATIC_ANALYSIS_STAGES` as `as const` arrays keeps the runtime and type
-  contracts in one place without adding active analyser behaviour.
-  Date/Author: 2026-06-28, planning round 4 agent.
+  contracts in one place without adding active analyser behaviour. Date/Author:
+  2026-06-28, planning round 4 agent.
 
 - Decision: Keep task 1.1.1 to a source-level internal boundary and do not add
-  package-level `exports` or `types`.
-  Rationale: The branch-local `package.json` is private and currently has no
-  package export surface. Adding package-level exports would turn this
-  scaffold into a packaging decision before the CLI and release surface exist.
-  This task satisfies the roadmap by replacing the template source barrel at
-  `src/index.ts`; a later packaging task can add explicit package exports when
-  the public API is ready.
+  package-level `exports` or `types`. Rationale: The branch-local
+  `package.json` is private and currently has no package export surface. Adding
+  package-level exports would turn this scaffold into a packaging decision
+  before the CLI and release surface exist. This task satisfies the roadmap by
+  replacing the template source barrel at `src/index.ts`; a later packaging
+  task can add explicit package exports when the public API is ready.
   Date/Author: 2026-06-28, planning round 4 agent.
 
 - Decision: Defer the forbidden-import architecture test to roadmap task
-  2.1.4.
-  Rationale: `docs/roadmap.md` deliberately places the architecture test in
-  the later envelope-parsing step, with `Requires 1.1.1`. Implementing it here
-  would make the roadmap state false by shipping a 2.1.4 result while marking
-  only 1.1.1 complete.
-  Date/Author: 2026-06-28, planning agent.
+  2.1.4. Rationale: `docs/roadmap.md` deliberately places the architecture test
+  in the later envelope-parsing step, with `Requires 1.1.1`. Implementing it
+  here would make the roadmap state false by shipping a 2.1.4 result while
+  marking only 1.1.1 complete. Date/Author: 2026-06-28, planning agent.
 
 - Decision: Limit task-1.1.1 dependency restrictions to production/runtime
-  dependency boundaries.
-  Rationale: ADR 0001 forbids production dependence on executable ODW runtime
-  helpers, while `docs/technical-design.md` section 11.2 explicitly permits
-  future trusted fixture-parity tests to import ODW helpers where those helpers
-  are static and do not evaluate source. A blanket `devDependencies` or
-  `trustedDependencies` ban would conflict with that parity path.
-  Date/Author: 2026-06-28, planning agent.
+  dependency boundaries. Rationale: ADR 0001 forbids production dependence on
+  executable ODW runtime helpers, while `docs/technical-design.md` section 11.2
+  explicitly permits future trusted fixture-parity tests to import ODW helpers
+  where those helpers are static and do not evaluate source. A blanket
+  `devDependencies` or `trustedDependencies` ban would conflict with that
+  parity path. Date/Author: 2026-06-28, planning agent.
 
 - Decision: Defer the parser failure contract to task 2.2.1 and record the
-  required shape now.
-  Rationale: Task 1.1.1 should not export a parser failure type. When task
-  2.2.1 introduces the adapter, public failures must be project-owned and
-  sanitized. A public `cause` field would contradict the design rule against
-  leaking opaque dependency errors.
-  Date/Author: 2026-06-28, planning agent.
+  required shape now. Rationale: Task 1.1.1 should not export a parser failure
+  type. When task 2.2.1 introduces the adapter, public failures must be
+  project-owned and sanitized. A public `cause` field would contradict the
+  design rule against leaking opaque dependency errors. Date/Author:
+  2026-06-28, planning agent.
 
 - Decision: Skip CodeRabbit's work-item-1 `./boundary` and specifier
-  classifier suggestion.
-  Rationale: The approved plan requires `src/static-analysis/types.ts` plus
-  passive boundary exports and explicitly forbids importing later parser,
-  diagnostic, CLI, resolver, or adapter responsibilities into task 1.1.1.
-  Date/Author: 2026-06-28T05:33:45Z, implementation agent.
+  classifier suggestion. Rationale: The approved plan requires
+  `src/static-analysis/types.ts` plus passive boundary exports and explicitly
+  forbids importing later parser, diagnostic, CLI, resolver, or adapter
+  responsibilities into task 1.1.1. Date/Author: 2026-06-28T05:33:45Z,
+  implementation agent.
 
 - Decision: Mark only roadmap task 1.1.1 complete.
   Rationale: The implemented and documented work satisfies the boundary
   scaffold acceptance criteria without completing the deferred architecture
-  test in 2.1.4 or the SWC parser adapter in 2.2.1.
-  Date/Author: 2026-06-28T05:37:09Z, implementation agent.
+  test in 2.1.4 or the SWC parser adapter in 2.2.1. Date/Author:
+  2026-06-28T05:37:09Z, implementation agent.
 
 ## Context and orientation
 
@@ -361,8 +338,7 @@ The source-of-truth documents for this task are:
 - `docs/developers-guide.md` "Static-Analysis Boundary", "Commit Gate",
   "Tests", "Markdown", and "Documentation Upkeep".
 - `AGENTS.md` "Code Style and Structure", "Documentation Maintenance",
-  "Change Quality & Committing", "TypeScript Guidance", and "Markdown
-  Guidance".
+  "Change Quality & Committing", "TypeScript Guidance", and "Markdown Guidance".
 - `docs/documentation-style-guide.md` "Spelling", "Markdown rules", and
   "Roadmap task writing guidelines".
 - `docs/scripting-standards.md` "Operational guidelines" only if new scripts
@@ -400,17 +376,17 @@ design, the developer guide, and the roadmap as the relevant boundary sources.
 The index reflects `main` only, so branch-local facts were verified in this
 worktree with `leta`.
 
-Branch-local package inspection confirms that `package.json` is private and
-has no package-level `exports`, `types`, or `main` field. That means task 1.1.1
-can create the owned source boundary without making a package-surface decision.
-If a later task publishes a public package API, it must add explicit
-`package.json` `exports` and `types` entries then, following `AGENTS.md`
-"TypeScript Guidance".
+Branch-local package inspection confirms that `package.json` is private and has
+no package-level `exports`, `types`, or `main` field. That means task 1.1.1 can
+create the owned source boundary without making a package-surface decision. If
+a later task publishes a public package API, it must add explicit `package.json`
+`exports` and `types` entries then, following `AGENTS.md` "TypeScript
+Guidance".
 
 The SWC official documentation was checked with Firecrawl at
-<https://swc.rs/docs/usage/core>. It documents top-level `parse`,
-`parseSync`, `parseFile`, and `parseFileSync`, with top-level `parseSync`
-declared as `(src, options)` and no `filename` parameter.
+<https://swc.rs/docs/usage/core>. It documents top-level `parse`, `parseSync`,
+`parseFile`, and `parseFileSync`, with top-level `parseSync` declared as
+`(src, options)` and no `filename` parameter.
 
 The published `@swc/core@1.15.43` tarball was inspected in `/tmp` without
 modifying this repository. Its source confirms:
@@ -424,14 +400,13 @@ modifying this repository. Its source confirms:
 - `index.js` lines 393-398: top-level `parse` and `parseSync` delegate without
   a third argument.
 
-Therefore, if a later task locks `@swc/core@1.15.43`, task 2.2.1 has one
-valid filename-bearing path for that verified version: instantiate
-`new Compiler()` and call `compiler.parseSync(src, options, filename)`. If
-task 2.2.1 does not need a filename, it may use top-level
-`parseSync(src, options)`. Task 1.1.1 must not choose or implement either
-path. Because this repository does not currently declare `@swc/core`, the
-future parser-adapter task must re-check the then-locked package version before
-depending on any API shape.
+Therefore, if a later task locks `@swc/core@1.15.43`, task 2.2.1 has one valid
+filename-bearing path for that verified version: instantiate `new Compiler()`
+and call `compiler.parseSync(src, options, filename)`. If task 2.2.1 does not
+need a filename, it may use top-level `parseSync(src, options)`. Task 1.1.1
+must not choose or implement either path. Because this repository does not
+currently declare `@swc/core`, the future parser-adapter task must re-check the
+then-locked package version before depending on any API shape.
 
 The published `@swc/types@0.1.27` tarball was also inspected. It declares
 `ParseOptions`, `JscTarget`, `TsParserConfig`, `EsParserConfig`, `Span`, and
@@ -483,17 +458,15 @@ The boundary should define only stable scaffolding that this task can support:
 - `StaticAnalysisComponent`, derived from
   `typeof STATIC_ANALYSIS_COMPONENTS[number]`.
 - `STATIC_ANALYSIS_STAGES`, a readonly `as const` array with values
-  `"source"`, `"envelope"`, `"metadata"`, `"body"`, `"ast"`, and
-  `"diagnostic"`.
+  `"source"`, `"envelope"`, `"metadata"`, `"body"`, `"ast"`, and `"diagnostic"`.
 - `StaticAnalysisStage`, derived from
   `typeof STATIC_ANALYSIS_STAGES[number]`.
 
 Do not export an analyser function, parser adapter, parser result type, SWC
 type alias, diagnostic schema, or command contract. The string
 `"swc-parser-adapter"` is allowed only as a future component label from the
-technical design; it must not be backed by `@swc/core` in this task. Do not
-edit `package.json` to add `exports`, `types`, `main`, `bin`, or dependency
-entries.
+technical design; it must not be backed by `@swc/core` in this task. Do not edit
+`package.json` to add `exports`, `types`, `main`, `bin`, or dependency entries.
 
 Documentation and design citations:
 
@@ -583,8 +556,8 @@ Implement this as one documentation commit after work item 1. Update:
 - The same developer-guide section to state that direct SWC calls will belong
   only in the future parser adapter from roadmap task 2.2.1.
 - The same developer-guide section to state that task 1.1.1 deliberately does
-  not add `@swc/core`, `parseWithSwc`, a parser failure public contract, or
-  the forbidden-import architecture test.
+  not add `@swc/core`, `parseWithSwc`, a parser failure public contract, or the
+  forbidden-import architecture test.
 - The same developer-guide section to point implementers to roadmap task
   2.1.4 for the forbidden-import architecture test and task 2.2.1 for the SWC
   parser adapter.
@@ -646,8 +619,8 @@ and gated. Update:
 - This ExecPlan's `Progress`, `Decision Log`, and `Outcomes & Retrospective`
   sections with the completed work and gate results.
 
-Do not mark any 2.1 or 2.2 task complete. In particular, do not mark
-`2.1.4` or `2.2.1` complete.
+Do not mark any 2.1 or 2.2 task complete. In particular, do not mark `2.1.4` or
+`2.2.1` complete.
 
 Documentation and design citations:
 
@@ -815,22 +788,22 @@ diagrams to validate; that is acceptable only if it exits 0.
 
 All work items are additive or replacement edits that can be repeated after
 checking `git status --short`. If a formatter changes unrelated files, do not
-commit that churn. Park it only with a named `df12-stash` using
-`kind=discard`, or discard it only if it is clearly generated by this task.
+commit that churn. Park it only with a named `df12-stash` using `kind=discard`,
+or discard it only if it is clearly generated by this task.
 
 If implementation accidentally adds `@swc/core`, `@swc/types`,
-`open-dynamic-workflows`, or package-level `exports`, `types`, `main`, or
-`bin` fields, revert that work before committing and update `Decision Log` with
-the cause. Do not preserve an accidental dependency or package-surface change
-in a task 1.1.1 commit. If a future trusted fixture parity path appears
-necessary while working on 1.1.1, stop instead of adding a development or
-trusted dependency; that belongs to a later roadmap task or an explicit roadmap
+`open-dynamic-workflows`, or package-level `exports`, `types`, `main`, or `bin`
+fields, revert that work before committing and update `Decision Log` with the
+cause. Do not preserve an accidental dependency or package-surface change in a
+task 1.1.1 commit. If a future trusted fixture parity path appears necessary
+while working on 1.1.1, stop instead of adding a development or trusted
+dependency; that belongs to a later roadmap task or an explicit roadmap
 revision.
 
 If a gate fails, open the corresponding `/tmp/*-odw-lint-roadmap-1-1-1.out`
-log, fix the smallest relevant cause, rerun the failed gate, and then rerun
-the full gate for the work item. After two focused attempts, stop and update
-this plan.
+log, fix the smallest relevant cause, rerun the failed gate, and then rerun the
+full gate for the work item. After two focused attempts, stop and update this
+plan.
 
 ## Interfaces and dependencies
 
@@ -883,8 +856,8 @@ There are no new dependencies in task 1.1.1. The future parser dependency is
 locks version 1.15.43 and needs filename-aware parsing with that verified API,
 it must use `new Compiler().parseSync(src, options, filename)` and test that
 path; top-level `parseSync(src, options)` cannot carry a filename. If task
-2.2.1 locks a different version, re-verify the official docs and package
-source before relying on the API.
+2.2.1 locks a different version, re-verify the official docs and package source
+before relying on the API.
 
 The future forbidden-import architecture test remains task 2.1.4. That task
 should start with production import/export declaration checks. If it also
@@ -954,11 +927,11 @@ types. `src/static-analysis/index.ts` and `src/index.ts` re-export only those
 approved source-level names.
 
 The work item passed `make all` after formatting and import organization, and
-the branch-local boundary checks found no forbidden SWC or ODW dependencies,
-no production ODW runtime references, no out-of-scope parser, diagnostic, CLI,
-or resolver symbols, and no package-level `exports`, `types`, `main`, or
-`bin` fields. CodeRabbit ran once; its only finding requested a module and
-classifier outside the approved scope, so no code change was made for it.
+the branch-local boundary checks found no forbidden SWC or ODW dependencies, no
+production ODW runtime references, no out-of-scope parser, diagnostic, CLI, or
+resolver symbols, and no package-level `exports`, `types`, `main`, or `bin`
+fields. CodeRabbit ran once; its only finding requested a module and classifier
+outside the approved scope, so no code change was made for it.
 
 Work item 2 documented the current source-level scaffold in
 `docs/developers-guide.md`. The guide now names `src/static-analysis/`, states
@@ -996,8 +969,8 @@ The round-4 revision resolves the three blocking review points:
 The round-3 revision resolves the three blocking review points:
 
 - Roadmap sequencing: removed the forbidden-import architecture test work item
-  from task 1.1.1. The plan now leaves that test in roadmap task 2.1.4 and
-  says not to mark any 2.1 task complete.
+  from task 1.1.1. The plan now leaves that test in roadmap task 2.1.4 and says
+  not to mark any 2.1 task complete.
 - Dependency contract: replaced the blanket ODW dependency ban with a
   production/runtime dependency restriction for task 1.1.1, while preserving
   the future trusted fixture-parity path allowed by ADR 0001 and
@@ -1020,8 +993,8 @@ The round-2 revision resolved the previous four blocking review points:
   executable helper call tokens. Round 3 supersedes that by deferring the test
   entirely to task 2.1.4.
 - Parser error shape: removed the task-1.1.1 parser failure type and recorded a
-  future task-2.2.1 requirement that public parse failures must be sanitized and
-  must not expose opaque SWC exceptions through a public `cause`.
+  future task-2.2.1 requirement that public parse failures must be sanitized
+  and must not expose opaque SWC exceptions through a public `cause`.
 
 ## Round 2 revision note
 
@@ -1033,12 +1006,12 @@ roadmap task 2.1.4.
 
 ## Round 3 revision note
 
-This revision removes the out-of-sequence architecture-test work item from
-task 1.1.1 and leaves it for roadmap task 2.1.4. It narrows dependency
-language to task-1.1.1 production/runtime boundaries so later trusted
-fixture-parity tests can still use static ODW helpers where the design permits
-that. It also records the syntactic-scan constraint that future 2.1.4 work must
-meet if it checks executable helper calls.
+This revision removes the out-of-sequence architecture-test work item from task
+1.1.1 and leaves it for roadmap task 2.1.4. It narrows dependency language to
+task-1.1.1 production/runtime boundaries so later trusted fixture-parity tests
+can still use static ODW helpers where the design permits that. It also records
+the syntactic-scan constraint that future 2.1.4 work must meet if it checks
+executable helper calls.
 
 ## Round 4 revision note
 
@@ -1046,6 +1019,6 @@ This revision makes the passive label contract testable at runtime by adding
 required `STATIC_ANALYSIS_COMPONENTS` and `STATIC_ANALYSIS_STAGES` exports,
 with type unions derived from those arrays. It adds explicit branch-local
 boundary checks for dependencies, ODW runtime references, package-surface
-fields, and out-of-scope parser, diagnostic, CLI, and resolver symbols. It
-also clarifies that task 1.1.1 creates only a source-level internal boundary
-through `src/index.ts`, not package-level `exports` or `types`.
+fields, and out-of-scope parser, diagnostic, CLI, and resolver symbols. It also
+clarifies that task 1.1.1 creates only a source-level internal boundary through
+`src/index.ts`, not package-level `exports` or `types`.

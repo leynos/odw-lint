@@ -10,9 +10,9 @@ This audit was run after the warning-budget slice added `--max-warnings`, split
 argument parsing into `src/cli/check-cli-args.ts`, and wired the exit policy
 through `src/cli/run-check.ts` and `src/cli/check-cli.ts`. It used `grepai`
 against the canonical main-branch index for intent search, direct file
-inspection at commit `9e8c21a` for every branch-local fact, and `sem`/`git show`
-to review the 3.3.2 change surface. Findings concentrate on the newly extracted
-CLI argument parser and its documentation.
+inspection at commit `9e8c21a` for every branch-local fact, and `sem`/
+`git show` to review the 3.3.2 change surface. Findings concentrate on the
+newly extracted CLI argument parser and its documentation.
 
 Documentation consulted: `AGENTS.md` (quality gates, en-GB Oxford spelling,
 TypeScript guidance on grouping parameters and extracting predicates),
@@ -43,8 +43,8 @@ The output-format path is the only one that conflates "no value supplied" with
 bug on the terminal.
 
 Proposed fix: in `parseOutputFormatValue`, return
-`{ ok: false, usageError: "missing value for --output-format" }` when `value`
-is `undefined`, mirroring `parseMaxWarningsValue`. Keep the
+`{ ok: false, usageError: "missing value for --output-format" }` when `value` is
+`undefined`, mirroring `parseMaxWarningsValue`. Keep the
 `"unsupported output format: <value>"` message for a present-but-invalid value
 (including the empty string from `--output-format=`).
 
@@ -53,11 +53,10 @@ is `undefined`, mirroring `parseMaxWarningsValue`. Keep the
 - Category: similarity
 - Severity: Low
 - Location: `src/cli/check-cli-args.ts`
-  (`parseCheckOption` dispatch, lines 121-146; the
-  `parsedOutputFormatOption`/`parsedOutputFormatEqualsOption`/
-  `parsedOutputFormatState` trio, lines 173-255; and the near-identical
-  `parsedMaxWarningsOption`/`parsedMaxWarningsEqualsOption`/
-  `parsedMaxWarningsState` trio, lines 193-294)
+  (`parseCheckOption` dispatch, lines 121-146; the `parsedOutputFormatOption`/
+  `parsedOutputFormatEqualsOption`/ `parsedOutputFormatState` trio, lines
+  173-255; and the near-identical `parsedMaxWarningsOption`/
+  `parsedMaxWarningsEqualsOption`/ `parsedMaxWarningsState` trio, lines 193-294)
 
 The output-format and max-warnings options are parsed by structurally identical
 code. Each has: a space-form handler that reads `tokens[nextIndex + 1]` and
@@ -93,8 +92,8 @@ the inconsistent output-format message ship undetected.
 
 Proposed fix: add table rows for `["check", "--output-format"]` and
 `["check", "--config"]` asserting the intended `missing value for …` messages.
-Land the `--output-format` row together with the Finding 1 fix so it encodes the
-corrected contract rather than the current misleading text.
+Land the `--output-format` row together with the Finding 1 fix so it encodes
+the corrected contract rather than the current misleading text.
 
 ## Finding 4: User guide does not distinguish implemented `--max-warnings` from planned options
 
@@ -104,19 +103,19 @@ corrected contract rather than the current misleading text.
   (the "planned options follow `ruff check`" list, lines 47-67)
 
 The option catalogue is introduced by "The planned options follow `ruff check`
-where the concepts map cleanly", yet it mixes shipped and deferred flags without
-a per-item status marker. Only `--output-format` is annotated "is available
-now" (line 49). `--max-warnings` (now implemented by task 3.3.2), together with
-`--config` and `--isolated` (also implemented, see `src/cli/check-cli.ts`
-`loadConfigForCheck`, lines 117-127), sit in the same list as genuinely deferred
-flags such as `--exit-zero`, `--fix`, and `--output-file`. A reader cannot tell
-which options work today. `docs/developers-guide.md` is authoritative that
-`--exit-zero` and `--strict-claude` remain deferred, so the user guide is the
-weak link.
+where the concepts map cleanly", yet it mixes shipped and deferred flags
+without a per-item status marker. Only `--output-format` is annotated "is
+available now" (line 49). `--max-warnings` (now implemented by task 3.3.2),
+together with `--config` and `--isolated` (also implemented, see
+`src/cli/check-cli.ts` `loadConfigForCheck`, lines 117-127), sit in the same
+list as genuinely deferred flags such as `--exit-zero`, `--fix`, and
+`--output-file`. A reader cannot tell which options work today.
+`docs/developers-guide.md` is authoritative that `--exit-zero` and
+`--strict-claude` remain deferred, so the user guide is the weak link.
 
 Proposed fix: mark each implemented option "available now" (matching the
-`--output-format` bullet), or split the list into an "Available now" group and a
-"Planned" group. At minimum annotate `--max-warnings`, `--config`, and
+`--output-format` bullet), or split the list into an "Available now" group and
+a "Planned" group. At minimum annotate `--max-warnings`, `--config`, and
 `--isolated` as implemented.
 
 ## Finding 5: Command-shape section omits a `--max-warnings` invocation example
@@ -135,9 +134,9 @@ have no copy-pasteable example showing the flag position or the exit-code
 behaviour it drives.
 
 Proposed fix: add a short runnable example (for example
-`bun run src/cli/main.ts check --max-warnings 5 workflows/example.js`) alongside
-the existing examples, with one sentence on the exit-0-within-budget behaviour
-that cross-references the exit-code table.
+`bun run src/cli/main.ts check --max-warnings 5 workflows/example.js`)
+alongside the existing examples, with one sentence on the exit-0-within-budget
+behaviour that cross-references the exit-code table.
 
 ## Finding 6: Repeated exact-optional spread pattern across CLI builders
 
@@ -151,21 +150,21 @@ To satisfy `exactOptionalPropertyTypes`, four builders spell out the
 `...(value === undefined ? {} : { key: value })` conditional-spread idiom by
 hand, once per optional field. The pattern is correct but verbose and repeated,
 and each new optional field grows the boilerplate. This is low-risk but adds
-reading friction in exactly the hot path a maintainer touches when extending the
-CLI request shape.
+reading friction in exactly the hot path a maintainer touches when extending
+the CLI request shape.
 
 Proposed fix: introduce a tiny shared helper such as
 `optionalField(key, value)` returning `{}` or `{ [key]: value }`, or an
 `omitUndefined(record)` utility, and use it consistently across these builders.
-Sweep for an existing helper first per the `AGENTS.md` abstraction policy before
-adding a new one.
+Sweep for an existing helper first per the `AGENTS.md` abstraction policy
+before adding a new one.
 
 ## Tooling note
 
 `grepai` intent search against the canonical main-branch index and direct
-worktree file inspection at commit `9e8c21a` informed this sweep; `sem`/`git
-show` framed the 3.3.2 change surface. Sandboxed `git-donkey`/`git worktree`
-invocations required interactive approval, so the inspection worktree was
-provisioned with `EnterWorktree`, matching the approach recorded in
+worktree file inspection at commit `9e8c21a` informed this sweep; `sem`/
+`git show` framed the 3.3.2 change surface. Sandboxed `git-donkey`/
+`git worktree` invocations required interactive approval, so the inspection
+worktree was provisioned with `EnterWorktree`, matching the approach recorded in
 `docs/issues/audit-2.3.2.md`. All findings above were confirmed by reading the
 branch-local files directly.

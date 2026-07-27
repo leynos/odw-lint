@@ -1,9 +1,8 @@
 # Consolidate Build-Gate Git Support
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -43,8 +42,8 @@ this draft is reviewed and approved.
 - Use `leta` for branch-local TypeScript symbol navigation, references, call
   graphs, and refactoring. Exact text search is acceptable for Markdown,
   Makefile rules, lockfile entries, and string literals that are not code
-  symbols. If `leta` fails transiently, record the exact command and failure
-  in `Surprises & Discoveries`, then continue with bounded file inspection.
+  symbols. If `leta` fails transiently, record the exact command and failure in
+  `Surprises & Discoveries`, then continue with bounded file inspection.
 - Use `sem` instead of raw Git history or blame if codebase history navigation
   is needed. Ordinary `git status`, scoped diffs, and Git commands used by the
   build-gate tests remain acceptable.
@@ -65,8 +64,8 @@ this draft is reviewed and approved.
 - Do not add production `src/` code. The helper seam is test/build-gate
   infrastructure only and must not be exported from the package entry point.
 - Do not import executable ODW runtime paths. Do not execute workflow source,
-  import workflow fixtures as modules, call ODW loader helpers, start ODW
-  runs, or dispatch agents.
+  import workflow fixtures as modules, call ODW loader helpers, start ODW runs,
+  or dispatch agents.
 - Preserve each gate's feature-specific policy:
   `tests/build-gate/file-size-support.ts` still filters tracked TypeScript
   paths under `src/` and `tests/`; `tests/build-gate/whitespace-hygiene.ts`
@@ -109,32 +108,24 @@ conflict in `Decision Log`, and escalate.
 ## Risks
 
 - Risk: The helper can become an over-broad test utility drawer.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: keep `git-support.ts` limited to Git command execution,
-  tracked-file listing, temporary repository setup, repository-relative writes,
-  commits, and CLI-output capture. Document that feature policy stays in each
-  gate module.
+  Severity: medium. Likelihood: medium. Mitigation: keep `git-support.ts`
+  limited to Git command execution, tracked-file listing, temporary repository
+  setup, repository-relative writes, commits, and CLI-output capture. Document
+  that feature policy stays in each gate module.
 - Risk: Consolidating process execution accidentally changes branch-freshness
-  timeout or prompt-disabled behaviour.
-  Severity: high.
-  Likelihood: medium.
+  timeout or prompt-disabled behaviour. Severity: high. Likelihood: medium.
   Mitigation: add helper tests that prove `createGitRunner` passes
   `GIT_TERMINAL_PROMPT=0`, uses a bounded timeout, normalizes nullable
   `spawnSync` output to strings, and surfaces spawn errors.
 - Risk: Moving tracked-file parsing could weaken file-size or whitespace error
-  text.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: keep existing focused tests and add shared-helper tests for
-  `git ls-files -z` parsing and failure messages before updating callers.
+  text. Severity: medium. Likelihood: medium. Mitigation: keep existing focused
+  tests and add shared-helper tests for `git ls-files -z` parsing and failure
+  messages before updating callers.
 - Risk: Temporary-repository helpers might bake in branch-freshness-specific
-  defaults that make whitespace hygiene tests harder to read.
-  Severity: medium.
-  Likelihood: low.
-  Mitigation: expose a generic `createTemporaryRepository` with typed options
-  for name, email, initial branch, and prefix; keep branch-freshness fixture
-  composition in `branch-freshness-git-fixtures.ts`.
+  defaults that make whitespace hygiene tests harder to read. Severity: medium.
+  Likelihood: low. Mitigation: expose a generic `createTemporaryRepository`
+  with typed options for name, email, initial branch, and prefix; keep
+  branch-freshness fixture composition in `branch-freshness-git-fixtures.ts`.
 
 ## Progress
 
@@ -157,130 +148,115 @@ conflict in `Decision Log`, and escalate.
 ## Surprises & Discoveries
 
 - Observation: The assigned branch is stale relative to canonical
-  `origin/main`.
-  Evidence: `git status --short --branch` in the assigned worktree reported
-  `## roadmap-1-5-5...origin/main [behind 1]`; `sem diff --from HEAD --to
-  origin/main` reported protected docs/tests changes in
-  `docs/execplans/roadmap-2-1-7.md`, `docs/roadmap.md`,
+  `origin/main`. Evidence: `git status --short --branch` in the assigned
+  worktree reported `## roadmap-1-5-5...origin/main [behind 1]`;
+  `sem diff --from HEAD --to origin/main` reported protected docs/tests changes
+  in `docs/execplans/roadmap-2-1-7.md`, `docs/roadmap.md`,
   `tests/diagnostics/public-consumer.test.ts`, and
-  `tests/diagnostics/types.test.ts`.
-  Impact: implementation must start with an explicit fetch/rebase or merge
-  step before TypeScript work begins, and source evidence must be recomputed
-  after that step.
+  `tests/diagnostics/types.test.ts`. Impact: implementation must start with an
+  explicit fetch/rebase or merge step before TypeScript work begins, and source
+  evidence must be recomputed after that step.
 - Observation: GrepAI was available and returned build-gate Git surfaces on the
-  canonical main index.
-  Evidence:
+  canonical main index. Evidence:
   `grepai search --workspace 'Projects' --project 'odw-lint'` with query
-  `build gate git command helper branch freshness working tree status`
-  returned `tests/build-gate/branch-freshness-git.ts`,
+  `build gate git command helper branch freshness working tree status` returned
+  `tests/build-gate/branch-freshness-git.ts`,
   `tests/build-gate/branch-freshness-git-fixtures.ts`,
   `tests/build-gate/branch-freshness.ts`, and
-  `tests/build-gate/branch-freshness-git-runner.ts`.
-  Impact: this plan still treats branch-freshness as the highest-density Git
-  support surface while verifying local file-size and whitespace duplication
-  in the worktree.
+  `tests/build-gate/branch-freshness-git-runner.ts`. Impact: this plan still
+  treats branch-freshness as the highest-density Git support surface while
+  verifying local file-size and whitespace duplication in the worktree.
 - Observation: `leta files` and `leta grep` are available in this worktree.
   Evidence: `leta files` listed the repository tree, and
   `leta grep "tracked|Git|git|repo|capture|commit|write|run" tests/build-gate
-  -k function,method,type,interface,variable,const --docs --head 160` found
-  `createGitRunner`, `runGit`, `trackedSourceAndTestTypeScriptFiles`,
+  -k function,method,type,interface,variable,const --docs --head 160`
+  found `createGitRunner`, `runGit`, `trackedSourceAndTestTypeScriptFiles`,
   `trackedRepositoryFiles`, `createTemporaryRepository`, `writeRepositoryFile`,
-  `commitAll`, and `createCapturedCliOutput`.
-  Impact: implementation can use Leta for branch-local symbol movement.
+  `commitAll`, and `createCapturedCliOutput`. Impact: implementation can use
+  Leta for branch-local symbol movement.
 - Observation: Bun 1.3.11 returns nullable output on executable-not-found
   `spawnSync` despite the locked `@types/node` `SpawnSyncReturns<T>` type
-  declaring `stdout: T` and `stderr: T`.
-  Evidence:
+  declaring `stdout: T` and `stderr: T`. Evidence:
   `bun -e 'const { spawnSync } = require("node:child_process"); const r =
   spawnSync("definitely-not-a-real-command-odw-lint", [], { encoding:
   "utf8" }); console.log(JSON.stringify({ stdout: r.stdout, stderr:
-  r.stderr, errorCode: r.error?.code }));'` printed
-  `{"stdout":null,"stderr":null,"errorCode":"ENOENT"}`.
-  Impact: the shared helper must normalize `result.stdout ?? ""` and
-  `result.stderr ?? ""` at its boundary instead of exposing nullable fields.
+  r.stderr, errorCode: r.error?.code }));'`
+  printed `{"stdout":null,"stderr":null,"errorCode":"ENOENT"}`. Impact: the
+  shared helper must normalize `result.stdout ?? ""` and `result.stderr ?? ""`
+  at its boundary instead of exposing nullable fields.
 - Observation: Work item 0 rebased the branch onto current `origin/main`
-  without conflicts.
-  Evidence: `git rebase origin/main` completed with
+  without conflicts. Evidence: `git rebase origin/main` completed with
   `Successfully rebased and updated refs/heads/roadmap-1-5-5`; subsequent
-  `sem diff --from origin/main --to HEAD` reported no changes.
-  Impact: implementation starts from current canonical protected docs and
-  diagnostics tests.
+  `sem diff --from origin/main --to HEAD` reported no changes. Impact:
+  implementation starts from current canonical protected docs and diagnostics
+  tests.
 - Observation: Refreshed canonical-main GrepAI results now identify the audit
   source and prior build-gate ExecPlan rather than branch-local code files.
   Evidence:
   `grepai search --workspace Projects --project odw-lint "build gate Git
-  support helper seam" --toon --compact --limit 8` returned
-  `docs/issues/audit-2.1.7.md` and
-  `docs/execplans/roadmap-1-5-4.md`.
-  Impact: use the audit finding as the canonical intent source, then verify
-  all implementation facts directly in this refreshed worktree.
+  support helper seam" --toon --compact --limit 8`
+  returned `docs/issues/audit-2.1.7.md` and `docs/execplans/roadmap-1-5-4.md`.
+  Impact: use the audit finding as the canonical intent source, then verify all
+  implementation facts directly in this refreshed worktree.
 - Observation: Bun 1.3.11 can also return an undefined status for an
-  executable-not-found `spawnSync` result.
-  Evidence: the new `createGitRunner` focused test first failed with
-  `Received: undefined` for `result.status` when `PATH` contained no `git`
-  executable.
-  Impact: `createGitRunner` now normalizes `result.status ?? null` along with
-  stdout and stderr so callers receive the declared `GitCommandResult`
-  contract.
+  executable-not-found `spawnSync` result. Evidence: the new `createGitRunner`
+  focused test first failed with `Received: undefined` for `result.status` when
+  `PATH` contained no `git` executable. Impact: `createGitRunner` now normalizes
+  `result.status ?? null` along with stdout and stderr so callers receive the
+  declared `GitCommandResult` contract.
 - Observation: CodeRabbit review for work item 1 was rate-limited once, then
-  returned six findings after the required backoff.
-  Evidence: the first work item 1 review reported `Rate limit exceeded`; after
-  an 87-minute `vsleep`, the retry returned six findings. Timeout injection,
-  signal propagation, diagnostic snapshot coverage, parsed-payload snapshot
-  coverage, and mutable mock call arrays were still valid and fixed. The
-  suggestion to assign `result.status` directly was skipped because the
-  focused Bun runtime test had already shown `undefined` for a missing
-  executable.
-  Impact: helper diagnostics now preserve child-process signals and focused
-  tests can exercise timeout behaviour without waiting 30 seconds, while the
-  project-owned status normalization remains in place.
+  returned six findings after the required backoff. Evidence: the first work
+  item 1 review reported `Rate limit exceeded`; after an 87-minute `vsleep`,
+  the retry returned six findings. Timeout injection, signal propagation,
+  diagnostic snapshot coverage, parsed-payload snapshot coverage, and mutable
+  mock call arrays were still valid and fixed. The suggestion to assign
+  `result.status` directly was skipped because the focused Bun runtime test had
+  already shown `undefined` for a missing executable. Impact: helper
+  diagnostics now preserve child-process signals and focused tests can exercise
+  timeout behaviour without waiting 30 seconds, while the project-owned status
+  normalization remains in place.
 - Observation: The follow-up CodeRabbit pass for work item 1 returned three
-  small still-valid findings.
-  Evidence: review asked to rename the `lsTrackedFiles` injected runner option,
-  increase the focused timeout test from 1 ms, and exercise real UTF-8 output.
-  Impact: the option is now `gitRunner`, the timeout test uses 20 ms with a
-  shell-builtin busy loop, and the fake Git runner round-trips `café` through
-  both arguments and stdout.
+  small still-valid findings. Evidence: review asked to rename the
+  `lsTrackedFiles` injected runner option, increase the focused timeout test
+  from 1 ms, and exercise real UTF-8 output. Impact: the option is now
+  `gitRunner`, the timeout test uses 20 ms with a shell-builtin busy loop, and
+  the fake Git runner round-trips `café` through both arguments and stdout.
 - Observation: The final CodeRabbit pass for work item 1 returned two
-  still-valid findings before commit.
-  Evidence: review asked for `NodeJS.ErrnoException` on `GitCommandResult.error`
-  and a real cwd assertion in the fake Git runner test.
-  Impact: the result type now preserves errno fields, and the test compares
-  `realpathSync` of the captured `pwd` with the repository path before
-  replacing it for snapshot readability.
+  still-valid findings before commit. Evidence: review asked for
+  `NodeJS.ErrnoException` on `GitCommandResult.error` and a real cwd assertion
+  in the fake Git runner test. Impact: the result type now preserves errno
+  fields, and the test compares `realpathSync` of the captured `pwd` with the
+  repository path before replacing it for snapshot readability.
 - Observation: Scrutineer became unavailable during the final work item 1 gate
-  loop because its fixed Codex Spark quota was exhausted.
-  Evidence: attempting to spawn `scrutineer` for deterministic gates returned
-  `You've hit your usage limit for GPT-5.3-Codex-Spark`.
-  Impact: the same deterministic commands and CodeRabbit review were run
-  locally from the assigned worktree to avoid blocking on an external quota.
+  loop because its fixed Codex Spark quota was exhausted. Evidence: attempting
+  to spawn `scrutineer` for deterministic gates returned
+  `You've hit your usage limit for GPT-5.3-Codex-Spark`. Impact: the same
+  deterministic commands and CodeRabbit review were run locally from the
+  assigned worktree to avoid blocking on an external quota.
 - Observation: The local CodeRabbit pass for work item 1 returned three
-  still-valid findings.
-  Evidence: review asked for configurable `maxBuffer`, a serial-execution note
-  around process environment mutation, and JSON escaping in the fake Git
-  capture script.
-  Impact: `createGitRunner` now uses a configurable 64 MiB default buffer, the
-  test documents the process-wide environment assumption, and the fake Git
-  capture script escapes quotes and backslashes before writing JSON.
+  still-valid findings. Evidence: review asked for configurable `maxBuffer`, a
+  serial-execution note around process environment mutation, and JSON escaping
+  in the fake Git capture script. Impact: `createGitRunner` now uses a
+  configurable 64 MiB default buffer, the test documents the process-wide
+  environment assumption, and the fake Git capture script escapes quotes and
+  backslashes before writing JSON.
 - Observation: The final local CodeRabbit retry for work item 1 returned four
-  findings, two still valid and two already covered.
-  Evidence: review requested type-contract coverage and a less aggressive
-  timeout test, which were fixed. It also repeated a request for
-  failure-message snapshots, but the current `lsTrackedFiles` tests already
-  snapshot the non-zero status, spawn-error, and signal branches.
-  Impact: helper type shapes are pinned by type-only assertions, and the
-  timeout test now uses a 150 ms timeout to avoid relying on a narrow CI
-  scheduling window.
+  findings, two still valid and two already covered. Evidence: review requested
+  type-contract coverage and a less aggressive timeout test, which were fixed.
+  It also repeated a request for failure-message snapshots, but the current
+  `lsTrackedFiles` tests already snapshot the non-zero status, spawn-error, and
+  signal branches. Impact: helper type shapes are pinned by type-only
+  assertions, and the timeout test now uses a 150 ms timeout to avoid relying
+  on a narrow CI scheduling window.
 
 ## Decision Log
 
 - Decision: Extract one test-only helper module named
-  `tests/build-gate/git-support.ts`.
-  Rationale: roadmap task 1.5.5 and audit finding 2 both point to one helper
-  seam. The helper is cohesive because all exported operations are about
-  test/build-gate Git infrastructure, while file-size, whitespace, and
-  branch-freshness policy remains colocated with the corresponding gate.
-  Date/Author: 2026-07-01 / Codex.
+  `tests/build-gate/git-support.ts`. Rationale: roadmap task 1.5.5 and audit
+  finding 2 both point to one helper seam. The helper is cohesive because all
+  exported operations are about test/build-gate Git infrastructure, while
+  file-size, whitespace, and branch-freshness policy remains colocated with the
+  corresponding gate. Date/Author: 2026-07-01 / Codex.
 - Decision: Make origin-main refresh work item 0.
   Rationale: the branch is behind `origin/main`, and protected docs/tests have
   changed on canonical main. Rebase or merge must happen before code changes so
@@ -288,37 +264,33 @@ conflict in `Decision Log`, and escalate.
   Date/Author: 2026-07-01 / Codex.
 - Decision: Keep `GitCommandResult.stdout` and `GitCommandResult.stderr` as
   strings by normalizing nullable `spawnSync` output to empty strings in
-  `createGitRunner` and fixture Git helpers.
-  Rationale: callers should not repeat runtime-specific null checks. Bun 1.3.11
-  can return `null` for failed spawns, and tests must pin the project-owned
-  normalized contract.
+  `createGitRunner` and fixture Git helpers. Rationale: callers should not
+  repeat runtime-specific null checks. Bun 1.3.11 can return `null` for failed
+  spawns, and tests must pin the project-owned normalized contract.
   Date/Author: 2026-07-01 / Codex.
 - Decision: Keep `branch-freshness-git-fixtures.ts` as the
   branch-freshness-specific fixture composer rather than moving the whole file
-  into `git-support.ts`.
-  Rationale: the temporary bare origin, main clone, task clone, seeded roadmap,
-  and roadmap mutation helpers are feature-specific policy. Only generic
-  repository creation, file writes, commits, Git execution, and output capture
-  belong in the shared seam.
-  Date/Author: 2026-07-01 / Codex.
+  into `git-support.ts`. Rationale: the temporary bare origin, main clone, task
+  clone, seeded roadmap, and roadmap mutation helpers are feature-specific
+  policy. Only generic repository creation, file writes, commits, Git
+  execution, and output capture belong in the shared seam. Date/Author:
+  2026-07-01 / Codex.
 - Decision: Use existing Node-compatible `node:child_process.spawnSync` and
-  the Git CLI, not a new Git library.
-  Rationale: the repository already depends on this mechanism, the task is
-  consolidation rather than dependency change, and official `spawnSync`
-  documentation plus local Bun runtime evidence cover the needed process
-  contract.
-  Date/Author: 2026-07-01 / Codex.
+  the Git CLI, not a new Git library. Rationale: the repository already depends
+  on this mechanism, the task is consolidation rather than dependency change,
+  and official `spawnSync` documentation plus local Bun runtime evidence cover
+  the needed process contract. Date/Author: 2026-07-01 / Codex.
 - Decision: No sibling ODW checkout is needed for the implementation mechanism.
-  Rationale: the task touches only build-gate Git support under `tests/`.
-  It does not lean on ODW loader, workflow, or example behaviour. Static ODW
-  runtime boundaries still apply as constraints.
-  Date/Author: 2026-07-01 / Codex.
+  Rationale: the task touches only build-gate Git support under `tests/`. It
+  does not lean on ODW loader, workflow, or example behaviour. Static ODW
+  runtime boundaries still apply as constraints. Date/Author: 2026-07-01 /
+  Codex.
 
 ## Outcomes & Retrospective
 
-Work item 0 refreshed the branch onto current `origin/main`, recomputed
-GrepAI, Leta, and Sem evidence, and left no code changes. The implementation
-baseline is current with canonical main before TypeScript work begins.
+Work item 0 refreshed the branch onto current `origin/main`, recomputed GrepAI,
+Leta, and Sem evidence, and left no code changes. The implementation baseline
+is current with canonical main before TypeScript work begins.
 
 Work item 1 added `tests/build-gate/git-support.ts` and
 `tests/build-gate/git-support.test.ts`. The focused helper test now proves
@@ -330,11 +302,11 @@ diagnostics, configurable test timeouts, and inline snapshots for helper-owned
 error strings and captured command payloads. A second review pass tightened the
 injected runner option name, made the short-timeout test less race-prone, and
 added non-ASCII UTF-8 coverage. The final pre-commit review pass refined the
-spawn error type and restored a real captured-cwd assertion. A local
-CodeRabbit pass, used after scrutineer quota exhaustion, added configurable
-output buffering and hardened the fake Git capture test. The last review retry
-added type-contract assertions and relaxed the timeout test while confirming
-the existing failure-message snapshots already cover the requested branches.
+spawn error type and restored a real captured-cwd assertion. A local CodeRabbit
+pass, used after scrutineer quota exhaustion, added configurable output
+buffering and hardened the fake Git capture test. The last review retry added
+type-contract assertions and relaxed the timeout test while confirming the
+existing failure-message snapshots already cover the requested branches.
 
 Work item 2 moved file-size and whitespace hygiene tracked-file listing onto
 `lsTrackedFiles`. File-size remains responsible for filtering tracked
@@ -351,14 +323,14 @@ the 400-line limit.
 
 Work item 4 documented the helper ownership boundary in the developer and
 repository-layout guides, ticked roadmap task 1.5.5 complete, and re-ran the
-focused build-gate tests before the final repository gates. The completed
-seam leaves Git mechanics in `tests/build-gate/git-support.ts` and keeps each
-gate's feature policy colocated with the corresponding gate.
+focused build-gate tests before the final repository gates. The completed seam
+leaves Git mechanics in `tests/build-gate/git-support.ts` and keeps each gate's
+feature policy colocated with the corresponding gate.
 
 ## Context and Orientation
 
-Roadmap task 1.5.5 appears in `docs/roadmap.md` under "1.5. Preserve public
-API and review surfaces". It requires tasks 1.5.1, 1.5.2, and 1.5.4 and says:
+Roadmap task 1.5.5 appears in `docs/roadmap.md` under "1.5. Preserve public API
+and review surfaces". It requires tasks 1.5.1, 1.5.2, and 1.5.4 and says:
 
 ```plaintext
 Share the Git runner, tracked-file listing, temporary-repository setup, and
@@ -375,8 +347,8 @@ The current canonical build-gate surface under `tests/build-gate/` is:
   `runGitFileListing`, and `assertGitFileListingSucceeded`, and imports another
   `parseNulSeparatedPaths` from `whitespace-hygiene-support.ts`.
 - `branch-freshness-git-runner.ts` owns `GitCommandResult`, `GitRunner`,
-  `createGitRunner`, and `runGit`, with `GIT_TERMINAL_PROMPT=0` and a
-  30-second timeout.
+  `createGitRunner`, and `runGit`, with `GIT_TERMINAL_PROMPT=0` and a 30-second
+  timeout.
 - `branch-freshness-git-fixtures.ts` owns a branch-freshness fixture composer,
   repository-relative file writes, captured CLI output, and a fail-fast test
   `git` helper.
@@ -411,11 +383,11 @@ locked versions, official documentation, and local runtime checks:
   subdirectory. This supports one helper that calls
   `git ls-files -z --full-name -- <pathspecs...>`.
 - The official Node `child_process` documentation for `spawnSync` says it is
-  synchronous, blocks until exit or termination, and supports options for
-  `cwd`, `env`, `encoding`, `timeout`, `maxBuffer`, stdout, stderr, process
-  status, and spawn errors. The same documentation describes child-process
-  stdout and stderr as nullable or undefined when spawning fails, so the helper
-  must not assume subprocess output is always present.
+  synchronous, blocks until exit or termination, and supports options for `cwd`,
+  `env`, `encoding`, `timeout`, `maxBuffer`, stdout, stderr, process status,
+  and spawn errors. The same documentation describes child-process stdout and
+  stderr as nullable or undefined when spawning fails, so the helper must not
+  assume subprocess output is always present.
 - The locked local source `node_modules/@types/node/child_process.d.ts`
   defines `SpawnSyncReturns<T>` with `status: number | null`, `error?: Error`,
   and string overloads for `spawnSync(..., { encoding: "utf8" })`. It does not
@@ -450,8 +422,8 @@ Read these before implementing each work item:
 - `docs/terms-of-reference.md` sections 1 "Purpose", 2 "Domain", 6 "Goals",
   7 "Non-goals", and 9 "Constraints".
 - `docs/technical-design.md` sections 2 "Goals and non-goals",
-  3 "Evidence and prior art", 5 "Static-analysis boundary", and
-  6 "Architecture".
+  3 "Evidence and prior art", 5 "Static-analysis boundary", and 6
+  "Architecture".
 - `docs/adr/0001-static-analysis-boundary.md` sections "Decision" and
   "Consequences".
 - `docs/developers-guide.md` sections "Commit Gate", "Tests", "Markdown", and
@@ -671,8 +643,8 @@ Red:
      ./tests/build-gate/whitespace-hygiene.test.ts
    ```
 
-   Expect failure because feature modules still use local result shapes or
-   local `spawnSync` listing.
+   Expect failure because feature modules still use local result shapes or local
+   `spawnSync` listing.
 
 Green:
 
@@ -772,8 +744,8 @@ Green:
 3. Update `tests/build-gate/branch-freshness-git.ts` imports to use
    `./git-support`.
 4. Update `tests/build-gate/branch-freshness-git-fixtures.ts` to import
-   `runFixtureGit`, `writeRepositoryFile`, and `createCapturedCliOutput`.
-   Keep `createGitFixture`, `commitMainChange`, `commitRoadmapChange`,
+   `runFixtureGit`, `writeRepositoryFile`, and `createCapturedCliOutput`. Keep
+   `createGitFixture`, `commitMainChange`, `commitRoadmapChange`,
    `deleteMainRoadmap`, `renameMainPath`, `mergeMainIntoTask`, and
    `checkoutTaskBranch` in this file because they express branch-freshness
    fixture policy.
@@ -804,9 +776,9 @@ make markdownlint
 make nixie
 ```
 
-`tests/build-gate/branch-freshness-git-runner.ts` is deleted in this work
-item, so do not include it in direct formatter commands. Use `make all` to
-verify the final file graph.
+`tests/build-gate/branch-freshness-git-runner.ts` is deleted in this work item,
+so do not include it in direct formatter commands. Use `make all` to verify the
+final file graph.
 
 Commit this work item independently after the focused tests and gates pass.
 
@@ -869,8 +841,7 @@ Commit this work item independently after all gates pass.
 
 ## Concrete Steps
 
-Run all commands from
-`/data/leynos/Projects/odw-lint.worktrees/roadmap-1-5-5`.
+Run all commands from `/data/leynos/Projects/odw-lint.worktrees/roadmap-1-5-5`.
 
 1. Confirm the worktree and branch:
 
@@ -923,8 +894,8 @@ Acceptance requires all of the following observable behaviours:
   files, preserves fixture bytes, and uses shared temporary repository and CLI
   capture helpers.
 - `bun test ./tests/build-gate/branch-freshness-git.test.ts` passes and proves
-  branch freshness still detects stale protected changes, preserves CLI
-  output, and uses the shared Git runner and fixture helpers.
+  branch freshness still detects stale protected changes, preserves CLI output,
+  and uses the shared Git runner and fixture helpers.
 - `make all` exits 0 and includes build, formatting check, whitespace hygiene,
   lint, typecheck, and tests. On current `origin/main`, `make all` includes the
   `typecheck` target.
@@ -954,16 +925,16 @@ The implementation steps are safe to repeat in the assigned worktree. If a Red
 test fails for a reason other than the expected missing helper or mismatched
 contract, stop and update `Surprises & Discoveries` before editing helper code.
 
-Temporary repositories created by tests must be disposed with `rmSync(...,
-{ recursive: true, force: true })` in `finally` blocks or through helper-owned
-disposers. If a test aborts and leaves a temporary directory behind, delete
-only directories under the OS temp path with prefixes introduced by
-`git-support.ts`, such as `odw-lint-git-support-`,
-`odw-lint-whitespace-`, or `odw-lint-branch-freshness-`.
+Temporary repositories created by tests must be disposed with
+`rmSync(..., { recursive: true, force: true })` in `finally` blocks or through
+helper-owned disposers. If a test aborts and leaves a temporary directory
+behind, delete only directories under the OS temp path with prefixes introduced
+by `git-support.ts`, such as `odw-lint-git-support-`, `odw-lint-whitespace-`, or
+`odw-lint-branch-freshness-`.
 
-If Markdown formatting creates unrelated churn, do not keep it. Revert only
-the unrelated formatter edits after confirming they are outside the files
-changed by the current work item. If a stash is unavoidable, name it using:
+If Markdown formatting creates unrelated churn, do not keep it. Revert only the
+unrelated formatter edits after confirming they are outside the files changed
+by the current work item. If a stash is unavoidable, name it using:
 
 ```sh
 git stash push -m 'df12-stash v1 task=1.5.5 kind=discard reason="park unrelated formatter churn"'

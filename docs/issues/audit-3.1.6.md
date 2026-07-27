@@ -57,17 +57,17 @@ Description:
 All three deterministic-time rule docs, including the copy the 3.1.6 commit
 touched, still list "block, `for`, and `catch` shadows attributed to the
 enclosing function scope" among the remaining conservative limits. That
-attribution stopped being true at roadmap task 3.1.5.1, which added
-block/`for`/`catch`-precise shadowing. `workflow-ast-scopes.ts:33` now treats
+attribution stopped being true at roadmap task 3.1.5.1, which added block/`for`/
+`catch`-precise shadowing. `workflow-ast-scopes.ts:33` now treats
 `BlockStatement`, `CatchClause`, `ForInStatement`, `ForOfStatement`, and
 `ForStatement` as scope-opening nodes (`BLOCK_LIKE_SCOPE_TYPES`), and
 `tests/static-analysis/workflow-deterministic-time-scopes.test.ts:181` asserts
 that a sibling use outside a block/`for`/`catch` shadow is reported while the
 in-scope use is suppressed. The docs therefore understate the tool: a user
 reading the limitation would expect a `for (let Date = ...) {}` shadow to
-silence a later top-level `Date.now()`, which the scanner correctly does not do.
-The 3.1.6 edit refreshed the adjacent alias-limitation paragraph but left the
-stale block clause in place.
+silence a later top-level `Date.now()`, which the scanner correctly does not
+do. The 3.1.6 edit refreshed the adjacent alias-limitation paragraph but left
+the stale block clause in place.
 
 Proposed fix:
 
@@ -97,9 +97,9 @@ Description:
 each visited node in two independent calls. `enterScope`
 (`workflow-ast-scopes.ts:77`) calls `scopeOwnFacts(scopeNode)` to read
 `ownNames`, and `enterAliasScope` (`workflow-deterministic-time-aliases.ts:82`)
-then calls `scopeOwnFacts(node)` again for the same node to read both `ownNames`
-and `ownInitializers`. `scopeOwnFacts` performs a full own-facts collection walk
-of the node's immediate subtree with no memoization
+then calls `scopeOwnFacts(node)` again for the same node to read both
+`ownNames` and `ownInitializers`. `scopeOwnFacts` performs a full own-facts
+collection walk of the node's immediate subtree with no memoization
 (`workflow-ast-scopes.ts:97`), so every scope-opening node in the body is
 collected twice on the single hazard traversal. This is a fresh redundancy
 introduced by 3.1.6: before the alias pass moved onto the scope model, only the
@@ -109,8 +109,8 @@ already recorded as Finding 7 of `audit-3.1.5.md`.
 Proposed fix:
 
 Compute `scopeOwnFacts(node)` once in `enterDeterministicTimeScope` and thread
-the result into both scope-entry helpers. Add an overload or sibling helper such
-as `enterScopeWithFacts(view, facts)` and
+the result into both scope-entry helpers. Add an overload or sibling helper
+such as `enterScopeWithFacts(view, facts)` and
 `enterAliasScopeWithFacts(parentAliases, bindings, facts, rules)` that accept a
 precomputed `ScopeOwnFacts`, keeping the existing single-argument entry points
 for other callers. Guard with
@@ -178,27 +178,26 @@ Two whole-AST binding collectors still coexist. `collectLexicalBindings`
 (`workflow-ast-bindings.ts:43`) produces a flat, whole-body bound-name set and
 is the only binding fact reachable through the public `collectWorkflowAstFacts`
 surface (`workflow-ast-facts.ts:45`, re-exported from
-`src/static-analysis/index.ts`). The scope-precise
-`scopeOwnFacts`/`rootScopeView`/`enterScope` family
-(`workflow-ast-scopes.ts`) is what every deterministic-time rule now actually
-consumes. After 3.1.6 no internal rule reads the flat facts, yet the two
-collectors encode the same "which nodes introduce bindings" policy twice and
-have already drifted: `workflow-ast-scopes.ts:21` lists `MethodProperty`,
-`GetterProperty`, and `SetterProperty` as function-like scopes, but
-`STATEMENT_BINDING_COLLECTORS` in `workflow-ast-bindings.ts:24` has no entries
-for object-literal getters, setters, or methods. A public consumer using
-`isIdentifierBound` on the flat facts therefore gets a whole-body,
-getter/setter-blind answer that no longer matches the scope model the linter
-trusts internally. This restates Findings 3 and 7 of `audit-3.1.5.md` with the
-post-3.1.6 divergence made concrete.
+`src/static-analysis/index.ts`). The scope-precise `scopeOwnFacts`/
+`rootScopeView`/`enterScope` family (`workflow-ast-scopes.ts`) is what every
+deterministic-time rule now actually consumes. After 3.1.6 no internal rule
+reads the flat facts, yet the two collectors encode the same "which nodes
+introduce bindings" policy twice and have already drifted:
+`workflow-ast-scopes.ts:21` lists `MethodProperty`, `GetterProperty`, and
+`SetterProperty` as function-like scopes, but `STATEMENT_BINDING_COLLECTORS` in
+`workflow-ast-bindings.ts:24` has no entries for object-literal getters,
+setters, or methods. A public consumer using `isIdentifierBound` on the flat
+facts therefore gets a whole-body, getter/setter-blind answer that no longer
+matches the scope model the linter trusts internally. This restates Findings 3
+and 7 of `audit-3.1.5.md` with the post-3.1.6 divergence made concrete.
 
 Proposed fix:
 
 Unify the two collectors behind one parametrized walk whose only variation is a
-scope-boundary stop flag, exactly as roadmap task 3.2.6 already proposes, so the
-node-shape knowledge and the function-like set live in one place and the flat
-view is the scope view without the boundary stop. Until that lands, either add
-the missing object-literal accessor collectors to
+scope-boundary stop flag, exactly as roadmap task 3.2.6 already proposes, so
+the node-shape knowledge and the function-like set live in one place and the
+flat view is the scope view without the boundary stop. Until that lands, either
+add the missing object-literal accessor collectors to
 `STATEMENT_BINDING_COLLECTORS` so the flat public facts match the scope model,
 or document on `collectLexicalBindings` that it is a whole-body approximation
 that intentionally omits object-literal accessor scopes. Gate any change on
@@ -225,18 +224,19 @@ longer leaks. The alias test suites do not exercise any of these paths:
 `workflow-deterministic-time-alias-scopes.test.ts` and
 `workflow-deterministic-time-alias-arguments.test.ts` build only function-scope
 and parameter cases, with no `for (...)` or `catch (...)` bodies. The
-block-precise alias behaviour is consequently pinned only indirectly, if at all,
-which makes the collector-unification refactor of Finding 4 and roadmap task
-3.2.6 harder to land safely for the alias branch.
+block-precise alias behaviour is consequently pinned only indirectly, if at
+all, which makes the collector-unification refactor of Finding 4 and roadmap
+task 3.2.6 harder to land safely for the alias branch.
 
 Proposed fix:
 
 Add block/`for`/`catch` alias cases to
 `workflow-deterministic-time-alias-scopes.test.ts` mirroring the bare-global
-cases in `workflow-deterministic-time-scopes.test.ts:128`: an alias declared and
-used inside a block or `for` header that is suppressed within the block, and a
-sibling use after the block that is still reported. Cover both member aliases
-(`const now = Date.now`) and global-object aliases (`const D = Date; D.now()`).
+cases in `workflow-deterministic-time-scopes.test.ts:128`: an alias declared
+and used inside a block or `for` header that is suppressed within the block,
+and a sibling use after the block that is still reported. Cover both member
+aliases (`const now = Date.now`) and global-object aliases
+(`const D = Date; D.now()`).
 
 ## Resolved since audit-3.1.5
 

@@ -30,9 +30,9 @@ Skills and tools used:
 The 3.2.5 change extracted `isAstNode`, `astChildValues`, and an
 `isUnknownRecord` re-export into `swc-ast.ts`, then pointed the
 deterministic-time scanner, the deterministic-time alias collector, and the
-global-object resolver at those helpers. It answered the 3.1.4 audit's Finding 3
-(re-implemented guards) and part of its Finding 4 (hand-rolled traversal). The
-findings below concentrate on what the consolidation left unfinished: the
+global-object resolver at those helpers. It answered the 3.1.4 audit's Finding
+3 (re-implemented guards) and part of its Finding 4 (hand-rolled traversal).
+The findings below concentrate on what the consolidation left unfinished: the
 recursive traversal *driver* is still duplicated, the lexical binding collector
 never adopted the seam, and one of the two surviving copies of the walker
 diverges in a way that silently drops a class of deterministic-time hazards.
@@ -57,18 +57,18 @@ array, and non-node record — where the third branch exists specifically to
 descend through SWC argument wrappers (its own comment reads "Visits nested SWC
 nodes, including wrappers such as call arguments"). SWC models `CallExpression`
 and `NewExpression` arguments as `{ spread?, expression }` wrapper records that
-carry no `type` field, so `astChildValues` yields those wrapper records and only
-the record branch reaches the argument expressions inside them.
+carry no `type` field, so `astChildValues` yields those wrapper records and
+only the record branch reaches the argument expressions inside them.
 
 The alias prepass driver `collectAliasesFromChild`
 (`workflow-deterministic-time-aliases.ts:148`) has only the AST-node and array
 branches; it lacks the non-node record branch. Consequently the alias collector
 never descends into any call or `new` argument. Because
 `collectDeterministicTimeAliases` runs as a whole-module prepass whose result
-feeds `aliasCallMatch`, any deterministic-time alias declared inside an argument
-expression is never recorded, and the later hazard walk — which *does* reach
-that subtree — cannot classify the aliased call. The result is a false negative
-for the very rules this module ships. For example:
+feeds `aliasCallMatch`, any deterministic-time alias declared inside an
+argument expression is never recorded, and the later hazard walk — which *does*
+reach that subtree — cannot classify the aliased call. The result is a false
+negative for the very rules this module ships. For example:
 
 ```js
 const timestamp = consume((() => {
@@ -110,11 +110,11 @@ Location:
 Description:
 
 The suite pins the hazard walker's argument-wrapper descent
-(`consume(Date.now())` at line 295) and alias collection from nested `if` blocks
-(line 282), but nothing exercises an alias *declaration* nested inside a call or
-`new` argument. That is precisely the untested combination that lets Finding 1
-regress silently: a change could break — or, as today, already have broken —
-argument-scoped alias detection and CI would stay green.
+(`consume(Date.now())` at line 295) and alias collection from nested `if`
+blocks (line 282), but nothing exercises an alias *declaration* nested inside a
+call or `new` argument. That is precisely the untested combination that lets
+Finding 1 regress silently: a change could break — or, as today, already have
+broken — argument-scoped alias detection and CI would stay green.
 
 Proposed fix:
 
@@ -147,13 +147,12 @@ traversal primitive so the hazard walk and other collectors could be expressed
 as visitors over one driver. Task 3.2.5 extracted the leaf helpers `isAstNode`
 and `astChildValues` but stopped short of the driver: the recursive walk itself
 is still hand-written twice. `visitNode`/`visitChildValue`
-(`workflow-deterministic-time.ts:99`) and
-`collectAliasesFromNode`/`collectAliasesFromChild`
-(`workflow-deterministic-time-aliases.ts:133`) are the same pre-order,
-node/array/record recursion differing only in the per-node action and — as
-Finding 1 shows — in one accidentally-omitted branch. Keeping two copies is what
-allowed the branches to drift apart, and any future SWC node-shape assumption
-must be taught to both.
+(`workflow-deterministic-time.ts:99`) and `collectAliasesFromNode`/
+`collectAliasesFromChild` (`workflow-deterministic-time-aliases.ts:133`) are
+the same pre-order, node/array/record recursion differing only in the per-node
+action and — as Finding 1 shows — in one accidentally-omitted branch. Keeping
+two copies is what allowed the branches to drift apart, and any future SWC
+node-shape assumption must be taught to both.
 
 Proposed fix:
 
@@ -179,31 +178,32 @@ Location:
 
 Description:
 
-`technical-design.md:125` states that the `swc-ast.ts` seam "owns the strict AST
-node guard, semantic child-field traversal, and the record guard re-export
+`technical-design.md:125` states that the `swc-ast.ts` seam "owns the strict
+AST node guard, semantic child-field traversal, and the record guard re-export
 consumed by the deterministic-time scanner, deterministic-time alias collector,
-global-object resolver, **and lexical binding collector**," and that keeping the
-helpers in one module "prevents rule-local traversal drift." The lexical binding
-collector only partly matches that claim. `workflow-ast-bindings.ts` imports
-just `isUnknownRecord` from the seam; it neither uses `isAstNode` nor
+global-object resolver, **and lexical binding collector**," and that keeping
+the helpers in one module "prevents rule-local traversal drift." The lexical
+binding collector only partly matches that claim. `workflow-ast-bindings.ts`
+imports just `isUnknownRecord` from the seam; it neither uses `isAstNode` nor
 `astChildValues`. Its child recursion, `collectChildBindings`
 (`workflow-ast-bindings.ts:275`), is a bespoke `Object.values(node)` walk that
-visits every field — including the `span`, `type`, and `ctxt` bookkeeping fields
-that `astChildValues` deliberately excludes — and it carries its own local
-`AstNode` shape type (`workflow-ast-bindings.ts:13`) parallel to the `@swc/core`
-`Node` used elsewhere. The module therefore still has exactly the rule-local
-traversal the design note says the seam prevents, and the note overstates the
-consolidation's reach.
+visits every field — including the `span`, `type`, and `ctxt` bookkeeping
+fields that `astChildValues` deliberately excludes — and it carries its own
+local `AstNode` shape type (`workflow-ast-bindings.ts:13`) parallel to the
+`@swc/core` `Node` used elsewhere. The module therefore still has exactly the
+rule-local traversal the design note says the seam prevents, and the note
+overstates the consolidation's reach.
 
 Proposed fix:
 
 Either finish the migration — replace `collectChildBindings`'s `Object.values`
 recursion with the shared traversal primitive from Finding 3 (or at least
-`astChildValues`) and reconcile the local `AstNode` type against the seam's node
-guard — or, if the binding collector's field-visiting semantics are
-intentionally broader, narrow the `technical-design.md` claim to say the binding
-collector consumes only the record guard and keeps its own traversal for a
-stated reason. Prefer the migration so the design note stays literally true.
+`astChildValues`) and reconcile the local `AstNode` type against the seam's
+node guard — or, if the binding collector's field-visiting semantics are
+intentionally broader, narrow the `technical-design.md` claim to say the
+binding collector consumes only the record guard and keeps its own traversal
+for a stated reason. Prefer the migration so the design note stays literally
+true.
 
 ## Finding 5: single-type node narrowers are re-implemented
 
@@ -221,24 +221,25 @@ Location:
 
 Description:
 
-3.2.5 shared the two structural guards (`isAstNode`, `isUnknownRecord`) but left
-a family of near-identical single-type narrowers scattered across the modules
-that now import the seam. `isMemberExpression` is defined in both
+3.2.5 shared the two structural guards (`isAstNode`, `isUnknownRecord`) but
+left a family of near-identical single-type narrowers scattered across the
+modules that now import the seam. `isMemberExpression` is defined in both
 `workflow-deterministic-time-aliases.ts:248` and
 `workflow-global-object-reference.ts:136`; `isExpression` is defined in both
 (`aliases.ts:253`, `global-object-reference.ts:141`) and is byte-identical —
-`(value) => isAstNode(value)` — in each. `isIdentifier` is defined in both files
-too, but with divergent contracts: in `aliases.ts:243` it accepts `unknown`
-(`isAstNode(value) && value.type === "Identifier"`), while in
+`(value) => isAstNode(value)` — in each. `isIdentifier` is defined in both
+files too, but with divergent contracts: in `aliases.ts:243` it accepts
+`unknown` (`isAstNode(value) && value.type === "Identifier"`), while in
 `global-object-reference.ts:131` it accepts a `Node` and only checks
-`node.type === "Identifier"`. Same name, two shapes, is a readability hazard for
-an auditor tracing shadow logic across the two modules.
+`node.type === "Identifier"`. Same name, two shapes, is a readability hazard
+for an auditor tracing shadow logic across the two modules.
 
 Proposed fix:
 
 Add a small typed narrower to `swc-ast.ts`, for example
 `isNodeOfType<T extends Node["type"]>(value: unknown, type: T)`, and derive the
-per-type guards (`Identifier`, `MemberExpression`, `CallExpression`) from it, or
-export the concrete narrowers directly. Replace the module-local copies and drop
-the trivial `isExpression` aliases in favour of `isAstNode`. This removes the
-duplicate definitions and eliminates the two-contract `isIdentifier` ambiguity.
+per-type guards (`Identifier`, `MemberExpression`, `CallExpression`) from it,
+or export the concrete narrowers directly. Replace the module-local copies and
+drop the trivial `isExpression` aliases in favour of `isAstNode`. This removes
+the duplicate definitions and eliminates the two-contract `isIdentifier`
+ambiguity.

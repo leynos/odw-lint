@@ -1,13 +1,13 @@
 # Audit after roadmap task 2.1.14
 
-This post-step audit was run after roadmap task 2.1.14 (`Consolidate delimited
-and balanced scanner loops`) merged into `origin/main` at commit `b23bbac`. The
-task promoted two shared region-level walkers, `scanDelimitedRegionEnd` and
-`scanBalancedExpressionEnd`, into a new internal sibling module,
-`src/static-analysis/source-scanner-regions.ts`, re-exported them through the
-`source-scanner-primitives.ts` seam, and migrated the source-mask string and
-delimiter scanners, the workflow-metadata comment and parser scanners, and the
-`templateExpressionEnd` walk onto them.
+This post-step audit was run after roadmap task 2.1.14
+(`Consolidate delimited and balanced scanner loops`) merged into `origin/main`
+at commit `b23bbac`. The task promoted two shared region-level walkers,
+`scanDelimitedRegionEnd` and `scanBalancedExpressionEnd`, into a new internal
+sibling module, `src/static-analysis/source-scanner-regions.ts`, re-exported
+them through the `source-scanner-primitives.ts` seam, and migrated the
+source-mask string and delimiter scanners, the workflow-metadata comment and
+parser scanners, and the `templateExpressionEnd` walk onto them.
 
 The audit worked in a fresh worktree off `origin/main` and verified every
 branch-local fact with targeted file inspection, `git` commit and history
@@ -57,17 +57,17 @@ Location:
 Description:
 
 Task 2.1.14's success criterion states that "source-mask and workflow-metadata
-scanners no longer carry forked escaped-delimited or balanced-expression loops",
-and the developers' guide it updated in the same commit now says scanner-family
-modules "must not re-implement the shared UTF-16 delimited, balanced, string, or
-comment-walk loops". `source-mask-templates.ts` still does exactly that.
-`scanTemplateEnd` runs a hand-rolled state machine that tracks `${ ... }` brace
-depth (`nextOrdinaryTemplateStep` increments and decrements `expressionDepth` on
-`{` and `}`) and skips nested strings, comments, and templates
-(`nextTemplateExpressionIndex`) — the same delimited-region and
-balanced-expression backbone now owned by
-`source-scanner-regions.ts:163` (`scanBalancedExpressionEnd`) and
-`source-scanner-regions.ts:100` (`scanDelimitedRegionEnd`).
+scanners no longer carry forked escaped-delimited or balanced-expression
+loops", and the developers' guide it updated in the same commit now says
+scanner-family modules "must not re-implement the shared UTF-16 delimited,
+balanced, string, or comment-walk loops". `source-mask-templates.ts` still does
+exactly that. `scanTemplateEnd` runs a hand-rolled state machine that tracks
+`${ ... }` brace depth (`nextOrdinaryTemplateStep` increments and decrements
+`expressionDepth` on `{` and `}`) and skips nested strings, comments, and
+templates (`nextTemplateExpressionIndex`) — the same delimited-region and
+balanced-expression backbone now owned by `source-scanner-regions.ts:163`
+(`scanBalancedExpressionEnd`) and `source-scanner-regions.ts:100`
+(`scanDelimitedRegionEnd`).
 
 The reason it survived is real: the template scanner additionally recognizes
 regex literals inside interpolation expressions (`isTemplateRegexStart`), which
@@ -80,15 +80,17 @@ in two places that can drift.
 Proposed fix:
 
 Extend the shared balanced walker to accept an optional inert-region resolver,
-for example `scanBalancedExpressionEnd(text, start, end, { open, close,
-resolveInertRegion })`, defaulting to `nextInertRegionEnd`. Have
-`source-mask-templates.ts` supply a resolver that also recognizes its regex
-literals, then express the outer template scan as a delimited-region scan whose
-interpolation follows the shared balanced walker. Keep the template-mask
-snapshot tests as the guard for the consolidation. If the contracts are judged
-too divergent to merge safely, record the exclusion explicitly in the
-developers' guide alongside the existing `scanExpressionEnd` "where contracts
-match" carve-out, so the documented rule and the code agree.
+for example
+`scanBalancedExpressionEnd(text, start, end, { open, close,
+resolveInertRegion })`,
+defaulting to `nextInertRegionEnd`. Have `source-mask-templates.ts` supply a
+resolver that also recognizes its regex literals, then express the outer
+template scan as a delimited-region scan whose interpolation follows the shared
+balanced walker. Keep the template-mask snapshot tests as the guard for the
+consolidation. If the contracts are judged too divergent to merge safely,
+record the exclusion explicitly in the developers' guide alongside the existing
+`scanExpressionEnd` "where contracts match" carve-out, so the documented rule
+and the code agree.
 
 ## Finding 2: Regex-start heuristic is duplicated with divergent keyword sets
 
@@ -124,13 +126,13 @@ context only.
 
 Proposed fix:
 
-Promote a single regex-start module (or extend `source-mask-regex.ts`'s exported
-predicate) that owns the character set, keyword set, and disallowed-token set
-once, and have both `source-mask-regex.ts` and `source-mask-templates.ts`
-consume it. If the template context genuinely needs a narrower keyword set,
-express that as an explicit, documented restriction of the shared set rather
-than a silently forked copy, and add the parity test in Finding 6 to pin the
-relationship.
+Promote a single regex-start module (or extend `source-mask-regex.ts`'s
+exported predicate) that owns the character set, keyword set, and
+disallowed-token set once, and have both `source-mask-regex.ts` and
+`source-mask-templates.ts` consume it. If the template context genuinely needs
+a narrower keyword set, express that as an explicit, documented restriction of
+the shared set rather than a silently forked copy, and add the parity test in
+Finding 6 to pin the relationship.
 
 ## Finding 3: Region primitives accreted more thin pass-through wrappers
 
@@ -154,8 +156,8 @@ Description:
 one-line pass-throughs to shared primitives with no rule predicting which call
 sites wrap and which import directly. The 2.1.14 change did not address it and
 added another instance: `scanQuotedStringEnd` and `scanEscapedDelimitedEnd` are
-now both single-statement adapters over `scanDelimitedRegionEnd`, differing only
-in the `terminateAtLineTerminator` option, while `scanDelimitedEnd`,
+now both single-statement adapters over `scanDelimitedRegionEnd`, differing
+only in the `terminateAtLineTerminator` option, while `scanDelimitedEnd`,
 `scanBlockCommentEnd`, and `scanBalancedEnd` remain thin renamings of
 `scanDelimitedRegionEnd`, `blockCommentEnd`, and `scanBalancedExpressionEnd`.
 The seam is still applied unevenly, so a reader cannot predict from a call site
@@ -164,9 +166,9 @@ whether the primitive or an alias is in use.
 Proposed fix:
 
 Decide the convention and apply it uniformly: either import the region
-primitives directly at call sites and delete the option-only adapters, or keep a
-domain-named seam per scanner family and document it in the developers' guide as
-the single rule. Adapters that carry a real option (for example the
+primitives directly at call sites and delete the option-only adapters, or keep
+a domain-named seam per scanner family and document it in the developers' guide
+as the single rule. Adapters that carry a real option (for example the
 line-terminator variant) are defensible; the pure renamings are not.
 
 ## Finding 4: Repository layout still omits the scanner primitives and regions
@@ -184,11 +186,11 @@ Description:
 `audit-2.1.13` Finding 5 noted that `docs/repository-layout.md` — the map
 readers reach for first — describes only the `source-mask` facade and its
 `source-mask-*` helpers and never mentions `source-scanner-primitives.ts`. That
-gap is still open, and 2.1.14 widened it: the new
-`source-scanner-regions.ts` region-walker module and the primitives seam it is
-re-exported through appear in `docs/technical-design.md` and
-`docs/developers-guide.md` but not in the layout map. The `src/static-analysis/`
-section still reads as though only the masking facade exists.
+gap is still open, and 2.1.14 widened it: the new `source-scanner-regions.ts`
+region-walker module and the primitives seam it is re-exported through appear in
+`docs/technical-design.md` and `docs/developers-guide.md` but not in the
+layout map. The `src/static-analysis/` section still reads as though only the
+masking facade exists.
 
 Proposed fix:
 
@@ -218,8 +220,8 @@ module. The code is correct at run time — `delimitedRegionSkipEnd` is only
 invoked after module evaluation completes, by which point the binding is
 initialized — but the forward reference reads awkwardly, obscures the mutual
 dependency between the delimited and balanced walkers, and would trip a
-`no-use-before-define`-style lint if one were enabled. It is a small readability
-cost in a module that is otherwise the documented scanner seam.
+`no-use-before-define`-style lint if one were enabled. It is a small
+readability cost in a module that is otherwise the documented scanner seam.
 
 Proposed fix:
 
@@ -253,8 +255,8 @@ other would still pass.
 Proposed fix:
 
 Once Finding 2's shared regex-start predicate exists, add a table-driven test
-that feeds the same `<previous-token> /re/` construct through both the top-level
-masker and a template interpolation and asserts identical regex-vs-division
-classification (or, if the narrowing is intentional, asserts the documented
-difference explicitly). This makes any future drift a test failure rather than a
-silent inconsistency.
+that feeds the same `<previous-token> /re/` construct through both the
+top-level masker and a template interpolation and asserts identical
+regex-vs-division classification (or, if the narrowing is intentional, asserts
+the documented difference explicitly). This makes any future drift a test
+failure rather than a silent inconsistency.

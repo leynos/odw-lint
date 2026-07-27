@@ -1,10 +1,10 @@
 # Audit after roadmap task 2.1.12
 
-This post-step audit was run after roadmap task 2.1.12 (`Introduce a static
-workflow lint entry point`) merged into `origin/main` at commit `7acad62`. The
-audit used `grepai` against the canonical `main` index for intent search, then
-verified every branch-local fact in a fresh worktree off `origin/main` with
-`leta`, targeted file inspection, and `sem` entity history.
+This post-step audit was run after roadmap task 2.1.12
+(`Introduce a static workflow lint entry point`) merged into `origin/main` at
+commit `7acad62`. The audit used `grepai` against the canonical `main` index
+for intent search, then verified every branch-local fact in a fresh worktree off
+`origin/main` with `leta`, targeted file inspection, and `sem` entity history.
 
 Normative references used:
 
@@ -68,8 +68,8 @@ Promote a single canonical string-delimiter predicate. Add a type-guarded
 existing `isQuotedStringDelimiter` and `isTemplateDelimiter` helpers, and
 re-export it. Delete the three private copies in the workflow-metadata modules
 and import the predicate. Consider whether `isStringLikeDelimiter` can then be
-defined as, or replaced by, the shared type guard so there is exactly one notion
-of a string-like delimiter.
+defined as, or replaced by, the shared type guard so there is exactly one
+notion of a string-like delimiter.
 
 ## Finding 2: Identifier-character classification diverges
 
@@ -101,10 +101,10 @@ Three different notions of "identifier-continuation character" coexist:
   `/[A-Za-z0-9_$]/u`, which excludes every non-ASCII identifier character.
 
 Beyond the plain duplication, the divergence is a latent correctness bug. The
-envelope scanners use `isIdentifierPart` to decide whether a `meta` or
-`import` or `export` keyword sits on an identifier boundary. An identifier that
-contains a ZWNJ or ZWJ joiner, which is legal in JavaScript, would be treated as
-a boundary by the envelope scanner but as part of an identifier by the metadata
+envelope scanners use `isIdentifierPart` to decide whether a `meta` or `import`
+or `export` keyword sits on an identifier boundary. An identifier that contains
+a ZWNJ or ZWJ joiner, which is legal in JavaScript, would be treated as a
+boundary by the envelope scanner but as part of an identifier by the metadata
 parser, so the two stages can disagree about where a keyword ends. There is no
 regression fixture pinning this boundary behaviour, so the divergence is
 currently invisible to the suite.
@@ -112,11 +112,12 @@ currently invisible to the suite.
 Proposed fix:
 
 Define one canonical, spec-correct identifier predicate pair
-(`isIdentifierStart` and `isIdentifierPart`) in a shared low-level module, using
-the ZWNJ and ZWJ-inclusive definition. Replace the two envelope copies and the
-four inline `/[A-Za-z0-9_$]/u` uses with the shared predicate. Add a targeted
-regression fixture that places a joiner-bearing identifier next to a `meta` or
-`import` keyword so the boundary contract is pinned across both stages.
+(`isIdentifierStart` and `isIdentifierPart`) in a shared low-level module,
+using the ZWNJ and ZWJ-inclusive definition. Replace the two envelope copies
+and the four inline `/[A-Za-z0-9_$]/u` uses with the shared predicate. Add a
+targeted regression fixture that places a joiner-bearing identifier next to a
+`meta` or `import` keyword so the boundary contract is pinned across both
+stages.
 
 ## Finding 3: Whitespace classification is inlined thirteen times
 
@@ -195,8 +196,8 @@ const textIndexForOffset = (file: OriginalSourceFile, offset: number): number =>
 
 `textIndexForOffset` merely forwards to the already-imported
 `textIndexAtOffset` with the same argument order and no added behaviour. It is
-used only twice, both within the same file. The near-identical name adds a layer
-of indirection that a reader must resolve to confirm nothing else happens.
+used only twice, both within the same file. The near-identical name adds a
+layer of indirection that a reader must resolve to confirm nothing else happens.
 
 Proposed fix:
 

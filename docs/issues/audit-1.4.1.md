@@ -5,9 +5,9 @@
   git-donkey worktree
 
 This audit was run after the lockfile-sensitive build marker landed on
-`origin/main`. It used `grepai` for canonical main-branch intent search,
-`leta` for branch-local symbol, reference, call-graph, and file verification,
-and `sem` for entity-level history and blame inspection.
+`origin/main`. It used `grepai` for canonical main-branch intent search, `leta`
+for branch-local symbol, reference, call-graph, and file verification, and
+`sem` for entity-level history and blame inspection.
 
 ## Finding 1: The developer guide still contradicts the package entry
 
@@ -22,11 +22,10 @@ The developer guide still says the static-analysis scaffold is exposed through
 does define `main`, `types`, and `exports`, and the package entry exports both
 diagnostic and static-analysis source helpers.
 
-`src/index.ts` also describes itself as the "Public diagnostic contract",
-which is now narrower than the actual package surface. A maintainer following
-the guide could wrongly treat the current package export map as out of scope,
-or miss that original-source helpers are already part of the importable
-contract.
+`src/index.ts` also describes itself as the "Public diagnostic contract", which
+is now narrower than the actual package surface. A maintainer following the
+guide could wrongly treat the current package export map as out of scope, or
+miss that original-source helpers are already part of the importable contract.
 
 Proposed fix:
 
@@ -52,8 +51,8 @@ slicing, snippet creation, and immutable value construction.
 
 The code is well covered, but parser normalization and span-mapper work will
 extend the same concepts. Keeping all of those responsibilities in one
-near-limit file makes future changes more likely to mix scanner, validator,
-and presentation concerns.
+near-limit file makes future changes more likely to mix scanner, validator, and
+presentation concerns.
 
 Proposed fix:
 
@@ -74,8 +73,8 @@ Proposed fix:
   `tests/static-analysis/source-file-line-fixtures.ts:18`,
   `tests/static-analysis/source-file-property-oracle.ts:262`
 
-The production scanner and independent property-test oracle treat LF, CRLF,
-and CR as line terminators. They do not treat U+2028 line separator or U+2029
+The production scanner and independent property-test oracle treat LF, CRLF, and
+CR as line terminators. They do not treat U+2028 line separator or U+2029
 paragraph separator as line breaks, even though future workflow bodies will be
 parsed as JavaScript-like source.
 
@@ -180,16 +179,15 @@ Proposed fix:
 - Location: `docs/documentation-style-guide.md:67`, `docs/roadmap.md:538`,
   `docs/`
 
-The documentation style guide recommends canonical navigation documents such
-as `docs/contents.md` and `docs/repository-layout.md`. The roadmap also has
-task 4.4.1 for those files. The repository now has terms of reference, a
-technical design, an ADR, a developer guide, scripting standards, eight issue
-audits, and nine execution plans, but no contents page or repository-layout
-map.
+The documentation style guide recommends canonical navigation documents such as
+`docs/contents.md` and `docs/repository-layout.md`. The roadmap also has task
+4.4.1 for those files. The repository now has terms of reference, a technical
+design, an ADR, a developer guide, scripting standards, eight issue audits, and
+nine execution plans, but no contents page or repository-layout map.
 
 This is not a release blocker before the CLI exists, but it is already a
-handoff cost for roadmap agents and reviewers because document families must
-be inferred from filenames and directory scans.
+handoff cost for roadmap agents and reviewers because document families must be
+inferred from filenames and directory scans.
 
 Proposed fix:
 

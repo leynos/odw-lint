@@ -1,11 +1,11 @@
 # Audit after roadmap task 2.1.13
 
-This post-step audit was run after roadmap task 2.1.13 (`Extract shared scanner
-primitives`) merged into `origin/main` at commit `0ecf09a`. The task
-consolidated shared source-scanning classification, delimiter, comment, escape,
-and identifier logic behind a new internal module,
-`src/static-analysis/source-scanner-primitives.ts`, and migrated the source-mask
-and workflow-metadata scanner families onto it.
+This post-step audit was run after roadmap task 2.1.13
+(`Extract shared scanner primitives`) merged into `origin/main` at commit
+`0ecf09a`. The task consolidated shared source-scanning classification,
+delimiter, comment, escape, and identifier logic behind a new internal module,
+`src/static-analysis/source-scanner-primitives.ts`, and migrated the
+source-mask and workflow-metadata scanner families onto it.
 
 The audit worked in a fresh worktree off `origin/main` and verified every
 branch-local fact with targeted file inspection, `git` commit and history
@@ -66,14 +66,15 @@ production scanners against frozen pre-refactor oracles.
 The behavioural divergence is real and intentional (`scanEscapedDelimitedEnd`
 also accepts the `/` regex delimiter and skips interpolation), which is why the
 duplication survived. It nevertheless means the accepted escape and
-interpolation rules live in three places that can drift apart, and the primitive
-layer created precisely to prevent this still hosts one of the copies.
+interpolation rules live in three places that can drift apart, and the
+primitive layer created precisely to prevent this still hosts one of the copies.
 
 Proposed fix:
 
-Promote a single parametrized `delimitedRegionEnd(text, start, delimiter, end,
-options)` into `source-scanner-primitives.ts`, where `options` selects whether
-`${` interpolation is followed. Express `scanDelimitedEnd` and
+Promote a single parametrized
+`delimitedRegionEnd(text, start, delimiter, end, options)` into
+`source-scanner-primitives.ts`, where `options` selects whether `${`
+interpolation is followed. Express `scanDelimitedEnd` and
 `scanEscapedDelimitedEnd` as thin adapters over it, and have
 `templateExpressionEnd` call the shared primitive instead of its private
 `stringLikeRegionEnd`. Keep the differential parity test as the guard for the
@@ -95,8 +96,8 @@ Description:
 Two exported functions share the name `scanLineCommentEnd` but have different
 signatures and, more importantly, different semantics. The source-mask copy
 takes `(sourceText, startIndex)` and consumes the line terminator by delegating
-to `lineCommentTerminatorEnd`. The workflow-metadata copy takes `(text,
-startIndex, endIndex)` and stops before the terminator by delegating to
+to `lineCommentTerminatorEnd`. The workflow-metadata copy takes
+`(text, startIndex, endIndex)` and stops before the terminator by delegating to
 `lineCommentContentEnd`. A reader who navigates by symbol name will find two
 "line comment end" scanners that return different indexes for the same input, a
 latent trap when maintaining either scanner family.
@@ -131,8 +132,8 @@ but adding no behaviour. Meanwhile `source-mask-comments.ts` calls the
 `blockCommentEnd` primitive directly (line 33) while wrapping the line-comment
 primitive (line 60). The result is an inconsistent mix: some primitives are
 imported directly, others are re-exported through thin aliases, with no rule
-that predicts which. This is the same redundant-alias smell recorded as
-Finding 5 in `audit-2.1.12`, recurring in a different module.
+that predicts which. This is the same redundant-alias smell recorded as Finding
+5 in `audit-2.1.12`, recurring in a different module.
 
 Proposed fix:
 
@@ -191,8 +192,8 @@ The 2.1.13 change documented the new `source-scanner-primitives.ts` seam in
 `docs/technical-design.md` and `docs/developers-guide.md`, but
 `docs/repository-layout.md`, the map readers reach for first, was not updated.
 Its `src/static-analysis/` section still describes only the source-mask facade
-and its `source-mask-*` helpers; it does not mention the shared primitives layer
-or the workflow-metadata scanner family that now depends on it, nor the
+and its `source-mask-*` helpers; it does not mention the shared primitives
+layer or the workflow-metadata scanner family that now depends on it, nor the
 one-directional import rule that keeps the primitives free of mask-range,
 metadata-parser, and diagnostic types.
 

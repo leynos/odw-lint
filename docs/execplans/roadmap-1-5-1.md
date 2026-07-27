@@ -1,9 +1,8 @@
 # Add an automated file-size guard for source and test code
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -29,10 +28,11 @@ Implementation must not begin until this draft is reviewed and approved.
 - Work only in the git-donkey worktree for branch `roadmap-1-5-1`:
   `/data/leynos/Projects/odw-lint.worktrees/roadmap-1-5-1`.
 - Do not edit the root/control worktree at `/data/leynos/Projects/odw-lint`.
-- Treat `origin/main` as canonical. Use `grepai search --workspace Projects
-  --project odw-lint "<English intent query>" --toon --compact` as the primary
-  intent search against the canonical main-branch index, then verify every
-  branch-local fact inside this worktree.
+- Treat `origin/main` as canonical. Use
+  `grepai search --workspace Projects --project odw-lint`
+  `"<English intent query>" --toon --compact` as the primary intent search
+  against the canonical main-branch index, then verify every branch-local fact
+  inside this worktree.
 - Use `leta` for branch-local TypeScript symbol navigation, references and
   source checks. Exact text inspection is acceptable for Markdown, JSON,
   Makefile rules, lockfile entries and literal command output.
@@ -72,9 +72,9 @@ Implementation must not begin until this draft is reviewed and approved.
   1 line.
 - Keep every new TypeScript file below the same 400-line limit.
 - Format only changed files. For TypeScript changes, use path-scoped Biome
-  formatting, for example `bunx biome format --write <changed-ts-files>`.
-  For Markdown changes, run `mdtablefix` and `bunx markdownlint-cli2 --fix`
-  only on the exact Markdown files touched by that work item. Do not run
+  formatting, for example `bunx biome format --write <changed-ts-files>`. For
+  Markdown changes, run `mdtablefix` and `bunx markdownlint-cli2 --fix` only on
+  the exact Markdown files touched by that work item. Do not run
   repository-global mutating formatters such as `make fmt`, `bun fmt`, or
   `mdformat-all`.
 - Run the full repository gate before each commit with `make all`. When
@@ -196,10 +196,10 @@ conflict in `Decision Log`, and escalate before proceeding.
   path-scoped Biome organized imports, and focused JSDoc updates satisfied the
   repository's `df12` Oxlint rules for public and private helper functions.
 - [x] (2026-06-30T10:28Z) Ran `coderabbit review --agent` for work item 1
-  after deterministic gates passed. The review completed without rate
-  limiting and raised two low-severity findings: add no-trailing-NUL parser
-  coverage and keep the purpose acceptance criteria behaviour-focused.
-  Both findings were addressed before the work item commit.
+  after deterministic gates passed. The review completed without rate limiting
+  and raised two low-severity findings: add no-trailing-NUL parser coverage and
+  keep the purpose acceptance criteria behaviour-focused. Both findings were
+  addressed before the work item commit.
 - [x] (2026-06-30T10:39Z) Work item 2: added
   `tests/build-gate/file-size.test.ts`, which scans tracked TypeScript paths
   from Git, asserts the candidate set is non-empty, reads each path with
@@ -207,20 +207,20 @@ conflict in `Decision Log`, and escalate before proceeding.
   line count and limit.
 - [x] (2026-06-30T10:39Z) Proved the work item 2 red stage by temporarily
   setting `SOURCE_AND_TEST_LINE_LIMIT` to `10` and running
-  `bun test ./tests/build-gate/file-size.test.ts`. The test failed as
-  expected and named existing tracked TypeScript files such as
+  `bun test ./tests/build-gate/file-size.test.ts`. The test failed as expected
+  and named existing tracked TypeScript files such as
   `src/diagnostics/report.ts: 113 physical lines exceeds 10` and
   `tests/static-analysis/fixture-metadata-refresh.test.ts: 381 physical lines
   exceeds 10`.
 - [x] (2026-06-30T10:39Z) Restored `SOURCE_AND_TEST_LINE_LIMIT` to `400` and
-  confirmed `bun test ./tests/build-gate/file-size.test.ts` passed, followed
-  by a combined focused pass for
+  confirmed `bun test ./tests/build-gate/file-size.test.ts` passed, followed by
+  a combined focused pass for
   `bun test ./tests/build-gate/file-size-support.test.ts ./tests/build-gate/file-size.test.ts`.
 - [x] (2026-06-30T10:39Z) Ran `coderabbit review --agent` for work item 2
-  after deterministic gates passed. The review completed without rate
-  limiting and raised one low-severity finding: extract and test the oversized
-  violation message formatter. Added `formatFileSizeViolations()` and a
-  focused unit assertion before the work item commit.
+  after deterministic gates passed. The review completed without rate limiting
+  and raised one low-severity finding: extract and test the oversized violation
+  message formatter. Added `formatFileSizeViolations()` and a focused unit
+  assertion before the work item commit.
 - [x] (2026-06-30T10:47Z) Work item 3: verified the code guard before
   documentation changes with
   `bun test ./tests/build-gate/file-size-support.test.ts ./tests/build-gate/file-size.test.ts`.
@@ -233,66 +233,60 @@ conflict in `Decision Log`, and escalate before proceeding.
 
 - Observation: this worktree did not have a Leta workspace registered.
   Evidence: `leta files` initially returned "No workspace found for current
-  directory"; `leta workspace add` registered the worktree.
-  Impact: branch-local symbol checks now work with Leta for implementation.
+  directory"; `leta workspace add` registered the worktree. Impact:
+  branch-local symbol checks now work with Leta for implementation.
 - Observation: the repository already has a narrow source-helper line-limit
-  assertion.
-  Evidence: `tests/static-analysis/source-file-architecture.test.ts` defines
-  `sourceLineCount()` and checks `SOURCE_HELPER_MODULES` against 400 lines.
-  Impact: the new guard should live in `tests/build-gate/` and cover the whole
-  tracked TypeScript source/test set instead of expanding that local
+  assertion. Evidence: `tests/static-analysis/source-file-architecture.test.ts`
+  defines `sourceLineCount()` and checks `SOURCE_HELPER_MODULES` against 400
+  lines. Impact: the new guard should live in `tests/build-gate/` and cover the
+  whole tracked TypeScript source/test set instead of expanding that local
   architecture test.
 - Observation: copied ODW JavaScript examples can exceed 400 lines.
   Evidence: `tests/static-analysis/fixtures/odw-examples/agent-daily-digest.js`
-  is listed at 651 lines by `leta files`.
-  Impact: the guard must stay scoped to TypeScript files, matching roadmap
-  task 1.5.1's success criterion.
+  is listed at 651 lines by `leta files`. Impact: the guard must stay scoped to
+  TypeScript files, matching roadmap task 1.5.1's success criterion.
 - Observation: the largest current tracked TypeScript source or test file is
-  below the planned limit.
-  Evidence: branch-local planning checks found
+  below the planned limit. Evidence: branch-local planning checks found
   `tests/static-analysis/fixture-metadata-refresh.test.ts` at 381 lines.
   Impact: the guard can be introduced without refactoring existing tracked
   TypeScript files first.
 - Observation: Bun treats a missing new `*.test.ts` path as "no matches" until
-  the file exists in the active worktree.
-  Evidence: before correcting the file placement, focused `bun test` commands
-  for `tests/build-gate/file-size-support.test.ts` reported no matching test
-  files. After the test existed in this worktree, the same `./` path form
-  loaded the file and failed for the intended missing helper module.
-  Impact: future red-stage evidence should first verify the new test file is in
-  the implementation worktree when Bun reports no matching path.
+  the file exists in the active worktree. Evidence: before correcting the file
+  placement, focused `bun test` commands for
+  `tests/build-gate/file-size-support.test.ts` reported no matching test files.
+  After the test existed in this worktree, the same `./` path form loaded the
+  file and failed for the intended missing helper module. Impact: future
+  red-stage evidence should first verify the new test file is in the
+  implementation worktree when Bun reports no matching path.
 
 ## Decision Log
 
 - Decision: implement the guard as Bun tests under `tests/build-gate/`, not as
-  production code or a standalone script.
-  Rationale: `docs/developers-guide.md` "Commit Gate" states `make all` runs
-  `make test`, and Bun's official docs confirm `bun test` recursively discovers
-  `*.test.ts` files and exits non-zero on failures. This makes the convention
-  executable in the existing repository gate without new Makefile or package
-  script surface.
-  Date/Author: 2026-06-30T09:57Z, planning agent.
+  production code or a standalone script. Rationale: `docs/developers-guide.md`
+  "Commit Gate" states `make all` runs `make test`, and Bun's official docs
+  confirm `bun test` recursively discovers `*.test.ts` files and exits non-zero
+  on failures. This makes the convention executable in the existing repository
+  gate without new Makefile or package script surface. Date/Author:
+  2026-06-30T09:57Z, planning agent.
 - Decision: use `git ls-files -z -- src tests` as the candidate source, then
-  filter TypeScript paths in TypeScript code.
-  Rationale: Git's official `git-ls-files` docs and local Git 2.53.0 help say
-  the default output is cached/tracked files and `-z` uses NUL termination.
-  This avoids shell glob differences, untracked scratch files, ignored
-  directories, snapshots, and raw JavaScript fixtures.
-  Date/Author: 2026-06-30T09:57Z, planning agent.
+  filter TypeScript paths in TypeScript code. Rationale: Git's official
+  `git-ls-files` docs and local Git 2.53.0 help say the default output is
+  cached/tracked files and `-z` uses NUL termination. This avoids shell glob
+  differences, untracked scratch files, ignored directories, snapshots, and raw
+  JavaScript fixtures. Date/Author: 2026-06-30T09:57Z, planning agent.
 - Decision: define physical line count as newline count plus one only for a
-  non-empty file without a trailing LF.
-  Rationale: this matches normal `wc -l` results for newline-terminated source
-  while giving non-newline-terminated files a visible source line. Unit tests
-  will pin edge cases so future implementers cannot change the convention by
-  accident.
-  Date/Author: 2026-06-30T09:57Z, planning agent.
+  non-empty file without a trailing LF. Rationale: this matches normal `wc -l`
+  results for newline-terminated source while giving non-newline-terminated
+  files a visible source line. Unit tests will pin edge cases so future
+  implementers cannot change the convention by accident. Date/Author:
+  2026-06-30T09:57Z, planning agent.
 - Decision: do not use `fast-check`, Behaviour-Driven Development (BDD),
   snapshots, CrossHair, Hypothesis, mutmut or lemmascript for this task.
   Rationale: the behaviour is a finite path-filtering and line-counting guard.
   Table-driven Bun unit tests and one real-repository architecture test cover
   the relevant happy path, unhappy path and edge cases without adding a
-  dependency or a broader verification harness.
-  Date/Author: 2026-06-30T09:57Z, planning agent.
+  dependency or a broader verification harness. Date/Author: 2026-06-30T09:57Z,
+  planning agent.
 - Decision: do not use the sibling ODW checkout for implementation research.
   Rationale: this task does not inspect, load, parse or execute ODW workflow
   source. The ODW checkout guidance is relevant to loader, workflow and example
@@ -304,21 +298,19 @@ conflict in `Decision Log`, and escalate before proceeding.
   Markdown formatting and gates made the plan internally inconsistent.
   Date/Author: 2026-06-30T10:13Z, planning agent.
 - Decision: keep the file-size support helpers under `tests/build-gate/` as a
-  named support module rather than sharing the existing
-  `sourceLineCount()` helper from the static-analysis architecture test.
-  Rationale: the new helper owns repository-wide tracked TypeScript file
-  discovery, Git failure conversion, path filtering and violation reporting.
-  The existing helper remains local to source-helper module architecture
-  assertions.
-  Date/Author: 2026-06-30T10:28Z, implementation agent.
+  named support module rather than sharing the existing `sourceLineCount()`
+  helper from the static-analysis architecture test. Rationale: the new helper
+  owns repository-wide tracked TypeScript file discovery, Git failure
+  conversion, path filtering and violation reporting. The existing helper
+  remains local to source-helper module architecture assertions. Date/Author:
+  2026-06-30T10:28Z, implementation agent.
 - Decision: pin Git command failure behaviour with a test seam rather than
-  relying on undocumented runtime side effects.
-  Rationale: Bun's `spawnSync` reference and installed declarations expose
-  `status`, `stdout`, `stderr`, and optional `error`, but the exact message the
-  guard should throw for non-zero Git exits or spawn failures is project-owned
-  behaviour. Unit tests must inject those outcomes and assert the error
-  includes the command and stderr or error message.
-  Date/Author: 2026-06-30T10:13Z, planning agent.
+  relying on undocumented runtime side effects. Rationale: Bun's `spawnSync`
+  reference and installed declarations expose `status`, `stdout`, `stderr`, and
+  optional `error`, but the exact message the guard should throw for non-zero
+  Git exits or spawn failures is project-owned behaviour. Unit tests must
+  inject those outcomes and assert the error includes the command and stderr or
+  error message. Date/Author: 2026-06-30T10:13Z, planning agent.
 
 ## Outcomes & Retrospective
 
@@ -362,14 +354,13 @@ fixtures, snapshots, docs and untracked files. `docs/roadmap.md` marks task
 The current repository is a private Bun and TypeScript package. The Makefile is
 the commit-gate entry point. `make all` runs `build`, `check-fmt`, `lint`,
 `typecheck` and `test` in that order. The `test` target runs `bun test`, so any
-new `*.test.ts` file under `tests/` becomes part of the default repository
-gate.
+new `*.test.ts` file under `tests/` becomes part of the default repository gate.
 
-The file-size convention comes from `AGENTS.md` "Keep file size manageable":
-no single code file exceeds 400 lines. Roadmap task 1.5.1 narrows the
-automated guard to source and test TypeScript files. Current branch-local
-evidence shows 74 tracked TypeScript files under `src` and `tests`, with no
-file above 400 lines.
+The file-size convention comes from `AGENTS.md` "Keep file size manageable": no
+single code file exceeds 400 lines. Roadmap task 1.5.1 narrows the automated
+guard to source and test TypeScript files. Current branch-local evidence shows
+74 tracked TypeScript files under `src` and `tests`, with no file above 400
+lines.
 
 The relevant current files are:
 
@@ -406,10 +397,9 @@ continuing.
   `bun test` recursively searches for `*.test.{js|jsx|ts|tsx}`,
   `*_test.{js|jsx|ts|tsx}`, `*.spec.{js|jsx|ts|tsx}`, and
   `*_spec.{js|jsx|ts|tsx}`, and that the runner exits non-zero when a test
-  fails. Installed `node_modules/bun-types/test.d.ts` declares the
-  `bun:test` module at `node_modules/bun-types/test.d.ts:16`, `describe` at
-  line 297, `test` at line 589, the `it` alias at line 590, and `expect` at
-  line 613.
+  fails. Installed `node_modules/bun-types/test.d.ts` declares the `bun:test`
+  module at `node_modules/bun-types/test.d.ts:16`, `describe` at line 297,
+  `test` at line 589, the `it` alias at line 590, and `expect` at line 613.
 - Bun `node:child_process.spawnSync`: the guard runs under Bun 1.3.11, so the
   load-bearing command API is Bun's Node-compatible reference at
   <https://bun.com/reference/node/child_process/spawnSync>. That reference
@@ -423,8 +413,8 @@ continuing.
   1.3.11. Bun's official reference at
   <https://bun.com/reference/node/fs/readFileSync> documents
   `readFileSync(path, options)` and states that specifying an encoding returns
-  a string. Installed `@types/node@26.0.1` confirms `readFileSync(path,
-  "utf8")` returns `string` in
+  a string. Installed `@types/node@26.0.1` confirms
+  `readFileSync(path, "utf8")` returns `string` in
   `node_modules/@types/node/fs.d.ts:3218-3265`. Repository-relative path
   resolution is pinned by the real-repository test in work item 2, which reads
   the Git-returned paths directly.
@@ -439,8 +429,8 @@ continuing.
   character".
 - Biome and Oxlint: no new configuration is required. Existing
   `docs/developers-guide.md` "Formatting" and "Linting" sections define
-  `make check-fmt`, `make lint`, and the path-scoped Biome formatter command
-  to use for changed TypeScript files.
+  `make check-fmt`, `make lint`, and the path-scoped Biome formatter command to
+  use for changed TypeScript files.
 
 ## Plan of work
 
@@ -502,15 +492,17 @@ export function trackedSourceAndTestTypeScriptFiles(
 ): readonly string[];
 ```
 
-The helper must call `spawnSync("git", ["ls-files", "-z", "--", "src",
-"tests"], { encoding: "utf8" })` without `shell: true`. The default runner
-must be replaceable through the optional `runGit` parameter so tests can inject
-Git failures without mutating `PATH` or process-global state. If Git exits
-non-zero, throw an `Error` whose message includes `git ls-files -z -- src
-tests`, the numeric status when present, and stderr. If Git cannot be spawned
-and `error` is present, throw an `Error` whose message includes the same
-command and the `error.message`. Keep command execution in one helper so unit
-tests can cover command failure, filtering, and counting without invoking Git.
+The helper must call
+`spawnSync("git", ["ls-files", "-z", "--", "src",
+"tests"], { encoding: "utf8" })`
+without `shell: true`. The default runner must be replaceable through the
+optional `runGit` parameter so tests can inject Git failures without mutating
+`PATH` or process-global state. If Git exits non-zero, throw an `Error` whose
+message includes `git ls-files -z -- src tests`, the numeric status when
+present, and stderr. If Git cannot be spawned and `error` is present, throw an
+`Error` whose message includes the same command and the `error.message`. Keep
+command execution in one helper so unit tests can cover command failure,
+filtering, and counting without invoking Git.
 
 Add `tests/build-gate/file-size-support.test.ts` with table-driven unit tests
 for:
@@ -519,13 +511,13 @@ for:
   newline-terminated line, two lines, and a deliberate blank final line;
 - NUL-separated path parsing, including a final empty segment;
 - TypeScript path filtering for `src/*.ts`, `tests/**/*.tsx`,
-  `tests/**/*.mts`, `tests/**/*.cts`, ignored `docs/*.ts`, ignored
-  JavaScript fixtures and ignored snapshots;
+  `tests/**/*.mts`, `tests/**/*.cts`, ignored `docs/*.ts`, ignored JavaScript
+  fixtures and ignored snapshots;
 - violation reporting for an exactly-400-line source, a 401-line source, and a
   mixed path list where only TypeScript candidates are considered.
 - tracked-file listing error conversion for an injected non-zero Git result
-  with stderr and an injected cannot-spawn result with `error: new
-  Error("spawn git ENOENT")`;
+  with stderr and an injected cannot-spawn result with
+  `error: new Error("spawn git ENOENT")`;
 - tracked-file listing success through an injected NUL-separated Git result,
   proving that the public tracked-path helper filters Git output without
   invoking a real subprocess in unit tests.
@@ -645,9 +637,9 @@ Red-Green-Refactor:
    Expect all commands to pass. The conditional Biome command is required
    because the temporary low-limit edit may leave
    `tests/build-gate/file-size-support.ts` with no net work-item change after
-   the limit is restored. This work item must update this ExecPlan with the
-   red low-limit evidence, restored green evidence, and final gate results
-   before the Markdown formatter commands run.
+   the limit is restored. This work item must update this ExecPlan with the red
+   low-limit evidence, restored green evidence, and final gate results before
+   the Markdown formatter commands run.
 
 Tests required:
 
@@ -701,8 +693,8 @@ Red-Green-Refactor:
    This is a precondition rather than an expected failure; documentation should
    not claim an unimplemented guard.
 2. Green: edit the docs, roadmap close-out, and ExecPlan close-out. Mark the
-   work item complete in `Progress`; update `Outcomes & Retrospective` with
-   the final behaviour and validation evidence; append a revision note.
+   work item complete in `Progress`; update `Outcomes & Retrospective` with the
+   final behaviour and validation evidence; append a revision note.
 3. Refactor: wrap prose, check spelling, and run path-scoped Markdown
    formatting:
 
@@ -841,8 +833,8 @@ Quality method:
 
 ## Idempotence and recovery
 
-The guard is read-only in normal operation. It reads Git's tracked path list and
-UTF-8 file contents, then reports violations. It does not write repository
+The guard is read-only in normal operation. It reads Git's tracked path list
+and UTF-8 file contents, then reports violations. It does not write repository
 files, mutate the index, execute workflow source, or depend on process-global
 state beyond the current working directory.
 

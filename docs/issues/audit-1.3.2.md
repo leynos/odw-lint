@@ -5,9 +5,9 @@
   git-donkey worktree
 
 This audit was run after the invalid workflow fixture families landed on
-`origin/main`. It used `grepai` for canonical main-branch intent search,
-`leta` for branch-local symbol, reference, and call-graph verification, and
-`sem` for entity-level diff, graph, and blame inspection.
+`origin/main`. It used `grepai` for canonical main-branch intent search, `leta`
+for branch-local symbol, reference, and call-graph verification, and `sem` for
+entity-level diff, graph, and blame inspection.
 
 ## Finding 1: The build target still ignores `bun.lock`
 
@@ -42,10 +42,10 @@ Proposed fix:
 - Location: `src/static-analysis/source-file.ts:360`,
   `tests/static-analysis/source-file-line-fixtures.ts:20`
 
-`scanOriginalSource` treats LF, CRLF, and CR as source line terminators. It does
-not treat U+2028 line separator or U+2029 paragraph separator as line breaks,
-even though workflow bodies are JavaScript-like source that future SWC-backed
-diagnostics will parse as JavaScript or TypeScript.
+`scanOriginalSource` treats LF, CRLF, and CR as source line terminators. It
+does not treat U+2028 line separator or U+2029 paragraph separator as line
+breaks, even though workflow bodies are JavaScript-like source that future
+SWC-backed diagnostics will parse as JavaScript or TypeScript.
 
 That can make parser-backed diagnostics disagree with the original-source line
 and column model for uncommon but valid JavaScript line terminators. The
@@ -73,8 +73,8 @@ lines. Adding the next fixture families to the same manifest is likely to push
 this file over that limit.
 
 The file also mixes manifest types, fixture construction helpers, diagnostic
-construction helpers, and every family entry. That makes the next fixture
-slice more likely to add large data blocks to a file that already has multiple
+construction helpers, and every family entry. That makes the next fixture slice
+more likely to add large data blocks to a file that already has multiple
 responsibilities.
 
 Proposed fix:
@@ -145,7 +145,8 @@ Proposed fix:
 - Category: separation-of-concerns
 - Severity: Low
 - Location: `src/static-analysis/source-file.ts:43`,
-  `src/static-analysis/source-file.ts:189`, `src/static-analysis/source-file.ts:281`
+  `src/static-analysis/source-file.ts:189`,
+  `src/static-analysis/source-file.ts:281`
 
 `src/static-analysis/source-file.ts` owns source-record construction, line
 scanning, private lookup tables, offset validation, span validation, slicing,

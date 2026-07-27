@@ -98,8 +98,8 @@ Git-runner result shape with prompt disabling and timeout behaviour.
 The tests also repeat temporary repository helpers and captured CLI output
 helpers between `branch-freshness-git-fixtures.ts` and
 `whitespace-hygiene.test.ts`. This duplication has already produced small
-contract differences, such as timeout and `GIT_TERMINAL_PROMPT` handling in
-one runner but not the others.
+contract differences, such as timeout and `GIT_TERMINAL_PROMPT` handling in one
+runner but not the others.
 
 Proposed fix:
 
@@ -184,8 +184,8 @@ pragmatic v1 contract is to store repository-relative rule paths in diagnostic
 objects and let reporters or hosted documentation layers convert them to
 absolute URLs. Rename the TypeScript comment from "URL" to "path or URL" only
 if both forms are intentionally supported; otherwise, update the technical
-design example and add a schema/test assertion that emitted fixture
-diagnostics use `ruleDocsPath(rule)`.
+design example and add a schema/test assertion that emitted fixture diagnostics
+use `ruleDocsPath(rule)`.
 
 ## Finding 5: The documentation contents index has stale audit and plan entries
 
@@ -209,8 +209,7 @@ drifting from the current files. The issue audit entry for `audit-2.1.6.md`
 says it records findings for the "no-side-effect metadata execution guard",
 while the file itself is the audit after roadmap task 2.1.6 and covers the
 rule-catalogue parity slice. The execution-plan list also omits current plan
-files that now exist, including `roadmap-1-5-4.md` and
-`roadmap-2-1-7.md`.
+files that now exist, including `roadmap-1-5-4.md` and `roadmap-2-1-7.md`.
 
 This does not break code, but it weakens the "start here" path that the
 documentation guide assigns to `docs/contents.md`. New contributors following

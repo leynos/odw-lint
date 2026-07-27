@@ -1,9 +1,8 @@
 # Consume invalid fixture manifests in dialect diagnostic tests
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -54,10 +53,11 @@ Success is exactly the roadmap's success criterion for 2.3.3: "invalid fixture
 expectations remain the source of truth for emitted dialect diagnostics and
 original-source spans." Concretely: the parser and metadata suites derive their
 expected `syntax-error` and `hostile-metadata` diagnostics from
-`INVALID_WORKFLOW_FIXTURE_SNAPSHOTS` (or its per-family exports), the duplicated
-parser snapshot is gone, `make all` passes, and a deliberate one-line edit to a
-manifest expectation now breaks the parser and metadata suites (proving they
-read the manifest) rather than passing against a stale local copy.
+`INVALID_WORKFLOW_FIXTURE_SNAPSHOTS` (or its per-family exports), the
+duplicated parser snapshot is gone, `make all` passes, and a deliberate
+one-line edit to a manifest expectation now breaks the parser and metadata
+suites (proving they read the manifest) rather than passing against a stale
+local copy.
 
 ## Roadmap context
 
@@ -92,14 +92,14 @@ escalation, not a workaround.
 - The manifest and raw fixtures are not hand-edited to make tests pass. The
   manifest under `tests/static-analysis/fixtures/invalid-workflows/` is
   regenerated only through `make refresh-fixtures`; expected messages are
-  changed only by extending the catalogue entry, per
-  `docs/developers-guide.md` (the "extend the matching catalogue entry ...
-  rather than treating the manifest as a separate source of truth" rule). This
-  plan does not change any expected diagnostic value.
+  changed only by extending the catalogue entry, per `docs/developers-guide.md`
+  (the "extend the matching catalogue entry … rather than treating the manifest
+  as a separate source of truth" rule). This plan does not change any expected
+  diagnostic value.
 - Invalid workflow fixtures are never imported, evaluated, executed, or
-  formatted as ordinary JavaScript (`docs/developers-guide.md`,
-  "Do not import, evaluate, execute, or format invalid workflow fixtures").
-  Tests read them as text via `readFixtureSource`.
+  formatted as ordinary JavaScript (`docs/developers-guide.md`, "Do not import,
+  evaluate, execute, or format invalid workflow fixtures"). Tests read them as
+  text via `readFixtureSource`.
 - The static-analysis boundary holds: no test wiring introduced here may cause
   production modules to import an executable ODW loader, primitive factory,
   launcher, or worker path (`docs/adr/0001-static-analysis-boundary.md`,
@@ -138,35 +138,32 @@ escalation, not a workaround.
 ## Risks
 
 - Risk: Deleting the parser snapshot removes an SWC-bump re-observation anchor
-  that `docs/developers-guide.md` currently lists.
-  Severity: medium. Likelihood: high (it is a certainty the doc must change).
-  Mitigation: Work item 1 updates the developers-guide SWC-bump surface list in
-  the same commit, replacing the snapshot reference with the manifest-driven
-  parser parity test. The manifest message remains the re-observation record;
-  the manifest-driven test fails loudly on an SWC detail change, giving the same
-  ergonomics as `bun test -u` did.
+  that `docs/developers-guide.md` currently lists. Severity: medium.
+  Likelihood: high (it is a certainty the doc must change). Mitigation: Work
+  item 1 updates the developers-guide SWC-bump surface list in the same commit,
+  replacing the snapshot reference with the manifest-driven parser parity test.
+  The manifest message remains the re-observation record; the manifest-driven
+  test fails loudly on an SWC detail change, giving the same ergonomics as
+  `bun test -u` did.
 - Risk: Bun leaves the emptied snapshot file behind or an obsolete-snapshot
-  warning is mistaken for a failure.
-  Severity: low. Likelihood: medium.
+  warning is mistaken for a failure. Severity: low. Likelihood: medium.
   Mitigation: Work item 1 deletes
   `tests/static-analysis/__snapshots__/workflow-body-parser.test.ts.snap`
-  outright (it holds only the two syntax-error entries) and confirms `make
-  test` reports zero failures and no obsolete-snapshot references to that file.
+  outright (it holds only the two syntax-error entries) and confirms
+  `make test` reports zero failures and no obsolete-snapshot references to that
+  file.
 - Risk: A shared corpus/lookup helper (Work item 3) over-abstracts or collides
-  with an existing helper.
-  Severity: low. Likelihood: medium.
-  Mitigation: `AGENTS.md` abstraction policy — sweep first. The existing
+  with an existing helper. Severity: low. Likelihood: medium. Mitigation:
+  `AGENTS.md` abstraction policy — sweep first. The existing
   `FixtureCorpusLocation` type and `readFixtureSource` in
   `tests/static-analysis/fixtures/corpus-support.ts` are the reuse anchors; the
   new helper is additive, colocated, documented, and unit-tested. If the
   consolidation grows beyond the tolerance, it is split off and deferred rather
   than expanded.
 - Risk: `workflow-metadata.test.ts` grows past the 400-line limit when inlining
-  manifest-driven assertions.
-  Severity: low. Likelihood: low.
-  Mitigation: the change *removes* two inline literals and replaces them with a
-  short manifest lookup, so it should shrink, not grow; verify the line count
-  after editing.
+  manifest-driven assertions. Severity: low. Likelihood: low. Mitigation: the
+  change *removes* two inline literals and replaces them with a short manifest
+  lookup, so it should shrink, not grow; verify the line count after editing.
 
 ## Progress
 
@@ -181,8 +178,8 @@ escalation, not a workaround.
   developers-guide SWC-bump surface list. The parser suite now imports
   `SYNTAX_ERROR_FIXTURES`, compares the live parser diagnostic with the
   manifest diagnostic projection, and cross-checks the original-source span
-  against the manifest. The duplicated Bun snapshot was deleted. Focused
-  parser tests passed, `make all`, `make markdownlint`, and `make nixie` passed
+  against the manifest. The duplicated Bun snapshot was deleted. Focused parser
+  tests passed, `make all`, `make markdownlint`, and `make nixie` passed
   through scrutineer, and `coderabbit review --agent` returned clean with zero
   findings.
 - [x] (2026-07-05 09:13Z) Work item 2: drive the metadata suite's
@@ -192,16 +189,15 @@ escalation, not a workaround.
   shape instead of keeping inline diagnostic literals. The hostile
   manifest-perturbation probe failed both target tests for the manifest
   `spanText`, the restored focused suite passed, `make all` passed through
-  scrutineer, and `coderabbit review --agent` returned clean with zero
-  findings.
+  scrutineer, and `coderabbit review --agent` returned clean with zero findings.
 - [x] (2026-07-05 09:26Z) Work item 3 (separate atomic refactor): extract a
   shared invalid-workflow fixture corpus constant and lookup helper, replacing
   the duplicated corpus literals and local lookups across the consuming suites.
   Added `tests/static-analysis/fixtures/invalid-workflows/corpus.ts` with the
   frozen corpus location and `findInvalidWorkflowFixture`, added
-  `invalid-workflow-corpus.test.ts`, and migrated the parser, metadata,
-  parity, envelope, hostile-security, and manifest-integrity suites. The helper
-  test was red before the module existed and green after implementation; the
+  `invalid-workflow-corpus.test.ts`, and migrated the parser, metadata, parity,
+  envelope, hostile-security, and manifest-integrity suites. The helper test
+  was red before the module existed and green after implementation; the
   migrated focused suites passed, `make all` passed through scrutineer after
   targeted import-order and JSDoc fixes, and `coderabbit review --agent`
   returned clean with zero findings.
@@ -222,83 +218,77 @@ escalation, not a workaround.
   `toEqual([...fixture.expectedDiagnostics])`; and
   `tests/static-analysis/invalid-workflow-metadata-parity.test.ts` already
   drives metadata, envelope, and body-syntax parity through
-  `lintWorkflowSource` against `fixture.expectedDiagnostics`.
-  Impact: The envelope half of "parser, envelope, and metadata-rule" needs no
-  new wiring; the plan only pins and documents that it stays derived, and
-  focuses effort on the parser snapshot and the metadata inline literals.
+  `lintWorkflowSource` against `fixture.expectedDiagnostics`. Impact: The
+  envelope half of "parser, envelope, and metadata-rule" needs no new wiring;
+  the plan only pins and documents that it stays derived, and focuses effort on
+  the parser snapshot and the metadata inline literals.
 - Observation: The `hostile-metadata-security.test.ts` suite is already
-  manifest-driven too.
-  Evidence: `tests/static-analysis/hostile-metadata-security.test.ts:214-223`
-  builds its expectation from `fixture.expectedDiagnostics`.
-  Impact: The only metadata-suite duplication left is the two inline literals in
+  manifest-driven too. Evidence:
+  `tests/static-analysis/hostile-metadata-security.test.ts:214-223` builds its
+  expectation from `fixture.expectedDiagnostics`. Impact: The only
+  metadata-suite duplication left is the two inline literals in
   `workflow-metadata.test.ts`.
 - Observation: `make refresh-fixtures` derives spans and `spanText` from a
   once-only anchor but preserves the reviewer message verbatim from the current
-  manifest.
-  Evidence: `tests/static-analysis/fixtures/refresh-derivation.ts` derives the
-  span from `spanText`;
+  manifest. Evidence: `tests/static-analysis/fixtures/refresh-derivation.ts`
+  derives the span from `spanText`;
   `tests/static-analysis/fixtures/refresh-manifest-source.ts:286-290` re-emits
-  the existing `message`.
-  Impact: The manifest message is the human-owned record of the SWC detail
-  string, so a manifest-driven parser test is an equivalent (and single-source)
-  replacement for the deleted snapshot.
+  the existing `message`. Impact: The manifest message is the human-owned
+  record of the SWC detail string, so a manifest-driven parser test is an
+  equivalent (and single-source) replacement for the deleted snapshot.
 - Observation: `make all` scans deleted tracked files through the whitespace
-  hygiene gate until deletions are staged.
-  Evidence: The first scrutineer deterministic gate run failed with
+  hygiene gate until deletions are staged. Evidence: The first scrutineer
+  deterministic gate run failed with
   `could not read tracked file tests/static-analysis/__snapshots__/workflow-body-parser.test.ts.snap`;
-  staging the snapshot deletion removed the file from the intended index state.
-  Impact: Stage work-item deletions before running gates that inspect tracked
-  files, so validation checks the commit state rather than an unstaged
+  staging the snapshot deletion removed the file from the intended index
+  state. Impact: Stage work-item deletions before running gates that inspect
+  tracked files, so validation checks the commit state rather than an unstaged
   intermediate state.
 - Observation: CodeRabbit can recover after the required longer workflow
-  backoff even when its own metadata reports a shorter wait time.
-  Evidence: The Work item 4 CodeRabbit attempt returned `rate_limit` with
+  backoff even when its own metadata reports a shorter wait time. Evidence: The
+  Work item 4 CodeRabbit attempt returned `rate_limit` with
   `waitTime: "6 minutes"`; the workflow required a randomized 45-90 minute
   backoff, so `vsleep 73m` was used before retrying. The retry completed with
-  `review_completed` and `findings: 0`.
-  Impact: Record the exact rate-limit output and obey the workflow's backoff
-  rule even when the service advertises a shorter wait.
+  `review_completed` and `findings: 0`. Impact: Record the exact rate-limit
+  output and obey the workflow's backoff rule even when the service advertises
+  a shorter wait.
 
 ## Decision log
 
 - Decision: Delete the duplicated parser snapshot and assert the live
   `parseWorkflowBody` diagnostic against the manifest, rather than keeping the
-  snapshot.
-  Rationale: The roadmap success criterion is that the manifest "remain[s] the
-  source of truth". A snapshot that re-encodes the same rule/severity/message/
-  docs/span is a second source of truth and contradicts that goal. Asserting
-  `live == manifest.expectedDiagnostics[0]` makes the manifest the single
-  record while preserving adapter-layer coverage and SWC re-observation
-  ergonomics (the test fails loudly on a detail change). Alternative considered
-  and rejected: keep the snapshot but also add a manifest cross-check — rejected
-  because it leaves two maintained copies, the exact anti-pattern 2.3.3
-  removes.
-  Date/Author: 2026-07-05, planning agent.
+  snapshot. Rationale: The roadmap success criterion is that the manifest
+  "remain[s] the source of truth". A snapshot that re-encodes the same
+  rule/severity/message/ docs/span is a second source of truth and contradicts
+  that goal. Asserting `live == manifest.expectedDiagnostics[0]` makes the
+  manifest the single record while preserving adapter-layer coverage and SWC
+  re-observation ergonomics (the test fails loudly on a detail change).
+  Alternative considered and rejected: keep the snapshot but also add a
+  manifest cross-check — rejected because it leaves two maintained copies, the
+  exact anti-pattern 2.3.3 removes. Date/Author: 2026-07-05, planning agent.
 - Decision: Perform the shared-helper consolidation (Work item 3) as a
-  *separate* commit after the two behaviour-preserving test rewrites.
-  Rationale: `AGENTS.md` "Separate Atomic Refactors" — refactoring follows the
-  functional change as its own gated commit. Work items 1 and 2 are the
-  source-of-truth change; Work item 3 is duplication cleanup of the corpus
-  literals and is independently revertible.
-  Date/Author: 2026-07-05, planning agent.
+  *separate* commit after the two behaviour-preserving test rewrites. Rationale:
+  `AGENTS.md` "Separate Atomic Refactors" — refactoring follows the functional
+  change as its own gated commit. Work items 1 and 2 are the source-of-truth
+  change; Work item 3 is duplication cleanup of the corpus literals and is
+  independently revertible. Date/Author: 2026-07-05, planning agent.
 - Decision: Do not touch `src/`, the raw fixtures, or manifest expectation
-  values.
-  Rationale: The emitted diagnostics already match the manifest (the existing
-  parity suite passes); 2.3.3 is about *where the test reads the expectation
-  from*, not about changing any expectation.
-  Date/Author: 2026-07-05, planning agent.
+  values. Rationale: The emitted diagnostics already match the manifest (the
+  existing parity suite passes); 2.3.3 is about *where the test reads the
+  expectation from*, not about changing any expectation. Date/Author:
+  2026-07-05, planning agent.
 - Decision: Add this ExecPlan to `docs/contents.md` during Work item 1.
   Rationale: The repository's documentation freshness gate requires every
   top-level ExecPlan to be indexed. The approved plan entered this worktree as
   an untracked file, so the contents link is required for `make all` to
-  validate the same commit that records Work item 1 progress.
-  Date/Author: 2026-07-05, implementation agent.
+  validate the same commit that records Work item 1 progress. Date/Author:
+  2026-07-05, implementation agent.
 - Decision: Place the shared invalid-workflow corpus helper in
-  `tests/static-analysis/fixtures/invalid-workflows/corpus.ts`.
-  Rationale: The helper is test-only, owns only invalid-workflow fixture
-  location and lookup policy, and sits next to the invalid workflow family
-  manifests without changing production code or the generic corpus reader.
-  Date/Author: 2026-07-05, implementation agent.
+  `tests/static-analysis/fixtures/invalid-workflows/corpus.ts`. Rationale: The
+  helper is test-only, owns only invalid-workflow fixture location and lookup
+  policy, and sits next to the invalid workflow family manifests without
+  changing production code or the generic corpus reader. Date/Author:
+  2026-07-05, implementation agent.
 
 ## Outcomes & retrospective
 
@@ -344,9 +334,8 @@ You are a newcomer with only this worktree. Orient here:
   `INVALID_WORKFLOW_FIXTURE_SNAPSHOTS` array and re-exports the fixture types.
 - Per-family manifest modules (each `export`s a named `*_FIXTURES` array):
   `tests/static-analysis/fixtures/invalid-workflows/manifests/syntax-error.ts`
-  (`SYNTAX_ERROR_FIXTURES`),
-  `.../manifests/hostile-metadata.ts` (`HOSTILE_METADATA_FIXTURES`),
-  `.../manifests/unsupported-import-export.ts`
+  (`SYNTAX_ERROR_FIXTURES`), `.../manifests/hostile-metadata.ts`
+  (`HOSTILE_METADATA_FIXTURES`), `.../manifests/unsupported-import-export.ts`
   (`UNSUPPORTED_IMPORT_EXPORT_FIXTURES`), plus `missing-metadata` and
   `malformed-metadata`.
 - Manifest types and builders:
@@ -372,8 +361,7 @@ You are a newcomer with only this worktree. Orient here:
   `tests/static-analysis/hostile-metadata-security.test.ts`.
 - Shared assertions:
   `tests/static-analysis/workflow-envelope-support.ts` (`spanTextFor`,
-  `expectScannedEnvelope`) and
-  `tests/static-analysis/source-span-oracle.ts`.
+  `expectScannedEnvelope`) and `tests/static-analysis/source-span-oracle.ts`.
 
 Terms:
 
@@ -382,23 +370,23 @@ Terms:
   each invalid fixture's expected diagnostics and spans.
 - *Body-syntax parser adapter*: `parseWorkflowBody` (public via `odw-lint`,
   implemented in `src/static-analysis/workflow-body-parse.ts`), which parses a
-  normalized workflow body with `@swc/core` and returns either `{ ok: true }`
-  or `{ ok: false, diagnostic }` for `odw/body-syntax`.
+  normalized workflow body with `@swc/core` and returns either `{ ok: true }` or
+  `{ ok: false, diagnostic }` for `odw/body-syntax`.
 - *Metadata classifier*: `classifyWorkflowMetadata`
   (`src/static-analysis/workflow-metadata.ts`), which emits `odw/meta-*`
-  diagnostics — including `odw/meta-statically-unprovable` for hostile
-  metadata — from envelope facts without evaluating source.
+  diagnostics — including `odw/meta-statically-unprovable` for hostile metadata
+  — from envelope facts without evaluating source.
 - *Manifest-driven assertion*: a test whose expected values are read from the
   manifest snapshot at run time, so the manifest is the only place the
   expectation is written.
 
-Design sources of truth to obey: `docs/technical-design.md` §11.1
-(differential corpus: "For each fixture, tests assert expected diagnostics and
-spans"), §11.3 (security regression); `docs/developers-guide.md` (invalid
-fixture ownership, the "manifest is not a separate source of truth" rule, and
-the SWC-bump coordinated-surface list); `docs/adr/0001-static-analysis-
-boundary.md`; `docs/adr/0002-workflow-body-parser-dialect-scope.md`; `AGENTS.md`
-(testing, atomicity, separate atomic refactors, file size).
+Design sources of truth to obey: `docs/technical-design.md` §11.1 (differential
+corpus: "For each fixture, tests assert expected diagnostics and spans"), §11.3
+(security regression); `docs/developers-guide.md` (invalid fixture ownership,
+the "manifest is not a separate source of truth" rule, and the SWC-bump
+coordinated-surface list); `docs/adr/0001-static-analysis- boundary.md`;
+`docs/adr/0002-workflow-body-parser-dialect-scope.md`; `AGENTS.md` (testing,
+atomicity, separate atomic refactors, file size).
 
 ## Plan of work
 
@@ -418,24 +406,23 @@ manifest-perturbation probe is a valid red signal.
 - Read the current suites and manifest modules named in Context.
 - Run the two target suites green at baseline (see Concrete steps).
 - Temporarily edit one character of an expected `spanText` in
-  `.../manifests/syntax-error.ts` and one in `.../manifests/hostile-metadata.ts`,
-  run the *manifest-consuming* parity suite
+  `.../manifests/syntax-error.ts` and one in
+  `.../manifests/hostile-metadata.ts`, run the *manifest-consuming* parity suite
   (`invalid-workflow-metadata-parity.test.ts`) and confirm it goes red, then
   revert. This calibrates the probe used in later work items.
 - No commit (investigation only).
 
 Docs to read: `docs/developers-guide.md` (invalid fixture section);
-`docs/technical-design.md` §11.1.
-Skills to load: `execplans` (this plan), `leta` (navigate symbols/references),
-`sem` (entity-level history of the suites), `grepai` (locate any other
-duplication before committing to scope).
+`docs/technical-design.md` §11.1. Skills to load: `execplans` (this plan),
+`leta` (navigate symbols/references), `sem` (entity-level history of the
+suites), `grepai` (locate any other duplication before committing to scope).
 Tests: none added; this item only confirms the baseline and probe.
 
 ### Work item 1: drive the parser suite from the manifest
 
-File: `tests/static-analysis/workflow-body-parser.test.ts`;
-delete `tests/static-analysis/__snapshots__/workflow-body-parser.test.ts.snap`;
-edit `docs/developers-guide.md` SWC-bump surface list.
+File: `tests/static-analysis/workflow-body-parser.test.ts`; delete
+`tests/static-analysis/__snapshots__/workflow-body-parser.test.ts.snap`; edit
+`docs/developers-guide.md` SWC-bump surface list.
 
 - Replace the local `const SYNTAX_ERROR_FIXTURES = [ "syntax-error/..." ]`
   string array (lines 31-34) with an import of the manifest export:
@@ -453,8 +440,8 @@ edit `docs/developers-guide.md` SWC-bump surface list.
   `diagnostic.message` is not the exact base message) because they pin the
   reviewed-template behaviour from task 2.2.5.
 - Keep the "emits original-source body span text for %s" test; it already
-  asserts against `envelope.bodySpan` (behavioural, not a duplicate literal) and
-  should now also cross-check `diagnostic.span` equals
+  asserts against `envelope.bodySpan` (behavioural, not a duplicate literal)
+  and should now also cross-check `diagnostic.span` equals
   `fixture.expectedDiagnostics[0].span` so the span source of truth is the
   manifest.
 - Delete the snapshot file (it holds only the two now-removed entries).
@@ -467,20 +454,20 @@ edit `docs/developers-guide.md` SWC-bump surface list.
 Red (probe): before editing the assertion, run the rewritten test with one
 expected `spanText`/`message` byte perturbed in
 `.../manifests/syntax-error.ts`; confirm the parser test fails citing the
-manifest value; revert the manifest.
-Green: with the manifest intact, the rewritten test passes.
-Refactor: ensure the diagnostic-projection helper is a small named local
-function (command/query, single responsibility) and imports are sorted.
+manifest value; revert the manifest. Green: with the manifest intact, the
+rewritten test passes. Refactor: ensure the diagnostic-projection helper is a
+small named local function (command/query, single responsibility) and imports
+are sorted.
 
 Docs to read: `docs/developers-guide.md` (SWC-bump surfaces; invalid fixture
 rules); `docs/adr/0002-workflow-body-parser-dialect-scope.md`;
 `docs/technical-design.md` §11.1; `AGENTS.md` (Testing → Snapshot scope).
 Skills to load: `execplans`, `leta`, `biomejs` (formatting/lint expectations),
-`en-gb-oxendict` (doc prose), `commit-message`.
-Tests updated: `tests/static-analysis/workflow-body-parser.test.ts` — the two
-`it.each` syntax-error tests become manifest-driven; the snapshot is removed.
-No new test file; coverage is preserved at the adapter layer and now single-
-sourced. Property test `never throws for generated bodies` is untouched.
+`en-gb-oxendict` (doc prose), `commit-message`. Tests updated:
+`tests/static-analysis/workflow-body-parser.test.ts` — the two `it.each`
+syntax-error tests become manifest-driven; the snapshot is removed. No new test
+file; coverage is preserved at the adapter layer and now single- sourced.
+Property test `never throws for generated bodies` is untouched.
 
 ### Work item 2: drive the metadata suite's hostile fixtures from the manifest
 
@@ -492,10 +479,11 @@ File: `tests/static-analysis/workflow-metadata.test.ts`.
   Replace each inline literal with a lookup of the matching fixture in
   `INVALID_WORKFLOW_FIXTURE_SNAPSHOTS` (`family === "hostile-metadata"` and the
   file name) and build the expectation from `fixture.expectedDiagnostics`,
-  projected to the `diagnosticSummary` shape `{ rule, severity, message,
-  spanText }` used by this suite. Reuse the existing `invalidFixtureSource`
-  helper (lines 65-75) to read the fixture text, and keep the passivity
-  assertion (`__odwLintHostileMetadataWasEvaluated` stays `undefined`).
+  projected to the `diagnosticSummary` shape
+  `{ rule, severity, message, spanText }` used by this suite. Reuse the existing
+  `invalidFixtureSource` helper (lines 65-75) to read the fixture text, and
+  keep the passivity assertion (`__odwLintHostileMetadataWasEvaluated` stays
+  `undefined`).
 - Filter `expectedDiagnostics` to the classifier-owned rules if a fixture ever
   carried more than one diagnostic; today each hostile fixture has exactly one
   `odw/meta-statically-unprovable` entry, so map the array directly and assert
@@ -503,45 +491,49 @@ File: `tests/static-analysis/workflow-metadata.test.ts`.
 - Confirm the file stays at or below 400 lines (it should shrink).
 
 Red (probe): perturb one expected hostile `spanText` in
-`.../manifests/hostile-metadata.ts`; confirm both metadata tests fail citing the
-manifest value; revert.
-Green: with the manifest intact, the tests pass.
+`.../manifests/hostile-metadata.ts`; confirm both metadata tests fail citing
+the manifest value; revert. Green: with the manifest intact, the tests pass.
 Refactor: if the two tests now share the same lookup-and-project shape, extract
 one small local helper `expectHostileFixtureDiagnostics(fileName)` rather than
 repeating the projection.
 
-Docs to read: `docs/developers-guide.md` (metadata classifier + invalid
-fixture sections, lines ~165-176 and ~495-527); `docs/technical-design.md`
-§11.3 (security regression); `AGENTS.md` (Testing → Fixtures/Parameterized).
-Skills to load: `execplans`, `leta`, `biomejs`, `commit-message`.
-Tests updated: `tests/static-analysis/workflow-metadata.test.ts` — the two
-hostile classifier tests become manifest-driven. The inline classifier cases
-built from *synthetic* source strings (lines 202-348) are legitimate unit cases
-with no manifest fixture behind them and are left unchanged.
+Docs to read: `docs/developers-guide.md` (metadata classifier + invalid fixture
+sections, lines ~165-176 and ~495-527); `docs/technical-design.md` §11.3
+(security regression); `AGENTS.md` (Testing → Fixtures/Parameterized). Skills
+to load: `execplans`, `leta`, `biomejs`, `commit-message`. Tests updated:
+`tests/static-analysis/workflow-metadata.test.ts` — the two hostile classifier
+tests become manifest-driven. The inline classifier cases built from
+*synthetic* source strings (lines 202-348) are legitimate unit cases with no
+manifest fixture behind them and are left unchanged.
 
 ### Work item 3 (separate atomic refactor): consolidate the corpus literals
 
-Files: add a helper to
-`tests/static-analysis/fixtures/corpus-support.ts` (or a new colocated module
+Files: add a helper to `tests/static-analysis/fixtures/corpus-support.ts` (or a
+new colocated module
 `tests/static-analysis/fixtures/invalid-workflows/corpus.ts` if
 `corpus-support.ts` would exceed 400 lines — it is 73 lines today, so extending
 it is fine); update the consuming suites to use it; add a focused unit test.
 
 - Before implementing, sweep for an existing equivalent (AGENTS.md abstraction
-  policy). The reuse anchors are `FixtureCorpusLocation` and `readFixtureSource`
-  in `corpus-support.ts`; the duplication is the repeated
-  `{ fixtureDirectory: new URL("./fixtures/invalid-workflows/", import.meta.url),
-  manifestRoot: "tests/static-analysis/fixtures/invalid-workflows/", recursive:
-  true }` literal in at least
-  `invalid-workflow-fixtures.test.ts`,
+  policy). The reuse anchors are `FixtureCorpusLocation` and
+  `readFixtureSource` in `corpus-support.ts`; the duplication is the repeated
+  `{ fixtureDirectory: new URL("./fixtures/invalid-workflows/", import.meta.url),`
+
+  ```text
+  manifestRoot: "tests/static-analysis/fixtures/invalid-workflows/", recursive: true
+  }
+  ```
+
+  literal in at least `invalid-workflow-fixtures.test.ts`,
   `invalid-workflow-metadata-parity.test.ts`, `workflow-metadata.test.ts`,
-  `hostile-metadata-security.test.ts`, `workflow-envelope-fixtures.test.ts`,
-  and `workflow-body-parser.test.ts`, plus the local
-  `findInvalidFixture`/`invalidFixtureSource` lookups.
-- Export a single frozen `INVALID_WORKFLOW_FIXTURE_CORPUS: FixtureCorpusLocation`
-  constant and a `findInvalidWorkflowFixture({ family, fileName })` lookup that
-  reads from `INVALID_WORKFLOW_FIXTURE_SNAPSHOTS` and throws a clear error when
-  absent (mirroring the existing local throw messages). Document ownership and
+  `hostile-metadata-security.test.ts`, `workflow-envelope-fixtures.test.ts`, and
+  `workflow-body-parser.test.ts`, plus the local `findInvalidFixture`/
+  `invalidFixtureSource` lookups.
+- Export a single frozen
+  `INVALID_WORKFLOW_FIXTURE_CORPUS: FixtureCorpusLocation` constant and a
+  `findInvalidWorkflowFixture({ family, fileName })` lookup that reads from
+  `INVALID_WORKFLOW_FIXTURE_SNAPSHOTS` and throws a clear error when absent
+  (mirroring the existing local throw messages). Document ownership and
   permitted call sites in the module `@file` block.
 - Replace the duplicated literals and local lookups in the consuming suites
   with the shared constant and helper. Keep each replacement behaviour-
@@ -549,22 +541,21 @@ it is fine); update the consuming suites to use it; add a focused unit test.
 - Because this is a refactor, the behavioural tests in every touched suite must
   pass unchanged before and after; add one focused unit test
   (`tests/static-analysis/invalid-workflow-corpus.test.ts` or a `describe`
-  block in an existing corpus test) proving `findInvalidWorkflowFixture` returns
-  the expected snapshot and throws for an unknown fixture.
+  block in an existing corpus test) proving `findInvalidWorkflowFixture`
+  returns the expected snapshot and throws for an unknown fixture.
 
 Red/Green: the new helper unit test is written red (asserts a lookup that does
 not yet resolve), then green once the helper exists; the suite migrations are
-verified by the unchanged existing tests staying green.
-Refactor: none beyond this; keep the helper minimal.
+verified by the unchanged existing tests staying green. Refactor: none beyond
+this; keep the helper minimal.
 
 Docs to read: `AGENTS.md` (Abstraction/adapter/helper policy; Separate Atomic
 Refactors); `docs/complexity-antipatterns-and-refactoring-strategies.md` (data
 clump / duplicated code); `docs/developers-guide.md` (fixture corpus layout).
 Skills to load: `execplans`, `leta` (find all call sites/references before
 moving), `sem` (confirm the literal is genuinely duplicated across suites),
-`biomejs`, `commit-message`.
-Tests added/updated: one focused unit test for the helper; all migrated suites
-keep their existing assertions.
+`biomejs`, `commit-message`. Tests added/updated: one focused unit test for the
+helper; all migrated suites keep their existing assertions.
 
 Note: if this consolidation would exceed the file/line tolerance or entangle
 suites beyond a clean mechanical replace, split it: land Work items 1, 2, and 4
@@ -577,11 +568,11 @@ File: `docs/developers-guide.md` (and only if needed, a one-line note in
 `docs/technical-design.md` §11.1).
 
 - Add or amend the developers-guide passage that describes invalid-fixture
-  testing to state plainly that the parser
-  (`workflow-body-parser.test.ts`), envelope (`workflow-envelope-fixtures.test.ts`),
-  and metadata (`workflow-metadata.test.ts`, `hostile-metadata-security.test.ts`)
-  suites derive their expected invalid-fixture diagnostics from the manifest,
-  and cross-reference `invalid-workflow-metadata-parity.test.ts` as the merged-
+  testing to state plainly that the parser (`workflow-body-parser.test.ts`),
+  envelope (`workflow-envelope-fixtures.test.ts`), and metadata
+  (`workflow-metadata.test.ts`, `hostile-metadata-security.test.ts`) suites
+  derive their expected invalid-fixture diagnostics from the manifest, and
+  cross-reference `invalid-workflow-metadata-parity.test.ts` as the merged-
   pipeline parity surface. This makes the source-of-truth contract discoverable.
 - Keep wording in en-GB Oxford spelling; wrap prose at 80 columns; code blocks
   at 120.
@@ -590,8 +581,8 @@ File: `docs/developers-guide.md` (and only if needed, a one-line note in
 
 Docs to read: `docs/documentation-style-guide.md`; `docs/developers-guide.md`.
 Skills to load: `execplans`, `en-gb-oxendict`, `changelog` only if a changelog
-entry is warranted (not expected for a test-refactor), `commit-message`.
-Tests: none (documentation). Validated by `make markdownlint` and `make nixie`.
+entry is warranted (not expected for a test-refactor), `commit-message`. Tests:
+none (documentation). Validated by `make markdownlint` and `make nixie`.
 
 ## Concrete steps
 
@@ -646,9 +637,9 @@ Document manifest as the single invalid-fixture source of truth
 
 Authoritative commit gate for every work item: `make all` (per `AGENTS.md`,
 this runs build, `check-fmt`, `lint`, `typecheck`, and `test`). Run the
-sequential named gates as well if `make all` is inconclusive:
-`make check-fmt`, `make lint`, `make typecheck`, `make test`. For any Markdown
-change: `make markdownlint` and `make nixie`.
+sequential named gates as well if `make all` is inconclusive: `make check-fmt`,
+`make lint`, `make typecheck`, `make test`. For any Markdown change:
+`make markdownlint` and `make nixie`.
 
 Do not run gates in parallel (shared build cache; `AGENTS.md`/global tooling
 rule). Do not run a repo-global Markdown reformat; format only the files
@@ -706,10 +697,10 @@ already exported):
   from `tests/static-analysis/fixtures/invalid-workflows.ts`.
 - `SYNTAX_ERROR_FIXTURES`, `HOSTILE_METADATA_FIXTURES`,
   `UNSUPPORTED_IMPORT_EXPORT_FIXTURES` from the per-family manifest modules.
-- `InvalidWorkflowFixtureSnapshot.expectedDiagnostics:
-  readonly InvalidWorkflowFixtureDiagnostic[]` with fields `rule` (`RuleId`),
-  `severity` (`DiagnosticSeverity`), `message` (`string`), `docs`
-  (`RuleDocumentationPath`), `span` (`SourceSpan`), `spanText` (`string`).
+- `InvalidWorkflowFixtureSnapshot.expectedDiagnostics: readonly InvalidWorkflowFixtureDiagnostic[]`
+  with fields `rule` (`RuleId`), `severity` (`DiagnosticSeverity`), `message`
+  (`string`), `docs` (`RuleDocumentationPath`), `span` (`SourceSpan`),
+  `spanText` (`string`).
 - `readFixtureSource(corpus, fixturePath)` and `FixtureCorpusLocation` from
   `tests/static-analysis/fixtures/corpus-support.ts`.
 - `parseWorkflowBody`, `scanWorkflowEnvelope`, `createOriginalSourceFile`,
@@ -735,8 +726,8 @@ the parser `syntax-error` tests and delete the duplicated snapshot (WI1),
 manifest-drive the metadata `hostile-metadata` tests (WI2), consolidate the
 duplicated corpus literals as a separate atomic refactor (WI3), and reconcile
 the developers guide (WI4). Records the decision to delete rather than keep the
-parser snapshot, the discovery that the envelope and security suites are already
-manifest-driven, and the constraint that no production code or manifest
+parser snapshot, the discovery that the envelope and security suites are
+already manifest-driven, and the constraint that no production code or manifest
 expectation value changes.
 
 Revision (2026-07-05 09:01Z). Marked the plan in progress, recorded the

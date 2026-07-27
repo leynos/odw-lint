@@ -17,6 +17,7 @@ clean: ## Remove build artifacts
 
 fmt: build ## Format sources
 	bun run fmt
+	mdformat-all
 
 check-fmt: build ## Verify formatting
 	bunx biome check --formatter-enabled=true --linter-enabled=false src tests package.json biome.jsonc bunfig.toml tsconfig.json .oxlintrc.json

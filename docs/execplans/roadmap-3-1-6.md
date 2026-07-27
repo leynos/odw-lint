@@ -1,30 +1,29 @@
 # Extend deterministic-time alias resolution to lexical scopes
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: IN PROGRESS
 
 ## Purpose / big picture
 
 `odw-lint` statically checks Open Dynamic Workflows (ODW) source without
-executing it. The deterministic-time Claude-compatibility rules (`odw/no-date-now`,
-`odw/no-math-random`, `odw/no-argless-new-date`; see
+executing it. The deterministic-time Claude-compatibility rules
+(`odw/no-date-now`, `odw/no-math-random`, `odw/no-argless-new-date`; see
 [technical-design.md](../technical-design.md) §9.2) warn when a workflow reads
 wall-clock time or randomness, because such workflows are hard to replay across
 ODW and Claude Code. Those rules already understand two things about aliases:
 `const now = Date.now; now()` and `const D = Date; D.now()` are hazards, and a
 locally shadowed `Date`/`Math`/`globalThis` root is not.
 
-Roadmap task 3.1.6 (`docs/roadmap.md` lines 951-959) closes the last gap between
-those two facts. Task 3.1.5 made **bare-root** resolution scope-precise: a
-`Date` shadow in one function no longer hides a real `Date.now()` in an unrelated
-function, because the walk threads a scope-narrowed binding *view*
-(`rootScopeView` + `enterScope` in
-`src/static-analysis/workflow-ast-scopes.ts`). But **alias** resolution was left
-on the old whole-body model:
+Roadmap task 3.1.6 (`docs/roadmap.md` lines 951-959) closes the last gap
+between those two facts. Task 3.1.5 made **bare-root** resolution
+scope-precise: a `Date` shadow in one function no longer hides a real
+`Date.now()` in an unrelated function, because the walk threads a
+scope-narrowed binding *view* (`rootScopeView` + `enterScope` in
+`src/static-analysis/workflow-ast-scopes.ts`). But **alias** resolution was
+left on the old whole-body model:
 `collectDeterministicTimeAliases(module, bindings, rules)` in
 `src/static-analysis/workflow-deterministic-time-aliases.ts` walks the entire
 module once and returns a flat `ReadonlyMap<string, DeterministicTimeAlias>`
@@ -35,8 +34,8 @@ use side (`aliasCallMatch` / `objectIdentityForExpression`, which do
 
 Verbatim roadmap success line (`docs/roadmap.md` lines 957-959): "same-named
 aliases or global roots in unrelated scopes no longer suppress supported Claude
-compatibility warnings, while aliases shadowed at the use site remain suppressed
-and rule-doc limitations are updated."
+compatibility warnings, while aliases shadowed at the use site remain
+suppressed and rule-doc limitations are updated."
 
 The concrete defects this fixes today, all traceable to the flat map:
 
@@ -98,8 +97,8 @@ Observable proof (see `Validation and acceptance`):
   workflow bodies parse in the ECMAScript parser dialect. Do not add
   TypeScript-only wrapper handling.
 - Reuse the shared SWC shape helpers in `src/static-analysis/swc-ast.ts`
-  (`isAstNode`, `astChildValues`, `traverseAstSubtree`) rather than adding a new
-  tree-walk. This is the seam mandated by
+  (`isAstNode`, `astChildValues`, `traverseAstSubtree`) rather than adding a
+  new tree-walk. This is the seam mandated by
   [technical-design.md](../technical-design.md) §6.1.
 - Do not execute workflow source; analysis stays purely syntactic (no `eval`,
   no dynamic computed-key resolution beyond the existing string-literal path).
@@ -132,35 +131,32 @@ Observable proof (see `Validation and acceptance`):
 
 - Risk: folding alias collection into the scope-threaded walk changes
   within-scope visibility ordering (the flat pre-pass made every alias visible
-  body-wide, order-insensitively).
-  Severity: medium. Likelihood: medium.
+  body-wide, order-insensitively). Severity: medium. Likelihood: medium.
   Mitigation: compute each scope's *complete* own-alias set at scope entry
-  (mirroring how `enterScope`/`collectOwnNamesForScope` collect all own names at
-  entry), so within-scope resolution stays order-insensitive exactly as today.
-  Pin the existing nested-block and argument-IIFE alias tests as regression
-  guards before touching production code.
+  (mirroring how `enterScope`/`collectOwnNamesForScope` collect all own names
+  at entry), so within-scope resolution stays order-insensitive exactly as
+  today. Pin the existing nested-block and argument-IIFE alias tests as
+  regression guards before touching production code.
 
-- Risk: shadow detection by naive set-difference (`child.boundNames \
-  parent.boundNames`) misses a name that is *rebound* in a child scope while
-  already present in an ancestor (defect (2) above).
+- Risk: shadow detection by naive set-difference
+  (`child.boundNames \ parent.boundNames`) misses a name that is *rebound* in a
+  child scope while already present in an ancestor (defect (2) above).
   Severity: high. Likelihood: high if the difference shortcut is used.
   Mitigation: derive each scope's own bound names directly from the scope's own
   facts (the WI-1 seam), never by subtracting the inherited view. WI-1 unit
   tests assert own-name sets for a scope whose name also exists in an ancestor.
 
 - Risk: the scope module could acquire knowledge of `Date`/`Math` (a layering
-  violation) when exposing own initializers.
-  Severity: low. Likelihood: low.
+  violation) when exposing own initializers. Severity: low. Likelihood: low.
   Mitigation: the WI-1 seam returns generic `{ name, init }` pairs for simple
-  `id = init` declarators; only the alias module classifies them as
-  `Date`/`Math`/`globalThis` aliases via the existing
-  `resolveGlobalObjectIdentity`.
+  `id = init` declarators; only the alias module classifies them as `Date`/
+  `Math`/`globalThis` aliases via the existing `resolveGlobalObjectIdentity`.
 
 - Risk: file-size limit breach when adding the scoped-view helpers.
-  Severity: low. Likelihood: low.
-  Mitigation: prefer extending existing collectors over new duplicated
-  recursion; if a file approaches 400 lines, split the alias scope-view helpers
-  into a focused sibling module and record the decision.
+  Severity: low. Likelihood: low. Mitigation: prefer extending existing
+  collectors over new duplicated recursion; if a file approaches 400 lines,
+  split the alias scope-view helpers into a focused sibling module and record
+  the decision.
 
 ## Progress
 
@@ -178,92 +174,86 @@ Observable proof (see `Validation and acceptance`):
 - Observation: the internal alias API
   (`collectDeterministicTimeAliases`, `aliasCallMatch`,
   `objectIdentityForExpression`, `memberExpressionFromCall`) is consumed only by
-  `workflow-deterministic-time.ts`.
-  Evidence: `grep -rn` across `src` for each symbol returns only the alias
-  module and that one consumer.
-  Impact: the refactor is fully contained; no public surface changes.
+  `workflow-deterministic-time.ts`. Evidence: `grep -rn` across `src` for each
+  symbol returns only the alias module and that one consumer. Impact: the
+  refactor is fully contained; no public surface changes.
 
 - Observation: adding this ExecPlan made `make all` fail the documentation
   contents freshness test until `docs/contents.md` linked
-  `execplans/roadmap-3-1-6.md`.
-  Evidence: scrutineer reported
-  `documentation-contents.test.ts:91` missing
-  `execplans/roadmap-3-1-6.md`.
-  Impact: WI-1 includes the contents index update so the new plan is discoverable
-  and the repository gate stays green.
+  `execplans/roadmap-3-1-6.md`. Evidence: scrutineer reported
+  `documentation-contents.test.ts:91` missing `execplans/roadmap-3-1-6.md`.
+  Impact: WI-1 includes the contents index update so the new plan is
+  discoverable and the repository gate stays green.
 
 - Observation: CodeRabbit was rate-limited twice before WI-1 review completed.
   Evidence: initial run returned `Rate limit exceeded` with `waitTime` of
   `4 minutes`; retry 1 returned `Rate limit exceeded` with `waitTime` of
   `1 minute`; after the mandated randomized `vsleep` backoffs of 89 and 69
-  minutes, retry 2 completed with `findings:0`.
-  Impact: no actionable CodeRabbit findings remain for WI-1.
+  minutes, retry 2 completed with `findings:0`. Impact: no actionable
+  CodeRabbit findings remain for WI-1.
 
 - Observation: the WI-2 red tests reproduced the flat-alias defects exactly:
   sibling-scope member aliases produced two diagnostics, use-site shadowed
   member aliases produced one diagnostic, sibling parameter rebinding of a
   global-object alias produced one diagnostic, and the generated sibling
-  property failed on the first generated name.
-  Evidence: `bun test
+  property failed on the first generated name. Evidence:
+  `bun test
   tests/static-analysis/workflow-deterministic-time-alias-scopes.test.ts`
-  failed before the alias-view rewrite and passed afterwards.
-  Impact: the new regression file directly proves the roadmap success cases.
+  failed before the alias-view rewrite and passed afterwards. Impact: the new
+  regression file directly proves the roadmap success cases.
 
 - Observation: CodeRabbit's WI-2 review focused only on test assertion
-  precision after the implementation was green.
-  Evidence: review findings requested diagnostic shape snapshots, use of the
-  scanned source text when comparing sibling locations, removal of an unused
-  test-case `rule` field, removal of a redundant decoded-span assertion, and a
-  comment explaining the intentionally restricted generated identifier domain.
-  The final CodeRabbit pass completed with `findings:0`.
-  Impact: no actionable CodeRabbit findings remain for WI-2.
+  precision after the implementation was green. Evidence: review findings
+  requested diagnostic shape snapshots, use of the scanned source text when
+  comparing sibling locations, removal of an unused test-case `rule` field,
+  removal of a redundant decoded-span assertion, and a comment explaining the
+  intentionally restricted generated identifier domain. The final CodeRabbit
+  pass completed with `findings:0`. Impact: no actionable CodeRabbit findings
+  remain for WI-2.
 
 - Observation: the three deterministic-time rule pages already documented
   scope-precise bare-root shadowing, so WI-3 only needed to remove the stale
   whole-body alias limitation and add a short alias-specific paragraph.
   Evidence: each `Limitations` section already said unrelated function, method,
-  getter, or setter bindings no longer hide bare-root warnings.
-  Impact: the documentation update is narrow and keeps the remaining
-  conservative limits unchanged.
+  getter, or setter bindings no longer hide bare-root warnings. Impact: the
+  documentation update is narrow and keeps the remaining conservative limits
+  unchanged.
 
 ## Decision log
 
 - Decision: adopt the scope-threaded alias-view design (Option B) rather than a
-  scope-tagged flat map (Option C).
-  Rationale: the roadmap explicitly requires "the same lexical scope model as
-  bare `Date`, `Math`, and `globalThis` roots"; that model *is* the
-  `rootScopeView` + `enterScope` threaded view established by task 3.1.5.
-  Threading a paired `{ bindings, aliases }` context through the existing
-  `traverseAstSubtree` walk reuses that model directly and needs no second scope
-  representation. Date/Author: 2026-07-04, planning agent.
+  scope-tagged flat map (Option C). Rationale: the roadmap explicitly requires
+  "the same lexical scope model as bare `Date`, `Math`, and `globalThis`
+  roots"; that model *is* the `rootScopeView` + `enterScope` threaded view
+  established by task 3.1.5. Threading a paired `{ bindings, aliases }` context
+  through the existing `traverseAstSubtree` walk reuses that model directly and
+  needs no second scope representation. Date/Author: 2026-07-04, planning agent.
 
 - Decision: derive per-scope shadow names from a dedicated own-facts seam, not
-  from subtracting the inherited binding view.
-  Rationale: set-difference silently misses re-shadowing of a name already bound
-  in an ancestor (defect (2)); the own-facts seam is exact. Date/Author:
-  2026-07-04, planning agent.
+  from subtracting the inherited binding view. Rationale: set-difference
+  silently misses re-shadowing of a name already bound in an ancestor (defect
+  (2)); the own-facts seam is exact. Date/Author: 2026-07-04, planning agent.
 
 - Decision: keep `scopeOwnFacts` generic and return simple identifier
-  initializers without deterministic-time classification.
-  Rationale: this preserves the scope module's existing responsibility for
-  lexical facts only; the alias module remains responsible for deciding whether
-  an initializer is a `Date`, `Math`, or `globalThis` alias. Date/Author:
-  2026-07-04, implementation agent.
+  initializers without deterministic-time classification. Rationale: this
+  preserves the scope module's existing responsibility for lexical facts only;
+  the alias module remains responsible for deciding whether an initializer is a
+  `Date`, `Math`, or `globalThis` alias. Date/Author: 2026-07-04,
+  implementation agent.
 
 - Decision: add the new ExecPlan to `docs/contents.md` in WI-1 rather than
-  waiting for WI-3.
-  Rationale: the repository's documentation freshness test treats every
-  Markdown document under `docs/` as indexable source truth, so the contents
-  update is required for the first atomic commit to pass `make all`.
-  Date/Author: 2026-07-04, implementation agent.
+  waiting for WI-3. Rationale: the repository's documentation freshness test
+  treats every Markdown document under `docs/` as indexable source truth, so
+  the contents update is required for the first atomic commit to pass
+  `make all`. Date/Author: 2026-07-04, implementation agent.
 
 - Decision: replace the flat `collectDeterministicTimeAliases` pre-pass with
   `rootAliasView` and `enterAliasScope`, and thread aliases alongside bindings
-  through the existing deterministic-time AST walk.
-  Rationale: computing each scope's aliases from `rootScopeOwnFacts` and
-  `scopeOwnFacts` gives alias declarations, use-site shadows, and descendant
-  visibility the same lexical model as bare global roots without introducing a
-  second scope representation. Date/Author: 2026-07-04, implementation agent.
+  through the existing deterministic-time AST walk. Rationale: computing each
+  scope's aliases from `rootScopeOwnFacts` and `scopeOwnFacts` gives alias
+  declarations, use-site shadows, and descendant visibility the same lexical
+  model as bare global roots without introducing a second scope representation.
+  Date/Author: 2026-07-04, implementation agent.
 
 - Decision: keep the alias-scope test fixture focused on `odw/no-date-now`.
   Rationale: the behaviour under test is lexical alias visibility, not rule
@@ -273,19 +263,18 @@ Observable proof (see `Validation and acceptance`):
   implementation agent.
 
 - Decision: describe scoped alias resolution in each rule page as a separate
-  paragraph before the remaining conservative limits.
-  Rationale: alias handling is no longer a limitation, but users still need to
-  know that same-named aliases in unrelated scopes no longer fabricate or hide
-  warnings and use-site shadows stay suppressed. Date/Author: 2026-07-04,
-  implementation agent.
+  paragraph before the remaining conservative limits. Rationale: alias handling
+  is no longer a limitation, but users still need to know that same-named
+  aliases in unrelated scopes no longer fabricate or hide warnings and use-site
+  shadows stay suppressed. Date/Author: 2026-07-04, implementation agent.
 
 ## Outcomes & retrospective
 
 WI-1 shipped the scope-owned facts seam without changing diagnostic behaviour.
-`rootScopeOwnFacts` and `scopeOwnFacts` now expose each scope's own sorted names
-and simple identifier initializers, while `rootScopeView` and `enterScope`
-continue to return the same binding views verified by the existing scope tests.
-Focused red/green evidence: the new tests first failed because
+`rootScopeOwnFacts` and `scopeOwnFacts` now expose each scope's own sorted
+names and simple identifier initializers, while `rootScopeView` and
+`enterScope` continue to return the same binding views verified by the existing
+scope tests. Focused red/green evidence: the new tests first failed because
 `rootScopeOwnFacts` and `scopeOwnFacts` were missing exports, then passed after
 the seam was implemented. Deterministic proof after cleanup: scrutineer ran
 `bun test tests/static-analysis/workflow-ast-scopes.test.ts`, `make all`,
@@ -298,22 +287,22 @@ same traversal context as lexical bindings, removes shadowed alias names at
 scope entry, and adds aliases declared directly in the child scope. The new
 alias-scope regression file proves the three roadmap defects, descendant alias
 visibility, same-scope alias calls, and generated sibling isolation. Focused
-and wider proof after cleanup: scrutineer ran `bun test
-tests/static-analysis/workflow-deterministic-time-alias-scopes.test.ts`, `bun
-test tests/static-analysis/`, and `make all`; all passed. CodeRabbit initially
-returned actionable test-hardening findings and one rate-limit response after a
-fix round; after the required randomized backoff and all follow-up fixes, the
-final CodeRabbit review completed with `findings:0`.
+and wider proof after cleanup: scrutineer ran
+`bun test
+tests/static-analysis/workflow-deterministic-time-alias-scopes.test.ts`,
+`bun test tests/static-analysis/`, and `make all`; all passed. CodeRabbit
+initially returned actionable test-hardening findings and one rate-limit
+response after a fix round; after the required randomized backoff and all
+follow-up fixes, the final CodeRabbit review completed with `findings:0`.
 
 WI-3 updated the user-facing rule limitations and technical traversal note. The
 three deterministic-time rule pages now state that alias declarations and alias
 use resolve through the same lexical scope model as bare roots, and the stale
 whole-body alias limitation was removed from the remaining-limit lists.
-`docs/technical-design.md` now describes deterministic-time scanning as a
-single `traverseAstSubtree` walk that threads both scope-narrowed binding and
-alias views. Validation proof: scrutineer ran `make markdownlint`, `make
-nixie`, and `make all`; all passed. CodeRabbit review completed with
-`findings:0`.
+`docs/technical-design.md` now describes deterministic-time scanning as a single
+`traverseAstSubtree` walk that threads both scope-narrowed binding and alias
+views. Validation proof: scrutineer ran `make markdownlint`, `make nixie`, and
+`make all`; all passed. CodeRabbit review completed with `findings:0`.
 
 ## Context and orientation
 
@@ -323,10 +312,10 @@ The reader needs no prior plan. Key files, all under
 - `src/static-analysis/workflow-deterministic-time.ts` — the detector.
   `scanDeterministicTimeWarnings` parses the normalized body, builds bindings,
   builds aliases, then `walkDeterministicTimeHazards` runs `traverseAstSubtree`
-  starting from `rootScopeView(module)` and calls `enterScope(context, node)` at
-  every node to thread the scope-narrowed binding view. Alias matching
-  (`aliasCallMatch`, `objectIdentityForExpression`) currently receives one flat,
-  scope-blind `aliases` map.
+  starting from `rootScopeView(module)` and calls `enterScope(context, node)`
+  at every node to thread the scope-narrowed binding view. Alias matching
+  (`aliasCallMatch`, `objectIdentityForExpression`) currently receives one
+  flat, scope-blind `aliases` map.
 - `src/static-analysis/workflow-deterministic-time-aliases.ts` — alias
   collection and matching. `collectDeterministicTimeAliases` walks the whole
   module and returns `ReadonlyMap<string, DeterministicTimeAlias>` where an
@@ -349,8 +338,8 @@ The reader needs no prior plan. Key files, all under
   `isIdentifierBound`; `resolveStaticMemberName` reads a static member key.
   Unchanged.
 - `src/static-analysis/swc-ast.ts` — `traverseAstSubtree<Context>` threads a
-  generic context to children; `astChildValues`/`isAstNode` are the shared shape
-  helpers. Unchanged.
+  generic context to children; `astChildValues`/`isAstNode` are the shared
+  shape helpers. Unchanged.
 
 Terms of art:
 
@@ -389,11 +378,12 @@ export const scopeOwnFacts = (node: Node): ScopeOwnFacts; // empty when not scop
 ```
 
 `rootScopeView` and `enterScope` are reimplemented to derive their `boundNames`
-from `ownNames` (so a single scope-boundary recursion produces both facts), with
-identical observable output.
+from `ownNames` (so a single scope-boundary recursion produces both facts),
+with identical observable output.
 
-At the end of WI-2, `src/static-analysis/workflow-deterministic-time-aliases.ts`
-exports (replacing `collectDeterministicTimeAliases`):
+At the end of WI-2,
+`src/static-analysis/workflow-deterministic-time-aliases.ts` exports (replacing
+`collectDeterministicTimeAliases`):
 
 ```ts
 export const rootAliasView = (
@@ -410,23 +400,26 @@ export const enterAliasScope = (
 ): DeterministicTimeAliases;
 ```
 
-`aliasCallMatch(node, aliases)`, `objectIdentityForExpression(expr, bindings,
-aliases)`, and `memberExpressionFromCall(node)` keep their current signatures;
-they now receive a scope-narrowed alias view. `enterAliasScope` semantics: for a
-non-scope-opening node it returns `parentAliases` unchanged; for a scope-opening
-node it (1) copies `parentAliases`, (2) deletes every name in
+`aliasCallMatch(node, aliases)`,
+`objectIdentityForExpression(expr, bindings, aliases)`, and
+`memberExpressionFromCall(node)` keep their current signatures; they now
+receive a scope-narrowed alias view. `enterAliasScope` semantics: for a
+non-scope-opening node it returns `parentAliases` unchanged; for a
+scope-opening node it (1) copies `parentAliases`, (2) deletes every name in
 `scopeOwnFacts(node).ownNames` (shadow removal), then (3) classifies each
 `ownInitializer` against `childBindings` with the existing `aliasForExpression`
-and sets the surviving aliases. `rootAliasView` is the same construction from an
-empty parent using `rootScopeOwnFacts(module)` and `rootBindings`.
+and sets the surviving aliases. `rootAliasView` is the same construction from
+an empty parent using `rootScopeOwnFacts(module)` and `rootBindings`.
 
 `src/static-analysis/workflow-deterministic-time.ts` changes its traversal
-context type from `LexicalBindingFacts` to `{ bindings: LexicalBindingFacts;
-aliases: DeterministicTimeAliases }`. The initial context is `{ bindings:
-rootScopeView(module), aliases: rootAliasView(module, rootScopeView(module),
-rules) }`; each node returns `{ bindings: enterScope(ctx.bindings, node),
-aliases: enterAliasScope(ctx.aliases, enterScope(ctx.bindings, node), node,
-rules) }`. `matchDeterministicTimeHazard` reads `ctx.bindings` and `ctx.aliases`.
+context type from `LexicalBindingFacts` to
+`{ bindings: LexicalBindingFacts; aliases: DeterministicTimeAliases }`. The
+initial context is
+`{ bindings: rootScopeView(module), aliases: rootAliasView(module,`
+`rootScopeView(module), rules) }`; each node returns
+`{ bindings: enterScope(ctx.bindings, node), aliases: enterAliasScope(ctx.aliases,`
+`enterScope(ctx.bindings, node), node, rules) }`.
+`matchDeterministicTimeHazard` reads `ctx.bindings` and `ctx.aliases`.
 
 ## Plan of work
 
@@ -441,11 +434,11 @@ the existing scope-boundary recursion rather than duplicate it).
 Docs to read: [technical-design.md](../technical-design.md) §§6.1-6.2, 9.2;
 AGENTS.md "TypeScript Guidance" and "Refactoring Heuristics & Workflow";
 [complexity-antipatterns-and-refactoring-strategies.md](../complexity-antipatterns-and-refactoring-strategies.md)
-(avoid duplicated traversal, keep functions small).
-Skills to load: `leta` (navigate `workflow-ast-scopes.ts` and its callers),
-`python-router` is **not** relevant; load nothing Python. This is TypeScript —
-follow AGENTS.md "TypeScript Guidance"; use `biomejs` skill conventions for
-formatting/lint expectations.
+(avoid duplicated traversal, keep functions small). Skills to load: `leta`
+(navigate `workflow-ast-scopes.ts` and its callers), `python-router` is **not**
+relevant; load nothing Python. This is TypeScript — follow AGENTS.md
+"TypeScript Guidance"; use `biomejs` skill conventions for formatting/lint
+expectations.
 
 Stages:
 
@@ -468,9 +461,9 @@ Stages:
 Tests (per AGENTS.md "Testing"):
 
 - Unit: extend `tests/static-analysis/workflow-ast-scopes.test.ts` with
-  `scopeOwnFacts`/`rootScopeOwnFacts` cases (happy path, ancestor-shadowed name,
-  nested-scope exclusion, non-scope-opening node returns empty). Use the file's
-  existing `nodeOfType`/`userStatementOfType` helpers.
+  `scopeOwnFacts`/`rootScopeOwnFacts` cases (happy path, ancestor-shadowed
+  name, nested-scope exclusion, non-scope-opening node returns empty). Use the
+  file's existing `nodeOfType`/`userStatementOfType` helpers.
 - Regression: the existing `rootScopeView`/`enterScope` assertions must pass
   unchanged (proves behaviour preservation).
 
@@ -490,9 +483,9 @@ Docs to read: [technical-design.md](../technical-design.md) §§6.1, 9.2;
 `docs/rules/no-argless-new-date.md` (current alias limitations);
 [developers-guide.md](../developers-guide.md) and
 [scripting-standards.md](../scripting-standards.md) for scanner conventions.
-Skills to load: `leta` (references/callers of the alias API);
-`hypothesis`/`crosshair`/`mutmut` are Python-only — **do not** load them here.
-For property testing use `fast-check`, already used by
+Skills to load: `leta` (references/callers of the alias API); `hypothesis`/
+`crosshair`/`mutmut` are Python-only — **do not** load them here. For property
+testing use `fast-check`, already used by
 `tests/static-analysis/workflow-deterministic-time-scopes.test.ts`
 (`SOURCE_SPAN_PROPERTY_RUNNER`); follow that file as the pattern. Use the
 `biomejs` skill's expectations for formatting/lint.
@@ -521,10 +514,10 @@ Stages:
    (two-warning / one-warning outputs).
 3. Stage C (green): rewrite `workflow-deterministic-time-aliases.ts` to expose
    `rootAliasView`/`enterAliasScope` (built on the WI-1 seam) and drop
-   `collectDeterministicTimeAliases`; update `workflow-deterministic-time.ts` to
-   thread the `{ bindings, aliases }` context pair. Keep `aliasForExpression`,
-   `memberAliasForExpression`, `aliasCallMatch`, `objectIdentityForExpression`,
-   and `memberExpressionFromCall` intact.
+   `collectDeterministicTimeAliases`; update `workflow-deterministic-time.ts`
+   to thread the `{ bindings, aliases }` context pair. Keep
+   `aliasForExpression`, `memberAliasForExpression`, `aliasCallMatch`,
+   `objectIdentityForExpression`, and `memberExpressionFromCall` intact.
 4. Stage D (refactor/cleanup): confirm both modified source files stay under 400
    lines; extract an alias scope-view helper into a focused sibling module only
    if needed to respect the limit (record in Decision Log). Re-run gates.
@@ -542,8 +535,8 @@ Tests (per AGENTS.md "Testing"):
   `deterministic-time-spans.test.ts` and its snapshot, and
   `workflow-lint.test.ts`.
 
-Acceptance: `make all` passes; the new alias-scope cases fail before Stage C and
-pass after; no existing expected diagnostic changes.
+Acceptance: `make all` passes; the new alias-scope cases fail before Stage C
+and pass after; no existing expected diagnostic changes.
 
 ### WI-3 — Documentation: rule limitations and traversal note
 
@@ -552,8 +545,8 @@ Follows AGENTS.md "Documentation Maintenance" and
 spelling, 80-column prose wrap, 120-column code wrap).
 
 Docs to read: [documentation-style-guide.md](../documentation-style-guide.md);
-the three rule docs; [technical-design.md](../technical-design.md) §6.1.
-Skills to load: `en-gb-oxendict` (spelling), `changelog` is not needed.
+the three rule docs; [technical-design.md](../technical-design.md) §6.1. Skills
+to load: `en-gb-oxendict` (spelling), `changelog` is not needed.
 
 Changes:
 
@@ -561,16 +554,16 @@ Changes:
   `docs/rules/no-argless-new-date.md`: in each `Limitations` section, replace
   the "whole-body alias suppression beyond one direct declaration" clause with
   wording stating that alias declaration and alias use now resolve through the
-  same lexical scope model as bare roots — a same-named alias or rebinding in an
-  unrelated scope no longer suppresses (or fabricates) a warning, and an alias
-  shadowed at the use site stays suppressed. Keep the remaining conservative
-  limits (dynamic computed keys; non-`globalThis` roots such as `window`,
-  `self`, `global`).
+  same lexical scope model as bare roots — a same-named alias or rebinding in
+  an unrelated scope no longer suppresses (or fabricates) a warning, and an
+  alias shadowed at the use site stays suppressed. Keep the remaining
+  conservative limits (dynamic computed keys; non-`globalThis` roots such as
+  `window`, `self`, `global`).
 - `docs/technical-design.md` §6.1 (lines ~128-131): update the sentence
-  "The deterministic-time scanner and deterministic-time alias collector use the
-  driver for full-subtree walks" to reflect that the alias resolver now threads
-  scope-narrowed alias views through the same `traverseAstSubtree` walk as the
-  scanner, alongside the binding view.
+  "The deterministic-time scanner and deterministic-time alias collector use
+  the driver for full-subtree walks" to reflect that the alias resolver now
+  threads scope-narrowed alias views through the same `traverseAstSubtree` walk
+  as the scanner, alongside the binding view.
 
 Tests/validation: `make markdownlint` and `make nixie` (no Mermaid changes
 expected, but run `nixie` because Markdown changed), plus `make all` for the
@@ -634,8 +627,8 @@ Quality criteria ("done"):
 - Tests: `make test` (`bun test`) passes with the new alias-scope unit and
   property tests green; the three defect fixtures behave as in `Purpose`
   (defect (1) → one warning on `b`; defects (2) and (3) → `[]`); every existing
-  deterministic-time, alias, scope, span-snapshot, and workflow-lint test passes
-  unchanged.
+  deterministic-time, alias, scope, span-snapshot, and workflow-lint test
+  passes unchanged.
 - Lint: `make lint` (Biome + Oxlint) passes.
 - Types: `make typecheck` (`tsc --noEmit`) passes.
 - Format: `make check-fmt` passes.
@@ -648,29 +641,30 @@ Red-Green-Refactor evidence to record in `Progress`/`Outcomes`:
 - WI-1 Red: `bun test tests/static-analysis/workflow-ast-scopes.test.ts` fails
   on the new `scopeOwnFacts` cases (symbol missing). Green: passes after the
   seam lands. Refactor: `make all` green.
-- WI-2 Red: `bun test
-  tests/static-analysis/workflow-deterministic-time-alias-scopes.test.ts` fails
-  with the two-warning / one-warning outputs from `Purpose`. Green: passes after
-  the scoped views land. Refactor: full `bun test
-  tests/static-analysis/` and `make all` green.
+- WI-2 Red:
+  `bun test tests/static-analysis/workflow-deterministic-time-alias-scopes.test.ts`
+  fails with the two-warning / one-warning outputs from `Purpose`. Green:
+  passes after the scoped views land. Refactor: full
+  `bun test tests/static-analysis/` and `make all` green.
 
 ## Idempotence and recovery
 
 Every step is re-runnable. The test additions and the alias-module rewrite are
 pure code; re-running `bun test` or `make all` has no side effects. If a work
-item's gate fails, revert the working tree for that file set (`git checkout --
-<paths>`) and retry within the iteration tolerance. No destructive or external
-operations are involved. If churn from `bun fmt`/formatters touches unrelated
-files, discard it with a named stash
+item's gate fails, revert the working tree for that file set
+(`git checkout -- <paths>`) and retry within the iteration tolerance. No
+destructive or external operations are involved. If churn from `bun fmt`
+/formatters touches unrelated files, discard it with a named stash
 (`git stash push -m 'df12-stash v1 task=3.1.6 kind=discard reason="formatter
-churn"'`) rather than committing it.
+churn"'`)
+rather than committing it.
 
 ## Artefacts and notes
 
 Baseline before implementation (illustrative — capture the real output in
 `Outcomes`): running `scanDeterministicTimeWarnings` on defect (1) currently
-returns two `odw/no-date-now` diagnostics; on defects (2) and (3) it returns one
-each. These are the regressions the change removes.
+returns two `odw/no-date-now` diagnostics; on defects (2) and (3) it returns
+one each. These are the regressions the change removes.
 
 ## Revision note
 

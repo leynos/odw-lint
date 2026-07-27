@@ -1,9 +1,8 @@
 # Add a branch-freshness review guard for roadmap tasks
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -13,8 +12,8 @@ Roadmap task 1.5.2 hardens roadmap-task review by detecting stale task branches
 before their review diff presents newer `origin/main` documentation or test
 work as deletions. The failure mode is common for long-lived roadmap branches:
 the branch edits its own roadmap task block, `origin/main` advances nearby, and
-a two-endpoint review diff from refreshed `origin/main` to the branch appears to
-reverse unrelated main-branch work.
+a two-endpoint review diff from refreshed `origin/main` to the branch appears
+to reverse unrelated main-branch work.
 
 After this plan is implemented, a maintainer can run:
 
@@ -122,8 +121,8 @@ conflict in `Decision Log`, and escalate.
   while preserving newer protected main-branch work.
 - False negatives: stop and escalate if the guard cannot flag a stale branch
   whose current `origin/main` contains protected docs, tests, or roadmap
-  changes outside its task scope, including main-only protected paths the branch
-  never touched.
+  changes outside its task scope, including main-only protected paths the
+  branch never touched.
 - Test proof: stop and escalate if a red test cannot demonstrate the stale
   branch failure before the implementation passes.
 - Gate attempts: stop and record options if `make all` still fails after three
@@ -152,9 +151,9 @@ conflict in `Decision Log`, and escalate.
   `git fetch origin main:refs/remotes/origin/main` before analysis, and tests
   must use a local bare origin to prove that remote-tracking update.
 - Risk: parsing ordinary newline-delimited Git path output breaks on unusual
-  file names. Severity: medium. Likelihood: low. Mitigation: use `git diff
-  --name-status -z` and `git status --porcelain=v1 -z` for machine-parsed path
-  output.
+  file names. Severity: medium. Likelihood: low. Mitigation: use
+  `git diff --name-status -z` and `git status --porcelain=v1 -z` for
+  machine-parsed path output.
 - Risk: running this guard from a dirty worktree produces misleading results
   because it compares `HEAD` while the review work is unstaged. Severity:
   medium. Likelihood: medium. Mitigation: fail with a usage error when
@@ -218,20 +217,20 @@ conflict in `Decision Log`, and escalate.
   instead of creating a new top-level tooling area.
 - Observation: the stale roadmap failure mode is line-level, not file-level.
   Evidence: a throwaway Git probe in `/tmp` created a branch that changed only
-  the 1.5.2 checkbox while `origin/main` changed the 1.5.3 checkbox; `git diff
-  --unified=0 origin/main HEAD -- docs/roadmap.md` showed one intended hunk for
-  1.5.2 and one stale reversal hunk for 1.5.3. Impact: `docs/roadmap.md` needs
-  task-block-aware hunk classification.
+  the 1.5.2 checkbox while `origin/main` changed the 1.5.3 checkbox;
+  `git diff --unified=0 origin/main HEAD -- docs/roadmap.md` showed one
+  intended hunk for 1.5.2 and one stale reversal hunk for 1.5.3. Impact:
+  `docs/roadmap.md` needs task-block-aware hunk classification.
 - Observation: same-path overlap is too narrow for roadmap task 1.5.2.
   Evidence: a second throwaway Git probe in `/tmp` created a task branch that
   touched only `docs/roadmap.md` while current `origin/main` added
-  `docs/upstream.md` and `tests/upstream.test.ts`; after fetching
-  `origin/main`, `git merge-base --is-ancestor origin/main HEAD` exited 1,
+  `docs/upstream.md` and `tests/upstream.test.ts`; after fetching `origin/main`,
+  `git merge-base --is-ancestor origin/main HEAD` exited 1,
   `git diff --name-status -z <merge-base> origin/main -- docs tests` reported
   those protected additions, and the two-endpoint diff from `origin/main` to
   `HEAD` reported them as deletions. Impact: classify protected upstream
-  changes outside the declared task scope as stale unless current
-  `origin/main` is an ancestor of `HEAD`.
+  changes outside the declared task scope as stale unless current `origin/main`
+  is an ancestor of `HEAD`.
 - Observation: `git diff --name-status -z` is a suitable path-summary source
   for this guard. Evidence: the same local probe produced NUL-separated status
   and path fields such as `M`, `docs/roadmap.md`, `M`, and
@@ -243,10 +242,10 @@ conflict in `Decision Log`, and escalate.
 - Observation: the first code slice stayed below the AGENTS.md file-size
   ceiling without splitting the support module. Evidence:
   `tests/build-gate/branch-freshness.ts` is 245 lines and
-  `tests/build-gate/branch-freshness.test.ts` is 176 lines after
-  file-scoped Biome formatting. Impact: keep the pure classifier and focused
-  unit tests together for now, then reassess if the Git adapter pushes either
-  file towards 400 lines.
+  `tests/build-gate/branch-freshness.test.ts` is 176 lines after file-scoped
+  Biome formatting. Impact: keep the pure classifier and focused unit tests
+  together for now, then reassess if the Git adapter pushes either file towards
+  400 lines.
 - Observation: CodeRabbit correctly identified that roadmap hunk checks should
   use the post-change line range and fail closed when Git reports a roadmap
   path change but no hunk headers are available. Evidence: the second
@@ -266,10 +265,10 @@ conflict in `Decision Log`, and escalate.
   should add Git adapter or CLI support in separate build-gate modules rather
   than growing the classifier file.
 - Observation: the Git adapter and temporary repository fixtures also needed
-  separate modules to preserve the 400-line file-size ceiling. Evidence:
-  after file-scoped Biome formatting, `tests/build-gate/branch-freshness-git.ts`
-  is 366 lines, `tests/build-gate/branch-freshness-git-parsing.ts` is 59
-  lines, `tests/build-gate/branch-freshness-git-runner.ts` is 57 lines,
+  separate modules to preserve the 400-line file-size ceiling. Evidence: after
+  file-scoped Biome formatting, `tests/build-gate/branch-freshness-git.ts` is
+  366 lines, `tests/build-gate/branch-freshness-git-parsing.ts` is 59 lines,
+  `tests/build-gate/branch-freshness-git-runner.ts` is 57 lines,
   `tests/build-gate/branch-freshness-git-fixtures.ts` is 232 lines, and
   `tests/build-gate/branch-freshness-git.test.ts` is 275 lines after the
   CodeRabbit fixes. Impact: the runnable guard lives in the Git adapter module,
@@ -298,12 +297,12 @@ conflict in `Decision Log`, and escalate.
   checks that it does not schedule `bun install`. Impact: the command remains a
   review helper outside `make all`.
 - Observation: the new guard blocked close-out until this branch contained
-  current protected `origin/main` work. Evidence: the pre-close-out
-  clean-tree `make branch-freshness` run failed for upstream changes in
-  `docs/contents.md`, `docs/developers-guide.md`,
-  `docs/execplans/roadmap-1-5-1.md`, `docs/issues/audit-1.5.1.md`,
-  `docs/roadmap.md`, and the file-size guard tests. Impact: merged
-  `origin/main` before editing `docs/roadmap.md`, then reran the guard cleanly.
+  current protected `origin/main` work. Evidence: the pre-close-out clean-tree
+  `make branch-freshness` run failed for upstream changes in `docs/contents.md`,
+  `docs/developers-guide.md`, `docs/execplans/roadmap-1-5-1.md`,
+  `docs/issues/audit-1.5.1.md`, `docs/roadmap.md`, and the file-size guard
+  tests. Impact: merged `origin/main` before editing `docs/roadmap.md`, then
+  reran the guard cleanly.
 - Observation: the close-out edit happened only after branch freshness passed.
   Evidence: after merge commit `33dd17e`, `git status --porcelain=v1 -z`
   printed no bytes and `make branch-freshness` reported
@@ -330,13 +329,13 @@ conflict in `Decision Log`, and escalate.
   `origin/main` can present main-only protected docs or tests as deletions even
   when the branch changed different files. Therefore, after fetching, if
   `origin/main` is not an ancestor of `HEAD`, every protected upstream change
-  outside the declared task scope is stale. Date/Author:
-  2026-06-30 10:14Z / planning agent.
+  outside the declared task scope is stale. Date/Author: 2026-06-30 10:14Z /
+  planning agent.
 - Decision: use line-level hunk classification only for `docs/roadmap.md`.
   Rationale: roadmap task completion intentionally edits one shared file, while
   other protected docs and tests can be guarded at path level unless a later
-  task proves a narrower content rule is needed. Date/Author:
-  2026-06-30 09:56Z / planning agent.
+  task proves a narrower content rule is needed. Date/Author: 2026-06-30 09:56Z
+  / planning agent.
 - Decision: keep the guard under `tests/build-gate/` rather than `src/`.
   Rationale: task 1.5.2 hardens repository workflow review, not the public
   `odw-lint` analysis API described by the static-analysis design. Date/Author:
@@ -355,10 +354,10 @@ conflict in `Decision Log`, and escalate.
   checkout. Date/Author: 2026-06-30 11:20Z / implementation agent.
 - Decision: put the CLI entry point in
   `tests/build-gate/branch-freshness-git.ts` rather than the pure classifier
-  module. Rationale: work item 1 left
-  `tests/build-gate/branch-freshness.ts` close to the file-size ceiling, and
-  separating Git execution from pure classification keeps the command boundary
-  easier to test. Date/Author: 2026-06-30 12:15Z / implementation agent.
+  module. Rationale: work item 1 left `tests/build-gate/branch-freshness.ts`
+  close to the file-size ceiling, and separating Git execution from pure
+  classification keeps the command boundary easier to test. Date/Author:
+  2026-06-30 12:15Z / implementation agent.
 - Decision: do not update `docs/repository-layout.md` for work item 3.
   Rationale: the existing `tests/build-gate/` ownership and Makefile entries
   already describe repository workflow checks, and the new maintainer-facing
@@ -369,25 +368,24 @@ conflict in `Decision Log`, and escalate.
 
 Implementation is complete. Work item 1 added the pure branch-freshness
 classifier and focused Bun tests for branch/task parsing, task-scoped paths,
-protected path detection, roadmap task-block parsing, zero-context hunk parsing,
-stale protected upstream change classification, rename/copy path handling, and
-reviewer-facing report formatting. Work item 2 added the Git-backed checker,
-CLI exit mapping, NUL-delimited name-status parsing, zero-context roadmap diff
-collection, and temporary local-origin integration tests. Work item 2
-deterministic gates passed after the CodeRabbit fixes: `make all`,
-`make markdownlint`, and `make nixie`. The second work item 2 CodeRabbit pass
-completed with `findings:0`. Deterministic gates also passed after the
-work-item 1 fixes: `make all`, `make markdownlint`, and `make nixie`. The
-final work item 1 CodeRabbit pass completed with `findings:0`.
-Work item 3 wired the `make branch-freshness` target, added Makefile dry-run
-coverage, and documented the maintainer review guard. Its deterministic gates
-passed: `make all`, `make markdownlint`, and `make nixie`; its CodeRabbit pass
-completed with `findings:0`.
-Work item 4 merged current `origin/main` after the new guard flagged stale
-protected upstream work, reran `make branch-freshness` successfully on a clean
-worktree, and marked roadmap task 1.5.2 complete. Its deterministic close-out
-gates passed: `make all`, `make markdownlint`, and `make nixie`; its
-CodeRabbit pass completed with `findings:0`.
+protected path detection, roadmap task-block parsing, zero-context hunk
+parsing, stale protected upstream change classification, rename/copy path
+handling, and reviewer-facing report formatting. Work item 2 added the
+Git-backed checker, CLI exit mapping, NUL-delimited name-status parsing,
+zero-context roadmap diff collection, and temporary local-origin integration
+tests. Work item 2 deterministic gates passed after the CodeRabbit fixes:
+`make all`, `make markdownlint`, and `make nixie`. The second work item 2
+CodeRabbit pass completed with `findings:0`. Deterministic gates also passed
+after the work-item 1 fixes: `make all`, `make markdownlint`, and `make nixie`.
+The final work item 1 CodeRabbit pass completed with `findings:0`. Work item 3
+wired the `make branch-freshness` target, added Makefile dry-run coverage, and
+documented the maintainer review guard. Its deterministic gates passed:
+`make all`, `make markdownlint`, and `make nixie`; its CodeRabbit pass
+completed with `findings:0`. Work item 4 merged current `origin/main` after the
+new guard flagged stale protected upstream work, reran `make branch-freshness`
+successfully on a clean worktree, and marked roadmap task 1.5.2 complete. Its
+deterministic close-out gates passed: `make all`, `make markdownlint`, and
+`make nixie`; its CodeRabbit pass completed with `findings:0`.
 
 ## Addenda
 
@@ -407,24 +405,23 @@ not modify those production modules. Repository workflow checks live under
 `tests/build-gate/`, where `tests/build-gate/makefile.test.ts` already creates
 temporary projects and uses `spawnSync` to dry-run Make targets.
 
-The roadmap task to implement is `docs/roadmap.md` section 1.5.2:
-"Add a branch-freshness review guard for roadmap tasks." Its success criterion
-is that review or gate output flags stale task branches before they present
-unrelated main-branch work as deletions. Section 1.5 frames this as
-roadmap-workflow review hardening, not as part of the ODW static analyser.
+The roadmap task to implement is `docs/roadmap.md` section 1.5.2: "Add a
+branch-freshness review guard for roadmap tasks." Its success criterion is that
+review or gate output flags stale task branches before they present unrelated
+main-branch work as deletions. Section 1.5 frames this as roadmap-workflow
+review hardening, not as part of the ODW static analyser.
 
 The protected surfaces are:
 
 - `docs/**`, because `docs/` is the repository knowledge base and source of
-  truth under `AGENTS.md`, `docs/repository-layout.md`, and the developer
-  guide.
+  truth under `AGENTS.md`, `docs/repository-layout.md`, and the developer guide.
 - `tests/**`, because roadmap task 1.5.2 explicitly mentions test work and the
   repository's quality gate relies on the Bun test suite.
 - `docs/roadmap.md`, with special handling because every roadmap task close-out
   may intentionally edit the same file.
 
-The declared task scope for branch `roadmap-1-5-2` is task `1.5.2`.
-Task-scoped files are:
+The declared task scope for branch `roadmap-1-5-2` is task `1.5.2`. Task-scoped
+files are:
 
 - `docs/execplans/roadmap-1-5-2.md`
 - `docs/issues/audit-1.5.2.md`
@@ -454,9 +451,8 @@ Firecrawl provide these load-bearing facts:
   "DESCRIPTION" and "CONFIGURED REMOTE-TRACKING BRANCHES".
 - `git merge-base` finds the best common ancestor for two commits, and
   `--is-ancestor` exits 0 when the first commit is an ancestor of the second
-  and 1 when it is not. Source:
-  `https://git-scm.com/docs/git-merge-base`, sections "DESCRIPTION" and
-  "OPERATION MODES".
+  and 1 when it is not. Source: `https://git-scm.com/docs/git-merge-base`,
+  sections "DESCRIPTION" and "OPERATION MODES".
 - `git diff A...B` compares from the merge base to `B`; `--name-status` shows
   changed file names and status; `--diff-filter` selects statuses; `-z`
   NUL-terminates fields; pathspecs limit output to named files or directories.
@@ -502,8 +498,8 @@ Firecrawl provide these load-bearing facts:
   `node:child_process`, `node:fs`, and `node:path`.
 
 Branch-local source evidence confirms the Bun/Node pattern is already used in
-this repository: `tests/build-gate/makefile.test.ts` defines
-`runMakeDryRun`, which calls `spawnSync("make", ...)` under Bun tests.
+this repository: `tests/build-gate/makefile.test.ts` defines `runMakeDryRun`,
+which calls `spawnSync("make", ...)` under Bun tests.
 
 The selected TypeScript support module should expose these internal names from
 `tests/build-gate/branch-freshness.ts`; names may be adjusted during
@@ -539,9 +535,8 @@ The CLI entry point in the same file should map statuses to exit codes:
 ### Work item 1: Add pure branch-freshness classification
 
 Create `tests/build-gate/branch-freshness.ts` with pure, dependency-light
-classification helpers, and create
-`tests/build-gate/branch-freshness.test.ts` with table-driven Bun unit tests.
-Do not call Git in this work item.
+classification helpers, and create `tests/build-gate/branch-freshness.test.ts`
+with table-driven Bun unit tests. Do not call Git in this work item.
 
 The support module should include:
 
@@ -626,8 +621,8 @@ make nixie
 
 Extend `tests/build-gate/branch-freshness.ts` with the Git adapter and CLI
 entry point. Keep command execution behind a small function so tests can run
-against temporary local repositories and so pure classification remains easy
-to test.
+against temporary local repositories and so pure classification remains easy to
+test.
 
 The checker must:
 
@@ -725,9 +720,9 @@ make nixie
 
 ### Work item 3: Wire the review target and maintainer documentation
 
-Add a Make target named `branch-freshness` and document it for maintainers.
-The target should run the Bun script directly without a `build` prerequisite,
-so freshness review remains available when the ordinary build is broken:
+Add a Make target named `branch-freshness` and document it for maintainers. The
+target should run the Bun script directly without a `build` prerequisite, so
+freshness review remains available when the ordinary build is broken:
 
 ```make
 branch-freshness: ## Check roadmap task branch freshness
@@ -815,13 +810,12 @@ If the guard reports stale protected work, stop and rebase or merge
 `origin/main` before editing `docs/roadmap.md`. Do not complete the roadmap
 checkbox on a stale branch.
 
-Then update `docs/roadmap.md` so task 1.5.2 changes from `[ ]` to `[x]`.
-Update this ExecPlan's `Progress`, `Decision Log`, and
-`Outcomes & Retrospective` with final validation evidence. Do not run
-`make branch-freshness` again while those documentation files are dirty. After
-the close-out documentation commit is created and the worktree is clean again,
-rerun `make branch-freshness` as a post-commit review guard before pushing or
-requesting review.
+Then update `docs/roadmap.md` so task 1.5.2 changes from `[ ]` to `[x]`. Update
+this ExecPlan's `Progress`, `Decision Log`, and `Outcomes & Retrospective` with
+final validation evidence. Do not run `make branch-freshness` again while those
+documentation files are dirty. After the close-out documentation commit is
+created and the worktree is clean again, rerun `make branch-freshness` as a
+post-commit review guard before pushing or requesting review.
 
 Documentation and skills to read before this item:
 
@@ -841,8 +835,8 @@ make markdownlint
 make nixie
 ```
 
-After committing the close-out documentation and returning to a clean
-worktree, run:
+After committing the close-out documentation and returning to a clean worktree,
+run:
 
 ```sh
 git status --porcelain=v1 -z

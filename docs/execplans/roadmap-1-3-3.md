@@ -1,9 +1,8 @@
 # Add masking fixtures for inert workflow syntax
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -28,10 +27,12 @@ approved.
 - Work only in the git-donkey worktree for branch `roadmap-1-3-3`:
   `/data/leynos/Projects/odw-lint.worktrees/roadmap-1-3-3`.
 - Do not edit the root/control worktree at `/data/leynos/Projects/odw-lint`.
-- Use `grepai search --workspace Projects --project odw-lint "<English intent
-  query>" --toon --compact` as the primary intent-search tool. Treat GrepAI
-  results as canonical `main` evidence only. Recheck branch-local facts with
-  `leta`, exact text search, or direct file inspection inside this worktree.
+- Use
+  `grepai search --workspace Projects --project odw-lint`
+  `"<English intent query>" --toon --compact` as the primary intent-search
+  tool. Treat GrepAI results as canonical `main` evidence only. Recheck
+  branch-local facts with `leta`, exact text search, or direct file inspection
+  inside this worktree.
 - Use `leta` for branch-local symbol navigation, references, call graphs, and
   TypeScript code verification. Exact text search is acceptable for Markdown,
   JSON, lockfile entries, and literal strings that are not code symbols.
@@ -56,8 +57,8 @@ approved.
   later 2.x tasks own parser-backed diagnostics.
 - Every synthetic JavaScript masking fixture added by this task must stay
   inside the normal repository Biome and Oxlint coverage. Do not broaden
-  `biome.jsonc` or `.oxlintrc.json` ignores. Each `.js` fixture must start
-  with a module-level `/** @file ... */` JSDoc block before any code, because
+  `biome.jsonc` or `.oxlintrc.json` ignores. Each `.js` fixture must start with
+  a module-level `/** @file ... */` JSDoc block before any code, because
   `.oxlintrc.json` enables `df12/require-module-jsdoc` for all linted JS/TS
   files outside `tests/static-analysis/fixtures/odw-examples/**/*.js`.
 - Keep each work item independently committable and gate-passable. Commit after
@@ -86,9 +87,9 @@ approved.
   masking or envelope-scanner production code. This roadmap slice is fixture
   preparation only.
 - Fixture shape: stop and escalate if any planned `.js` fixture cannot remain
-  valid JavaScript for the existing Biome/Oxlint gates, including
-  module-level `@file` JSDoc, without broad ignore changes. Do not add a new
-  ignore path merely to avoid writing parseable decoy fixtures.
+  valid JavaScript for the existing Biome/Oxlint gates, including module-level
+  `@file` JSDoc, without broad ignore changes. Do not add a new ignore path
+  merely to avoid writing parseable decoy fixtures.
 - File count: stop and escalate if the fixture work needs more than ten
   tracked files before documentation updates.
 - Gate attempts: stop and escalate if the same gate still fails after three
@@ -99,44 +100,35 @@ approved.
 ## Risks
 
 - Risk: a fixture accidentally contains real unsupported import/export syntax
-  rather than inert decoy text.
-  Severity: high.
-  Likelihood: medium.
-  Mitigation: keep each fixture's real code minimal, keep the real `export
-  const meta = ...` declaration at the top, place decoy syntax only inside the
-  target non-code form, and add tests that assert the expected envelope
-  diagnostics array is empty.
+  rather than inert decoy text. Severity: high. Likelihood: medium. Mitigation:
+  keep each fixture's real code minimal, keep the real
+  `export const meta = ...` declaration at the top, place decoy syntax only
+  inside the target non-code form, and add tests that assert the expected
+  envelope diagnostics array is empty.
 
 - Risk: raw ODW-style top-level `return` makes new `.js` fixtures fail Biome
-  parsing.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: these masking fixtures do not need top-level `return`. Keep them
-  parseable ECMAScript modules with top-level `await` only where useful.
+  parsing. Severity: medium. Likelihood: medium. Mitigation: these masking
+  fixtures do not need top-level `return`. Keep them parseable ECMAScript
+  modules with top-level `await` only where useful.
 
 - Risk: implementers conflate this fixture task with the later masker
-  implementation.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: keep production code untouched, name the expected outcome
+  implementation. Severity: medium. Likelihood: medium. Mitigation: keep
+  production code untouched, name the expected outcome
   `no-envelope-diagnostics`, and cite roadmap task 2.1.1 as the consumer of
   these fixtures.
 
 - Risk: template literals are ambiguous because ODW's generic envelope masker
   blanks whole template literals, while ODW dual-compat scanning keeps
-  interpolation code visible.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: include a template fixture with decoy syntax in template text and
-  a nested ordinary string inside interpolation, then document that envelope
-  diagnostics must stay empty while future dual-compat scanner tests can add
-  separate executable-interpolation cases.
+  interpolation code visible. Severity: medium. Likelihood: medium. Mitigation:
+  include a template fixture with decoy syntax in template text and a nested
+  ordinary string inside interpolation, then document that envelope diagnostics
+  must stay empty while future dual-compat scanner tests can add separate
+  executable-interpolation cases.
 
 ## Progress
 
 - [x] (2026-06-28 12:22Z) Confirmed the worktree and branch:
-  `/data/leynos/Projects/odw-lint.worktrees/roadmap-1-3-3` on
-  `roadmap-1-3-3`.
+  `/data/leynos/Projects/odw-lint.worktrees/roadmap-1-3-3` on `roadmap-1-3-3`.
 - [x] (2026-06-28 12:22Z) Loaded `leta`, `grepai`, `execplans`,
   `firecrawl-mcp`, `commit-message`, `en-gb-oxendict-style`, and
   `biome-typescript` skills for this planning pass.
@@ -151,15 +143,15 @@ approved.
   declarations, Biome CLI package entry, the repository Makefile, and the
   existing ODW fixture manifest tests.
 - [x] (2026-06-28 12:36Z) Rechecked the round-2 design-review blockers
-  against branch-local `.oxlintrc.json`, `biome.jsonc`, the locked
-  `df12-lints` plugin source, and an Oxlint probe for missing and present
-  module-level `@file` JSDoc.
+  against branch-local `.oxlintrc.json`, `biome.jsonc`, the locked `df12-lints`
+  plugin source, and an Oxlint probe for missing and present module-level
+  `@file` JSDoc.
 - [x] (2026-06-28 13:18Z) Work item 1: Added passive comment and string
   masking fixtures, a frozen manifest, and Bun manifest tests. `make all`
   passed before CodeRabbit and again after the review fix.
 - [x] (2026-06-28 13:29Z) Work item 2: Added regex and template-literal
-  masking fixtures, expanded context coverage to all four planned contexts,
-  and pinned the new hashes. `make all` passed, and CodeRabbit reported zero
+  masking fixtures, expanded context coverage to all four planned contexts, and
+  pinned the new hashes. `make all` passed, and CodeRabbit reported zero
   findings.
 - [x] (2026-06-28 13:36Z) Work item 3: Documented synthetic masking fixture
   maintenance, marked roadmap task 1.3.3 complete, and updated this ExecPlan
@@ -173,17 +165,17 @@ approved.
   `origin/main` to preserve completed roadmap task 1.3.2 while retaining the
   1.3.3 masking additions. Direct branch-local checks confirmed
   `docs/execplans/roadmap-1-3-2.md`, `docs/issues/audit-1.3.2.md`, invalid
-  workflow fixtures, snapshots, lint ignores, developer-guide guidance, and
-  the checked 1.3.2 roadmap item are present. `make all`, `make markdownlint`,
-  `make nixie`, and
-  `coderabbit review --agent` passed before the ExecPlan commit.
+  workflow fixtures, snapshots, lint ignores, developer-guide guidance, and the
+  checked 1.3.2 roadmap item are present. `make all`, `make markdownlint`,
+  `make nixie`, and `coderabbit review --agent` passed before the ExecPlan
+  commit.
 
 ## Surprises & discoveries
 
 - Observation: GrepAI's task-specific code searches returned no direct code
   matches, and broader searches mostly pointed to the terms of reference and
-  ADR.
-  Evidence: `grepai search --workspace Projects --project odw-lint "workflow
+  ADR. Evidence:
+  `grepai search --workspace Projects --project odw-lint "workflow
   syntax masking comments strings regex template literals" --toon --compact`
   returned zero results, while broader parser searches returned design docs.
   Impact: this is still a fixture-corpus planning task rather than an
@@ -191,8 +183,8 @@ approved.
   docs.
 
 - Observation: `node_modules` was absent before research.
-  Evidence: `test -d node_modules` reported `node_modules missing`.
-  Impact: run `make build` before direct locked-tool inspection or direct
+  Evidence: `test -d node_modules` reported `node_modules missing`. Impact: run
+  `make build` before direct locked-tool inspection or direct
   `./node_modules/.bin/biome` formatter invocations.
 
 - Observation: ODW uses two masking strategies.
@@ -200,84 +192,74 @@ approved.
   extraction and `maskForDualScan` for compatibility hazards. `maskNonCode`
   blanks strings, template literals, comments, and regex literals while
   preserving newlines. `maskForDualScan` blanks template text but leaves
-  interpolation code visible.
-  Impact: 1.3.3 fixtures should focus on envelope diagnostics. Future
-  dual-compat fixtures must distinguish template text from executable
-  interpolation code.
+  interpolation code visible. Impact: 1.3.3 fixtures should focus on envelope
+  diagnostics. Future dual-compat fixtures must distinguish template text from
+  executable interpolation code.
 
 - Observation: `docs/users-guide.md` is not present.
   Evidence: `leta files` and `find docs -maxdepth 3 -type f` listed the docs
-  tree without a users guide.
-  Impact: do not create a users guide for this internal fixture task; update
-  `docs/developers-guide.md` only if fixture maintenance guidance changes.
+  tree without a users guide. Impact: do not create a users guide for this
+  internal fixture task; update `docs/developers-guide.md` only if fixture
+  maintenance guidance changes.
 
 - Observation: the synthetic masking `.js` fixtures are not covered by the
-  existing ODW-example lint ignores.
-  Evidence: branch-local `biome.jsonc` excludes only
-  `tests/static-analysis/fixtures/odw-examples/**/*.js`; branch-local
-  `.oxlintrc.json` has the same ODW-example ignore and enables
+  existing ODW-example lint ignores. Evidence: branch-local `biome.jsonc`
+  excludes only `tests/static-analysis/fixtures/odw-examples/**/*.js`;
+  branch-local `.oxlintrc.json` has the same ODW-example ignore and enables
   `df12/require-module-jsdoc`. The locked `df12-lints` plugin source checks
   `MODULE_JSDOC_PATTERN` in `tools/oxlint-plugin-df12/index.js` and reports
-  `JS/TS files must start with a module-level JSDoc block containing @file.`
-  A direct Oxlint probe with no `@file` block exited 1, and the same probe with
-  `/** @file ... */` exited 0.
-  Impact: every synthetic `.js` masking fixture in work items 1 and 2 must
-  start with module-level `@file` JSDoc and remain linted; this plan must not
-  add or recommend broader ignore rules.
+  `JS/TS files must start with a module-level JSDoc block containing @file.` A
+  direct Oxlint probe with no `@file` block exited 1, and the same probe with
+  `/** @file ... */` exited 0. Impact: every synthetic `.js` masking fixture in
+  work items 1 and 2 must start with module-level `@file` JSDoc and remain
+  linted; this plan must not add or recommend broader ignore rules.
 
 - Observation: CodeRabbit caught that the first work-item manifest type
   advertised `regex` and `template` contexts before those fixtures existed.
   Evidence: `coderabbit review --agent` reported a major finding against
   `tests/static-analysis/fixtures/masking.ts` after `make all` passed for work
-  item 1.
-  Impact: work item 1 narrows `MaskingFixtureContext` to `comment | string`;
-  work item 2 will expand the type when regex and template fixtures are added.
+  item 1. Impact: work item 1 narrows `MaskingFixtureContext` to
+  `comment | string`; work item 2 will expand the type when regex and template
+  fixtures are added.
 
 - Observation: the branch had been forked before roadmap task 1.3.2 landed on
-  `origin/main`.
-  Evidence: before the rebase, branch-local checks showed
-  `docs/execplans/roadmap-1-3-2.md`,
-  `docs/issues/audit-1.3.2.md`,
+  `origin/main`. Evidence: before the rebase, branch-local checks showed
+  `docs/execplans/roadmap-1-3-2.md`, `docs/issues/audit-1.3.2.md`,
   `tests/static-analysis/fixtures/invalid-workflows.ts`,
   `tests/static-analysis/invalid-workflow-fixtures.test.ts`, and the
   invalid-workflow snapshot were absent. After rebasing onto `origin/main`,
   those paths are present, the invalid-workflow Biome and Oxlint ignores are
-  present, and `docs/roadmap.md` keeps 1.3.2 checked.
-  Impact: fix round 2 is a freshness repair only; it preserves the 1.3.2
-  corpus and keeps 1.3.3's masking fixture additions without expanding scope.
+  present, and `docs/roadmap.md` keeps 1.3.2 checked. Impact: fix round 2 is a
+  freshness repair only; it preserves the 1.3.2 corpus and keeps 1.3.3's
+  masking fixture additions without expanding scope.
 
 ## Decision log
 
 - Decision: create a new masking fixture family rather than extending
-  `ODW_EXAMPLE_FIXTURE_SNAPSHOTS`.
-  Rationale: imported ODW examples are read-only upstream snapshots with
-  `expectedStatus: "no-error"`. Masking fixtures are synthetic adversarial
-  cases whose purpose is future scanner regression coverage, so a separate
-  manifest keeps ownership and refresh rules clear.
-  Date/Author: 2026-06-28, planning agent.
+  `ODW_EXAMPLE_FIXTURE_SNAPSHOTS`. Rationale: imported ODW examples are
+  read-only upstream snapshots with `expectedStatus: "no-error"`. Masking
+  fixtures are synthetic adversarial cases whose purpose is future scanner
+  regression coverage, so a separate manifest keeps ownership and refresh rules
+  clear. Date/Author: 2026-06-28, planning agent.
 
 - Decision: split fixture implementation into comment/string first, then
-  regex/template.
-  Rationale: each commit remains small, gate-passable, and independently
-  reviewable while covering all four syntactic forms required by roadmap task
-  1.3.3.
-  Date/Author: 2026-06-28, planning agent.
+  regex/template. Rationale: each commit remains small, gate-passable, and
+  independently reviewable while covering all four syntactic forms required by
+  roadmap task 1.3.3. Date/Author: 2026-06-28, planning agent.
 
 - Decision: do not add property, snapshot, behavioural, or end-to-end tests in
-  this roadmap slice.
-  Rationale: the required input space is a finite fixture matrix, the CLI does
-  not exist yet, and no parser-backed output contract changes. Table-driven
-  Bun unit tests over fixed fixtures are the right level of rigour. Property
-  and span snapshot tests remain important for later source-mapper and parser
-  work under technical design §§11.4 and 11.5.
+  this roadmap slice. Rationale: the required input space is a finite fixture
+  matrix, the CLI does not exist yet, and no parser-backed output contract
+  changes. Table-driven Bun unit tests over fixed fixtures are the right level
+  of rigour. Property and span snapshot tests remain important for later
+  source-mapper and parser work under technical design §§11.4 and 11.5.
   Date/Author: 2026-06-28, planning agent.
 
 - Decision: keep new masking `.js` fixture files parseable by Biome rather than
-  adding ignore configuration.
-  Rationale: the existing ODW example snapshots need ignores because they
-  preserve upstream dialect source exactly. Synthetic fixtures in this task can
-  avoid top-level `return` and broad formatting exceptions.
-  Date/Author: 2026-06-28, planning agent.
+  adding ignore configuration. Rationale: the existing ODW example snapshots
+  need ignores because they preserve upstream dialect source exactly. Synthetic
+  fixtures in this task can avoid top-level `return` and broad formatting
+  exceptions. Date/Author: 2026-06-28, planning agent.
 
 - Decision: require module-level `@file` JSDoc in every synthetic `.js`
   masking fixture and include those files in direct Biome formatting commands.
@@ -288,38 +270,35 @@ approved.
   Date/Author: 2026-06-28, planning agent.
 
 - Decision: narrow `MaskingFixtureContext` during work item 1 and expand it
-  only when additional contexts are pinned.
-  Rationale: each atomic commit should expose a manifest contract that matches
-  the fixture corpus committed at that point. This supersedes the initial
-  work-item-1 instruction to declare all four contexts before all four
-  fixtures exist.
-  Date/Author: 2026-06-28, implementation agent.
+  only when additional contexts are pinned. Rationale: each atomic commit
+  should expose a manifest contract that matches the fixture corpus committed
+  at that point. This supersedes the initial work-item-1 instruction to declare
+  all four contexts before all four fixtures exist. Date/Author: 2026-06-28,
+  implementation agent.
 
 - Decision: satisfy the escaped-quote fixture requirement with an escaped
-  single quote inside `singleQuotedDecoy`.
-  Rationale: Biome normalizes an escaped double-quote attempt back to a
-  single-quoted string with unescaped double quotes. Adding `\'escaped
-  boundary\'` inside the single-quoted literal survives the formatter and gives
-  the future masker a real escaped delimiter boundary.
-  Date/Author: 2026-06-28, fix-round agent.
+  single quote inside `singleQuotedDecoy`. Rationale: Biome normalizes an
+  escaped double-quote attempt back to a single-quoted string with unescaped
+  double quotes. Adding `\'escaped boundary\'` inside the single-quoted literal
+  survives the formatter and gives the future masker a real escaped delimiter
+  boundary. Date/Author: 2026-06-28, fix-round agent.
 
 - Decision: resolve the rebase documentation conflict by combining fixture
-  maintenance guidance rather than choosing one side.
-  Rationale: `origin/main` owns the invalid-workflow fixture family from
-  roadmap task 1.3.2, while this branch owns the synthetic masking fixture
-  family from roadmap task 1.3.3. `docs/developers-guide.md` must describe
-  both families so future fixture maintenance does not delete or reformat the
-  wrong corpus.
-  Date/Author: 2026-06-28, fix-round-2 agent.
+  maintenance guidance rather than choosing one side. Rationale: `origin/main`
+  owns the invalid-workflow fixture family from roadmap task 1.3.2, while this
+  branch owns the synthetic masking fixture family from roadmap task 1.3.3.
+  `docs/developers-guide.md` must describe both families so future fixture
+  maintenance does not delete or reformat the wrong corpus. Date/Author:
+  2026-06-28, fix-round-2 agent.
 
 ## Outcomes & retrospective
 
 Work item 1 added `comment-decoy.js`, `string-decoy.js`,
 `tests/static-analysis/fixtures/masking.ts`, and
 `tests/static-analysis/masking-fixtures.test.ts`. The first fixture commit pins
-comment and string decoys only; `MaskingFixtureContext` is deliberately narrowed
-until work item 2 adds regex and template coverage. Validation passed with
-`make all` before CodeRabbit and again after addressing its major finding.
+comment and string decoys only; `MaskingFixtureContext` is deliberately
+narrowed until work item 2 adds regex and template coverage. Validation passed
+with `make all` before CodeRabbit and again after addressing its major finding.
 
 Work item 2 added `regex-decoy.js` and `template-literal-decoy.js`, expanded
 `MaskingFixtureContext` to `comment | regex | string | template`, and added a
@@ -363,8 +342,8 @@ manifest is sorted and frozen, and records empty expected diagnostics for the
 current slice. This task should follow that pattern without reusing the
 upstream example manifest.
 
-The future envelope scanner is described in `docs/technical-design.md` §6.2.
-It will locate the real `export const meta =` declaration and reject real
+The future envelope scanner is described in `docs/technical-design.md` §6.2. It
+will locate the real `export const meta =` declaration and reject real
 unsupported top-level imports or exports. It must ignore decoy workflow syntax
 inside non-code regions. The ODW sibling loader verifies why this matters:
 `open-dynamic-workflows/src/loader.ts` extracts metadata from a masked source
@@ -420,9 +399,10 @@ change the real envelope and must not produce future envelope diagnostics.
   metadata extraction. It also shows `scanDualCompat` uses a different
   template-aware mask for executable interpolation code.
 - `open-dynamic-workflows/src/primitives.ts` verifies that the injected
-  `validate(source)` primitive calls `loadWorkflowScript(source,
-  "candidate.js")` and `scanDualCompat(source)`. It is executable runtime
-  behaviour and must not be used by production `odw-lint` code for this task.
+  `validate(source)` primitive calls
+  `loadWorkflowScript(source, "candidate.js")` and `scanDualCompat(source)`. It
+  is executable runtime behaviour and must not be used by production `odw-lint`
+  code for this task.
 - `node_modules/bun-types/test.d.ts` from locked `bun-types@1.3.14` declares
   `describe`, `test`, the `it` alias, `test.each`, and `expect`. Bun itself
   reported version `1.3.11`. The official Bun test documentation at
@@ -434,15 +414,15 @@ change the real envelope and must not produce future envelope diagnostics.
   Biome CLI documentation at <https://biomejs.dev/reference/cli/> documents
   `biome check` and `biome format` over explicit paths.
 - `bun.lock` pins `oxlint@1.71.0` and `df12-lints` to Git commit
-  `08ca59b`. Branch-local `.oxlintrc.json` loads
-  `df12-lints/oxlint-plugin`, ignores only copied ODW example `.js` fixtures,
-  and enables `df12/require-module-jsdoc`. The locked plugin source at
+  `08ca59b`. Branch-local `.oxlintrc.json` loads `df12-lints/oxlint-plugin`,
+  ignores only copied ODW example `.js` fixtures, and enables
+  `df12/require-module-jsdoc`. The locked plugin source at
   `node_modules/df12-lints/tools/oxlint-plugin-df12/index.js` defines
   `MODULE_JSDOC_PATTERN` and reports missing module `@file` JSDoc from
   `requireModuleJsDocRule`. The df12-lints users guide documents the same
   requirement, and the official Oxlint configuration reference at
-  <https://oxc.rs/docs/guide/usage/linter/config-file-reference.html>
-  documents `jsPlugins`, `ignorePatterns`, and `rules`.
+  <https://oxc.rs/docs/guide/usage/linter/config-file-reference.html> documents
+  `jsPlugins`, `ignorePatterns`, and `rules`.
 - Branch-local `biome.jsonc` includes `tests/**/*` and excludes only
   `tests/static-analysis/fixtures/odw-examples/**/*.js`; branch-local
   `Makefile` runs `make check-fmt` with `bunx biome check` over `src`, `tests`,
@@ -467,8 +447,8 @@ Rust router skill is needed because this work item touches TypeScript and
 JavaScript fixtures only.
 
 Add `tests/static-analysis/fixtures/masking/comment-decoy.js`. It must contain
-one module-level `/** @file ... */` JSDoc block at the top of the file, one
-real `export const meta = ...` declaration, and decoy `export const meta =`,
+one module-level `/** @file ... */` JSDoc block at the top of the file, one real
+`export const meta = ...` declaration, and decoy `export const meta =`,
 `import`, `export`, and brace-like text inside line and block comments only.
 Keep the executable body minimal and parseable without relying on injected ODW
 globals, for example by assigning a constant and awaiting `Promise.resolve` on
@@ -537,30 +517,28 @@ the ODW sibling loader comments in `open-dynamic-workflows/src/loader.ts`
 before editing. Load `leta`, `grepai`, `biome-typescript`, and
 `en-gb-oxendict-style`.
 
-Add `tests/static-analysis/fixtures/masking/regex-decoy.js`. It must start
-with module-level `/** @file ... */` JSDoc, contain one real metadata
-declaration, and place decoy workflow syntax inside a regular expression
-literal. Include a regex character class or escaped slash so the future masker
-cannot treat the first slash-like token as the end too early. The fixture
-should not contain real top-level `import` or extra `export` syntax outside
-the regex.
+Add `tests/static-analysis/fixtures/masking/regex-decoy.js`. It must start with
+module-level `/** @file ... */` JSDoc, contain one real metadata declaration,
+and place decoy workflow syntax inside a regular expression literal. Include a
+regex character class or escaped slash so the future masker cannot treat the
+first slash-like token as the end too early. The fixture should not contain
+real top-level `import` or extra `export` syntax outside the regex.
 
-Add `tests/static-analysis/fixtures/masking/template-literal-decoy.js`. It
-must start with module-level `/** @file ... */` JSDoc, contain one real
-metadata declaration, and place decoy workflow syntax in template literal
-text. Include one interpolation that contains an ordinary string with decoy
-workflow syntax, for example `${"export const meta = { name:
-\"nested-string-decoy\" }"}`, so future scanner work has coverage for nested
-non-code inside interpolation without requiring this task to implement
-dual-compat scanning. Do not include executable `Date.now()` or `Math.random()`
-inside interpolation; those belong to later Claude-compatibility diagnostics.
+Add `tests/static-analysis/fixtures/masking/template-literal-decoy.js`. It must
+start with module-level `/** @file ... */` JSDoc, contain one real metadata
+declaration, and place decoy workflow syntax in template literal text. Include
+one interpolation that contains an ordinary string with decoy workflow syntax,
+for example `${"export const meta = { name: \"nested-string-decoy\" }"}`, so
+future scanner work has coverage for nested non-code inside interpolation
+without requiring this task to implement dual-compat scanning. Do not include
+executable `Date.now()` or `Math.random()` inside interpolation; those belong
+to later Claude-compatibility diagnostics.
 
 Extend `tests/static-analysis/fixtures/masking.ts` so
 `MASKING_FIXTURE_SNAPSHOTS` contains all four entries in sorted filename order.
 Extend `tests/static-analysis/masking-fixtures.test.ts` with a table-driven
-assertion that the manifest covers exactly the four contexts
-`comment`, `regex`, `string`, and `template`. Keep all expected envelope
-diagnostics empty.
+assertion that the manifest covers exactly the four contexts `comment`, `regex`,
+`string`, and `template`. Keep all expected envelope diagnostics empty.
 
 Unit tests: update the Bun manifest tests for the four-context matrix.
 Behavioural tests: none. Property tests: none. Snapshot tests: none. End-to-end
@@ -588,8 +566,8 @@ Commit this work item with a file-based commit message, for example
 ### Work item 3: Document fixture maintenance and close roadmap task 1.3.3
 
 Read `docs/documentation-style-guide.md` "Spelling", "Markdown rules", and
-"Roadmap task writing guidelines"; `docs/developers-guide.md` "Workflow
-Fixture Corpus"; and `docs/roadmap.md` §1.3 before editing. Load `execplans`,
+"Roadmap task writing guidelines"; `docs/developers-guide.md` "Workflow Fixture
+Corpus"; and `docs/roadmap.md` §1.3 before editing. Load `execplans`,
 `en-gb-oxendict-style`, and `biome-typescript`.
 
 Update `docs/developers-guide.md` "Workflow Fixture Corpus" to mention that
@@ -597,12 +575,11 @@ synthetic masking fixtures live under
 `tests/static-analysis/fixtures/masking/`, are owned by `odw-lint`, may be
 formatted by repository tooling, and record empty envelope-diagnostic
 expectations for future scanner work. Keep the copied ODW examples guidance
-unchanged: those snapshots remain byte-for-byte upstream copies and must not
-be formatted.
+unchanged: those snapshots remain byte-for-byte upstream copies and must not be
+formatted.
 
-Update `docs/roadmap.md` §1.3 by marking task 1.3.3 complete after work items
-1 and 2 are committed and validated. Do not mark 1.3.4 or any 2.x task
-complete.
+Update `docs/roadmap.md` §1.3 by marking task 1.3.3 complete after work items 1
+and 2 are committed and validated. Do not mark 1.3.4 or any 2.x task complete.
 
 Update this ExecPlan's `Progress`, `Surprises & Discoveries`, `Decision log`,
 and `Outcomes & retrospective` sections with implementation evidence and final
@@ -661,8 +638,8 @@ target before direct Biome formatting:
 make build 2>&1 | tee /tmp/build-odw-lint-roadmap-1-3-3.out
 ```
 
-Proceed through work items 1, 2, and 3 in order. Do not combine commits. Do
-not proceed to the next work item if the current work item's validation fails.
+Proceed through work items 1, 2, and 3 in order. Do not combine commits. Do not
+proceed to the next work item if the current work item's validation fails.
 
 ## Validation and acceptance
 
@@ -680,8 +657,7 @@ Acceptance for the implemented roadmap task:
   contains module-level `@file` JSDoc plus decoy workflow syntax in template
   literal text and a nested string inside interpolation.
 - `tests/static-analysis/fixtures/masking.ts` exposes a sorted immutable
-  manifest with four entries and `expectedStatus:
-  "no-envelope-diagnostics"`.
+  manifest with four entries and `expectedStatus: "no-envelope-diagnostics"`.
 - `tests/static-analysis/masking-fixtures.test.ts` proves file presence,
   sorted order, unique names, derived paths, SHA-256 hashes, passive
   `WorkflowSource` text, empty expected diagnostics, context coverage, and
@@ -813,8 +789,8 @@ Fix-round-1 revision. It records the escaped-quote correction to
 `string-decoy.js`, the manifest hash update, the passing `make all` gate, the
 zero-finding CodeRabbit review, and the fixture-fix commit `ad6616d`.
 
-Fix-round-2 revision. It records the rebase onto `origin/main`, preservation
-of roadmap task 1.3.2's invalid-workflow corpus, audit document, and
+Fix-round-2 revision. It records the rebase onto `origin/main`, preservation of
+roadmap task 1.3.2's invalid-workflow corpus, audit document, and
 documentation, the combined developer-guide fixture guidance, and the passing
 full gate plus CodeRabbit review for the freshness repair.
 
