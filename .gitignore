@@ -19,3 +19,6 @@ tmp/
 *.swo
 .*.swp
 .*.swo
+.vtcode/
+.memdb/
+*~
