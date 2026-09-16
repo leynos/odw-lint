@@ -204,7 +204,8 @@
 
 ## Markdown Guidance
 
-- Validate Markdown files using `bunx markdownlint-cli2 "**/*.md"`.
+- Validate Markdown files using `make markdownlint`, and format them with
+  `make fmt`, which runs `mdtablefix` and `markdownlint-cli2 --fix`.
 - Run `make spelling` to refresh the shared en-GB-oxendict base, regenerate
   `typos.toml`, and check maintained Markdown with the pinned `typos` release.
   Put narrow repository-only exceptions in `typos.local.toml`; never edit the
@@ -234,7 +235,7 @@ clarity, strictness, and reproducibility goals used elsewhere in this guide.
 - **Project gates (Makefile)**:
   - `make all`: run the full commit gate.
   - `make build`: install dependencies.
-  - `make check-fmt`: verify Biome formatting.
+  - `make check-fmt`: verify Biome formatting and Markdown formatting.
   - `make lint`: run Biome and Oxlint.
   - `make typecheck`: run `tsc --noEmit`.
   - `make test`: run Bun tests.
