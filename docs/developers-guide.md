@@ -887,6 +887,13 @@ Use `make markdownlint` when Markdown files change. The target runs:
 bunx markdownlint-cli2 '**/*.md'
 ```
 
+`make fmt` and `make check-fmt` run `mdtablefix` (version 0.6.0, the same
+release CI installs); install it once with
+`cargo install --locked mdtablefix --version 0.6.0`. `make fmt` also runs
+`markdownlint-cli2`, which CI provides through its GitHub action; locally it
+resolves through Bun (`bunx markdownlint-cli2`), so no separate install step is
+required as long as Bun is set up.
+
 Keep paragraphs and bullet points wrapped at 80 columns, code blocks wrapped at
 120 columns, and use dashes for list bullets.
 
