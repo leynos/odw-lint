@@ -19,7 +19,22 @@ accepted = [
 [words.corrections]
 
 [patterns]
-ignore = []
+# Exact inline code spans that keep a spelling the gate would otherwise
+# correct. Each pattern is one whole span, so the same spelling anywhere
+# else, including any other code span, is still checked.
+ignore = [
+  # US API spelling cited as the example in the documentation style guide.
+  '`color`',
+  # The Ruff-style `--color` command-line flag.
+  '`--color`',
+  '`--color auto\|always\|never`',
+  '`--color auto\\\|always\\\|never`',
+  # Escaped non-ASCII text quoted from a test fixture.
+  '`caf\\u00e9`',
+  # CodeRabbit's rejected -ise suggestion, quoted in a decision record.
+  '`normalise`',
+  '`normaliser`',
+]
 
 [files]
 exclude = []

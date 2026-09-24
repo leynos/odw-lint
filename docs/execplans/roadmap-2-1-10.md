@@ -182,7 +182,7 @@ conflict in `Decision Log`, and escalate.
   `ruleDocsPath`, `InvalidWorkflowFixtureDiagnostic`, `Diagnostic`, and fixture
   diagnostics, then inspected exact files where symbols were ambiguous.
 - [x] (2026-07-01T16:48Z) Verified the focused baseline test command shown in
-  `Artifacts and Notes`; it passed with 28 tests and 2 snapshots.
+  `Artefacts and Notes`; it passed with 28 tests and 2 snapshots.
 - [x] (2026-07-01T16:49Z) Verified external and locked tooling facts for
   TypeScript template-literal types, Bun test filtering, snapshots,
   `expectTypeOf`, Biome file arguments, `mdtablefix`, `markdownlint-cli2`, and

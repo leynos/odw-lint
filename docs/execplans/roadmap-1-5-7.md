@@ -68,7 +68,7 @@ After this change a maintainer can observe success three ways:
    section that requires running `make review-evidence` and recording its
    report. The test fails before the section exists and passes after.
 2. Running `make review-evidence` from the worktree prints and records the
-   review-evidence report (sample in `Artifacts and notes`); in the df12
+   review-evidence report (sample in `Artefacts and notes`); in the df12
    environment, where the same `make nixie` recipe this plan validates passes,
    the expected happy-path report is `verified`.
 3. The developers' guide and repository layout describe the adoption, so a

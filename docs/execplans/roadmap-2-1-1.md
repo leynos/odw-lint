@@ -731,7 +731,7 @@ know, such as whole-template masking for envelope scans or test-only envelope
 probe coverage. Keep the note short and aligned with the roadmap style guide.
 
 Update this ExecPlan to `Status: COMPLETE`, check off all progress entries with
-timestamps, record final validation evidence in `Artifacts and notes`, and
+timestamps, record final validation evidence in `Artefacts and notes`, and
 write a final `Outcomes & Retrospective` entry. Do not start task 2.1.2.
 
 No production code changes should occur in this work item. If a final
