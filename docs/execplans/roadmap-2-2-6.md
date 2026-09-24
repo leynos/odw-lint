@@ -631,7 +631,7 @@ Acceptance (behaviour a human can verify), mapping to the verbatim success line:
    `parseWorkflowBody` emits the whole-body span for real SWC failures, proven
    by the unchanged snapshots and the retained span-equality assertions.
 
-Red-Green-Refactor evidence to record in `Progress`/`Artifacts` as work
+Red-Green-Refactor evidence to record in `Progress`/`Artefacts` as work
 proceeds: the Work Item 2 red command and its failure reason, the green pass,
 and the post-refactor `make all` pass.
 

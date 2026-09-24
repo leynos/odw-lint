@@ -804,7 +804,7 @@ Quality criteria (what "done" means):
 - Markdown: `make markdownlint` and `make nixie` pass for the developers guide
   and this ExecPlan.
 
-Red-Green-Refactor evidence to record in `Progress`/`Artifacts`:
+Red-Green-Refactor evidence to record in `Progress`/`Artefacts`:
 
 - Work item 1: red command and failure (canary asserts undefined helper), green
   command and pass after adding the helper.

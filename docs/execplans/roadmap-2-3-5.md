@@ -157,7 +157,7 @@ Stop and escalate rather than working around these.
 2026-07-05 WI-1 implementation note: added the ODW-example corpus owner module,
 the binding/lookup test, and the docs contents index entry required for the new
 ExecPlan. Red/green evidence and review notes are recorded in
-`Artifacts and notes`.
+`Artefacts and notes`.
 
 2026-07-05 WI-2 implementation note: routed all hand-written ODW-example and
 invalid-workflow corpus consumers through the owner modules. The focused
@@ -714,7 +714,7 @@ Quality criteria ("done"):
 
 Quality method: `make all` after every commit; `make markdownlint` +
 `make nixie` after the documentation commit; the focused `bun test` red/green
-captures recorded in `Progress`/`Artifacts and notes`.
+captures recorded in `Progress`/`Artefacts and notes`.
 
 ## Idempotence and recovery
 
