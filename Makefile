@@ -1,3 +1,12 @@
+# `make fmt` and `make check-fmt` call mdtablefix directly. `--git` selects the
+# Markdown files Git tracks and `--include-untracked` adds the untracked files
+# Git does not ignore, so a new document is formatted before it is staged.
+# Both modes need mdtablefix 0.6.0 or later.
+MDLINT ?= markdownlint-cli2
+MDTABLEFIX ?= mdtablefix
+MDTABLEFIX_SELECT = --git --include-untracked
+MDTABLEFIX_RULES = --wrap --renumber --breaks --ellipsis --fences
+
 .PHONY: help all clean build lint biomejs oxlint fmt check-fmt typecheck test refresh-fixtures whitespace-hygiene branch-freshness review-evidence review-evidence-artefact markdownlint spelling nixie
 
 .DEFAULT_GOAL := all
@@ -17,10 +26,12 @@ clean: ## Remove build artifacts
 
 fmt: build ## Format sources
 	bun run fmt
-	mdformat-all
+	$(MDTABLEFIX) --in-place $(MDTABLEFIX_SELECT) $(MDTABLEFIX_RULES)
+	$(MDLINT) --fix "**/*.md"
 
 check-fmt: build ## Verify formatting
 	bunx biome check --formatter-enabled=true --linter-enabled=false src tests package.json biome.jsonc bunfig.toml tsconfig.json .oxlintrc.json
+	$(MDTABLEFIX) --check $(MDTABLEFIX_SELECT) $(MDTABLEFIX_RULES)
 
 lint: biomejs oxlint ## Run linters
 
