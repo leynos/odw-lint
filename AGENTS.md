@@ -234,7 +234,13 @@ clarity, strictness, and reproducibility goals used elsewhere in this guide.
 - **Project gates (Makefile)**:
   - `make all`: run the full commit gate.
   - `make build`: install dependencies.
-  - `make check-fmt`: verify Biome formatting.
+  - `make check-fmt`: verify Biome formatting, and Markdown formatting with
+    `mdtablefix --check --git --include-untracked`. The Markdown check needs
+    mdtablefix 0.6.0 or later on `PATH`; install it with
+    `cargo binstall --no-confirm mdtablefix@0.6.0` (or
+    `cargo install --locked mdtablefix@0.6.0`), the version CI pins.
+    `make fmt` rewrites the same files with `mdtablefix --in-place` and then
+    runs `markdownlint-cli2 --fix`.
   - `make lint`: run Biome and Oxlint.
   - `make typecheck`: run `tsc --noEmit`.
   - `make test`: run Bun tests.
