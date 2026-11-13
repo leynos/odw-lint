@@ -79,7 +79,7 @@ This is the most important design decision in the plan.
 ## Constraints
 
 - The static-analysis boundary is a security boundary
-  (`docs/adr/0001-static-analysis-boundary.md`, `docs/technical-design.md`
+  (`docs/adrs/adr-0001-static-analysis-boundary.md`, `docs/technical-design.md`
   section 12.1). Production code must not execute, import, or evaluate workflow
   source, and must not import `loadWorkflowScript`, `createPrimitives`,
   `validate(source)`, or any ODW runtime module. This task only builds strings,
@@ -417,8 +417,8 @@ Goal: turn the load-bearing assumption into a pinned, test-guarded fact.
 Docs to read: `docs/technical-design.md` sections 12.1-12.2 (failure modes,
 "Catch parser exceptions and emit `odw/body-syntax`"), section 8 (diagnostic
 contract), roadmap 2.2.6 (`docs/roadmap.md` lines 581-589),
-`docs/adr/0001-static-analysis-boundary.md`. Skills to load: `leta` for symbol
-navigation; consult the code-style testing rules in `AGENTS.md`.
+`docs/adrs/adr-0001-static-analysis-boundary.md`. Skills to load: `leta` for
+symbol navigation; consult the code-style testing rules in `AGENTS.md`.
 
 Add `tests/static-analysis/swc-parse-error-surface.test.ts`. It builds a
 normalized broken body (reuse `normalizeWorkflowBody` on a scanned envelope for

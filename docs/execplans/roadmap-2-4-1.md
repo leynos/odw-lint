@@ -45,8 +45,8 @@ Hard invariants that must hold throughout implementation.
   helpers. The static-analysis boundary is a security boundary
   (`docs/developers-guide.md` §"Static-Analysis Boundary";
   `docs/technical-design.md` §§5, 6.4;
-  `docs/adr/0001-static-analysis-boundary.md`). The CLI only reads bytes and
-  calls the already-vetted `lintWorkflowSource` entry point.
+  `docs/adrs/adr-0001-static-analysis-boundary.md`). The CLI only reads bytes
+  and calls the already-vetted `lintWorkflowSource` entry point.
 - The command is path/glob-first and must not resolve bare ODW workflow names.
   For this task it accepts explicit path operands only; default-root and
   configured-include-glob discovery (`docs/technical-design.md` §7.2) is

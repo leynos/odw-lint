@@ -40,7 +40,7 @@ Implementation must not begin until this draft is reviewed and approved.
   Ordinary `git status`, `git ls-files`, `git fetch`, and scoped diff checks
   remain acceptable for worktree hygiene and for the file-size guard itself.
 - Read and obey `AGENTS.md`, `docs/terms-of-reference.md`,
-  `docs/technical-design.md`, `docs/adr/0001-static-analysis-boundary.md`,
+  `docs/technical-design.md`, `docs/adrs/adr-0001-static-analysis-boundary.md`,
   `docs/developers-guide.md`, `docs/scripting-standards.md`,
   `docs/complexity-antipatterns-and-refactoring-strategies.md`,
   `docs/documentation-style-guide.md`, `docs/repository-layout.md`,

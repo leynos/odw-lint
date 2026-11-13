@@ -24,7 +24,7 @@ and documentation and test-coverage gaps.
 Normative references used:
 
 - `AGENTS.md`
-- `docs/adr/0001-static-analysis-boundary.md`
+- `docs/adrs/adr-0001-static-analysis-boundary.md`
 - `docs/complexity-antipatterns-and-refactoring-strategies.md`
 - `docs/developers-guide.md`
 - `docs/documentation-style-guide.md`

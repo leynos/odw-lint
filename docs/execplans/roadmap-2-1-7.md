@@ -59,7 +59,7 @@ fail before parser-backed diagnostics begin consuming those manifests.
   hostile metadata execution check from roadmap task 2.1.5, or loader parity
   harness from roadmap task 2.3.1.
 - Production code must not import executable ODW runtime paths. ADR
-  [0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+  [adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
   forbids imports that evaluate metadata, compile workflow bodies, start runs,
   dispatch agents, or call runtime `validate(source)`.
 - Tests may continue to read raw invalid fixture files as UTF-8 text. They must

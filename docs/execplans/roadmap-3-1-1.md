@@ -83,7 +83,8 @@ escalation, not a workaround.
   (for example "binary `+` over two string literals"); it must never compute
   the value. This is the core security boundary of the project
   (`docs/technical-design.md` §6.4;
-  `docs/adr/0001-static-analysis-boundary.md`). The hostile-metadata fixtures
+  `docs/adrs/adr-0001-static-analysis-boundary.md`). The hostile-metadata
+  fixtures
   (`tests/static-analysis/fixtures/invalid-workflows/hostile-metadata/`) exist
   to catch any accidental evaluation and must remain passive.
 - **Diagnostics use original-source UTF-8 spans.** New diagnostics must carry
@@ -357,12 +358,12 @@ escalation, not a workaround.
   (`1n / 0n` throws `RangeError`; mixing `bigint` with number throws
   `TypeError`), `void`, comma expressions, and regex. Recognition is purely
   structural over masked source tokens; no value is computed (`§6.4`;
-  `docs/adr/0001-static-analysis-boundary.md`). A string/template atom that the
-  parser's own `scanStringLiteral` cannot fully accept and decode is **open**,
-  not closed-constant, even if another JavaScript parser would accept it.
-  Examples include escaped forms that this parser currently reports as impure,
-  such as `"\u0064"` and `"\0"`, and any raw-newline string candidate that ODW's
-  `new Function` would reject. Such spans must stay
+  `docs/adrs/adr-0001-static-analysis-boundary.md`). A string/template atom
+  that the parser's own `scanStringLiteral` cannot fully accept and decode is
+  **open**, not closed-constant, even if another JavaScript parser would accept
+  it. Examples include escaped forms that this parser currently reports as
+  impure, such as `"\u0064"` and `"\0"`, and any raw-newline string candidate
+  that ODW's `new Function` would reject. Such spans must stay
   `odw/meta-statically-unprovable` unless the scanner itself is deliberately
   widened and the tests below are updated. Rationale: this is the maximal set
   `odw-lint` can prove ODW-loadable without evaluation, and excluding `bigint`

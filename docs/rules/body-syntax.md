@@ -23,7 +23,7 @@ The shipped parser exposes no structured byte range for syntax errors, so the
 diagnostic spans the whole normalized body while always pointing into original
 workflow source, not the normalized parser wrapper. Token-level narrowing is
 intentionally deferred by ADR
-[0003-body-syntax-span-narrowing-quarantine.md](../adr/0003-body-syntax-span-narrowing-quarantine.md)
+[adr-0003-body-syntax-span-narrowing-quarantine.md](../adrs/adr-0003-body-syntax-span-narrowing-quarantine.md)
 until a parser surface can provide stable structured offsets.
 
 When parser detail is available, the diagnostic message appends it after the

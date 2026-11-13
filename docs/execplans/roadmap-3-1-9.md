@@ -53,7 +53,7 @@ Hard invariants that must hold throughout implementation. Violation requires
 escalation, not a workaround.
 
 - Never execute or import workflow source. The scanner is static-only per
-  [docs/adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+  [docs/adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
   and [docs/technical-design.md](../technical-design.md) §§2 and 9. Continue
   to parse the normalized body through the existing SWC path only.
 - Keep `odw/no-odw-only-validate` informational (`info`) and never promoted by
@@ -314,7 +314,7 @@ gate on its own.
 Implements the roadmap 3.1.9 success criterion "chained `validate` aliases …
 have intentional lint outcomes", grounded in
 [docs/technical-design.md](../technical-design.md) §9.2 and
-[docs/adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+[docs/adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
 (static-only). Docs to read first:
 [docs/complexity-antipatterns-and-refactoring-strategies.md](../complexity-antipatterns-and-refactoring-strategies.md)
 (keep the resolver small and single-purpose) and the `Testing` and

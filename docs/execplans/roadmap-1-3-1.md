@@ -394,7 +394,7 @@ Every work item must apply these project documents:
   and section 9 constraints against executing workflow source.
 - `docs/technical-design.md`: sections 5, 6.1, 6.2, 8, 11.1, 11.2, 11.3,
   11.5, 12.1, 13, and 15.
-- `docs/adr/0001-static-analysis-boundary.md`: accepted decision forbidding
+- `docs/adrs/adr-0001-static-analysis-boundary.md`: accepted decision forbidding
   production imports of executable ODW runtime paths and requiring parity to be
   maintained by fixtures and drift tests.
 - `docs/developers-guide.md`: Static-Analysis Boundary, Commit Gate, Bun
@@ -440,9 +440,9 @@ Documentation implemented:
   "Documentation Maintenance".
 - `docs/technical-design.md` section 11.1, which requires every ODW example
   workflow in the fixture corpus.
-- `docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences",
-  because fixture parity must not be achieved by importing executable ODW paths
-  into production code.
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and
+  "Consequences", because fixture parity must not be achieved by importing
+  executable ODW paths into production code.
 - `docs/developers-guide.md` "Formatting" and "Linting".
 
 Skills to load:

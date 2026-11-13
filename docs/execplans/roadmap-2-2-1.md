@@ -35,7 +35,7 @@ diagnostics rather than thrown exceptions."
 Roadmap reference: `docs/roadmap.md` task 2.2.1 (lines 541-545). Requires 2.1.2
 and 2.1.8 (both complete on this branch's base). Design references:
 `docs/technical-design.md` sections 4 and 6.1;
-`docs/adr/0001-static-analysis-boundary.md`.
+`docs/adrs/adr-0001-static-analysis-boundary.md`.
 
 ### Scope boundary with task 2.2.2 (read this first)
 
@@ -80,9 +80,9 @@ escalation, not a workaround.
   metadata-evaluating, or agent-dispatch path. SWC's `parseSync` only *parses*
   — it never executes source — which is why it is the sanctioned parser
   (`docs/technical-design.md` section 4 step 4, section 5;
-  `docs/adr/0001-static-analysis-boundary.md`; section 12.1 trust boundary).
-  Enforced by `tests/diagnostics/import-policy.test.ts` ("keeps production code
-  free of executable ODW imports").
+  `docs/adrs/adr-0001-static-analysis-boundary.md`; section 12.1 trust
+  boundary). Enforced by `tests/diagnostics/import-policy.test.ts` ("keeps
+  production code free of executable ODW imports").
 - **Static string imports only in production code.**
   `tests/diagnostics/import-policy.test.ts` also fails production code that
   uses computed `import(expr)` or `require(expr)`. The adapter must import
@@ -413,7 +413,7 @@ normalized JavaScript or TypeScript source and return AST plus syntax errors";
 "Span mapper"), section 8 (diagnostic/span invariants), section 11.5
 (span-mapping invariant), section 12.2 ("Parser crash on malformed input →
 Catch parser exceptions and emit `odw/body-syntax`"), section 13 (packaging —
-`@swc/core`); `docs/adr/0001-static-analysis-boundary.md` (owned SWC-based
+`@swc/core`); `docs/adrs/adr-0001-static-analysis-boundary.md` (owned SWC-based
 parser; no executable ODW paths); `AGENTS.md` testing, error-handling, docs,
 and dependency rules.
 
@@ -425,11 +425,11 @@ Three work items, each a vertical slice ending green with `make all` (plus
 ### WI1 — Add `@swc/core`; implement the `parseWorkflowBody` adapter
 
 Implements: `docs/technical-design.md` sections 4, 6.1, 12.2, 13;
-`docs/adr/0001-static-analysis-boundary.md`; `AGENTS.md` testing,
+`docs/adrs/adr-0001-static-analysis-boundary.md`; `AGENTS.md` testing,
 error-handling, docs, and dependency rules. Roadmap 2.2.1 core deliverable.
 
 Read first: `docs/technical-design.md` sections 4, 6.1, 12.2, 13;
-`docs/adr/0001-static-analysis-boundary.md`; `docs/developers-guide.md`
+`docs/adrs/adr-0001-static-analysis-boundary.md`; `docs/developers-guide.md`
 static-analysis section (lines ~44-105);
 `src/static-analysis/workflow-envelope.ts` (the `noImportExportDiagnostic`
 builder and the `bodySpan` construction);

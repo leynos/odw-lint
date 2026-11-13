@@ -598,7 +598,7 @@ Every work item must apply these project documents:
   constraints against executing workflow source.
 - `docs/technical-design.md`: sections 5, 6.1, 6.2, 6.3, 6.4, 8, 9.1, 11.1,
   11.2, 11.3, 11.5, 12.1, 12.2, 13, and 15.
-- `docs/adr/0001-static-analysis-boundary.md`: accepted decision forbidding
+- `docs/adrs/adr-0001-static-analysis-boundary.md`: accepted decision forbidding
   production imports of executable ODW runtime paths and requiring parity to be
   maintained by fixtures and drift tests.
 - `docs/developers-guide.md`: Static-Analysis Boundary, Commit Gate, Bun
@@ -651,7 +651,8 @@ Documentation implemented:
 - `AGENTS.md` "Change Quality & Committing", "Linting & Formatting",
   "TypeScript Guidance", and "Testing".
 - `docs/technical-design.md` sections 5, 8, 11.1, 11.3, 11.5, and 12.1.
-- `docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences".
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and
+  "Consequences".
 - `docs/developers-guide.md` "Static-Analysis Boundary", "Formatting",
   "Linting", "Tests", and "Workflow Fixture Corpus".
 - `docs/documentation-style-guide.md` "Markdown rules" and "Formatting".
@@ -735,7 +736,7 @@ Documentation implemented:
   metadata, and section 8 success criteria for no `export const meta` and
   stable source spans.
 - `docs/technical-design.md` sections 8, 9.1, 11.1, and 11.5.
-- `docs/adr/0001-static-analysis-boundary.md` "Decision", because expected
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision", because expected
   metadata errors must be recorded without calling executable ODW runtime paths.
 - `docs/developers-guide.md` "Tests" and "Workflow Fixture Corpus".
 
@@ -809,7 +810,8 @@ Documentation implemented:
 - `docs/terms-of-reference.md` section 6 goal to report malformed workflow
   metadata and preserve ODW-vs-Claude compatibility distinctions.
 - `docs/technical-design.md` sections 6.3, 8, 9.1, 11.1, and 11.5.
-- `docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences".
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and
+  "Consequences".
 - `docs/developers-guide.md` "Tests" and "Workflow Fixture Corpus".
 - Sibling ODW source evidence for `assertMeta` and `checkMeta`, recorded in this
   plan's research section.
@@ -893,7 +895,8 @@ Documentation implemented:
 - `docs/terms-of-reference.md` sections 2, 6, and 8, especially unsupported
   imports or exports tied to original source spans.
 - `docs/technical-design.md` sections 6.1, 6.2, 8, 9.1, 11.1, and 11.5.
-- `docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences".
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and
+  "Consequences".
 - `docs/developers-guide.md` "Static-Analysis Boundary", "Tests", and
   "Workflow Fixture Corpus".
 - `odw-authoring` "Script Contract", which says ODW primitives are injected and

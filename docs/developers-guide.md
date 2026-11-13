@@ -9,7 +9,7 @@ Start with the [documentation contents](contents.md) when choosing which
 maintainer document to open. Use the [repository layout](repository-layout.md)
 for path ownership and fixture boundaries, the
 [technical design](technical-design.md) for the static-analysis architecture,
-and [ADR 0001](adr/0001-static-analysis-boundary.md) for the accepted
+and [ADR 0001](adrs/adr-0001-static-analysis-boundary.md) for the accepted
 non-execution boundary.
 
 ## Static-Analysis Boundary
@@ -120,7 +120,7 @@ normalized text with `@swc/core`'s `parseSync`, and converts observed parser
 syntax failures into `odw/body-syntax` diagnostics with original-source spans.
 The adapter parses ECMAScript-only source (`syntax: "ecmascript"`), so
 TypeScript-only syntax yields `odw/body-syntax`; ADR
-[0002-workflow-body-parser-dialect-scope.md](adr/0002-workflow-body-parser-dialect-scope.md)
+[adr-0002-workflow-body-parser-dialect-scope.md](adrs/adr-0002-workflow-body-parser-dialect-scope.md)
 records that dialect boundary. The adapter never executes workflow source,
 never calls ODW runtime helpers, and returns a frozen discriminated result
 instead of letting syntax errors escape. The parser-error span-narrowing seam
@@ -129,7 +129,7 @@ structured syntax-error byte range, so production diagnostics currently use the
 conservative whole-body fallback; do not export the speculative narrowing
 helper through the package entry until a production parser path can exercise
 it. ADR
-[0003-body-syntax-span-narrowing-quarantine.md](adr/0003-body-syntax-span-narrowing-quarantine.md)
+[adr-0003-body-syntax-span-narrowing-quarantine.md](adrs/adr-0003-body-syntax-span-narrowing-quarantine.md)
 is the disposition of record for that quarantine.
 
 Parser-backed collectors share SWC tree-shape primitives through
@@ -681,14 +681,14 @@ manifest at
 and the manifest-driven parser parity assertions in
 `tests/static-analysis/workflow-body-parser.test.ts`. Re-observe the parser
 error object's structured range surface at the same time; ADR
-[0003-body-syntax-span-narrowing-quarantine.md](adr/0003-body-syntax-span-narrowing-quarantine.md)
+[adr-0003-body-syntax-span-narrowing-quarantine.md](adrs/adr-0003-body-syntax-span-narrowing-quarantine.md)
 must be revisited before accepting a parser upgrade that could activate
 token-level narrowing. The named guard for that parser-error surface is
 `tests/static-analysis/swc-parse-error-surface.test.ts`; keep it bound to the
 production allow-list in `src/static-analysis/workflow-body-parser-spans.ts`.
 Also rerun `tests/static-analysis/workflow-body-dialect.test.ts` and preserve
 the TypeScript-in-body rejection set recorded by ADR
-[0002-workflow-body-parser-dialect-scope.md](adr/0002-workflow-body-parser-dialect-scope.md)
+[adr-0002-workflow-body-parser-dialect-scope.md](adrs/adr-0002-workflow-body-parser-dialect-scope.md)
 unless the dependency bump intentionally changes the parser dialect contract.
 Rerun `tests/static-analysis/body-syntax-loader-parity.test.ts` as part of the
 same re-observation so the trusted `Function` and `AsyncFunction` construction
@@ -894,8 +894,8 @@ Keep paragraphs and bullet points wrapped at 80 columns, code blocks wrapped at
 
 Keep the design documents aligned when changing static-analysis scope:
 
-- update [ADR 0001](adr/0001-static-analysis-boundary.md) when the ownership
-  boundary changes;
+- update [ADR 0001](adrs/adr-0001-static-analysis-boundary.md) when the
+  ownership boundary changes;
 - update [technical-design.md](technical-design.md) when command, diagnostic,
   parser, configuration, or verification contracts change;
 - update [roadmap.md](roadmap.md) when a planned task is completed or

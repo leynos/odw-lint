@@ -74,9 +74,9 @@ dialect contract.
 ## 5. Static-analysis boundary
 
 The static-analysis boundary is a first-class architecture decision. See
-[0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md). The
-workflow-body parser dialect is also explicit; see
-[0002-workflow-body-parser-dialect-scope.md](adr/0002-workflow-body-parser-dialect-scope.md).
+[adr-0001-static-analysis-boundary.md](adrs/adr-0001-static-analysis-boundary.md).
+The workflow-body parser dialect is also explicit; see
+[adr-0002-workflow-body-parser-dialect-scope.md](adrs/adr-0002-workflow-body-parser-dialect-scope.md).
 
 `odw-lint` must not import or call executable ODW runtime paths in production
 code. In particular, it must not call `loadWorkflowScript`, `createPrimitives`,
@@ -119,7 +119,7 @@ diagnostics from structured parser-error ranges. The current pinned
 `@swc/core@1.15.43` parser exposes rendered parse-error prose but no structured
 syntax-error byte range, so production diagnostics use the whole
 original-source body span. ADR
-[0003-body-syntax-span-narrowing-quarantine.md](adr/0003-body-syntax-span-narrowing-quarantine.md)
+[adr-0003-body-syntax-span-narrowing-quarantine.md](adrs/adr-0003-body-syntax-span-narrowing-quarantine.md)
 records the narrowing path as an internal, characterization-tested fallback
 seam rather than a public consumer contract.
 
@@ -401,10 +401,11 @@ rule meanings remain compatible. Renaming or removing a released rule, changing
 an existing rule's meaning, or changing the diagnostic object shape requires
 schema-version review and compatibility handling.
 
-ADR [0004](adr/0004-machine-readable-io-error-channel.md) records the decision
-to add `ioErrors` and `summary.filesSkipped` without changing `schemaVersion`.
-The package remains private and pre-release, and existing consumers that read
-known fields do not need compatibility logic for these additive fields.
+ADR [0004](adrs/adr-0004-machine-readable-io-error-channel.md) records the
+decision to add `ioErrors` and `summary.filesSkipped` without changing
+`schemaVersion`. The package remains private and pre-release, and existing
+consumers that read known fields do not need compatibility logic for these
+additive fields.
 
 Reviewed message templates keep dynamic diagnostics inside the same catalogue
 contract as exact messages. Template text may contain placeholders of the form
@@ -635,7 +636,8 @@ with `@swc/core` as the parser dependency. This keeps implementation close to
 ODW's TypeScript runtime and enables shared tests, shared data structures, and
 future `odw check` integration.
 
-ADR [0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md)
+ADR
+[adr-0001-static-analysis-boundary.md](adrs/adr-0001-static-analysis-boundary.md)
 chooses an owned SWC-based parser implementation for v1. ODW integration is a
 future consumer path, not a prerequisite for implementing the checker.
 

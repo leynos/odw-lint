@@ -42,7 +42,7 @@ Implementation must not begin until this draft is reviewed and approved.
 - Use `sem` rather than raw `git log` or `git blame` if codebase history is
   needed.
 - Read and obey `AGENTS.md`, `docs/terms-of-reference.md`,
-  `docs/technical-design.md`, `docs/adr/0001-static-analysis-boundary.md`,
+  `docs/technical-design.md`, `docs/adrs/adr-0001-static-analysis-boundary.md`,
   `docs/developers-guide.md`, `docs/scripting-standards.md`,
   `docs/complexity-antipatterns-and-refactoring-strategies.md`,
   `docs/documentation-style-guide.md`, and `docs/roadmap.md` before
@@ -277,7 +277,7 @@ Read `AGENTS.md` "Change Quality & Committing", "Testing", "Dependency
 Management", and "Linting & Formatting"; `docs/roadmap.md` §1.4;
 `docs/developers-guide.md` "Commit Gate", "Bun Scripts", "Tests", "Linting",
 and "Type Checking"; `docs/technical-design.md` §§13 and 15;
-`docs/adr/0001-static-analysis-boundary.md`; `docs/scripting-standards.md`
+`docs/adrs/adr-0001-static-analysis-boundary.md`; `docs/scripting-standards.md`
 "Operational guidelines"; and
 `docs/complexity-antipatterns-and-refactoring-strategies.md` §§4.A, 5.A, and
 5.C before editing. Load `leta`, `grepai`, `biome-typescript`,

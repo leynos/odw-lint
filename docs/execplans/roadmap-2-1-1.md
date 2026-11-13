@@ -57,7 +57,7 @@ loader-parity execution.
 - Production code must not import executable ODW loader, primitive, launcher,
   worker, runtime, scheduler, metadata-evaluating, or agent-dispatch paths.
   This is required by `docs/technical-design.md` §5 and
-  `docs/adr/0001-static-analysis-boundary.md`.
+  `docs/adrs/adr-0001-static-analysis-boundary.md`.
 - Do not copy or vendor ODW's private `maskNonCode` helper into production
   `odw-lint` code. Implement an owned masker whose observable behaviour is
   pinned by tests against documented fixtures and the source-backed ODW
@@ -392,8 +392,8 @@ named as indexes, not offsets.
   envelope diagnostics for the masking fixtures and manifest `metaName` values
   matching the real metadata declaration.
 - `docs/technical-design.md` §5 and
-  `docs/adr/0001-static-analysis-boundary.md` require an owned static parser
-  path and forbid production imports of executable ODW runtime helpers.
+  `docs/adrs/adr-0001-static-analysis-boundary.md` require an owned static
+  parser path and forbid production imports of executable ODW runtime helpers.
 - `docs/technical-design.md` §6.2 defines `WorkflowEnvelope` as the envelope
   scanner output and says the envelope scanner should use the same string,
   comment, template, and regex masking strategy as ODW's loader.
@@ -510,7 +510,7 @@ dependency for bounded source-mask invariants only.
 
 Docs to read before starting: `docs/roadmap.md` §2.1 task 2.1.1,
 `docs/technical-design.md` §§5, 6.2, 6.4, 11.1, 11.5, and 12.1,
-`docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences",
+`docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and "Consequences",
 `docs/developers-guide.md` "Static-Analysis Boundary", "Source-span helpers",
 "Tests", and "Documentation Upkeep",
 `docs/complexity-antipatterns-and-refactoring-strategies.md` §§4.A, 4.B, and
@@ -740,9 +740,9 @@ stale, update the relevant design document in this same item and explain why in
 `Decision Log`. When doing so, append every changed Markdown path to the
 file-scoped Markdown formatter commands below before running them. For example,
 if `docs/technical-design.md` is edited, include `docs/technical-design.md`; if
-`docs/adr/0001-static-analysis-boundary.md` is edited, include that ADR path.
-Do not list an unchanged optional Markdown file in the file-scoped formatter
-commands.
+`docs/adrs/adr-0001-static-analysis-boundary.md` is edited, include that ADR
+path. Do not list an unchanged optional Markdown file in the file-scoped
+formatter commands.
 
 Path-safe formatting and gates for this work item:
 
@@ -752,7 +752,7 @@ changed_markdown_paths=(
   docs/roadmap.md
 )
 # If this work item edits docs/technical-design.md or
-# docs/adr/0001-static-analysis-boundary.md, append each changed path to
+# docs/adrs/adr-0001-static-analysis-boundary.md, append each changed path to
 # changed_markdown_paths before running the formatter commands.
 mdtablefix "${changed_markdown_paths[@]}"
 bunx markdownlint-cli2 --fix "${changed_markdown_paths[@]}"

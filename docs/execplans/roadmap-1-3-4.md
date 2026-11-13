@@ -433,7 +433,7 @@ Repository evidence:
   require a static-analysis boundary, non-executing metadata handling, hostile
   metadata fixture coverage, and release-blocking prevention of hostile
   metadata execution.
-- `docs/adr/0001-static-analysis-boundary.md` records that ODW executable
+- `docs/adrs/adr-0001-static-analysis-boundary.md` records that ODW executable
   loader and primitive APIs are forbidden in production, and that the first
   dialect slice must include a hostile metadata fixture with a diagnostic and
   no side effect.
@@ -514,7 +514,7 @@ Read:
 - `docs/roadmap.md` sections 1.3, 1.3.4, and 2.1.5.
 - `docs/technical-design.md` sections 5, 6.3, 6.4, 11.1, 11.3, 12.1, and
   12.2.
-- `docs/adr/0001-static-analysis-boundary.md` sections "Decision" and
+- `docs/adrs/adr-0001-static-analysis-boundary.md` sections "Decision" and
   "Consequences".
 - `docs/developers-guide.md` sections "Static-Analysis Boundary", "Tests", and
   "Workflow Fixture Corpus".

@@ -68,7 +68,7 @@ Hard invariants that must hold throughout implementation.
   `DiagnosticReport` produced by the vetted `lintWorkflowSource` pipeline or
   gates file selection and process wiring around it (`docs/technical-design.md`
   §§5, 6.4; `docs/developers-guide.md` §"Static-Analysis Boundary";
-  `docs/adr/0001-static-analysis-boundary.md`).
+  `docs/adrs/adr-0001-static-analysis-boundary.md`).
 - Exit-code policy stays faithful to `docs/technical-design.md` §7.4: `0` for a
   clean run, `1` for remaining diagnostics or unreadable input files (when
   other work can proceed), `2` for invalid configuration, invalid CLI usage, or
@@ -333,9 +333,9 @@ Hard invariants that must hold throughout implementation.
   condition §8 gives for not bumping ("schemaVersion changes only when JSON
   consumers need compatibility logic"). Existing consumers reading known fields
   remain compatible. Because this changes public JSON behaviour, it is recorded
-  in a new ADR (`docs/adr/0004-machine-readable-io-error-channel.md`) and in
-  `docs/technical-design.md` §8, per `AGENTS.md` §"Documentation Maintenance".
-  Date/Author: 2026-07-06, planning agent.
+  in a new ADR (`docs/adrs/adr-0004-machine-readable-io-error-channel.md`) and
+  in `docs/technical-design.md` §8, per `AGENTS.md` §"Documentation
+  Maintenance". Date/Author: 2026-07-06, planning agent.
 - Decision: `summary.files` continues to count only readable (checked) files;
   `summary.filesSkipped` counts unreadable input files. The human text report
   gains a skipped-file note in its footer so text and JSON agree. Rationale:
@@ -450,7 +450,7 @@ fixture, snapshots, public API fixtures and source-span report-shape tests now
 pin the new envelope.
 
 WI-2 also recorded the design in
-`docs/adr/0004-machine-readable-io-error-channel.md`, updated
+`docs/adrs/adr-0004-machine-readable-io-error-channel.md`, updated
 `docs/technical-design.md` §8, and linked the ADR from `docs/contents.md`.
 Focused Red-Green-Refactor evidence was captured by first adding failing tests
 for missing `filesSkipped`, `ioErrors`, schema entries, text skipped-file
@@ -643,7 +643,7 @@ Design sources of truth: `docs/technical-design.md` §§7.0 (UX precedent), 7.1
 contract), 10 (configuration); `docs/developers-guide.md` §"CLI";
 `docs/users-guide.md` §§"Command shape", "Exit codes", "Diagnostic reports";
 `docs/repository-layout.md` §"Source boundaries";
-`docs/adr/0001-static-analysis-boundary.md`;
+`docs/adrs/adr-0001-static-analysis-boundary.md`;
 `docs/documentation-style-guide.md`; `AGENTS.md` §§"TypeScript Guidance",
 "Testing", "Error Handling", "Documentation Maintenance".
 
@@ -714,16 +714,16 @@ Note: the first commit on this work item also adds the ExecPlan link to
 Implements the roadmap 2.4.4 requirement to "represent unreadable inputs
 consistently across human and machine-readable output" and the Decision Log
 additive-envelope ruling. Touches `docs/technical-design.md` §8 and adds
-`docs/adr/0004-machine-readable-io-error-channel.md`.
+`docs/adrs/adr-0004-machine-readable-io-error-channel.md`.
 
 Read first: `docs/technical-design.md` §8; `src/diagnostics/types.ts`,
 `src/diagnostics/report.ts`, `src/diagnostics/report-json.ts`,
 `src/diagnostics/schema.ts`, `src/diagnostics/text.ts`; `src/cli/run-check.ts`,
 `src/cli/check-cli.ts`, `src/cli/read-workflow-source.ts`;
 `tests/diagnostics/json-contract.fixture.json` and the diagnostics
-`__snapshots__`; `docs/adr/0001-static-analysis-boundary.md` for ADR format;
-`AGENTS.md` §§"Error Handling", "Testing", "Documentation Maintenance". Skills:
-`execplans`, `en-gb-oxendict`.
+`__snapshots__`; `docs/adrs/adr-0001-static-analysis-boundary.md` for ADR
+format; `AGENTS.md` §§"Error Handling", "Testing", "Documentation Maintenance".
+Skills: `execplans`, `en-gb-oxendict`.
 
 Work:
 
@@ -759,7 +759,8 @@ Work:
 9. Update `tests/diagnostics/json-contract.fixture.json` to include the empty
    `ioErrors` array and `summary.filesSkipped: 0`; refresh the affected
    diagnostics snapshots after confirming each diff is exactly this addition.
-10. Add `docs/adr/0004-machine-readable-io-error-channel.md` and a paragraph in
+10. Add `docs/adrs/adr-0004-machine-readable-io-error-channel.md` and a
+    paragraph in
     `docs/technical-design.md` §8 documenting `ioErrors` and
     `summary.filesSkipped`, `schemaVersion` staying `1`, and `summary.files`
     remaining the readable-file count.
@@ -1070,13 +1071,14 @@ work item once its gate is green.
 
 2. WI-2: add the IO-error type, envelope fields, projection, schema, text
    footer, run-check mapping, exports, golden-fixture and snapshot updates, the
-   §8 paragraph, and `docs/adr/0004-machine-readable-io-error-channel.md`. Then:
+   §8 paragraph, and `docs/adrs/adr-0004-machine-readable-io-error-channel.md`.
+   Then:
 
    ```bash
    bunx mdtablefix --in-place docs/technical-design.md \
-     docs/adr/0004-machine-readable-io-error-channel.md
+     docs/adrs/adr-0004-machine-readable-io-error-channel.md
    bunx markdownlint-cli2 --fix docs/technical-design.md \
-     docs/adr/0004-machine-readable-io-error-channel.md
+     docs/adrs/adr-0004-machine-readable-io-error-channel.md
    make all
    make markdownlint
    make nixie

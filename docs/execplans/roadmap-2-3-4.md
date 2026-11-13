@@ -12,7 +12,7 @@ Roadmap task 2.3.4 (`docs/roadmap.md`, step 2.3 "Prove ODW loader parity before
 shipping dialect checks") is to *characterize* whether the real Open Dynamic
 Workflows (ODW) loader rejects the TypeScript-only workflow-body examples
 recorded by ADR
-[0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md),
+[adr-0002-workflow-body-parser-dialect-scope.md](../adrs/adr-0002-workflow-body-parser-dialect-scope.md),
 and to prove that `odw-lint`'s `odw/body-syntax` outcome for those bodies
 **matches** the loader. "Loader parity" means: does `odw-lint` accept and
 reject the same workflow-body syntax classes that ODW itself accepts and
@@ -71,7 +71,7 @@ escalation, not a workaround.
   and the accepted boundary bodies are constructed but never called, so no
   workflow logic executes. This keeps the probe within the "do not execute
   source" boundary of ADR
-  [0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+  [adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
   and `docs/technical-design.md` §6.4, which prohibit executing *untrusted
   workflow* source, not compiling a fixed characterization literal that fails
   to parse. This boundary is recorded in the Decision Log.
@@ -310,7 +310,7 @@ It parses workflow source **without executing it** and emits diagnostics.
 Newcomer orientation for this task:
 
 - ADR
-  [0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md)
+  [adr-0002-workflow-body-parser-dialect-scope.md](../adrs/adr-0002-workflow-body-parser-dialect-scope.md)
   is the contract this task characterizes. It records that the parser uses SWC
   with `syntax: "ecmascript"`, that "the adjacent ODW loader compiles workflow
   bodies through a JavaScript function constructor path", and that

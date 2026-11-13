@@ -114,10 +114,10 @@ Observable proof (see `Validation and acceptance`):
 Design references: `docs/technical-design.md` §§4, 5, 6.1, 6.2 (the
 `WorkflowAstFacts` layer that carries shadow facts), 6.4, 8, 9.2 (the three
 Claude-compatibility rules), 11.5 (span-mapping invariant), 12.1 (trust
-boundary); `docs/adr/0001-static-analysis-boundary.md`;
-`docs/adr/0002-workflow-body-parser-dialect-scope.md` (ECMAScript dialect, no
-TypeScript-only nodes); `docs/developers-guide.md` "Workflow AST facts" (lines
-83-104); `docs/complexity-antipatterns-and-refactoring-strategies.md`
+boundary); `docs/adrs/adr-0001-static-analysis-boundary.md`;
+`docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md` (ECMAScript dialect,
+no TypeScript-only nodes); `docs/developers-guide.md` "Workflow AST facts"
+(lines 83-104); `docs/complexity-antipatterns-and-refactoring-strategies.md`
 (single-responsibility helpers, extract predicates, files under 400 lines);
 `docs/scripting-standards.md`; `docs/documentation-style-guide.md`;
 `docs/roadmap.md` task 3.1.5 (requires 2.2.4 and 3.1.4, both `[x]`);
@@ -129,12 +129,13 @@ limit, DRY / separate atomic refactors, en-GB Oxford spelling).
 - **Never execute or evaluate workflow source.** Detection stays parse-and-walk
   only; the sole permitted parser call remains `@swc/core`'s `parseSync` over
   normalized text via `parseNormalizedWorkflowBody` (`docs/technical-design.md`
-  §12.1; `docs/adr/0001`;
+  §12.1; `docs/adrs/adr-0001`;
   `tests/static-analysis/hostile-metadata-security.test.ts` and
   `tests/diagnostics/import-policy.test.ts` stay green).
 - **Do not import ODW runtime or ODW static helpers** (`scanDualCompat`,
   `checkMeta`, `loadWorkflowScript`, `createPrimitives`, `validate`) in
-  production code (`docs/adr/0001`; the forbidden-import architecture test).
+  production code (`docs/adrs/adr-0001`; the forbidden-import architecture
+  test).
 - **No public API change.** `LexicalBindingFacts` keeps shape
   `{ readonly boundNames: readonly string[] }`; `collectLexicalBindings`,
   `isIdentifierBound` keep their signatures and whole-body behaviour; nothing
@@ -248,9 +249,9 @@ limit, DRY / separate atomic refactors, en-GB Oxford spelling).
 - Risk: the sibling ODW checkout is outside this session's sandbox, so
   `scanDualCompat`'s scope behaviour cannot be read for a parity claim.
   Severity: low. Likelihood: high (already observed — see Tooling note).
-  Mitigation: `docs/adr/0001` forbids importing `scanDualCompat`; the 3.1.5
-  success line is defined against lexical scope, not against a live ODW import,
-  so behaviour is pinned by the success line and tests.
+  Mitigation: `docs/adrs/adr-0001` forbids importing `scanDualCompat`; the
+  3.1.5 success line is defined against lexical scope, not against a live ODW
+  import, so behaviour is pinned by the success line and tests.
 
 ## Tooling availability note (planning session)
 
@@ -265,8 +266,8 @@ with the bounded local fallback used instead:
   performed this session). The implementer should use `leta` for navigation as
   normal once approved.
 - The sibling ODW checkout `/data/leynos/Projects/open-dynamic-workflows` was
-  not read; `docs/adr/0001` bars importing `scanDualCompat`, so behaviour is
-  pinned to the roadmap success line and trusted-fixture parity instead.
+  not read; `docs/adrs/adr-0001` bars importing `scanDualCompat`, so behaviour
+  is pinned to the roadmap success line and trusted-fixture parity instead.
 - `@swc/core@1.15.x` AST shapes were pinned by reading the installed
   `@swc/types` declarations at
   `/data/leynos/Projects/odw-lint/node_modules/@swc/types/index.d.ts` (function
@@ -526,9 +527,9 @@ Validation: `make all`.
 
 ### WI2 — Add the scope resolver and rewire the scanner to scope-precise shadowing (feature)
 
-Read first: `docs/technical-design.md` §§6.1, 6.2, 9.2, 11.5; `docs/adr/0001`;
-`docs/adr/0002`; `docs/developers-guide.md` "Workflow AST facts";
-`src/static-analysis/workflow-deterministic-time.ts`,
+Read first: `docs/technical-design.md` §§6.1, 6.2, 9.2, 11.5;
+`docs/adrs/adr-0001`; `docs/adrs/adr-0002`; `docs/developers-guide.md`
+"Workflow AST facts"; `src/static-analysis/workflow-deterministic-time.ts`,
 `workflow-ast-bindings.ts`, `workflow-ast-binding-patterns.ts`,
 `workflow-global-object-reference.ts`, and
 `workflow-deterministic-time-aliases.ts`. Skills: `leta`, `biomejs`,

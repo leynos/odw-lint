@@ -614,8 +614,8 @@ The local project evidence is:
 - `docs/developers-guide.md` "Static-Analysis Boundary" says
   `src/static-analysis/` owns the static-analysis implementation and that SWC
   direct calls belong to roadmap task 2.2.1.
-- `docs/adr/0001-static-analysis-boundary.md` decides that `odw-lint` owns its
-  static-analysis implementation and must not import executable ODW runtime
+- `docs/adrs/adr-0001-static-analysis-boundary.md` decides that `odw-lint` owns
+  its static-analysis implementation and must not import executable ODW runtime
   paths in production code.
 
 The sibling ODW evidence from `/data/leynos/Projects/open-dynamic-workflows` is:
@@ -890,7 +890,7 @@ Expected commit title: `Build source spans and snippets`.
 ### Work item 5: Prove diagnostic integration and package architecture
 
 Read `docs/technical-design.md` sections 8, 11.5, 12.1, and 15;
-`docs/adr/0001-static-analysis-boundary.md` sections "Decision" and
+`docs/adrs/adr-0001-static-analysis-boundary.md` sections "Decision" and
 "Consequences"; `docs/developers-guide.md` sections "Static-Analysis Boundary",
 "Linting", and "Type Checking"; and `AGENTS.md` sections "Runtime Validation &
 Types", "Observability", and "Linting & Formatting". Load the `execplans`,

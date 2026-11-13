@@ -93,7 +93,7 @@ escalation, not a workaround.
   as *documented static contracts* re-expressed by the in-repo manifest, never
   as live ODW imports (`docs/technical-design.md` §11.2 final paragraph forbids
   executing fixture bodies; §11.3 forbids executable ODW imports; ADR
-  `docs/adr/0001-static-analysis-boundary.md`).
+  `docs/adrs/adr-0001-static-analysis-boundary.md`).
 - The suite must not evaluate, `import()`, `require`, `new Function`, or
   otherwise execute any fixture body. Fixtures are read as passive UTF-8 text
   via the existing `readFixtureSource` helper only.
@@ -375,8 +375,8 @@ records so a byte span can be derived deterministically from the fixture text.
 
 Design references: `docs/technical-design.md` §§5, 6.4, 9.1, 9.2, 11.2, 11.3,
 11.5; `docs/terms-of-reference.md` (dual-compatibility row); ADR
-`docs/adr/0001-static-analysis-boundary.md`; `docs/developers-guide.md` lines
-28–29 and 164–195; `AGENTS.md` "Change Quality & Committing", "Testing",
+`docs/adrs/adr-0001-static-analysis-boundary.md`; `docs/developers-guide.md`
+lines 28–29 and 164–195; `AGENTS.md` "Change Quality & Committing", "Testing",
 "TypeScript Guidance"; `docs/documentation-style-guide.md`.
 
 ## Plan of work

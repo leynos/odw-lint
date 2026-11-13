@@ -33,8 +33,8 @@ under the locked parser) and delivers the documentation-and-code alignment the
 success line demands:
 
 1. The quarantine decision is recorded as a first-class ADR
-   (`docs/adr/0003-body-syntax-span-narrowing-quarantine.md`) and cross-linked
-   from ADR 0002.
+   (`docs/adrs/adr-0003-body-syntax-span-narrowing-quarantine.md`) and
+   cross-linked from ADR 0002.
 2. The user-facing rule doc (`docs/rules/body-syntax.md`) and the design and
    developer guidance stop describing narrowing as an available capability and
    instead describe the shipped whole-body span with narrowing deferred.
@@ -80,7 +80,7 @@ Markdown; and a human can read `docs/rules/body-syntax.md`, ADR 0003, and the
 ## Constraints
 
 - The static-analysis boundary is a security boundary
-  (`docs/adr/0001-static-analysis-boundary.md`, `docs/technical-design.md`
+  (`docs/adrs/adr-0001-static-analysis-boundary.md`, `docs/technical-design.md`
   section 12.1). Production code must not execute, import, or evaluate workflow
   source. This task only edits docs, one `@file` docstring, and adds a test.
 - Do not recover offsets by parsing `error.message` or any rendered diagnostic
@@ -99,7 +99,7 @@ Markdown; and a human can read `docs/rules/body-syntax.md`, ADR 0003, and the
   well under this; the new test is a fresh file.
 - ADRs are append-only decision records: record the new decision in a new ADR
   (0003) rather than rewriting the accepted ADR 0002; ADR 0002 gains only a
-  cross-reference (`docs/adr/` convention, mirrored by ADR 0001/0002 style).
+  cross-reference (`docs/adrs/` convention, mirrored by ADR 0001/0002 style).
 
 ## Tolerances (exception triggers)
 
@@ -303,8 +303,8 @@ Docs that must end up consistent:
 - `docs/developers-guide.md` — lines 61-65 (seam is internal) and lines 646-654
   (span snapshot suite; line 654 stale "future narrowing belongs to roadmap
   task 2.2.6").
-- `docs/adr/0002-workflow-body-parser-dialect-scope.md` — the parser dialect
-  ADR to cross-reference.
+- `docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md` — the parser
+  dialect ADR to cross-reference.
 - `docs/roadmap.md` — task 5.5.1 checkbox and completion link.
 
 Tests and fixtures:
@@ -338,14 +338,14 @@ Work Item's commit.
 
 Goal: a first-class, reviewable decision record.
 
-Docs to read: `docs/adr/0001-static-analysis-boundary.md` and
-`docs/adr/0002-workflow-body-parser-dialect-scope.md` (ADR house style —
+Docs to read: `docs/adrs/adr-0001-static-analysis-boundary.md` and
+`docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md` (ADR house style —
 Status/Date/Context/Decision/Consequences/Rejected alternative);
 `docs/documentation-style-guide.md`; roadmap 5.5.1 (`docs/roadmap.md` lines
 1371-1384); this plan's Decision Log. Skills to load: `en-gb-oxendict` for
 Oxford spelling; consult `AGENTS.md` "Documentation Maintenance".
 
-Add `docs/adr/0003-body-syntax-span-narrowing-quarantine.md` with:
+Add `docs/adrs/adr-0003-body-syntax-span-narrowing-quarantine.md` with:
 
 1. Context: the 2.2.6 seam exists; the locked `@swc/core@^1.15.43` exposes no
    structured syntax-error byte offset (cite the characterization test); wiring
@@ -361,20 +361,20 @@ Add `docs/adr/0003-body-syntax-span-narrowing-quarantine.md` with:
    or bump); parsing rendered prose; deleting the seam (loses the tested
    mechanism and the coordinate-base guards a future channel needs).
 
-Edit `docs/adr/0002-workflow-body-parser-dialect-scope.md` Consequences to add
-one cross-reference line pointing at ADR 0003 for the span-narrowing
+Edit `docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md` Consequences to
+add one cross-reference line pointing at ADR 0003 for the span-narrowing
 disposition (append-only; do not rewrite the accepted decision).
 
 Tests: none (documentation only). Validation: format the touched Markdown, then
 gate.
 
 ```bash
-bunx mdtablefix docs/adr/0003-body-syntax-span-narrowing-quarantine.md \
-  docs/adr/0002-workflow-body-parser-dialect-scope.md \
+bunx mdtablefix docs/adrs/adr-0003-body-syntax-span-narrowing-quarantine.md \
+  docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md \
   docs/execplans/roadmap-5-5-1.md
 bunx markdownlint-cli2 --fix \
-  docs/adr/0003-body-syntax-span-narrowing-quarantine.md \
-  docs/adr/0002-workflow-body-parser-dialect-scope.md \
+  docs/adrs/adr-0003-body-syntax-span-narrowing-quarantine.md \
+  docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md \
   docs/execplans/roadmap-5-5-1.md
 make markdownlint
 make nixie
@@ -557,8 +557,9 @@ Acceptance (behaviour a human can verify), mapping to the verbatim success line
 "documentation and code agree on whether span narrowing is active, inert, or
 intentionally deferred, with tests pinning the chosen contract":
 
-1. Decision recorded: `docs/adr/0003-body-syntax-span-narrowing-quarantine.md`
-   exists and states the quarantine decision; ADR 0002 cross-references it.
+1. Decision recorded:
+   `docs/adrs/adr-0003-body-syntax-span-narrowing-quarantine.md` exists and
+   states the quarantine decision; ADR 0002 cross-references it.
 2. Docs agree with code: `docs/rules/body-syntax.md`,
    `docs/technical-design.md`, and `docs/developers-guide.md` describe the
    shipped whole-body span with narrowing intentionally deferred, and the

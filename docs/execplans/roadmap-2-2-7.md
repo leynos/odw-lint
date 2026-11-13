@@ -47,7 +47,7 @@ Rationale, with evidence verified in this repository and the pinned tooling:
 
 1. Runtime parity. `docs/technical-design.md` §9 requires that "diagnostics
    that disagree with ODW's loader must be intentional and documented".
-   `docs/adr/0001-static-analysis-boundary.md` records that the ODW loader
+   `docs/adrs/adr-0001-static-analysis-boundary.md` records that the ODW loader
    "evaluates sliced metadata with `new Function`" and "compiles workflow
    bodies", and `docs/technical-design.md` §3 (table row "ODW loader") plus the
    `odw-authoring` skill both state ODW "wraps the body in an async function".
@@ -83,11 +83,13 @@ here so a reviewer can see they were considered rather than missed.
   `syntax: "ecmascript", jsx: false` in
   `src/static-analysis/workflow-body-parse.ts` stays; this plan ratifies and
   documents it, it does not alter it. (Per
-  `docs/adr/0001-static-analysis-boundary.md`, the static-analysis boundary is
-  a security boundary — the parser must never execute workflow source.)
+  `docs/adrs/adr-0001-static-analysis-boundary.md`, the static-analysis
+  boundary is a security boundary — the parser must never execute workflow
+  source.)
 - Do not import or call executable ODW runtime paths (`loadWorkflowScript`,
   `createPrimitives`, the runtime `validate` primitive) in production code
-  (`docs/adr/0001-static-analysis-boundary.md`, `docs/technical-design.md` §5).
+  (`docs/adrs/adr-0001-static-analysis-boundary.md`, `docs/technical-design.md`
+  §5).
 - Do not add, remove, or bump any package dependency. `@swc/core` stays pinned
   at `^1.15.43` (`package.json`).
 - Do not change the public package surface. New tests use the existing
@@ -155,9 +157,9 @@ here so a reviewer can see they were considered rather than missed.
   `odw-authoring` skill rather than ODW source directly. Severity: low.
   Likelihood: n/a (already observed). Mitigation: the parity rationale rests on
   `docs/technical-design.md` §3/§9,
-  `docs/adr/0001-static-analysis-boundary.md`, and the `odw-authoring` skill,
-  all of which are in-repo/authoritative sources of truth; the SWC-rejects-TS
-  claim is additionally pinned by the Work item 2 test.
+  `docs/adrs/adr-0001-static-analysis-boundary.md`, and the `odw-authoring`
+  skill, all of which are in-repo/authoritative sources of truth; the
+  SWC-rejects-TS claim is additionally pinned by the Work item 2 test.
 
 ## Progress
 
@@ -168,7 +170,7 @@ here so a reviewer can see they were considered rather than missed.
 - [x] Work item 3: Align design, developer, and rule documentation, and add the
   roadmap completion note.
 - 2026-07-03: Work item 1 implemented in
-  `docs/adr/0002-workflow-body-parser-dialect-scope.md` and
+  `docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md` and
   `docs/technical-design.md`. Formatted the changed Markdown files with
   `bunx mdtablefix` and `bunx markdownlint-cli2 --fix`. Scrutineer reported
   `make all`, `make markdownlint`, and `make nixie` green; CodeRabbit reported
@@ -253,11 +255,11 @@ here so a reviewer can see they were considered rather than missed.
   JavaScript-only). Adding TypeScript would create an undocumented parity
   divergence forbidden by `docs/technical-design.md` §9. Date/Author:
   2026-07-03, planning agent (df12-build roadmap 2.2.7).
-- Decision: Record the choice in a new `docs/adr/0002-...` rather than only in
-  the ExecPlan. Rationale: `AGENTS.md` requires an ADR when a decision
+- Decision: Record the choice in a new `docs/adrs/adr-0002-...` rather than
+  only in the ExecPlan. Rationale: `AGENTS.md` requires an ADR when a decision
   "materially affects architecture, dependencies, public behaviour"; the parser
   dialect scope is a public-behaviour contract, and ADR 0001 set the precedent
-  of homing parser/boundary decisions in `docs/adr/`. Date/Author: 2026-07-03,
+  of homing parser/boundary decisions in `docs/adrs/`. Date/Author: 2026-07-03,
   planning agent.
 - Decision: Use a table-driven test (finite construct set) as the primary
   verification, not a `fast-check` property test. Rationale: `AGENTS.md`
@@ -388,16 +390,17 @@ validation and a gated commit.
 ### Work item 1 — Record the ECMAScript-only dialect decision
 
 Implements: `AGENTS.md` (ADR requirement for public-behaviour decisions);
-follows the format precedent of `docs/adr/0001-static-analysis-boundary.md`;
-supports `docs/technical-design.md` §9 (loader-parity must be intentional and
+follows the format precedent of
+`docs/adrs/adr-0001-static-analysis-boundary.md`; supports
+`docs/technical-design.md` §9 (loader-parity must be intentional and
 documented) and the roadmap 2.2.7 success criterion.
 
-Add `docs/adr/0002-workflow-body-parser-dialect-scope.md`, mirroring ADR 0001's
-structure (title, `Status: Accepted`, `Date:`, `## Context`, `## Decision`,
-`## Consequences`). Content: state that workflow bodies are parsed
-ECMAScript-only via `syntax: "ecmascript"`; that TypeScript-only syntax the
-ECMAScript grammar cannot express — a colon type annotation on a variable or
-parameter (`const x: number`, `function f(x: number)`), `interface`, `enum`,
+Add `docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md`, mirroring ADR
+0001's structure (title, `Status: Accepted`, `Date:`, `## Context`,
+`## Decision`, `## Consequences`). Content: state that workflow bodies are
+parsed ECMAScript-only via `syntax: "ecmascript"`; that TypeScript-only syntax
+the ECMAScript grammar cannot express — a colon type annotation on a variable
+or parameter (`const x: number`, `function f(x: number)`), `interface`, `enum`,
 `as`, and `satisfies` — is a rejected `odw/body-syntax` error; the
 ODW-loader-parity rationale (bodies are compiled through a `Function`/
 `AsyncFunction` constructor and are therefore JavaScript); and the consequence
@@ -417,7 +420,7 @@ next to the existing ADR 0001 reference, so the design doc routes readers to
 the dialect decision. (The §6.1 table row itself is corrected in Work item 3;
 keep this WI docs-additive to stay atomic.)
 
-Read before starting: `docs/adr/0001-static-analysis-boundary.md`,
+Read before starting: `docs/adrs/adr-0001-static-analysis-boundary.md`,
 `docs/technical-design.md` §§4-6 and §9, `docs/documentation-style-guide.md`,
 `AGENTS.md` (Documentation, Decisions/ADR sections). Skills to load:
 `execplans` (this plan), `en-gb-oxendict` (Oxford spelling for the ADR prose).
@@ -565,14 +568,14 @@ Run everything from the worktree root
 
 Work item 1:
 
-1. Write `docs/adr/0002-workflow-body-parser-dialect-scope.md` (see Work item 1
-   content).
+1. Write `docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md` (see Work
+   item 1 content).
 2. Add the ADR 0002 pointer in `docs/technical-design.md`.
 3. Format changed Markdown only:
 
    ```bash
-   bunx mdtablefix docs/adr/0002-workflow-body-parser-dialect-scope.md docs/technical-design.md
-   bunx markdownlint-cli2 --fix docs/adr/0002-workflow-body-parser-dialect-scope.md docs/technical-design.md
+   bunx mdtablefix docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md docs/technical-design.md
+   bunx markdownlint-cli2 --fix docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md docs/technical-design.md
    ```
 
 4. Gate and commit:

@@ -8,7 +8,7 @@ direct file inspection, and `sem` entity history.
 Normative references used:
 
 - `AGENTS.md`
-- `docs/adr/0001-static-analysis-boundary.md`
+- `docs/adrs/adr-0001-static-analysis-boundary.md`
 - `docs/developers-guide.md`
 - `docs/documentation-style-guide.md`
 - `docs/roadmap.md`

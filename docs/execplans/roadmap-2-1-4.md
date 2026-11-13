@@ -712,7 +712,7 @@ Documentation implemented:
 - `docs/technical-design.md` section 5, "Static-analysis boundary".
 - `docs/technical-design.md` section 11.3, "Forbidden import and security
   regression checks".
-- `docs/adr/0001-static-analysis-boundary.md` "Decision", for the type-only
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision", for the type-only
   dependency boundary.
 - `docs/developers-guide.md` "Static-Analysis Boundary", "Tests", and
   "Linting".
@@ -813,7 +813,8 @@ Documentation implemented:
 - `docs/technical-design.md` section 5, "Static-analysis boundary".
 - `docs/technical-design.md` section 11.3, "Forbidden import and security
   regression checks".
-- `docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences".
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and
+  "Consequences".
 - `docs/terms-of-reference.md` sections 7, 8, and 9.
 - `docs/scripting-standards.md` "Operational guidelines", for path-safe
   command execution and temporary log hygiene.
@@ -880,7 +881,7 @@ Documentation implemented:
 - `docs/technical-design.md` section 5, "Static-analysis boundary".
 - `docs/technical-design.md` section 11.3, "Forbidden import and security
   regression checks".
-- `docs/adr/0001-static-analysis-boundary.md` "Consequences".
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Consequences".
 - `docs/developers-guide.md` "Static-Analysis Boundary", "Tests", and
   "Commit Gate".
 - `docs/scripting-standards.md` "Operational guidelines", for path-safe

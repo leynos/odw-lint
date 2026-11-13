@@ -107,10 +107,10 @@ Hard invariants that must hold throughout implementation.
 
 1. Do not execute or evaluate workflow source. The scanner walks the SWC AST of
    the normalized body and never imports ODW runtime code, per
-   [adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+   [adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
    and [technical-design.md](../technical-design.md) §6.4.
 2. Workflow bodies are parsed under the ECMAScript-only dialect fixed by
-   [adr/0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md);
+   [adrs/adr-0002-workflow-body-parser-dialect-scope.md](../adrs/adr-0002-workflow-body-parser-dialect-scope.md);
    do not add TypeScript-syntax handling.
 3. The rule catalogue stays the single source of truth for the rule identifier,
    category, default severity, docs slug, and reviewed message
@@ -430,9 +430,9 @@ Docs to read:
 (`ScopeOwnFacts` shape),
 [workflow-ast-bindings.ts](../../src/static-analysis/workflow-ast-bindings.ts)
 (`isIdentifierBound`),
-[adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md),
+[adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md),
 
-[adr/0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md),
+[adrs/adr-0002-workflow-body-parser-dialect-scope.md](../adrs/adr-0002-workflow-body-parser-dialect-scope.md),
 
 [technical-design.md](../technical-design.md) §§4 and 9.2. Skills/tools:
 `execplans`, `leta` (symbol navigation and references), `arch-crate-design`

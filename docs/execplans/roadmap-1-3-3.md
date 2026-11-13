@@ -39,7 +39,7 @@ approved.
 - Use `sem` rather than raw `git log` or `git blame` if codebase history is
   needed. This plan does not currently require history navigation.
 - Read and obey `AGENTS.md`, `docs/terms-of-reference.md`,
-  `docs/technical-design.md`, `docs/adr/0001-static-analysis-boundary.md`,
+  `docs/technical-design.md`, `docs/adrs/adr-0001-static-analysis-boundary.md`,
   `docs/developers-guide.md`, `docs/scripting-standards.md`,
   `docs/complexity-antipatterns-and-refactoring-strategies.md`,
   `docs/documentation-style-guide.md`, and `docs/roadmap.md` before
@@ -376,7 +376,7 @@ change the real envelope and must not produce future envelope diagnostics.
   require an owned static parser path, a source model that masks comments,
   strings, regex literals, and template literals, fixtures for decoy workflow
   syntax, original-source spans, and no source execution.
-- `docs/adr/0001-static-analysis-boundary.md` forbids production imports of
+- `docs/adrs/adr-0001-static-analysis-boundary.md` forbids production imports of
   executable ODW loader, primitive, runtime launcher, worker, or agent-dispatch
   paths. Tests may use executable ODW runtime APIs only in narrow trusted
   parity tests; this fixture task does not need them.
@@ -441,10 +441,10 @@ change the real envelope and must not produce future envelope diagnostics.
 Read `AGENTS.md` "Testing", "Linting & Formatting", and "Change Quality &
 Committing"; `docs/technical-design.md` §§6.2 and 11.1;
 `docs/developers-guide.md` "Workflow Fixture Corpus"; and
-`docs/adr/0001-static-analysis-boundary.md` before editing. Load the `leta`,
-`grepai`, `biome-typescript`, and `en-gb-oxendict-style` skills. No Python or
-Rust router skill is needed because this work item touches TypeScript and
-JavaScript fixtures only.
+`docs/adrs/adr-0001-static-analysis-boundary.md` before editing. Load the
+`leta`, `grepai`, `biome-typescript`, and `en-gb-oxendict-style` skills. No
+Python or Rust router skill is needed because this work item touches TypeScript
+and JavaScript fixtures only.
 
 Add `tests/static-analysis/fixtures/masking/comment-decoy.js`. It must contain
 one module-level `/** @file ... */` JSDoc block at the top of the file, one real

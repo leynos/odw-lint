@@ -79,10 +79,11 @@ Observable proof (see `Validation and acceptance`):
 Design references: `docs/technical-design.md` §§4, 5, 6.1, 6.2 (the
 `WorkflowAstFacts` layer that carries "randomness/time hazards" and shadow
 facts), 6.4, 8, 9.2 (the three Claude-compatibility rules), 11.5 (span-mapping
-invariant), 12.1 (trust boundary); `docs/adr/0001-static-analysis-boundary.md`;
-`docs/developers-guide.md` "Workflow AST facts" (lines 79-100), "Source-span
-helpers" (lines 65-77), and the Claude-compatibility merge-order note (lines
-119-153); `docs/complexity-antipatterns-and-refactoring-strategies.md`
+invariant), 12.1 (trust boundary);
+`docs/adrs/adr-0001-static-analysis-boundary.md`; `docs/developers-guide.md`
+"Workflow AST facts" (lines 79-100), "Source-span helpers" (lines 65-77), and
+the Claude-compatibility merge-order note (lines 119-153);
+`docs/complexity-antipatterns-and-refactoring-strategies.md`
 (single-responsibility helpers, extract predicates, files under 400 lines);
 `docs/scripting-standards.md`; `docs/documentation-style-guide.md`;
 `docs/roadmap.md` task 3.1.4 (requires 2.2.4 and 3.1.2, both `[x]`);
@@ -94,12 +95,13 @@ limit, en-GB Oxford spelling, DRY / separate atomic refactors).
 - **Never execute or evaluate workflow source.** Detection is parse-and-walk
   only; the sole permitted parser call remains `@swc/core`'s `parseSync` over
   normalized text via `parseNormalizedWorkflowBody` (`docs/technical-design.md`
-  §12.1; `docs/adr/0001`;
+  §12.1; `docs/adrs/adr-0001`;
   `tests/static-analysis/hostile-metadata-security.test.ts` and
   `tests/diagnostics/import-policy.test.ts` must stay green).
 - **Do not import ODW runtime or ODW static helpers** (`scanDualCompat`,
   `checkMeta`, `loadWorkflowScript`, `createPrimitives`, `validate`) in
-  production code (`docs/adr/0001`; the forbidden-import architecture test).
+  production code (`docs/adrs/adr-0001`; the forbidden-import architecture
+  test).
 - **No public `@swc/core` type leak.** The new resolver consumes SWC types
   internally; nothing new is re-exported from `src/index.ts` or
   `src/static-analysis/index.ts`. The resolver module is an internal
@@ -181,9 +183,9 @@ limit, en-GB Oxford spelling, DRY / separate atomic refactors).
 - Risk: the sibling ODW checkout is outside this session's sandbox, so
   `scanDualCompat`'s exact `globalThis`/shadow behaviour cannot be read for a
   parity claim. Severity: low. Likelihood: high (already observed — see Tooling
-  note). Mitigation: `docs/adr/0001` forbids importing `scanDualCompat`; the
-  3.1.4 success line is defined against lexical binding facts, not against a
-  live ODW import, so behaviour is pinned by the success line and tests.
+  note). Mitigation: `docs/adrs/adr-0001` forbids importing `scanDualCompat`;
+  the 3.1.4 success line is defined against lexical binding facts, not against
+  a live ODW import, so behaviour is pinned by the success line and tests.
 
 ## Tooling availability note (planning session)
 
@@ -193,8 +195,8 @@ with the bounded local fallback used instead:
 - The sibling ODW checkout `/data/leynos/Projects/open-dynamic-workflows` is
   outside the session's allowed directories: `grep`/`ls` were blocked ("may
   only search … allowed working directories"). `scanDualCompat` could not be
-  read. Fallback: `docs/adr/0001` bars importing it; the plan pins behaviour to
-  the roadmap success line and trusted-fixture parity instead.
+  read. Fallback: `docs/adrs/adr-0001` bars importing it; the plan pins
+  behaviour to the roadmap success line and trusted-fixture parity instead.
 - `bun install` / `bun test` were not run in-session (the worktree has no
   `node_modules` yet); the `@swc/core` AST shapes were pinned by reading the
   pinned `@swc/types` `.d.ts` in the sibling installed tree
@@ -328,8 +330,9 @@ inspection), `biomejs` (formatting/lint), and `en-gb-oxendict` (prose/comments).
 
 ### WI1 — Resolve global-object identity with lexical bindings and rewire the scanner (feature)
 
-Read first: `docs/technical-design.md` §§6.1, 6.2, 9.2, 11.5; `docs/adr/0001`;
-`docs/developers-guide.md` "Workflow AST facts" and "Source-span helpers";
+Read first: `docs/technical-design.md` §§6.1, 6.2, 9.2, 11.5;
+`docs/adrs/adr-0001`; `docs/developers-guide.md` "Workflow AST facts" and
+"Source-span helpers";
 `docs/complexity-antipatterns-and-refactoring-strategies.md`;
 `src/static-analysis/workflow-deterministic-time.ts`,
 `workflow-ast-bindings.ts`, and `workflow-body-parse.ts`. Skills: `leta`,
@@ -721,8 +724,8 @@ present. No ODW runtime or static-helper symbol may appear in any new file.
   success line names exactly `Date`, `Math`, and `globalThis.Date.now()`;
   §9.2's philosophy is "warn and explain", preferring a false negative to a
   false positive, and a static tool cannot follow aliases or dynamic keys
-  without evaluating source (`docs/adr/0001`; §12.1). Date/Author: 2026-07-03,
-  planning agent.
+  without evaluating source (`docs/adrs/adr-0001`; §12.1). Date/Author:
+  2026-07-03, planning agent.
 - Decision: shadow suppression is conservative name-set membership, mirroring
   2.2.4's name-based model, not scope-precise analysis. Rationale: any
   same-named binding suppresses the bare-global form, which is safe (prefers a

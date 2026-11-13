@@ -53,7 +53,7 @@ Roadmap reference: `docs/roadmap.md` task 2.2.2 (lines 551-556). Requires 2.2.1
 (complete on this branch's base; `docs/execplans/roadmap-2-2-1.md` Status
 COMPLETE). Design references: `docs/technical-design.md` sections 3 (sources
 table, ODW loader row), 4, 5, 6.1, 6.2, 8, 11.1, 11.5, 12.1, 12.2, 13;
-`docs/adr/0001-static-analysis-boundary.md`.
+`docs/adrs/adr-0001-static-analysis-boundary.md`.
 
 ### Scope boundary with adjacent tasks (read this first)
 
@@ -100,7 +100,7 @@ escalation, not a workaround.
   **building a source string** for SWC to *parse*, never constructing or
   running a function. `parseSync` only parses. Enforced by
   `tests/diagnostics/import-policy.test.ts` (`docs/technical-design.md`
-  sections 5, 12.1; `docs/adr/0001-static-analysis-boundary.md`).
+  sections 5, 12.1; `docs/adrs/adr-0001-static-analysis-boundary.md`).
 - **Static string imports only in production code.**
   `tests/diagnostics/import-policy.test.ts` fails production code that uses
   computed `import(expr)`/`require(expr)`. Keep the existing static
@@ -447,7 +447,8 @@ into parseable JavaScript while preserving source-span mappings"), 5 and 12.1
 components), 6.2 (static source model), 8 (span always refers to original
 source), 11.1 (differential corpus includes top-level return and top-level
 await cases), 11.5 (span-mapping invariant), 12.2 (parser crash to
-`odw/body-syntax`), 13 (packaging); `docs/adr/0001-static-analysis-boundary.md`;
+`odw/body-syntax`), 13 (packaging);
+`docs/adrs/adr-0001-static-analysis-boundary.md`;
 `docs/complexity-antipatterns-and-refactoring-strategies.md` (keep the
 normalizer a small pure function); `AGENTS.md` testing, error-handling, docs,
 and TypeScript sections.
@@ -461,8 +462,9 @@ item: understand → Red test → minimal implementation → refactor and gate.
 ### WI1 — Body normalizer and span mapper module
 
 Implements: `docs/technical-design.md` sections 4 (step 3), 6.1 (Body
-normalizer, Span mapper), 8, 11.5; `docs/adr/0001-static-analysis-boundary.md`
-(static, no execution). Roadmap 2.2.2 foundation.
+normalizer, Span mapper), 8, 11.5;
+`docs/adrs/adr-0001-static-analysis-boundary.md` (static, no execution).
+Roadmap 2.2.2 foundation.
 
 Read first: `docs/technical-design.md` sections 4, 6.1, 8, 11.5;
 `src/static-analysis/source-position.ts` (`spanFromOffsets` and its

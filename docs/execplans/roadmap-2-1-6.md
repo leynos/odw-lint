@@ -55,7 +55,7 @@ surface, and `docs/rules/` pages stay in sync.
   metadata execution checks from roadmap 2.1.5, or loader parity from roadmap
   2.3.
 - Production code must not import executable ODW runtime paths. ADR
-  [0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+  [adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
   forbids imports that evaluate metadata, compile workflow bodies, start runs,
   dispatch agents, or call runtime `validate(source)`.
 - Do not add a package dependency. The locked repository already provides Bun,

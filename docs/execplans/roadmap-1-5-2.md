@@ -62,7 +62,7 @@ Implementation must not begin until this draft is reviewed and approved.
   navigation is needed. Ordinary `git fetch`, `git status`, and scoped diff
   commands remain acceptable for the guard itself.
 - Read and obey `AGENTS.md`, `docs/terms-of-reference.md`,
-  `docs/technical-design.md`, `docs/adr/0001-static-analysis-boundary.md`,
+  `docs/technical-design.md`, `docs/adrs/adr-0001-static-analysis-boundary.md`,
   `docs/developers-guide.md`, `docs/repository-layout.md`,
   `docs/scripting-standards.md`,
   `docs/complexity-antipatterns-and-refactoring-strategies.md`,

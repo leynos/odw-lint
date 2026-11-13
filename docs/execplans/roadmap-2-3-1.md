@@ -69,8 +69,8 @@ escalation, not a workaround.
 - The harness must not evaluate, `import()`, `require`, `new Function`, or
   otherwise execute any fixture body (`docs/technical-design.md` §11.2 final
   paragraph, §6.4 "Do not execute source", ADR
-  `docs/adr/0001-static-analysis-boundary.md`). It reads fixture text through
-  `readFixtureSource` and lints it as passive source only.
+  `docs/adrs/adr-0001-static-analysis-boundary.md`). It reads fixture text
+  through `readFixtureSource` and lints it as passive source only.
 - Trusted ODW example fixtures under
   `tests/static-analysis/fixtures/odw-examples/` are read-only upstream
   snapshots. Their bytes and SHA-256 pins in
@@ -344,8 +344,8 @@ deterministic-time) — out of scope for this minimal harness. A **rule class**
 here is a rule id such as `odw/meta-required`.
 
 Design references: `docs/technical-design.md` §§5, 6.4, 9.1, 11.2, 11.3, 11.5;
-ADR `docs/adr/0001-static-analysis-boundary.md`; `AGENTS.md` "Change Quality &
-Committing" and "Testing".
+ADR `docs/adrs/adr-0001-static-analysis-boundary.md`; `AGENTS.md` "Change
+Quality & Committing" and "Testing".
 
 ## Plan of work
 

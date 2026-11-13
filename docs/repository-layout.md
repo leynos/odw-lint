@@ -9,7 +9,7 @@ Use this page for ownership boundaries and path conventions. Use these
 documents for the rationale behind those boundaries:
 
 - [technical design](technical-design.md)
-- [ADR 0001](adr/0001-static-analysis-boundary.md)
+- [ADR 0001](adrs/adr-0001-static-analysis-boundary.md)
 - [developers' guide](developers-guide.md)
 - [rule reference](rules/index.md)
 - [documentation style guide](documentation-style-guide.md)
@@ -50,7 +50,7 @@ where those materials live.
 - `docs/technical-design.md` records the static-analysis architecture,
   diagnostic contract, verification strategy, security boundary, packaging
   decision and deferred integrations.
-- `docs/adr/` contains accepted Architectural Decision Records. ADR 0001 owns
+- `docs/adrs/` contains accepted Architectural Decision Records. ADR 0001 owns
   the static-analysis boundary and the ban on executable ODW runtime imports in
   production code.
 - `docs/developers-guide.md` describes day-to-day maintainer workflow,
@@ -111,7 +111,7 @@ may build indexes, spans and snippets from workflow source, but production code
 must not import workflow files, evaluate metadata, run workflow bodies or call
 ODW runtime helpers that start runs or dispatch agents. The design rationale
 lives in [technical-design.md](technical-design.md) and
-[ADR 0001](adr/0001-static-analysis-boundary.md).
+[ADR 0001](adrs/adr-0001-static-analysis-boundary.md).
 
 The source-mask facade in `src/static-analysis/source-mask.ts` composes focused
 internal mask helpers. Keep comment, quoted-string, template-literal, regex,

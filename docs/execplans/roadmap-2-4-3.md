@@ -74,7 +74,7 @@ Hard invariants that must hold throughout implementation.
   ODW runtime helpers, or start runs. The JSON reporter only re-shapes the
   already-inert `DiagnosticReport` produced by the vetted `lintWorkflowSource`
   pipeline (`docs/technical-design.md` §§5, 6.4; `docs/developers-guide.md`
-  §"Static-Analysis Boundary"; `docs/adr/0001-static-analysis-boundary.md`;
+  §"Static-Analysis Boundary"; `docs/adrs/adr-0001-static-analysis-boundary.md`;
   `docs/repository-layout.md` §"Source boundaries").
 - Do not change `schemaVersion`, add or rename a catalogued rule ID, alter an
   existing rule's meaning, or change the diagnostic object shape. This task
@@ -397,7 +397,7 @@ Design sources of truth: `docs/technical-design.md` §§7.3 (the
 `--output-format` flag), 7.4 (exit codes), 8 (diagnostic contract);
 `docs/developers-guide.md` §"CLI"; `docs/users-guide.md` §"Diagnostic reports";
 `docs/repository-layout.md` §§"Source boundaries", "Test and fixture
-boundaries"; `docs/adr/0001-static-analysis-boundary.md`; `AGENTS.md`
+boundaries"; `docs/adrs/adr-0001-static-analysis-boundary.md`; `AGENTS.md`
 §§"Testing", "TypeScript Guidance".
 
 ## Plan of work

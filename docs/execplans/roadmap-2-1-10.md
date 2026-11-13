@@ -67,7 +67,7 @@ absolute path, or another emitted docs-link shape.
   documentation slugs, messages and release status.
 - Production code must stay inert and must not import executable ODW runtime
   paths. ADR
-  [0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+  [adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
   forbids imports that evaluate metadata, compile workflow bodies, start runs,
   dispatch agents, or call runtime `validate(source)`.
 - Do not add a dependency. The locked repository already provides Bun,
@@ -510,7 +510,7 @@ documentation path. It implements:
 - `docs/developers-guide.md` sections "Tests", "Workflow Fixture Corpus" and
   "Documentation Upkeep";
 - ADR
-  [0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md),
+  [adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md),
   because the catalogue and diagnostic contracts must stay inert.
 
 Skills to load before editing: `execplans`, `grepai`, `leta`, `sem`,
@@ -961,7 +961,7 @@ Read these repository documents before implementing:
 - `AGENTS.md`
 - `docs/terms-of-reference.md` sections 6, 8 and 9
 - `docs/technical-design.md` sections 8 and 9
-- `docs/adr/0001-static-analysis-boundary.md`
+- `docs/adrs/adr-0001-static-analysis-boundary.md`
 - `docs/developers-guide.md` sections "Commit Gate", "Tests", "Workflow
   Fixture Corpus", "Markdown" and "Documentation Upkeep"
 - `docs/scripting-standards.md` sections "Language and runtime",

@@ -378,7 +378,7 @@ it with unverified workarounds.
     and the rule that text output is derived from the same diagnostic objects
     as JSON output.
   - `docs/technical-design.md` sections 5, 12.1, and 12.2 and
-    `docs/adr/0001-static-analysis-boundary.md` forbid production imports that
+    `docs/adrs/adr-0001-static-analysis-boundary.md` forbid production imports that
     evaluate workflow source.
   - `docs/technical-design.md` section 15 and `docs/developers-guide.md`
     "Commit Gate" require `make all`; Markdown changes also require

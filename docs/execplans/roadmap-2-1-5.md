@@ -16,8 +16,8 @@ a diagnostic. See `docs/roadmap.md` task 2.1.5 (requires 1.3.4 and 2.1.3) and
 
 The ODW loader boundary the linter reproduces is static: `odw-lint` must parse
 the ODW envelope and classify metadata **without executing source**
-(`docs/adr/0001-static-analysis-boundary.md`; `docs/technical-design.md` §§5,
-6.2, 6.3, 9.1). Task 1.3.4 already added hostile-metadata fixtures whose
+(`docs/adrs/adr-0001-static-analysis-boundary.md`; `docs/technical-design.md`
+§§5, 6.2, 6.3, 9.1). Task 1.3.4 already added hostile-metadata fixtures whose
 metadata would leave an observable marker if evaluated (a global write in
 `global-marker.js`, a thrown error in `throw-marker.js`). Task 2.1.3 already
 made `classifyWorkflowMetadata` classify these passively as
@@ -52,9 +52,9 @@ escalation, not a workaround.
   factory, runtime launcher, or worker path. Work item 2 may dynamically import
   only the public `odw-lint` entry point in a cold child process. The linter
   only ever reads fixture **source text**. See
-  `docs/adr/0001-static-analysis-boundary.md`, `docs/technical-design.md` §§5,
-  11.3, and the existing forbidden-import guard from roadmap 2.1.4. This is the
-  property under test; breaking it defeats the task.
+  `docs/adrs/adr-0001-static-analysis-boundary.md`, `docs/technical-design.md`
+  §§5, 11.3, and the existing forbidden-import guard from roadmap 2.1.4. This
+  is the property under test; breaking it defeats the task.
 - **Do not modify production `src/` behaviour.** Task 2.1.3 already implemented
   passive classification; 2.1.5 is a **test-only** deliverable. If the security
   test cannot pass because production code actually evaluates metadata, stop
@@ -347,7 +347,7 @@ updates docs. Stage the file so each commit passes gates on its own.
 ### Work item 1 — In-process hostile metadata security regression test
 
 Docs to read first: `docs/technical-design.md` §11.3 (and §§5, 6.3, 9.1 for the
-static boundary); `docs/adr/0001-static-analysis-boundary.md`; `AGENTS.md`
+static boundary); `docs/adrs/adr-0001-static-analysis-boundary.md`; `AGENTS.md`
 "Testing" and "Keep file size manageable"; `docs/roadmap.md` task 2.1.5. Skills
 to load: `leta` (symbol navigation and branch-local verification); `biomejs`
 (TypeScript lint/format expectations enforced by the gate). Python verification
@@ -637,7 +637,7 @@ Initial draft (2026-07-01, planning agent). Decomposes roadmap 2.1.5 into three
 atomic work items: an in-process fixture-driven security regression test, an
 out-of-process cold-module-graph import-safety guard, and docs/roadmap updates.
 Grounded in `docs/technical-design.md` §11.3,
-`docs/adr/0001-static-analysis-boundary.md`, and the existing hostile
+`docs/adrs/adr-0001-static-analysis-boundary.md`, and the existing hostile
 fixtures/classifier; corpus growth deliberately excluded to keep the change
 atomic.
 
