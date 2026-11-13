@@ -145,8 +145,8 @@ Design authority for this task:
   `messageTemplates` are authored as raw strings in the catalogue, empty until
   a rule "emits dynamic parser-backed diagnostics") and "Rule catalogue and
   documentation parity".
-- `docs/adr/0001-static-analysis-boundary.md` (SWC is the owned static parser;
-  never execute workflow source).
+- `docs/adrs/adr-0001-static-analysis-boundary.md` (SWC is the owned static
+  parser; never execute workflow source).
 - `AGENTS.md` — file-size limit (no code file over 400 lines), testing rules
   (deterministic `bun test`; happy/unhappy/edge coverage; snapshots paired with
   semantic assertions and normalized nondeterministic fields; `fast-check` for

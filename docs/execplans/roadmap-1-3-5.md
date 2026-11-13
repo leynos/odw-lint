@@ -409,7 +409,7 @@ Design and project documentation cited:
 - `docs/technical-design.md` sections 4, 5, 11.1, 11.2, 11.3, 15 and 16 define
   the static-analysis boundary, fixture corpus, loader parity constraints,
   security regression constraints, release gates and ODW source references.
-- `docs/adr/0001-static-analysis-boundary.md` forbids production imports of
+- `docs/adrs/adr-0001-static-analysis-boundary.md` forbids production imports of
   ODW executable loader and primitive paths.
 - `docs/developers-guide.md` sections "Workflow Fixture Corpus" and
   "Source-span helpers" define the fixture ownership rules and UTF-8
@@ -565,7 +565,7 @@ Read before editing:
 - `docs/developers-guide.md` sections "Workflow Fixture Corpus" and
   "Source-span helpers".
 - `docs/scripting-standards.md` section "Operational guidelines".
-- `docs/adr/0001-static-analysis-boundary.md`.
+- `docs/adrs/adr-0001-static-analysis-boundary.md`.
 - `docs/complexity-antipatterns-and-refactoring-strategies.md` section
   "Avoiding the antipattern: proactive strategies".
 

@@ -27,11 +27,11 @@ ODW-style name resolution and any `odw check` subcommand are deferred to future
 ODW integration. This decision informs command naming, package exports, fixture
 ownership, and integration tests. See
 [technical-design.md](technical-design.md) §§5, 7 and 13, and
-[0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md).
+[adr-0001-static-analysis-boundary.md](adrs/adr-0001-static-analysis-boundary.md).
 
 - [x] 1.1.1. Scaffold the owned SWC-based static-analysis module boundary.
   - See [technical-design.md](technical-design.md) §5 and
-    [0001-static-analysis-boundary.md](adr/0001-static-analysis-boundary.md).
+    [adr-0001-static-analysis-boundary.md](adrs/adr-0001-static-analysis-boundary.md).
   - Success: production code has a named `odw-lint` static-analysis source of
     truth, with no dependency on ODW publishing a static API or vendoring ODW
     helper source.

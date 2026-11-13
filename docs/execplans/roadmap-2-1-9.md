@@ -82,7 +82,7 @@ fixture refresh behaviour, a command-line interface, or new dependencies.
 - Preserve the public package entry shape. Do not remove or rename root exports
   listed in `tests/diagnostics/public-api-fixtures.ts`.
 - Production code must not import executable ODW runtime paths. ADR
-  [0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+  [adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
   forbids imports that evaluate metadata, compile workflow bodies, start runs,
   dispatch agents, or call runtime `validate(source)`.
 - Do not copy or vendor sibling ODW private helper source into production
@@ -209,7 +209,7 @@ conflict in `Decision Log`, and escalate.
   `source-mask.ts` was introduced as one module in commit `073132bc`.
 - [x] (2026-07-01T16:54:45+01:00) Read the source-of-truth documents:
   `AGENTS.md`, `docs/terms-of-reference.md`, `docs/technical-design.md`,
-  `docs/adr/0001-static-analysis-boundary.md`, `docs/developers-guide.md`,
+  `docs/adrs/adr-0001-static-analysis-boundary.md`, `docs/developers-guide.md`,
   `docs/scripting-standards.md`,
   `docs/complexity-antipatterns-and-refactoring-strategies.md`,
   `docs/documentation-style-guide.md`, `docs/repository-layout.md`,
@@ -538,7 +538,7 @@ The implementation must not expose token-family modules from `src/index.ts` or
 - `docs/technical-design.md` §§5, 6.2, and 6.4 require an owned static-analysis
   implementation, a string/comment/template/regex masking strategy before
   envelope scanning, and no workflow source execution.
-- `docs/adr/0001-static-analysis-boundary.md` forbids production imports of
+- `docs/adrs/adr-0001-static-analysis-boundary.md` forbids production imports of
   executable ODW loader, primitive, runtime, run-starting, metadata-evaluating,
   and agent-dispatch paths.
 - `docs/developers-guide.md` "Workflow envelope scanner" requires production

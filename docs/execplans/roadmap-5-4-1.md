@@ -668,8 +668,8 @@ Documentation treated as source of truth for this plan:
   `source-scanner-primitives.ts` shared-seam contract.
 - `docs/developers-guide.md` "Internal source-helper ownership" — the per-module
   ownership split and the "'where contracts match' exception" convention.
-- `docs/adr/0001-static-analysis-boundary.md` — why the static-analysis boundary
-  and its import rules are load-bearing.
+- `docs/adrs/adr-0001-static-analysis-boundary.md` — why the static-analysis
+  boundary and its import rules are load-bearing.
 - `AGENTS.md` — quality gates, the abstraction/helper policy, TypeScript style,
   testing rules, and en-GB Oxford spelling.
 - `docs/complexity-antipatterns-and-refactoring-strategies.md` — Extract Method

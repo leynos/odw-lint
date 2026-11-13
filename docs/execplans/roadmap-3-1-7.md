@@ -81,7 +81,7 @@ Hard invariants that must hold throughout implementation.
 
 1. Do not execute or evaluate workflow source. The scanner walks the SWC AST of
    the normalized body and never imports ODW runtime code, consistent with
-   [adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+   [adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
    and [technical-design.md](../technical-design.md) §6.4. It reads only the
    parsed body and the inert rule catalogue.
 2. The rule catalogue stays the single source of truth for rule identifiers,
@@ -459,10 +459,10 @@ Docs to read:
 (shadow check),
 [src/static-analysis/swc-ast.ts](../../src/static-analysis/swc-ast.ts),
 
-[adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md),
+[adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md),
 
-[adr/0002-*](../adr/) if present for the ECMAScript parser dialect note. Also
-read the two public-surface guards whose fixtures this work item edits:
+[adrs/adr-0002-*](../adrs/) if present for the ECMAScript parser dialect note.
+Also read the two public-surface guards whose fixtures this work item edits:
 [tests/diagnostics/public-api-surface.test.ts](../../tests/diagnostics/public-api-surface.test.ts)
 (lines 172-181) with its fixture
 [tests/diagnostics/public-api-fixtures.ts](../../tests/diagnostics/public-api-fixtures.ts),

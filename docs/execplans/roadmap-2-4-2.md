@@ -63,7 +63,7 @@ Hard invariants that must hold throughout implementation.
 - Production code must not execute workflow source or import ODW runtime
   helpers. The static-analysis boundary is a security boundary
   (`docs/technical-design.md` §§5, 6.4;
-  `docs/adr/0001-static-analysis-boundary.md`; `docs/developers-guide.md`
+  `docs/adrs/adr-0001-static-analysis-boundary.md`; `docs/developers-guide.md`
   §"static-analysis boundary"). Text formatting operates only on
   already-produced `Diagnostic`/`DiagnosticReport` values; it reads no files
   and evaluates no source.

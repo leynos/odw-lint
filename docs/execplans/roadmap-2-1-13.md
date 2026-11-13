@@ -844,8 +844,8 @@ policy" requires recording the decision where it changes long-term structure).
 - `docs/developers-guide.md` "Internal source-helper ownership" list
   (lines 574-605): finalize the entry for the new module, including permitted
   call sites and composition rules.
-- Consider whether `docs/adr/0001-static-analysis-boundary.md` needs a note;
-  if the ownership boundary is unchanged (it is — this is internal
+- Consider whether `docs/adrs/adr-0001-static-analysis-boundary.md` needs a
+  note; if the ownership boundary is unchanged (it is — this is internal
   consolidation), record in the Decision Log that no ADR change is required and
   do not edit the ADR.
 

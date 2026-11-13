@@ -93,7 +93,7 @@ Observable proof (see `Validation and acceptance`):
   `tests/static-analysis/workflow-ast-scopes.test.ts` (verified by `grep`); the
   scope tests assert exact `boundNames` and must stay green unchanged.
 - Honour ADR 0002
-  ([adr/0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md)):
+  ([adrs/adr-0002-workflow-body-parser-dialect-scope.md](../adrs/adr-0002-workflow-body-parser-dialect-scope.md)):
   workflow bodies parse in the ECMAScript parser dialect. Do not add
   TypeScript-only wrapper handling.
 - Reuse the shared SWC shape helpers in `src/static-analysis/swc-ast.ts`
@@ -478,7 +478,7 @@ and §6.1 (traversal seam), ADR 0002 (ECMAScript dialect), and AGENTS.md
 "TypeScript Guidance" (discriminated unions, small functions, immutability).
 
 Docs to read: [technical-design.md](../technical-design.md) §§6.1, 9.2;
-[adr/0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md);
+[adrs/adr-0002-workflow-body-parser-dialect-scope.md](../adrs/adr-0002-workflow-body-parser-dialect-scope.md);
 `docs/rules/no-date-now.md`, `docs/rules/no-math-random.md`,
 `docs/rules/no-argless-new-date.md` (current alias limitations);
 [developers-guide.md](../developers-guide.md) and

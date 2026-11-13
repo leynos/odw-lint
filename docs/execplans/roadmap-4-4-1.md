@@ -45,7 +45,7 @@ repository gates `make all`, `make markdownlint`, and `make nixie` pass.
 - Use `sem` instead of raw Git history commands if implementation needs
   history, blame, entity-level diffs, or change-impact analysis.
 - Read and obey `AGENTS.md`, `docs/terms-of-reference.md`,
-  `docs/technical-design.md`, `docs/adr/0001-static-analysis-boundary.md`,
+  `docs/technical-design.md`, `docs/adrs/adr-0001-static-analysis-boundary.md`,
   `docs/developers-guide.md`, `docs/scripting-standards.md`,
   `docs/complexity-antipatterns-and-refactoring-strategies.md`,
   `docs/documentation-style-guide.md`, and `docs/roadmap.md`.
@@ -329,7 +329,7 @@ must not import or execute ODW runtime loader paths.
 The current documentation tree already contains these families:
 
 - `docs/terms-of-reference.md`, `docs/technical-design.md`, and
-  `docs/adr/0001-static-analysis-boundary.md` for requirements and design
+  `docs/adrs/adr-0001-static-analysis-boundary.md` for requirements and design
   rationale.
 - `docs/developers-guide.md`,
   `docs/complexity-antipatterns-and-refactoring-strategies.md`,
@@ -441,7 +441,7 @@ Read before editing:
   Fixture Corpus", "Markdown", and "Documentation Upkeep".
 - `docs/technical-design.md` sections 5, 6, 8, 9, 11, 12, 15 and 16.
 - `docs/terms-of-reference.md` sections 1, 8, 9 and 12.
-- `docs/adr/0001-static-analysis-boundary.md` "Decision" and
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and
   "Consequences".
 - `AGENTS.md` "Documentation Maintenance", "Change Quality & Committing",
   "Markdown Guidance", and "TypeScript Guidance".
@@ -636,7 +636,7 @@ Required document changes:
   - `docs/contents.md`
   - `docs/repository-layout.md`
   - `docs/technical-design.md`
-  - `docs/adr/0001-static-analysis-boundary.md`
+  - `docs/adrs/adr-0001-static-analysis-boundary.md`
   - `docs/rules/index.md`
 - Keep the developer guide focused on maintainer workflow. Do not embed
   repository-layout detail there; link to the new layout document instead.

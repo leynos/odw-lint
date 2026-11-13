@@ -6,7 +6,7 @@ branch. Scope: the 2.3.4 body-parser neighbourhood plus a broader sweep of
 `src/static-analysis/` and `src/diagnostics/`.
 
 Trail followed: `AGENTS.md` quality gates and refactoring heuristics,
-`docs/adr/0002-workflow-body-parser-dialect-scope.md`,
+`docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md`,
 `docs/rules/body-syntax.md`, `docs/developers-guide.md`, and the roadmap. Code
 navigated with `leta`/exact search inside the audit worktree; history read with
 `git show` on the merge commit.

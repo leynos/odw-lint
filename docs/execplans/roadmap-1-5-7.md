@@ -100,7 +100,7 @@ escalation, not a workaround.
 - Preserve the static-analysis and non-execution boundary. Nothing here
   executes workflow fixture source or imports ODW runtime paths; the review/
   audit path only re-runs repository build gates. See
-  [ADR 0001](../adr/0001-static-analysis-boundary.md) and
+  [ADR 0001](../adrs/adr-0001-static-analysis-boundary.md) and
   [technical-design.md](../technical-design.md) §15, which requires the tool to
   "run in CI without executing workflow source" (line 578).
 - Do not add a new runtime or dev dependency and do not add a new repository

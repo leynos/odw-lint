@@ -10,8 +10,8 @@ targeted file inspection, and `sem` entity history.
 Normative references used:
 
 - `AGENTS.md`
-- `docs/adr/0001-static-analysis-boundary.md`
-- `docs/adr/0002-workflow-body-parser-dialect-scope.md`
+- `docs/adrs/adr-0001-static-analysis-boundary.md`
+- `docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md`
 - `docs/complexity-antipatterns-and-refactoring-strategies.md`
 - `docs/developers-guide.md`
 - `docs/documentation-style-guide.md`

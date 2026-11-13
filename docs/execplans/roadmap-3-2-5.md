@@ -56,13 +56,13 @@ escalation, not a workaround.
   before and after. The two checked-in snapshots above must pass **without**
   `--update-snapshots`. This is the roadmap success criterion.
 - **Owned SWC parser boundary.** Per
-  [docs/adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md),
+  [docs/adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md),
   `odw-lint` owns its SWC-based static analysis. Do not import any ODW runtime
   helper, `loadWorkflowScript`, `createPrimitives`, or `validate(source)` path
   into production code. The new seam must depend only on `@swc/core` types and
   local static-analysis modules.
 - **ECMAScript dialect scope.** Per
-  [docs/adr/0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md),
+  [docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md](../adrs/adr-0002-workflow-body-parser-dialect-scope.md),
   workflow bodies are parsed as ECMAScript (`syntax: "ecmascript"`,
   `jsx: false`). Do not add TypeScript-only node handling (for example
   `TsAsExpression`) to the seam; the existing resolver deliberately handles only
@@ -414,7 +414,7 @@ Each work item is independently committable and must leave `make all` green.
 Docs to read first: [docs/technical-design.md](../technical-design.md) §3
 (components table: "SWC parser adapter", "WorkflowAstFacts" fact collectors)
 and §13 (owned SWC-based parser);
-[docs/adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md);
+[docs/adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md);
 
 [docs/complexity-antipatterns-and-refactoring-strategies.md](../complexity-antipatterns-and-refactoring-strategies.md)
 §"Balance Abstraction Levels" and §"Iterative Refactoring and Review" (extract
@@ -468,7 +468,7 @@ prior attempt, the red step is skipped; proceed to verify tests.
 
 Docs to read first: [docs/technical-design.md](../technical-design.md) §9.3
 (orchestration risk / deterministic-time context) and §3;
-[docs/adr/0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md)
+[docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md](../adrs/adr-0002-workflow-body-parser-dialect-scope.md)
 (ECMAScript wrapper scope). Skills to load: `leta`, `biomejs`.
 
 Steps:
@@ -535,7 +535,7 @@ Validation: `make all`; `git status` must show no snapshot changes.
 ### Work Item 4: Migrate `workflow-global-object-reference.ts`
 
 Docs to read first:
-[docs/adr/0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md)
+[docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md](../adrs/adr-0002-workflow-body-parser-dialect-scope.md)
 (the module's `ParenthesisExpression`-only wrapper scope must be preserved).
 Skills to load: `leta`, `biomejs`.
 

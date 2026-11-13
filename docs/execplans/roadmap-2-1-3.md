@@ -71,7 +71,8 @@ computed metadata to `odw/meta-statically-unprovable`.
 - Production code must not import executable ODW loader, primitive, launcher,
   worker, runtime, scheduler, metadata-evaluating, or agent-dispatch paths.
   This implements `docs/technical-design.md` §5 and
-  `docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences".
+  `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and
+  "Consequences".
 - Do not call `new Function`, `eval`, dynamic import of workflow files, ODW
   `loadWorkflowScript`, ODW `createPrimitives`, or the ODW runtime
   `validate(source)` primitive.
@@ -546,7 +547,8 @@ Documentation to read before editing:
 - `docs/technical-design.md` §§5, 6.2, 6.3, 6.4, and 9.1.
 - `docs/developers-guide.md` "Static-Analysis Boundary", "Workflow envelope
   scanner", and "Source-span helpers".
-- `docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences".
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and
+  "Consequences".
 - `../open-dynamic-workflows/src/dual-compat.ts` lines
   64-229 for the pure-literal grammar behaviour to mirror by tests.
 

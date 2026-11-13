@@ -102,7 +102,7 @@ This is the most important design decision in the plan. Keep 2.2.4 to
   offsets rather than SWC AST types" (`docs/developers-guide.md` line 70).
 
 Design references: `docs/technical-design.md` sections 4, 5, 6.1, 6.2, 6.4, 8,
-9.2, 9.3, 11.1, 12.1, 12.2; `docs/adr/0001-static-analysis-boundary.md`;
+9.2, 9.3, 11.1, 12.1, 12.2; `docs/adrs/adr-0001-static-analysis-boundary.md`;
 `docs/developers-guide.md` "Workflow body parser adapter" (lines 49-72),
 "Workflow envelope scanner" (lines 74-138), the source-mask module map (lines
 478-491), and "Source-span helpers" (lines 436-476); `AGENTS.md` (Testing,
@@ -122,7 +122,7 @@ escalation, not a workaround.
   only permitted parser call is `@swc/core`'s `parseSync` over normalized,
   parse-only text, exactly as `parseWorkflowBody` already uses it
   (`docs/technical-design.md` sections 5, 6.4, 12.1;
-  `docs/adr/0001-static-analysis-boundary.md`;
+  `docs/adrs/adr-0001-static-analysis-boundary.md`;
   `tests/diagnostics/import-policy.test.ts`).
 - **No diagnostic emission and no `Diagnostic` shape change.** This task
   produces facts, not diagnostics. `src/diagnostics/types.ts` and

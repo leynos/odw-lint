@@ -76,7 +76,8 @@ review.
 - Production code must not import executable ODW loader, primitive, launcher,
   worker, runtime, scheduler, metadata-evaluating, or agent-dispatch paths.
   This follows `docs/technical-design.md` §5 and
-  `docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences".
+  `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and
+  "Consequences".
 - Do not call `new Function`, `eval`, dynamic import of workflow files, ODW
   `loadWorkflowScript`, ODW `createPrimitives`, or the ODW runtime
   `validate(source)` primitive.
@@ -740,7 +741,8 @@ Read before starting:
 - `docs/terms-of-reference.md` §§1, 5, 6, 8, and 9.
 - `docs/technical-design.md` §§5, 6.1, 6.2, 6.4, 8, 9.1, 11.1, 11.3, 12.1,
   and 15.
-- `docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences".
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and
+  "Consequences".
 - `docs/developers-guide.md` "Static-Analysis Boundary", "Tests", "Workflow
   Fixture Corpus", and "Source-span helpers".
 - `docs/scripting-standards.md` for script and Bun conventions.

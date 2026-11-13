@@ -53,13 +53,13 @@ divergence.
 
 Hard invariants that must hold throughout implementation.
 
-- Static-analysis boundary ([ADR 0001](../adr/0001-static-analysis-boundary.md);
-  [technical-design.md](../technical-design.md) §§5, 6.4, 11.3): no new module
-  may import, evaluate, execute, or format fixture workflow source. New owner
-  and projection modules read fixtures only as passive UTF-8 text via the
-  existing `readFixtureSource`/`fixtureSourceUrl` helpers in
-  `tests/static-analysis/fixtures/corpus-support.ts`. No production `src/`
-  module may import test fixtures; all new modules live under `tests/`.
+- Static-analysis boundary
+  ([ADR 0001](../adrs/adr-0001-static-analysis-boundary.md); [technical-design.md](../technical-design.md)
+  §§5, 6.4, 11.3): no new module may import, evaluate, execute, or format
+  fixture workflow source. New owner and projection modules read fixtures only
+  as passive UTF-8 text via the existing `readFixtureSource`/`fixtureSourceUrl`
+  helpers in `tests/static-analysis/fixtures/corpus-support.ts`. No production
+  `src/` module may import test fixtures; all new modules live under `tests/`.
 - The loader-parity harness inertness contract in `loader-parity.test.ts` (the
   `discoverHarnessSourceFiles` import-edge audit and the hostile-metadata
   marker assertions) must keep passing unchanged: any module newly imported
@@ -869,7 +869,7 @@ them a separate owner pattern.
 Documentation consulted while drafting: [roadmap.md](../roadmap.md) task 2.3.5
 and siblings 2.3.1/2.3.3; [technical-design.md](../technical-design.md) §§6.1,
 6.4, 8, 11.1–11.3, 11.5;
-[adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md);
+[adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md);
 
 [developers-guide.md](../developers-guide.md) "Workflow Fixture Corpus" and
 "Source-span helpers"; AGENTS.md (gate set, abstraction policy, testing rules,

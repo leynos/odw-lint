@@ -53,7 +53,7 @@ Hard invariants that must hold throughout implementation.
 1. Do not execute or evaluate workflow source. The promotion transform is a
    pure function over already-produced `Diagnostic` values and must import no
    ODW runtime code, consistent with
-   [adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+   [adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
    and [technical-design.md](../technical-design.md) §6.4. It reads only the
    diagnostic and the inert rule catalogue.
 2. Default behaviour is unchanged. `lintWorkflowSource(source)` with no options,
@@ -287,7 +287,7 @@ Design references used: [technical-design.md](../technical-design.md) §§6.3
 compatibility and the promotion sentence), 10 (`strictClaude` config key), and
 11.4 (combinatorial surface: "Default mode versus `--strict-claude`"); roadmap
 task 3.1.3;
-[adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md);
+[adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md);
 and AGENTS.md quality gates.
 
 ## Plan of work

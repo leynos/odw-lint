@@ -95,7 +95,8 @@ Proposed fix:
 - Category: test-gap
 - Severity: Medium
 - Location: `tests/static-analysis/boundary.test.ts:13`,
-  `docs/technical-design.md:445`, `docs/adr/0001-static-analysis-boundary.md:43`
+  `docs/technical-design.md:445`,
+  `docs/adrs/adr-0001-static-analysis-boundary.md:43`
 
 The accepted ADR and technical design say production code must not import ODW
 runtime helpers that evaluate metadata, compile workflow bodies, start runs, or
@@ -185,7 +186,7 @@ Proposed fix:
 - `AGENTS.md`
 - `docs/terms-of-reference.md`
 - `docs/technical-design.md`
-- `docs/adr/0001-static-analysis-boundary.md`
+- `docs/adrs/adr-0001-static-analysis-boundary.md`
 - `docs/developers-guide.md`
 - `docs/roadmap.md`
 - `docs/documentation-style-guide.md`

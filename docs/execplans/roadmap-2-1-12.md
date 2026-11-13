@@ -44,7 +44,7 @@ escalation, not a workaround.
   metadata-evaluating, or agent-dispatch path. Enforced by the existing
   forbidden-import architecture test (task 2.1.4) and
   `docs/technical-design.md` §5, §6.4, §12.1;
-  `docs/adr/0001-static-analysis-boundary.md`.
+  `docs/adrs/adr-0001-static-analysis-boundary.md`.
 - **Reuse the existing pipeline.** The new entry point must delegate to the
   existing `createOriginalSourceFile` (`src/static-analysis/source-file.ts`),
   `scanWorkflowEnvelope` (`src/static-analysis/workflow-envelope.ts`), and
@@ -285,7 +285,7 @@ Key design references:
   the boundary between envelope scanner, static meta parser, and future rule
   engine/reporter), §6.3 (metadata classification categories), §6.4 (do not
   execute source), §12.1 (trust boundary).
-- `docs/adr/0001-static-analysis-boundary.md` (owned static parser; no
+- `docs/adrs/adr-0001-static-analysis-boundary.md` (owned static parser; no
   executable ODW paths in production).
 - `docs/developers-guide.md` "static-analysis" section (lines ~55-89) and the
   public-API-surface section (lines ~231-240).
@@ -304,11 +304,12 @@ Three work items, each a vertical slice ending green with `make all` (plus
 
 ### WI1 — Add the merged static lint entry point (internal export)
 
-Implements: `docs/technical-design.md` §5, §6.1, §6.3, §6.4; `docs/adr/0001`;
-`AGENTS.md` testing rules. Roadmap 2.1.12 core deliverable.
+Implements: `docs/technical-design.md` §5, §6.1, §6.3, §6.4;
+`docs/adrs/adr-0001`; `AGENTS.md` testing rules. Roadmap 2.1.12 core
+deliverable.
 
 Read first: `docs/technical-design.md` §§5, 6.1, 6.3, 6.4;
-`docs/adr/0001-static-analysis-boundary.md`; `docs/developers-guide.md`
+`docs/adrs/adr-0001-static-analysis-boundary.md`; `docs/developers-guide.md`
 static-analysis section; the three collaborator modules named in "Context and
 orientation".
 

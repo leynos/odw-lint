@@ -34,17 +34,17 @@ entry; that index enumerates every current rule page.
 
 ## Accepted ADRs
 
-- [ADR 0001: static-analysis boundary](adr/0001-static-analysis-boundary.md)
+- [ADR 0001: static-analysis boundary](adrs/adr-0001-static-analysis-boundary.md)
   records the decision that `odw-lint` owns a non-executing static-analysis
   implementation and must not import executable ODW runtime paths in production
   code.
-- [ADR 0002: workflow-body parser dialect scope](adr/0002-workflow-body-parser-dialect-scope.md)
+- [ADR 0002: workflow-body parser dialect scope](adrs/adr-0002-workflow-body-parser-dialect-scope.md)
   records the decision that workflow bodies are parsed as ECMAScript-only
   source.
-- [ADR 0003: body-syntax span-narrowing quarantine](adr/0003-body-syntax-span-narrowing-quarantine.md)
+- [ADR 0003: body-syntax span-narrowing quarantine](adrs/adr-0003-body-syntax-span-narrowing-quarantine.md)
   records the decision that token-level body-syntax span narrowing remains an
   intentionally deferred internal fallback.
-- [ADR 0004: machine-readable IO-error channel](adr/0004-machine-readable-io-error-channel.md)
+- [ADR 0004: machine-readable IO-error channel](adrs/adr-0004-machine-readable-io-error-channel.md)
   records the decision that unreadable input files are represented as top-level
   JSON `ioErrors` and `summary.filesSkipped`, rather than as catalogued
   lint-rule diagnostics.

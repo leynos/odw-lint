@@ -46,11 +46,11 @@ canonical order after envelope and metadata diagnostics.
   model / AST facts), §4 (design intent: `odw-lint` owns an SWC-based parser),
   §8 (diagnostic contract), §11.2 (loader parity for trusted fixtures), §11.5
   (span-mapping invariant), §12.1 (trust boundary — never execute source).
-- `docs/adr/0001-static-analysis-boundary.md`: `odw-lint` owns its dual-compat
-  scanning and MUST NOT import ODW's `scanDualCompat`, `loadWorkflowScript`,
-  `createPrimitives`, `validate(source)`, or any ODW module that evaluates or
-  compiles workflow source. Parity is kept via tests against trusted fixtures,
-  not by importing ODW.
+- `docs/adrs/adr-0001-static-analysis-boundary.md`: `odw-lint` owns its
+  dual-compat scanning and MUST NOT import ODW's `scanDualCompat`,
+  `loadWorkflowScript`, `createPrimitives`, `validate(source)`, or any ODW
+  module that evaluates or compiles workflow source. Parity is kept via tests
+  against trusted fixtures, not by importing ODW.
 - `docs/developers-guide.md` §"Tests" (rule catalogue is the source of truth;
   updating a rule's reviewed messages requires updating the catalogue, the
   schema snapshot if `RULE_IDS` changes, the rule page, the index, fixture
@@ -176,12 +176,12 @@ separate concern wired by its own roadmap step and is out of scope here.
 ## Constraints
 
 - Never execute or evaluate workflow source (`docs/technical-design.md` §12.1;
-  `docs/adr/0001`). Detection is parse-and-walk only. The
+  `docs/adrs/adr-0001`). Detection is parse-and-walk only. The
   `does not evaluate hostile metadata` invariant in
   `tests/static-analysis/workflow-lint.test.ts` must keep passing.
 - Do not import ODW runtime or ODW static helpers (`scanDualCompat`,
   `checkMeta`, `loadWorkflowScript`, `createPrimitives`, `validate`) in
-  production code (`docs/adr/0001`). The forbidden-import architecture test
+  production code (`docs/adrs/adr-0001`). The forbidden-import architecture test
   (`tests/diagnostics/import-policy.test.ts` / `architecture.test.ts`) must
   stay green.
 - Do not leak `@swc/core` AST types through the public package entry
@@ -254,10 +254,10 @@ local evidence was used instead, per the standing rules:
 - The sibling ODW checkout `/data/leynos/Projects/open-dynamic-workflows` is
   outside this session's sandbox; `ls`/`grep`/`find`/`Read` on it were denied,
   and a delegated helper agent confirmed the same. `scanDualCompat`'s source
-  could not be read. This is acceptable: `docs/adr/0001` states ODW does not
-  export `scanDualCompat` and `odw-lint` must not import it, so the behaviour
-  is pinned against `docs/technical-design.md` §9.2 and trusted fixtures, not
-  against a live import.
+  could not be read. This is acceptable: `docs/adrs/adr-0001` states ODW does
+  not export `scanDualCompat` and `odw-lint` must not import it, so the
+  behaviour is pinned against `docs/technical-design.md` §9.2 and trusted
+  fixtures, not against a live import.
 - `firecrawl_scrape` and `bun install` required interactive approval that a
   non-interactive session cannot grant, so the `@swc/core` AST shape below is
   from documented knowledge and MUST be confirmed by the implementer via the
@@ -321,7 +321,7 @@ Validation: `make all`.
 
 ### Work item 2 — Implement the deterministic-time and randomness AST detector
 
-Read: `docs/technical-design.md` §§6.1, 6.2, 11.5; `docs/adr/0001`;
+Read: `docs/technical-design.md` §§6.1, 6.2, 11.5; `docs/adrs/adr-0001`;
 `docs/developers-guide.md` §"Source-span helpers";
 `docs/complexity-antipatterns-and-refactoring-strategies.md`. Skills: `leta`
 (find `normalizeWorkflowBody` and `originalSpanFromNormalizedOffsets`

@@ -89,7 +89,7 @@ snapshot assertions* only.
   `tests/static-analysis/fixtures/invalid-workflows/`.
 
 Design references: `docs/technical-design.md` sections 4, 6.1, 8, 11.1, 11.5,
-12.1, 12.2; `docs/adr/0001-static-analysis-boundary.md`;
+12.1, 12.2; `docs/adrs/adr-0001-static-analysis-boundary.md`;
 `docs/developers-guide.md` "Source-span helpers" and the invalid-workflow
 fixture section (lines 383-408, 436-490); `AGENTS.md` (Testing, Snapshot scope,
 DRY/refactor policy). Requires 2.2.2 (COMPLETE on this branch base;
@@ -106,7 +106,7 @@ escalation, not a workaround.
   path. In-memory case sources are plain string literals passed to
   `createOriginalSourceFile`; they are never `eval`'d, imported, or run
   (`docs/technical-design.md` sections 5, 12.1;
-  `docs/adr/0001-static-analysis-boundary.md`;
+  `docs/adrs/adr-0001-static-analysis-boundary.md`;
   `tests/diagnostics/import-policy.test.ts`).
 - **No production runtime change.** No file under `src/` changes behaviour.
   The `Diagnostic` shape in `src/diagnostics/types.ts` and the diagnostic

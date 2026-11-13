@@ -102,10 +102,10 @@ escalation, not a workaround.
   text via `readFixtureSource`.
 - The static-analysis boundary holds: no test wiring introduced here may cause
   production modules to import an executable ODW loader, primitive factory,
-  launcher, or worker path (`docs/adr/0001-static-analysis-boundary.md`,
+  launcher, or worker path (`docs/adrs/adr-0001-static-analysis-boundary.md`,
   `docs/technical-design.md` §11.3).
 - The `odw/body-syntax` dialect contract from
-  `docs/adr/0002-workflow-body-parser-dialect-scope.md` is unchanged; the
+  `docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md` is unchanged; the
   `syntax-error` fixtures continue to prove ECMAScript-only rejection.
 - Prose, comments, and commit messages use en-GB Oxford spelling
   ("-ize"/"-yse"/"-our"), per `AGENTS.md` and
@@ -384,9 +384,9 @@ Design sources of truth to obey: `docs/technical-design.md` §11.1 (differential
 corpus: "For each fixture, tests assert expected diagnostics and spans"), §11.3
 (security regression); `docs/developers-guide.md` (invalid fixture ownership,
 the "manifest is not a separate source of truth" rule, and the SWC-bump
-coordinated-surface list); `docs/adr/0001-static-analysis- boundary.md`;
-`docs/adr/0002-workflow-body-parser-dialect-scope.md`; `AGENTS.md` (testing,
-atomicity, separate atomic refactors, file size).
+coordinated-surface list); `docs/adrs/adr-0001-static-analysis-boundary.md`;
+`docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md`; `AGENTS.md`
+(testing, atomicity, separate atomic refactors, file size).
 
 ## Plan of work
 
@@ -460,7 +460,7 @@ small named local function (command/query, single responsibility) and imports
 are sorted.
 
 Docs to read: `docs/developers-guide.md` (SWC-bump surfaces; invalid fixture
-rules); `docs/adr/0002-workflow-body-parser-dialect-scope.md`;
+rules); `docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md`;
 `docs/technical-design.md` §11.1; `AGENTS.md` (Testing → Snapshot scope).
 Skills to load: `execplans`, `leta`, `biomejs` (formatting/lint expectations),
 `en-gb-oxendict` (doc prose), `commit-message`. Tests updated:

@@ -47,7 +47,7 @@ Hard invariants that must hold throughout implementation.
   Evidence", "Change Quality & Committing", "TypeScript Guidance", "Code Style
   and Structure") and docs/developers-guide.md (build-gate section, lines
   ~209–296). It is NOT part of the linter's static-analysis boundary
-  (docs/adr/0001-static-analysis-boundary.md) and is not described in
+  (docs/adrs/adr-0001-static-analysis-boundary.md) and is not described in
   docs/technical-design.md; those documents were checked and do not constrain
   this change. Do not import it into or from `src/`.
 - Preserve the existing `make review-evidence` exit-code contract exactly:
@@ -136,7 +136,7 @@ Hard invariants that must hold throughout implementation.
 - Observation: The build-gate review-evidence subsystem is documented only in
   AGENTS.md and docs/developers-guide.md; docs/technical-design.md and the ADRs
   do not mention it. Evidence:
-  `grep -rn "review-evidence\|build-gate" docs/technical-design.md docs/adr/`
+  `grep -rn "review-evidence\|build-gate" docs/technical-design.md docs/adrs/`
   returns nothing; the subsystem is described in docs/developers-guide.md lines
   ~209–296 and AGENTS.md "Roadmap Review & Audit Evidence". Impact: Design
   authority for this task is AGENTS.md + developers-guide.md; the plan cites

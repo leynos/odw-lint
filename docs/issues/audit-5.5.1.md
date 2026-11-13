@@ -5,8 +5,8 @@ span-narrowing surface", squash-merged into `origin/main` at commit `b7089d4`.
 That change quarantined the dormant body-syntax span-narrowing seam in
 `src/static-analysis/workflow-body-parser-spans.ts` as an intentionally
 deferred internal fallback, recorded the decision in
-`docs/adr/0003-body-syntax-span-narrowing-quarantine.md`, aligned the rule,
-technical-design, and developers'-guide prose with the shipped whole-body
+`docs/adrs/adr-0003-body-syntax-span-narrowing-quarantine.md`, aligned the
+rule, technical-design, and developers'-guide prose with the shipped whole-body
 `odw/body-syntax` span, and added a characterization test
 (`tests/static-analysis/body-syntax-span-narrowing-quarantine.test.ts`) pinning
 that the shipped SWC parser keeps the whole-body fallback and that the seam
@@ -37,7 +37,7 @@ Normative references used:
 - `docs/complexity-antipatterns-and-refactoring-strategies.md`
 - `docs/developers-guide.md`
 - `docs/documentation-style-guide.md`
-- `docs/adr/0003-body-syntax-span-narrowing-quarantine.md`
+- `docs/adrs/adr-0003-body-syntax-span-narrowing-quarantine.md`
 - `docs/roadmap.md`
 - `docs/technical-design.md`
 

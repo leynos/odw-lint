@@ -10,7 +10,7 @@ Normative references used:
 - `AGENTS.md`
 - `docs/terms-of-reference.md`
 - `docs/technical-design.md`
-- `docs/adr/0001-static-analysis-boundary.md`
+- `docs/adrs/adr-0001-static-analysis-boundary.md`
 - `docs/developers-guide.md`
 - `docs/scripting-standards.md`
 - `docs/complexity-antipatterns-and-refactoring-strategies.md`

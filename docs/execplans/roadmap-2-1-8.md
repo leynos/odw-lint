@@ -95,7 +95,7 @@ Success, restated as behaviour a human can verify:
   when available; use `sem` for entity-level history when history is needed.
 - This task is a static, inert contract. Production code must not import
   executable ODW runtime paths. ADR
-  [0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+  [adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
   forbids imports that evaluate metadata, compile workflow bodies, start runs,
   dispatch agents, or call runtime `validate(source)`. The new
   `src/diagnostics/message-template.ts` module must import nothing from ODW
@@ -634,7 +634,7 @@ Design documents that bind this task:
 - `docs/developers-guide.md` rule-catalogue paragraph and "Workflow Fixture
   Corpus" section.
 - ADR
-  [0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+  [adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
   (the module must stay inert).
 - `AGENTS.md` §"Testing" (runner, parameterized/table-driven tests, snapshot
   scope, `fast-check` property tests) and the commit-gate rules.

@@ -53,7 +53,7 @@ Implementation must not begin until this draft is reviewed and approved.
   needed. Ordinary `git fetch`, `git status`, and scoped diff checks remain
   acceptable for branch freshness and commit hygiene.
 - Read and obey `AGENTS.md`, `docs/terms-of-reference.md`,
-  `docs/technical-design.md`, `docs/adr/0001-static-analysis-boundary.md`,
+  `docs/technical-design.md`, `docs/adrs/adr-0001-static-analysis-boundary.md`,
   `docs/developers-guide.md`, `docs/scripting-standards.md`,
   `docs/complexity-antipatterns-and-refactoring-strategies.md`,
   `docs/documentation-style-guide.md`, and `docs/roadmap.md` before
@@ -571,7 +571,8 @@ Docs to reread before editing:
 - `docs/developers-guide.md` "Static-Analysis Boundary", "Commit Gate",
   "Tests", and "Markdown".
 - `docs/technical-design.md` sections 5, 11.3, 13, and 15.
-- `docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences".
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and
+  "Consequences".
 - `docs/complexity-antipatterns-and-refactoring-strategies.md` section 4.A
   and section 5.C.
 
@@ -650,7 +651,7 @@ Docs to reread before editing:
 - `docs/developers-guide.md` "Static-Analysis Boundary" and "Source-span
   helpers".
 - `docs/technical-design.md` sections 5, 6.1, 11.3, 13, and 15.
-- `docs/adr/0001-static-analysis-boundary.md` "Decision".
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision".
 - Official Node package docs for package entry points, `exports`,
   conditional exports, `types`, and self-reference.
 - Official TypeScript Compiler API docs for `createSourceFile` and

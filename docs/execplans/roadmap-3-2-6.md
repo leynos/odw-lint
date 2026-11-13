@@ -69,9 +69,9 @@ first orchestration-risk rules"). It requires roadmap tasks 3.2.5, 3.1.5, and
 3.2.5.1, all already complete on `main`. It implements
 [docs/technical-design.md](../technical-design.md) §6.1 (shared SWC node-shape
 seam) and §9.3 (orchestration-risk rule context), within the boundaries set by
-[docs/adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md)
+[docs/adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md)
 and
-[docs/adr/0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md).
+[docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md](../adrs/adr-0002-workflow-body-parser-dialect-scope.md).
 
 ## Constraints
 
@@ -95,13 +95,13 @@ escalation, not a workaround.
   cannot express a policy without changing behaviour, that collector stays a
   documented exception rather than being forced onto the driver.
 - **Owned SWC parser boundary.** Per
-  [docs/adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md),
+  [docs/adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md),
   `odw-lint` owns its SWC-based static analysis. Do not import any ODW runtime
   helper, `loadWorkflowScript`, `createPrimitives`, or `validate(source)` path
   into production code. The driver must depend only on `@swc/core` types and
   the local `swc-ast.ts` helpers.
 - **ECMAScript dialect scope.** Per
-  [docs/adr/0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md),
+  [docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md](../adrs/adr-0002-workflow-body-parser-dialect-scope.md),
   workflow bodies are parsed as ECMAScript (`syntax: "ecmascript"`,
   `jsx: false`). Do not add TypeScript-only node handling to the driver.
 - **Public API surface unchanged.** Do not add the driver to
@@ -362,7 +362,7 @@ case each where the touched traversal branch is not already exercised.
 
 Docs to read first: [docs/technical-design.md](../technical-design.md) §6.1
 (shared SWC node-shape seam) and §3 (components table);
-[docs/adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md);
+[docs/adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md);
 
 [docs/complexity-antipatterns-and-refactoring-strategies.md](../complexity-antipatterns-and-refactoring-strategies.md)
 §"Balance Abstraction Levels" and §"Iterative Refactoring and Review";
@@ -441,7 +441,7 @@ prior attempt, the red step is skipped.
 
 Docs to read first: [docs/technical-design.md](../technical-design.md) §9.3
 (deterministic-time / orchestration-risk context) and §6.1;
-[docs/adr/0002-workflow-body-parser-dialect-scope.md](../adr/0002-workflow-body-parser-dialect-scope.md).
+[docs/adrs/adr-0002-workflow-body-parser-dialect-scope.md](../adrs/adr-0002-workflow-body-parser-dialect-scope.md).
 Skills to load: `leta`, `biomejs`, `en-gb-oxendict`.
 
 Steps:
@@ -522,7 +522,7 @@ Validation: `make all`; `git status` must show no snapshot changes.
 ### Work Item 4: Retire the scope collector's `childValues` clone
 
 Docs to read first: [docs/technical-design.md](../technical-design.md) §6.1;
-[docs/adr/0001-static-analysis-boundary.md](../adr/0001-static-analysis-boundary.md);
+[docs/adrs/adr-0001-static-analysis-boundary.md](../adrs/adr-0001-static-analysis-boundary.md);
 the `PRIVATE_SWC_HELPER_EXCEPTIONS` block in
 `tests/diagnostics/architecture.test.ts`. Skills to load: `leta`, `biomejs`,
 `en-gb-oxendict`.

@@ -46,7 +46,7 @@ Implementation must not begin until this draft is reviewed and approved.
   is needed. Ordinary `git status`, scoped diffs, and Git commands used by the
   guard itself remain acceptable.
 - Read and obey `AGENTS.md`, `docs/terms-of-reference.md`,
-  `docs/technical-design.md`, `docs/adr/0001-static-analysis-boundary.md`,
+  `docs/technical-design.md`, `docs/adrs/adr-0001-static-analysis-boundary.md`,
   `docs/developers-guide.md`, `docs/users-guide.md`,
   `docs/repository-layout.md`, `docs/scripting-standards.md`,
   `docs/complexity-antipatterns-and-refactoring-strategies.md`,
@@ -452,8 +452,9 @@ Documentation and decisions implemented by this work item:
   entry points.
 - `docs/technical-design.md` sections 11.3 and 12.1 by negative constraint:
   the guard must not import or execute ODW runtime paths or workflow source.
-- `docs/adr/0001-static-analysis-boundary.md` "Decision" and "Consequences":
-  preserve the ban on executable ODW runtime imports in production code.
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision" and
+  "Consequences": preserve the ban on executable ODW runtime imports in
+  production code.
 - `docs/scripting-standards.md` "Operational guidelines": report actionable
   failures with POSIX-style exit codes and avoid destructive side effects.
 

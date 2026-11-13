@@ -565,7 +565,7 @@ The local project evidence is:
   the pipeline instead of reconstructing them structurally.
 - `docs/developers-guide.md` "Static-Analysis Boundary" says direct SWC calls
   belong to roadmap task 2.2.1, not this task.
-- `docs/adr/0001-static-analysis-boundary.md` decides that production
+- `docs/adrs/adr-0001-static-analysis-boundary.md` decides that production
   `odw-lint` owns its static-analysis implementation and must not import ODW
   executable runtime helpers.
 - `leta grep` on `src/static-analysis/source-file.ts` found one current module

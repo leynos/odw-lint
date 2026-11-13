@@ -73,7 +73,7 @@ Implementation must not begin until this draft is reviewed and approved.
   is needed. Ordinary `git status`, scoped diffs, and Git commands used by the
   build-gate tests remain acceptable.
 - Read and obey `AGENTS.md`, `docs/terms-of-reference.md`,
-  `docs/technical-design.md`, `docs/adr/0001-static-analysis-boundary.md`,
+  `docs/technical-design.md`, `docs/adrs/adr-0001-static-analysis-boundary.md`,
   `docs/developers-guide.md`, `docs/users-guide.md`,
   `docs/repository-layout.md`, `docs/scripting-standards.md`,
   `docs/complexity-antipatterns-and-refactoring-strategies.md`,
@@ -451,7 +451,7 @@ Read these before implementing each work item:
   and 9 "Constraints".
 - `docs/technical-design.md` sections 2 "Goals and non-goals" and 5
   "Static-analysis boundary".
-- `docs/adr/0001-static-analysis-boundary.md` sections "Decision" and
+- `docs/adrs/adr-0001-static-analysis-boundary.md` sections "Decision" and
   "Consequences".
 - `docs/developers-guide.md` sections "Commit Gate", "Tests", "Markdown", and
   "Documentation Upkeep".

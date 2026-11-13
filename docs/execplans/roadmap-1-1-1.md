@@ -52,8 +52,8 @@ forbidden-import architecture test belongs to roadmap task 2.1.4.
   may retain an `unknown` cause behind a non-exported detail type.
 - Production `src/**/*.ts` code must not import, call, vendor, or copy ODW
   executable loader, primitive, runtime launcher, worker, or resolver paths.
-  This implements `docs/adr/0001-static-analysis-boundary.md` "Decision" and
-  `docs/technical-design.md` sections 5 and 12.1.
+  This implements `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision"
+  and `docs/technical-design.md` sections 5 and 12.1.
 - Do not implement the forbidden-import architecture test in this ExecPlan.
   `docs/roadmap.md` task 2.1.4 owns that test, requires 1.1.1, and sits inside
   the later envelope-parsing step. If implementation of 1.1.1 appears to need
@@ -63,9 +63,10 @@ forbidden-import architecture test belongs to roadmap task 2.1.4.
   a production, development, peer, optional, or trusted dependency for this
   slice. This is a task-1.1.1 boundary check, not a blanket ban on later
   trusted fixture-parity dependencies, because
-  `docs/adr/0001-static-analysis-boundary.md` and `docs/technical-design.md`
-  section 11.2 allow future narrowly scoped trusted parity tests to import ODW
-  helpers where those helpers are static and do not evaluate source.
+  `docs/adrs/adr-0001-static-analysis-boundary.md` and
+  `docs/technical-design.md` section 11.2 allow future narrowly scoped trusted
+  parity tests to import ODW helpers where those helpers are static and do not
+  evaluate source.
 - After every implementation work item, run branch-local exact checks inside
   this worktree to prove the slice did not add dependency entries, production
   ODW references, package-level export fields, parser-adapter symbols,
@@ -332,7 +333,7 @@ The source-of-truth documents for this task are:
 - `docs/roadmap.md` sections 1.1, 2.1, and 2.2.
 - `docs/technical-design.md` sections 4, 5, 6.1, 6.2, 6.4, 9.2, 11.3, 12.1,
   12.2, and 13.
-- `docs/adr/0001-static-analysis-boundary.md` "Decision", "Consequences",
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision", "Consequences",
   and "Rejected alternative".
 - `docs/terms-of-reference.md` sections 6, 7, 8, and 9.
 - `docs/developers-guide.md` "Static-Analysis Boundary", "Commit Gate",
@@ -472,7 +473,7 @@ Documentation and design citations:
 
 - `docs/roadmap.md` section 1.1, task 1.1.1.
 - `docs/technical-design.md` sections 5, 6.1, and 6.2.
-- `docs/adr/0001-static-analysis-boundary.md` "Decision".
+- `docs/adrs/adr-0001-static-analysis-boundary.md` "Decision".
 - `AGENTS.md` "Code Style and Structure", "TypeScript Guidance", and
   "Change Quality & Committing".
 - `docs/complexity-antipatterns-and-refactoring-strategies.md` sections 4
