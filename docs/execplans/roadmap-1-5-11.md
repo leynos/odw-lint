@@ -9,7 +9,7 @@ Status: COMPLETE
 ## Purpose / big picture
 
 The build gates in `tests/build-gate/` each ship a command-line entry point.
-Every one ends with the same hand-written "run-and-exit" tail: a direct-exec
+Every one ends with the same handwritten "run-and-exit" tail: a direct-exec
 guard that compares `process.argv[1]` with `import.meta.url`, runs the gate's
 CLI function, and terminates the process with its exit code. That tail is
 cloned four times today. Three copies call `exit(...)` (a hard exit), while the
@@ -438,7 +438,7 @@ Validation: `make all`.
 Docs to read: `docs/developers-guide.md` lines 216-219 and 278-287; the
 per-module tails cited in Context. Skills to load: `biomejs`.
 
-Replace each hand-written tail with a `runCliEntrypoint` call, preserving the
+Replace each handwritten tail with a `runCliEntrypoint` call, preserving the
 exit mechanism. The four replacements are:
 
 ```typescript

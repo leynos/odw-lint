@@ -147,7 +147,7 @@ conflict in `Decision Log`, and escalate.
 
 ## Risks
 
-- Risk: ODW's private loader helper is hand-written and not exported, so exact
+- Risk: ODW's private loader helper is handwritten and not exported, so exact
   parity can drift. Severity: medium. Likelihood: medium. Mitigation: pin this
   implementation to the sibling checkout evidence at
   `/data/leynos/Projects/open-dynamic-workflows` commit `ecc4867`, cite the

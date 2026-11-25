@@ -39,7 +39,7 @@ const diagnosticExpectationKey = (name: ts.PropertyName): string | undefined => 
   return undefined;
 };
 
-/** Finds hand-written diagnostic expectation literals in manifest-derived suites. */
+/** Finds handwritten diagnostic expectation literals in manifest-derived suites. */
 const inlineDiagnosticLiteralsIn = (filePath: string): readonly InlineDiagnosticLiteral[] => {
   const sourceText = readFileSync(filePath, "utf8");
   const sourceFile = ts.createSourceFile(filePath, sourceText, ts.ScriptTarget.Latest, true);

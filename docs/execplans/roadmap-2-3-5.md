@@ -28,7 +28,7 @@ manifest-to-comparison contract has forked three ways.
 After this change a reader can point at exactly one owner module per corpus and
 exactly one shared diagnostic-projection module, and a build-gated architecture
 test fails if anyone reintroduces an inline corpus-location literal in a
-hand-written test. Observable success:
+handwritten test. Observable success:
 
 - `make all` passes with every ODW-example and invalid-workflow corpus consumer
   importing its owner module;
@@ -38,7 +38,7 @@ hand-written test. Observable success:
   (`tests/static-analysis/fixture-corpus-ownership.test.ts`) fails before the
   routing is complete (proven against a crafted inline-literal sample) and
   passes after, and it fails if a new inline corpus-location literal is added
-  to any hand-written corpus-consuming test.
+  to any handwritten corpus-consuming test.
 - The three manifest-parity suites compare through one shared projection helper
   in `tests/static-analysis/fixtures/diagnostic-projection.ts`, exercised by
   its own unit tests.
@@ -159,7 +159,7 @@ the binding/lookup test, and the docs contents index entry required for the new
 ExecPlan. Red/green evidence and review notes are recorded in
 `Artefacts and notes`.
 
-2026-07-05 WI-2 implementation note: routed all hand-written ODW-example and
+2026-07-05 WI-2 implementation note: routed all handwritten ODW-example and
 invalid-workflow corpus consumers through the owner modules. The focused
 suites, loader-parity inertness block, deterministic gates, and CodeRabbit
 review all passed after the required rate-limit backoff.
@@ -171,7 +171,7 @@ several edge-case hardening items during review; the final retry completed with
 no findings after the focused tests and deterministic gates were green.
 
 2026-07-05 WI-4 implementation note: added the architecture guard that scans
-hand-written static-analysis TypeScript files for inline `new URL(...)` corpus
+handwritten static-analysis TypeScript files for inline `new URL(...)` corpus
 locations, excluding only its own crafted self-check. The guard derives
 protected segments from the two owner modules, positively covers both owned
 corpora, exempts masking fixtures by path segment, and pins the violation
@@ -246,7 +246,7 @@ architecture-rule requirements accurately, so it was left unchanged.
   `{ fixtureDirectory: FIXTURE_DIRECTORY }`; `source-mask-fixtures.test.ts:11`
   uses `{ fixtureDirectory: new URL("./fixtures/masking/", …) }`) and is not
   resolvable from the property key alone. A key-name pattern would therefore
-  flag those two hand-written masking test files, which are legitimately out of
+  flag those two handwritten masking test files, which are legitimately out of
   scope (Decision 2026-07-05-B) and not allowlisted, making the guard's "list
   is empty" assertion fail and breaking `make all` at the WI-4 commit —
   directly violating the masking-exclusion Constraint. The URL-path-segment
@@ -692,7 +692,7 @@ Acceptance (behaviour a human can verify):
 - Corpus single-sourcing: `grep -rn 'new URL("./fixtures/odw-examples/' tests`
   and `grep -rn 'new URL("./fixtures/invalid-workflows/' tests` return only the
   owner modules. `fixture-corpus-ownership.test.ts` fails if a new inline
-  corpus-location literal is added to a hand-written test (verify once by
+  corpus-location literal is added to a handwritten test (verify once by
   reintroducing and reverting a literal).
 - Projection single-sourcing: `invalid-workflow-metadata-parity.test.ts`,
   `workflow-envelope-fixtures.test.ts`, and `workflow-body-parser.test.ts`
@@ -855,11 +855,11 @@ so the `{ rule, severity, message, docs, span, spanText }` contract has one
 reviewed implementation.
 
 The guard in `tests/static-analysis/fixture-corpus-ownership.test.ts` is
-build-gated and covers the agreed architecture boundary: hand-written
-TypeScript tests cannot reintroduce inline `new URL(...)` locations for the two
-ODW-parity corpora. No consumer resisted routing. The one design tension was
-whether to broaden the guard to raw path strings; that was rejected because it
-would contradict Decision 2026-07-05-D and flag legitimate owner `manifestRoot`
+build-gated and covers the agreed architecture boundary: handwritten TypeScript
+tests cannot reintroduce inline `new URL(...)` locations for the two ODW-parity
+corpora. No consumer resisted routing. The one design tension was whether to
+broaden the guard to raw path strings; that was rejected because it would
+contradict Decision 2026-07-05-D and flag legitimate owner `manifestRoot`
 constants, generated manifests, and refresh support. Masking fixtures should
 remain out of this parity contract unless a later roadmap item chooses to give
 them a separate owner pattern.
@@ -893,7 +893,7 @@ inspection in the worktree.
   blocking point: the round-1 WI-4 guard flagged two patterns, and pattern (b)
   (any object-literal property keyed `fixtureDirectory`/`manifestRoot`) was
   over-broad and self-contradicted Decision 2026-07-05-B. It would have flagged
-  the two non-allowlisted hand-written masking test files
+  the two non-allowlisted handwritten masking test files
   (`masking-fixtures.test.ts:55`, `source-mask-fixtures.test.ts:11`), failing
   the guard's empty-list assertion and breaking `make all` at the WI-4 commit.
   Removed pattern (b) entirely; WI-4 now uses a single URL-path-segment

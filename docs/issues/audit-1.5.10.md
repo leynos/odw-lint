@@ -318,7 +318,7 @@ at lines 113, 119, 135, 178, 220, 229, 263, 285, …) while simultaneously
 returning `ValueParseResult` query values. Each parse helper therefore both
 mutates shared cursor state and yields a result, so the "how far did we get"
 side effect is implicit in the shared reference rather than in the return
-value. This is idiomatic for hand-written parsers and is well tested, but the
+value. This is idiomatic for handwritten parsers and is well tested, but the
 aliasing of a single mutable cursor across many functions is a known footgun
 and blurs command-query separation. Recorded here as a design-level
 observation, not a defect.

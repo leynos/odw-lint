@@ -1102,8 +1102,8 @@ configuration, or literal strings that are not symbols.
 
 After each code work item, run the item-specific focused test, then discover
 and format every changed TypeScript file. This is deliberately based on Git
-state rather than a hand-written file list, because `leta mv` may update
-imports in files the implementer did not name before the move:
+state rather than a handwritten file list, because `leta mv` may update imports
+in files the implementer did not name before the move:
 
 ```sh
 mapfile -t candidate_ts < <({
@@ -1305,7 +1305,7 @@ boundary concrete by naming `tests/diagnostics/architecture.test.ts`, its
 TypeScript compiler API helper strategy, and its package-entry assertions.
 Every work item now requires a living-plan update, file-scoped Markdown
 formatting, `make markdownlint`, and `make nixie`. TypeScript formatting now
-uses Git-discovered changed `.ts` and `.tsx` files instead of hand-written
+uses Git-discovered changed `.ts` and `.tsx` files instead of handwritten
 subsets, so import rewrites from `leta mv` are covered. External-tool evidence
 now records concrete local version/source facts and Firecrawl-derived official
 documentation facts for TypeScript, Bun, Biome, and Oxlint.
