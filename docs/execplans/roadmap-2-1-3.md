@@ -162,7 +162,7 @@ computed metadata to `odw/meta-statically-unprovable`.
 ## Risks
 
 - Risk: the recursive metadata parser could accidentally evaluate source.
-  Severity: high. Likelihood: low. Mitigation: implement a hand-written static
+  Severity: high. Likelihood: low. Mitigation: implement a handwritten static
   parser over source text, forbid `eval`, `new Function`, and dynamic imports,
   and add hostile metadata tests that read source without setting the hostile
   marker.

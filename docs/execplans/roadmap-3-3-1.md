@@ -108,10 +108,10 @@ The following are explicitly out of scope and deferred, each with a cited owner:
   11.3. The forbidden-import architecture test
   ([technical-design.md](../technical-design.md) §11.3) must still pass.
 - Validation is a boundary concern: parse `unknown` (post-`JSON.parse`) values
-  with an explicit hand-written parser and return project-owned discriminated
+  with an explicit handwritten parser and return project-owned discriminated
   results. Do not add a schema dependency such as Zod; AGENTS.md permits a
   schema library only "where that dependency is justified", and the existing
-  rule-id/severity parsers set the hand-written precedent
+  rule-id/severity parsers set the handwritten precedent
   ([src/diagnostics/rule-id.ts](../../src/diagnostics/rule-id.ts)).
 - CLI flags override configuration, unknown rule identifiers are errors, unknown
   configuration keys are pre-1.0 warnings, and `--isolated` disables

@@ -124,7 +124,7 @@ result, formats it, calls `emitCliReport({ report, toErr, writers })`, returns
 a gate-specific exit code, and ends with the identical module-main guard
 `if (process.argv[1] === fileURLToPath(import.meta.url)) { ... }`. The
 exit-code mapping (`exitCodeForBranchFreshness`, `exitCodeFor`, and the
-whitespace inline codes) and the `toErr` derivation are each hand-written per
+whitespace inline codes) and the `toErr` derivation are each handwritten per
 module.
 
 Proposed fix:

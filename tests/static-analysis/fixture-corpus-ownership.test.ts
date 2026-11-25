@@ -344,7 +344,7 @@ describe("fixture corpus ownership", () => {
     expect(ownerStyleLiteral).toEqual([]);
   });
 
-  it("keeps hand-written tests free of inline owned corpus locations", () => {
+  it("keeps handwritten tests free of inline owned corpus locations", () => {
     const inlineLocations = sourceFilesUnder(STATIC_ANALYSIS_ROOT)
       .filter((filePath) => filePath !== GUARD_FILE_PATH && !OWNER_MODULE_PATHS.has(filePath))
       .flatMap((filePath) => inlineCorpusLocationsInFile(filePath));

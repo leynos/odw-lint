@@ -23,7 +23,7 @@ that owns the pipeline: build the original source file, scan the envelope,
 classify the metadata, and merge the two diagnostic streams in a single
 canonical order. After this change a novice can call one function and observe
 the full envelope-plus-metadata diagnostic set for a workflow source string,
-and the parity suite consumes that same call rather than a hand-written merge.
+and the parity suite consumes that same call rather than a handwritten merge.
 
 You can see it working by running the new focused unit and property tests, and
 by observing that the refactored parity suite still produces byte-identical
@@ -469,7 +469,7 @@ production merge sites exist), `grepai` for a consistency sweep.
 Files:
 
 1. `tests/static-analysis/invalid-workflow-metadata-parity.test.ts`: replace the
-   hand-written pipeline in `classifyInvalidFixture` (currently
+   handwritten pipeline in `classifyInvalidFixture` (currently
    `createOriginalSourceFile` → `scanWorkflowEnvelope` →
    `[...envelope.diagnostics, ...classifyWorkflowMetadata(envelope).diagnostics]`)
    with a single `lintWorkflowSource({ filePath, sourceText })` call, sourcing

@@ -711,7 +711,7 @@ envelope-scanner work where decoy workflow syntax appears inside comments,
 strings, regex literals, and template literals.
 
 `tests/static-analysis/fixture-corpus-ownership.test.ts` enforces the two
-ODW-parity corpus-owner rules for hand-written TypeScript tests. It rejects
+ODW-parity corpus-owner rules for handwritten TypeScript tests. It rejects
 inline `new URL(...)` locations for the ODW-example and invalid-workflow
 corpora, derives the protected path segments from the owner modules, and leaves
 masking fixtures out of that contract because they are `odw-lint` synthetic

@@ -146,7 +146,7 @@ The 3.1.4 audit's Finding 4 asked for a shared `forEachChildNode(node, visit)`
 traversal primitive so the hazard walk and other collectors could be expressed
 as visitors over one driver. Task 3.2.5 extracted the leaf helpers `isAstNode`
 and `astChildValues` but stopped short of the driver: the recursive walk itself
-is still hand-written twice. `visitNode`/`visitChildValue`
+is still handwritten twice. `visitNode`/`visitChildValue`
 (`workflow-deterministic-time.ts:99`) and `collectAliasesFromNode`/
 `collectAliasesFromChild` (`workflow-deterministic-time-aliases.ts:133`) are
 the same pre-order, node/array/record recursion differing only in the per-node
